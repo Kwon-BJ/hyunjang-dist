@@ -1,0 +1,230 @@
+<!doctype html>
+<!--
+  현장지기 홈페이지 (부장님 지시 2026-10-08 — "현장지기 홈페이지로 만들자 블로그 너무 힘들다").
+  깃허브 페이지(무료)로 올린다. 고치면 scripts/홈페이지-올리기.mjs 로 다시 올린다 — 클로드가 혼자 한다.
+  내려받기 단추는 깃허브에 물어 늘 가장 새 판을 가리킨다(판이 바뀌어도 여기를 안 고쳐도 된다).
+-->
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>현장지기 — 건설현장 서류 프로그램 (무료)</title>
+<meta name="description" content="공사일보 · 기성 · 안전 · 품질 · 공정표를 한 프로그램에서. 적으면 A4 한 장에 딱 맞는 건설현장 서류, 무료 윈도우 PC 프로그램.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="현장지기 — 건설현장 서류 프로그램 (무료)">
+<meta property="og:description" content="공사일보 · 기성 · 안전 · 품질 · 공정표를 한 프로그램에서. 적으면 A4 한 장에 딱.">
+<meta property="og:image" content="https://kwon-bj.github.io/hyunjang-dist/img/share.png">
+<meta property="og:url" content="https://kwon-bj.github.io/hyunjang-dist/">
+<link rel="icon" href="img/icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root { --navy: #10233f; --navy2: #1b3a63; --deep: #0b1a30; --gold: #f2a516; --ink: #1d2433; --sub: #5b6577; --line: #e2e6ed; --bg: #f5f6f8; }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; font: 17px/1.75 'Noto Sans KR', 'Malgun Gothic', sans-serif; color: var(--ink); background: var(--bg); }
+  a { color: inherit; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
+
+  /* 위 띠 */
+  nav { position: sticky; top: 0; z-index: 9; background: var(--deep); color: #fff; }
+  nav .wrap { display: flex; align-items: center; gap: 18px; height: 56px; }
+  nav .logo { display: flex; align-items: center; gap: 8px; font-weight: 900; font-size: 19px; text-decoration: none; }
+  nav .logo img { width: 28px; height: 28px; border-radius: 7px; }
+  nav .links { display: flex; gap: 18px; margin-left: auto; font-size: 15px; }
+  nav .links a { text-decoration: none; opacity: .9; }
+  nav .links a:hover { color: var(--gold); }
+  nav .dl { background: var(--gold); color: var(--navy); font-weight: 900; padding: 6px 14px; border-radius: 8px; text-decoration: none; font-size: 15px; white-space: nowrap; }
+  @media (max-width: 760px) { nav .links { display: none; } nav .dl { margin-left: auto; } }
+
+  /* 첫 화면 */
+  .hero { color: #fff; position: relative; overflow: hidden;
+    background: radial-gradient(circle at 85% 15%, rgba(255,170,60,.20), transparent 45%), linear-gradient(135deg, var(--navy) 0%, var(--navy2) 55%, #12304f 100%); }
+  .hero::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 10px;
+    background: repeating-linear-gradient(-45deg, var(--gold) 0 14px, #1a1a1a 14px 28px); }
+  .hero .wrap { display: grid; grid-template-columns: 1.05fr 1fr; gap: 28px; align-items: center; padding-top: 56px; padding-bottom: 72px; }
+  .tag { display: inline-block; font-size: 14px; font-weight: 700; color: #ffcf6e; border: 1.5px solid #ffcf6e; border-radius: 16px; padding: 2px 12px; }
+  .hero h1 { font-size: clamp(48px, 8vw, 84px); font-weight: 900; letter-spacing: 3px; line-height: 1.05; margin: 16px 0 0; }
+  .hero h1 span { color: var(--gold); }
+  .hero .sub { font-size: clamp(19px, 2.6vw, 24px); font-weight: 700; margin-top: 14px; }
+  .hero ul { list-style: none; padding: 0; margin: 18px 0 0; color: #c9d5e6; }
+  .hero li { padding-left: 26px; position: relative; margin: 6px 0; }
+  .hero li::before { content: '✔'; position: absolute; left: 0; color: var(--gold); font-weight: 900; }
+  .cta { display: inline-flex; align-items: center; gap: 10px; margin-top: 26px; background: var(--gold); color: var(--navy); font-weight: 900; font-size: 21px;
+    padding: 14px 26px; border-radius: 12px; text-decoration: none; box-shadow: 0 8px 22px rgba(0,0,0,.35); }
+  .cta small { font-size: 14px; font-weight: 700; }
+  .ver { font-size: 14px; color: #c9d5e6; margin-top: 10px; }
+  .shot { border-radius: 12px; overflow: hidden; box-shadow: 0 22px 50px rgba(0,0,0,.5); border: 1px solid rgba(255,255,255,.15); background: #2a2d33; }
+  .shot .bar { height: 22px; display: flex; align-items: center; gap: 6px; padding-left: 10px; }
+  .shot .bar i { width: 9px; height: 9px; border-radius: 50%; background: #555; }
+  .shot img { display: block; width: 100%; }
+  @media (max-width: 860px) { .hero .wrap { grid-template-columns: 1fr; padding-top: 36px; } }
+
+  section { padding: 56px 0; }
+  section.alt { background: #fff; }
+  h2 { font-size: clamp(26px, 3.6vw, 34px); font-weight: 900; margin: 0 0 6px; }
+  h2 + .lead { color: var(--sub); margin: 0 0 24px; }
+
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 900px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+  section.alt .card { background: var(--bg); border-color: transparent; }
+  .card h3 { margin: 0 0 6px; font-size: 19px; display: flex; align-items: center; gap: 8px; }
+  .card h3 b { background: var(--navy); color: #fff; font-size: 13px; border-radius: 6px; padding: 1px 8px; }
+  .card p { margin: 0; color: var(--sub); font-size: 15.5px; }
+
+  .why { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  @media (max-width: 700px) { .why { grid-template-columns: 1fr; } }
+  .why .card h3 { color: var(--navy); }
+  .why .card h3::before { content: ''; width: 10px; height: 10px; border-radius: 3px; background: var(--gold); }
+
+  .pics { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; align-items: start; }
+  @media (max-width: 760px) { .pics { grid-template-columns: 1fr; } }
+  figure { margin: 0; }
+  figure img { width: 100%; border-radius: 10px; border: 1px solid var(--line); display: block; }
+  figcaption { font-size: 14px; color: var(--sub); margin-top: 6px; }
+
+  ol.steps { counter-reset: s; list-style: none; padding: 0; margin: 0; }
+  ol.steps > li { counter-increment: s; position: relative; padding: 0 0 18px 52px; }
+  ol.steps > li::before { content: counter(s); position: absolute; left: 0; top: 0; width: 36px; height: 36px; border-radius: 50%;
+    background: var(--navy); color: #fff; font-weight: 900; display: flex; align-items: center; justify-content: center; }
+  ol.steps b.t { display: block; font-size: 18px; }
+  ol.steps span { color: var(--sub); }
+  .key { display: inline-block; background: #eef1f5; border-radius: 6px; padding: 0 7px; font-weight: 700; color: var(--ink); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+  @media (max-width: 760px) { .two { grid-template-columns: 1fr; } }
+
+  .news .item { border-left: 4px solid var(--gold); background: #fff; border-radius: 0 10px 10px 0; padding: 12px 16px; margin-bottom: 12px; }
+  .news .item h3 { margin: 0; font-size: 18px; }
+  .news .item .d { color: var(--sub); font-size: 14px; }
+  .news .item ul { margin: 6px 0 0; padding-left: 20px; }
+
+  .ask { text-align: center; }
+  .ask a.btn { display: inline-block; background: #03c75a; color: #fff; font-weight: 900; border-radius: 10px; padding: 12px 22px; text-decoration: none; margin-top: 10px; }
+  footer { background: var(--deep); color: #9fb0c8; font-size: 14px; padding: 26px 0; }
+  footer a { color: #fff; }
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <a class="logo" href="#"><img src="img/icon.png" alt="">현장지기</a>
+  <div class="links"><a href="#what">할 수 있는 일</a><a href="#install">설치</a><a href="#start">처음 쓰는 법</a><a href="#news">새 판 소식</a><a href="#ask">묻고 답하기</a></div>
+  <a class="dl" href="#install">무료 내려받기</a>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <div>
+    <span class="tag">건설현장 서류 프로그램 · 무료</span>
+    <h1>현장지기<span>.</span></h1>
+    <div class="sub">현장 서류, 적으면 A4 한 장에 딱.</div>
+    <ul>
+      <li>공사일보 · 기성 · 안전 · 품질 · 공정표를 한 프로그램에서</li>
+      <li>은행 · 발주처 · 감리에 바로 내는 서류 꼴 그대로</li>
+      <li>가입 뒤엔 인터넷 없어도 현장에서 바로 — 자료는 내 PC 에만</li>
+    </ul>
+    <a class="cta js-dl" href="https://github.com/Kwon-BJ/hyunjang-dist/releases/latest">무료 내려받기 <small>윈도우 PC</small></a>
+    <div class="ver js-ver">윈도우 10 · 11</div>
+  </div>
+  <div class="shot"><div class="bar"><i></i><i></i><i></i></div><img src="img/dashboard.png" alt="현장지기 첫 화면 — 할 일 · 기한, 달력, 기성 요약"></div>
+</div></header>
+
+<section id="what"><div class="wrap">
+  <h2>할 수 있는 일</h2>
+  <p class="lead">현장 부장이 실제 현장에서 매일 쓰면서 고쳐 온 프로그램입니다.</p>
+  <div class="grid">
+    <div class="card"><h3><b>공무</b>돈 · 계약</h3><p>공사 개요, 기안 · 품의서, 자재 발주서, 발주처 기성청구, 협력업체 기성청구, 계약 대비 기성</p></div>
+    <div class="card"><h3><b>대관</b>관공서 · 발주처</h3><p>문서 · 공문 접수 · 발송 대장, 설계 변경</p></div>
+    <div class="card"><h3><b>공사</b>매일</h3><p>공사일보(사진 대지 포함), 검측 요청, 공정표, 도면 관리</p></div>
+    <div class="card"><h3><b>안전</b>점검 · 교육</h3><p>일일 안전점검, 위험성평가, 안전교육 일지, 안전관리비 사용내역</p></div>
+    <div class="card"><h3><b>품질</b>시험 · 자재</h3><p>시험 · 검사, 부적합 · 재시공, 자재 · 입출고(수불부)</p></div>
+    <div class="card"><h3><b>도구</b>셈</h3><p>실행내역, 물량산출, 구조계산(비계 · 동바리 · 데크 등), 자료실</p></div>
+  </div>
+</div></section>
+
+<section class="alt"><div class="wrap">
+  <h2>이런 점이 다릅니다</h2>
+  <p class="lead">서류는 은행 · 발주처 · 감리에 실제로 냅니다. 서류 꼴이 안 나면 못 씁니다.</p>
+  <div class="why">
+    <div class="card"><h3>A4 한 장에 딱</h3><p>줄이 늘어도 종이를 넘지 않고, 남으면 빈 줄로 채워 아래가 비지 않습니다. 손으로 적어 넣을 자리가 됩니다.</p></div>
+    <div class="card"><h3>바로 내는 서류 꼴</h3><p>결재란 · 회사 이름 · 사진 대지까지 서류 꼴 그대로. 인쇄도, PDF 저장도 단추 하나.</p></div>
+    <div class="card"><h3>자료는 파일 하나</h3><p>사진까지 내 PC 의 자료 파일 하나에. 백업은 폴더 하나에 늘 최신으로 덮어씁니다.</p></div>
+    <div class="card"><h3>새 판은 저절로</h3><p>고친 판이 나오면 프로그램을 껐다 켤 때 저절로 깔립니다. 다시 받을 일이 없습니다.</p></div>
+  </div>
+  <div class="pics" style="margin-top:22px">
+    <figure><img src="img/overview.png" alt="공무 업무 — 공사 개요 화면" loading="lazy"><figcaption>공무 업무 — 공사 개요. 칸을 누르면 바로 고쳐집니다.</figcaption></figure>
+    <figure><img src="img/dashboard.png" alt="대시보드" loading="lazy"><figcaption>대시보드 — 할 일 · 기한, 달력, 이달 청구 · 입금 · 지급.</figcaption></figure>
+  </div>
+  <p style="font-size:14px;color:var(--sub);margin-top:10px">그림 속 현장 이름은 보기용입니다.</p>
+</div></section>
+
+<section id="install"><div class="wrap two">
+  <div>
+    <h2>내려받기 · 설치</h2>
+    <p class="lead">무료입니다. 윈도우 10 · 11 PC 에서 씁니다.</p>
+    <ol class="steps">
+      <li><b class="t">내려받기</b><span>아래 단추를 누르면 가장 새 판이 받아집니다.</span><br>
+        <a class="cta js-dl" style="font-size:18px;padding:10px 20px;margin-top:8px" href="https://github.com/Kwon-BJ/hyunjang-dist/releases/latest">무료 내려받기</a>
+        <div class="js-ver" style="font-size:14px;color:var(--sub);margin-top:6px"></div></li>
+      <li><b class="t">크롬 경고가 뜨면</b><span>「일반적으로 다운로드되지 않습니다」 → <span class="key">보관</span> 또는 <span class="key">계속</span>. 아직 서명 인증서가 없어서 뜨는 말이고, 고장이 아닙니다.</span></li>
+      <li><b class="t">설치</b><span>받은 파일을 두 번 누릅니다. 윈도우 「PC 보호」 창이 뜨면 <span class="key">추가 정보</span> → <span class="key">실행</span>.</span></li>
+      <li><b class="t">가입 한 번</b><span>처음 켜면 이름 · 전화번호를 적어 가입을 신청합니다(회사 이름 · 직책은 골라서). 승인되면 바로 열립니다 — 보통 하루 안.</span></li>
+    </ol>
+  </div>
+  <figure style="align-self:center"><img src="img/join.png" alt="현장지기 가입 화면" loading="lazy">
+    <figcaption>적어 주신 내용은 가입 승인과 안내 연락에만 씁니다. 공사일보 · 사진 같은 현장 자료는 내 PC 에만 있고 밖으로 나가지 않습니다.</figcaption></figure>
+</div></section>
+
+<section id="start" class="alt"><div class="wrap">
+  <h2>처음 쓰는 법</h2>
+  <p class="lead">10분이면 첫 현장을 만들 수 있습니다.</p>
+  <ol class="steps">
+    <li><b class="t">자료 둘 곳</b><span>「자료를 어디에 둘까요?」 → 기본 자리(내 문서) 그대로 <span class="key">여기에 만들기</span>.</span></li>
+    <li><b class="t">회사 이름</b><span>왼쪽 아래 <span class="key">설정 → 회사</span> 에 회사 이름 · 대표자 · 주소 · 로고. 모든 서류 맨 아래에 찍힙니다.</span></li>
+    <li><b class="t">현장 만들기</b><span>맨 위 현장 칸 → <span class="key">현장 추가 · 수정…</span> → 공사명 · 발주처 · 기간 · 도급액. 나머지는 <span class="key">공무 업무 → 개요</span>.</span></li>
+    <li><b class="t">매일 쓰는 곳</b><span>공사일보는 <span class="key">공사 업무</span>, 안전점검은 <span class="key">안전 업무</span>, 기성은 <span class="key">공무 업무</span>. 인쇄 화면에서 <span class="key">PDF 로 저장</span> · <span class="key">프린터로 인쇄</span>.</span></li>
+    <li><b class="t">백업 · 옮기기</b><span>끌 때 저절로 「현장관리-백업」 폴더에 백업합니다. 다른 PC 로는 <span class="key">설정 → 백업 · 불러오기 → 다른 PC 로 넘기기</span> 파일 하나면 사진까지 갑니다.</span></li>
+  </ol>
+</div></section>
+
+<section id="news" class="news"><div class="wrap">
+  <h2>새 판 소식</h2>
+  <p class="lead">프로그램을 껐다 켜면 저절로 새 판이 깔립니다.</p>
+  <div class="item"><h3>1.27</h3><div class="d">2026-10-08</div><ul><li>가입할 때 회사 이름은 골라서 — 회사 없이 일하시는 분도 가입할 수 있습니다.</li></ul></div>
+  <div class="item"><h3>1.26 — 「현장지기」 로 새 이름</h3><div class="d">2026-10-08</div><ul>
+    <li>프로그램 이름이 현장지기로 바뀌었습니다(예전 「현장관리(PC형)」). 자료는 그대로입니다.</li>
+    <li>처음 켤 때 가입 · 승인이 생겼습니다.</li>
+    <li>왼쪽 메뉴에 대관 업무(문서 · 공문, 설계 변경). 자재 · 입출고는 품질 업무로.</li>
+    <li>백업은 「현장관리-백업」 폴더 하나에 최신으로 덮어씁니다.</li>
+    <li>회사 이름을 안 넣으면 서류에 「회사 이름을 넣어 주세요」 가 찍힙니다.</li></ul></div>
+</div></section>
+
+<section id="ask" class="alt ask"><div class="wrap">
+  <h2>묻고 답하기</h2>
+  <p class="lead">쓰다가 막히는 곳, 이런 서류도 있었으면 하는 것 — 블로그에 남겨 주세요.</p>
+  <a class="btn" href="https://blog.naver.com/hyunjangjigi">현장지기 블로그 (네이버)</a>
+</div></section>
+
+<footer><div class="wrap">현장지기 · 건설현장 서류 프로그램 · 무료 &nbsp;|&nbsp; <a href="https://blog.naver.com/hyunjangjigi">블로그</a>
+  <div style="margin-top:6px">교육자료 일부 그림: 고용노동부 · 안전보건공단(공공누리)</div></div></footer>
+
+<script>
+  // 늘 가장 새 판 — 깃허브에 물어 설치 파일 주소 · 판 · 크기를 단추에 넣는다. 못 물으면 내려받기 화면으로.
+  fetch('https://api.github.com/repos/Kwon-BJ/hyunjang-dist/releases/latest')
+    .then(function (r) { return r.ok ? r.json() : null })
+    .then(function (j) {
+      if (!j) return
+      var a = (j.assets || []).find(function (x) { return /\.exe$/i.test(x.name) })
+      if (!a) return
+      document.querySelectorAll('.js-dl').forEach(function (el) { el.href = a.browser_download_url })
+      var v = String(j.tag_name || '').replace(/^v/, '')
+      var mb = Math.round(a.size / 1048576)
+      var d = String(j.published_at || '').slice(0, 10)
+      document.querySelectorAll('.js-ver').forEach(function (el) { el.textContent = '최신 ' + v + ' · ' + d + ' · ' + mb + 'MB · 윈도우 10 · 11' })
+    })
+    .catch(function () {})
+</script>
+</body>
+</html>
