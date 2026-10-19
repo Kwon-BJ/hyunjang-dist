@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>병무청 문파 · 도깨비의 세계</title>
-<meta name="description" content="도깨비의 세계 병무청 문파 — 공지사항 · 문파 일정 · 규정 · 문파원 안내 · 자유게시판">
+<meta name="description" content="도깨비의 세계 병무청 문파 — 공지사항 · 문파 일정 · 규정 · 문파원 · 자유게시판">
 <meta name="robots" content="noindex">
 <meta property="og:type" content="website">
 <meta property="og:title" content="병무청 문파 · 도깨비의 세계">
-<meta property="og:description" content="공지사항 · 문파 일정 · 규정 · 문파원 안내 · 자유게시판">
+<meta property="og:description" content="공지사항 · 문파 일정 · 규정 · 문파원 · 자유게시판">
 <meta property="og:image" content="https://kwon-bj.github.io/hyunjang-dist/byeongmu/img/share.jpg">
 <meta property="og:url" content="https://kwon-bj.github.io/hyunjang-dist/byeongmu/">
 <meta name="theme-color" content="#0a0806">
@@ -385,7 +385,7 @@ footer .tagline::before, footer .tagline::after { width: clamp(30px, 6vw, 60px);
       <button type="button" class="menu-item" data-go="전체">공지사항</button>
       <button type="button" class="menu-item" data-go="행사">문파 일정</button>
       <button type="button" class="menu-item" data-go="규정">문파 규정</button>
-      <button type="button" class="menu-item" data-go="roster">문파원 안내</button>
+      <button type="button" class="menu-item" data-go="roster">문파원</button>
       <button type="button" class="menu-item" data-go="board">자유게시판</button>
       <button type="button" class="menu-item" data-go="members" id="membersMenu" hidden>가입 승인</button>
     </div>
@@ -436,7 +436,7 @@ footer .tagline::before, footer .tagline::after { width: clamp(30px, 6vw, 60px);
 <main class="wrap">
   <div class="frame">
     <section id="rosterView" hidden>
-      <h2 class="section-label"><svg aria-hidden="true"><use href="#i-knot"/></svg>문파원 안내</h2>
+      <h2 class="section-label"><svg aria-hidden="true"><use href="#i-knot"/></svg>문파원</h2>
       <p class="roster-sum" id="rosterCount"></p>
       <div class="roster-tools" id="rosterTools" hidden><button class="btn ghost" id="rosterEditBtn" type="button">명단 수정</button></div>
       <form class="editor" id="rosterForm" hidden novalidate>
@@ -517,8 +517,8 @@ footer .tagline::before, footer .tagline::after { width: clamp(30px, 6vw, 60px);
         </div>
       </form>
       <div class="editor auth" id="joinDone" hidden>
-        <p class="ok">가입 신청을 받았습니다.</p>
-        <p class="hint">문주가 승인하면 방금 만든 아이디로 로그인할 수 있어요. 카톡방에서 문주에게 알려 주면 더 빨라요.</p>
+        <p class="ok" id="joinOk">가입 신청을 받았습니다.</p>
+        <p class="hint" id="joinHint">문주가 승인하면 방금 만든 아이디로 로그인할 수 있어요. 카톡방에서 문주에게 알려 주면 더 빨라요.</p>
         <div class="actions"><button class="btn" type="button" id="joinDoneBtn">로그인 화면으로</button></div>
       </div>
       <!-- 비밀번호 변경 — "비밀번호 변경도 할수있게해라" (2026-10-19) -->
@@ -624,7 +624,7 @@ footer .tagline::before, footer .tagline::after { width: clamp(30px, 6vw, 60px);
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610190533";
+  const BUILD = "202610190819";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -1223,7 +1223,10 @@ footer .tagline::before, footer .tagline::after { width: clamp(30px, 6vw, 60px);
     if (!f.gameId) return bad("게임 아이디를 적어 주세요.", "jGame");
     const b = $("joinSave"); b.disabled = true; b.textContent = "보내는 중…"; $("joinErr").textContent = "";
     try {
-      await call("signup", f);
+      const res = await call("signup", f);
+      /* 명단에 있는 게임 아이디는 바로 승인된다 (2026-10-19) */
+      $("joinOk").textContent = res && res.approved ? "가입되었습니다." : "가입 신청을 받았습니다.";
+      $("joinHint").textContent = res && res.approved ? "문파원 명단에 있는 게임 아이디라 바로 가입됐어요. 방금 만든 아이디로 로그인하세요." : "문주가 승인하면 방금 만든 아이디로 로그인할 수 있어요. 카톡방에서 문주에게 알려 주면 더 빨라요.";
       $("lId").value = f.loginId;
       ["jId", "jPw", "jName", "jGame"].forEach((id) => { $(id).value = ""; });
       $("joinForm").hidden = true; $("joinDone").hidden = false;
