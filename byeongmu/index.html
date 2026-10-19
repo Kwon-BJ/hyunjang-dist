@@ -305,6 +305,8 @@ footer .tagline::before, footer .tagline::after { width: clamp(30px, 6vw, 60px);
 .name::before { content: ""; width: 6px; height: 6px; background: var(--gold-lo); transform: rotate(45deg); flex: none; }
 .deputies .name { border-color: var(--gold-lo); color: var(--gold-hi); font-weight: 700; background: linear-gradient(180deg, #2a1f0e, #17120b); }
 .deputies .name::before { background: var(--gold); }
+/* 휴대폰에서 제목 옆 숫자가 길어 「문파원 안내」 가 두 줄로 꺾였다 — 숫자는 제목 아래 줄로 */
+.roster-sum { margin: -14px 0 0; color: var(--muted); font-size: 14px; }
 .mk { margin-left: auto; padding-left: 8px; font-weight: 800; font-size: 15px; line-height: 1; flex: none; }
 .mk.o { color: #8fd694; }
 .mk.x { color: #ff8a80; }
@@ -434,7 +436,8 @@ footer .tagline::before, footer .tagline::after { width: clamp(30px, 6vw, 60px);
 <main class="wrap">
   <div class="frame">
     <section id="rosterView" hidden>
-      <h2 class="section-label"><svg aria-hidden="true"><use href="#i-knot"/></svg>문파원 안내 <span class="count" id="rosterCount"></span></h2>
+      <h2 class="section-label"><svg aria-hidden="true"><use href="#i-knot"/></svg>문파원 안내</h2>
+      <p class="roster-sum" id="rosterCount"></p>
       <div class="roster-tools" id="rosterTools" hidden><button class="btn ghost" id="rosterEditBtn" type="button">명단 수정</button></div>
       <form class="editor" id="rosterForm" hidden novalidate>
         <h2>문파원 명단 수정</h2>
