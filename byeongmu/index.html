@@ -624,7 +624,7 @@ footer .tagline::before, footer .tagline::after { width: clamp(30px, 6vw, 60px);
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610190527";
+  const BUILD = "202610190533";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -1059,7 +1059,7 @@ footer .tagline::before, footer .tagline::after { width: clamp(30px, 6vw, 60px);
   let refreshing = false;
   async function refreshPosts() {
     if (refreshing) return; refreshing = true;
-    try { DATA.posts = await call("getPosts"); renderBoard(); } catch (e) { /* 미리보기 등 */ }
+    try { const d = await loadPublic(); DATA.posts = Array.isArray(d.posts) ? d.posts : DATA.posts; DATA.joined = strs(d.joined); renderBoard(); } catch (e) { /* 미리보기 등 */ }
     refreshing = false;
   }
   $("writeBtn").onclick = () => {
@@ -1307,11 +1307,22 @@ footer .tagline::before, footer .tagline::after { width: clamp(30px, 6vw, 60px);
   }
 
   /* ── 처음 열 때 ── */
-  /* 구글 창구가 처음 답하는 데 2~3초 걸린다. 지난번에 본 것을 먼저 보여 주고 뒤에서 새로 받는다. */
+  /* 지난번에 본 것을 먼저 보여 주고 뒤에서 새로 받는다. */
   try { const c = JSON.parse(localStorage.getItem("bmc-data") || "null"); if (c) { takeData(c); loaded = true; } } catch (e) {}
+  /* 누구나 보는 자료는 깃허브의 공개 사본에서 바로 읽는다 — 구글 창구는 한 번에 1.3초 넘게 걸려
+     "홈페이지가 조금 느리다" 하셨다 (2026-10-19). 사본 읽기는 0.3초쯤. 창구가 글이 바뀔 때마다 사본을 고쳐 쓴다.
+     깃허브가 막히면(한 사람이 한 시간에 60번 넘게 열 때 등) 예전처럼 구글 창구로 읽는다. */
+  const PUB = "https://api.github.com/repos/Kwon-BJ/hyunjang-dist/contents/data.json?ref=byeongmu-data";
+  async function loadPublic() {
+    try {
+      const r = await fetch(PUB, { headers: { accept: "application/vnd.github.raw" }, cache: "no-store" });
+      if (r.ok) { const d = await r.json(); if (d && Array.isArray(d.notices)) return d; }
+    } catch (e) { /* 아래 구글 창구로 */ }
+    return call("getData");
+  }
   async function reloadData() {
     try {
-      const d = await call("getData");
+      const d = await loadPublic();
       takeData(d); loaded = true; applySite(); render();
       try { localStorage.setItem("bmc-data", JSON.stringify(d)); } catch (e) {}
     }
