@@ -976,8 +976,10 @@ footer .tagline::before, footer .tagline::after { width: clamp(30px, 6vw, 60px);
     if (openPost === p.id) {
       const body = el("div", "body");
       body.appendChild(el("p", "text", p.body || ""));
+      /* 지우기: 글쓴이 본인 · 관리자 · 문주(잔량) — "자유게시판은 잔량+관리자는 지울수 있게" (2026-10-19) */
       const mine = !!(me && p.memberId && p.memberId === me.id);
-      if (!mine && !canWrite) { /* 남의 글에는 지우기 단추가 없다 */ } else if (delPost === p.id) {
+      const leader = !!(me && DATA.roster.leader && me.gameId === DATA.roster.leader);
+      if (!mine && !canWrite && !leader) { /* 남의 글에는 지우기 단추가 없다 */ } else if (delPost === p.id) {
         const c = el("div", "confirm");
         c.appendChild(el("span", null, "이 글을 삭제할까요?"));
         const yes = btn("btn danger", "삭제", async () => {
