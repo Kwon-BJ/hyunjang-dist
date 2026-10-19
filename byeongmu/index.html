@@ -1091,6 +1091,7 @@ footer .tagline::before, footer .tagline::after { width: clamp(30px, 6vw, 60px);
     applyWriteUi(); render();
   }
   $("adminBtn").onclick = () => {
+    if (canWrite && me && me.admin) { setMe("", null); setStatus("로그아웃했습니다."); return; }
     if (canWrite) { logout(); setStatus("관리자 모드를 끝냈습니다."); return; }
     $("adminForm").hidden = false; $("adminErr").textContent = ""; $("aPw").value = "";
     $("adminForm").scrollIntoView({ block: "center" }); $("aPw").focus();
@@ -1120,7 +1121,12 @@ footer .tagline::before, footer .tagline::after { width: clamp(30px, 6vw, 60px);
       if (token) { localStorage.setItem("bmc-token", token); localStorage.setItem("bmc-me", JSON.stringify(me)); }
       else { localStorage.removeItem("bmc-token"); localStorage.removeItem("bmc-me"); }
     } catch (e) {}
-    renderAcct(); renderBoard();
+    /* 관리자 계정으로 로그인하면 그 열쇠로 관리자 일을 한다 (예전 관리자 암호 대신) */
+    const wasMemberAdmin = canWrite && adminPw.length >= 30;
+    if (me && me.admin) { adminPw = token; canWrite = true; }
+    else if (wasMemberAdmin) { adminPw = ""; canWrite = false; members = []; }
+    applyWriteUi(); render();
+    if (me && me.admin) refreshMembers();
   }
   function renderAcct() {
     const box = $("acct"); box.textContent = "";
@@ -1202,6 +1208,7 @@ footer .tagline::before, footer .tagline::after { width: clamp(30px, 6vw, 60px);
       return b;
     };
     if (pending) a.append(act("거절", "btn ghost", "removeMember", "신청을 거절했습니다."), act("승인", "btn", "approveMember", m.gameId + " 님을 승인했습니다. 문파원 명단에도 넣었습니다."));
+    else if (m.admin) a.appendChild(el("span", "cat", "관리자"));
     else if (m._sure) a.append(btn("btn ghost", "취소", () => { m._sure = false; renderMembers(); }), act("내보내기", "btn danger", "removeMember", "회원에서 뺐습니다."));
     else a.append(btn("btn ghost", "내보내기", () => { m._sure = true; renderMembers(); }));
     r.appendChild(a);
