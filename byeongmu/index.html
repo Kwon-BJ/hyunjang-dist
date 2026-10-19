@@ -1136,7 +1136,8 @@ footer .tagline::before, footer .tagline::after { width: clamp(30px, 6vw, 60px);
     const wasMemberAdmin = canWrite && adminPw.length >= 30;
     if (me && me.admin) { adminPw = token; canWrite = true; }
     else if (wasMemberAdmin) { adminPw = ""; canWrite = false; members = []; }
-    applyWriteUi(); render();
+    /* renderAcct 를 한 번 빠뜨려, 로그인해도 위에 「로그인 · 회원가입」 이 그대로 있고 [비밀번호] 단추가 안 나왔다 (2026-10-19) */
+    renderAcct(); applyWriteUi(); render();
     if (me && me.admin) refreshMembers();
   }
   function renderAcct() {
