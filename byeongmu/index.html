@@ -305,6 +305,10 @@ footer .tagline::before, footer .tagline::after { width: clamp(30px, 6vw, 60px);
 .name::before { content: ""; width: 6px; height: 6px; background: var(--gold-lo); transform: rotate(45deg); flex: none; }
 .deputies .name { border-color: var(--gold-lo); color: var(--gold-hi); font-weight: 700; background: linear-gradient(180deg, #2a1f0e, #17120b); }
 .deputies .name::before { background: var(--gold); }
+.mk { margin-left: auto; padding-left: 8px; font-weight: 800; font-size: 15px; line-height: 1; flex: none; }
+.mk.o { color: #8fd694; }
+.mk.x { color: #ff8a80; }
+.leader .mk { font-size: 22px; margin-left: 4px; }
 
 /* Apps Script 판 */
 .status { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 20; margin: 0; max-width: calc(100% - 32px); background: #1b140b; color: var(--gold-hi); border: 1px solid var(--gold-lo); border-radius: 6px; padding: 10px 16px; font-size: 14px; box-shadow: 0 8px 24px rgba(0,0,0,.6); }
@@ -619,7 +623,7 @@ footer .tagline::before, footer .tagline::after { width: clamp(30px, 6vw, 60px);
   window.__BANNER__ = "img/banner.webp";
   const $ = (id) => document.getElementById(id);
   const strs = (a) => (Array.isArray(a) ? a : []).filter((x) => typeof x === "string" && x.trim());
-  const DATA = { notices: [], posts: [], site: {}, roster: { leader: "", deputies: [], members: [] } };
+  const DATA = { notices: [], posts: [], site: {}, roster: { leader: "", deputies: [], members: [] }, joined: [] };
   let loaded = false;
   function takeData(d) {
     d = d || {};
@@ -628,6 +632,7 @@ footer .tagline::before, footer .tagline::after { width: clamp(30px, 6vw, 60px);
     DATA.site = d.site && typeof d.site === "object" ? d.site : {};
     const r = d.roster && typeof d.roster === "object" ? d.roster : {};
     DATA.roster = { leader: typeof r.leader === "string" ? r.leader : "", deputies: strs(r.deputies), members: strs(r.members) };
+    DATA.joined = strs(d.joined);
   }
   let token = "", me = null, members = [];
   try { token = localStorage.getItem("bmc-token") || ""; me = JSON.parse(localStorage.getItem("bmc-me") || "null"); } catch (e) {}
@@ -934,15 +939,21 @@ footer .tagline::before, footer .tagline::after { width: clamp(30px, 6vw, 60px);
   /* ── 문파원 안내 ── */
   function renderRoster() {
     const r = DATA.roster;
-    $("rosterCount").textContent = "총 " + ((r.leader ? 1 : 0) + r.deputies.length + r.members.length) + "명";
+    /* 홈페이지 가입한 사람 O, 안 한 사람 X — "회원가입 되어잇는사람은 O 안되어잇는 사람은 X로 표시해라" (2026-10-19) */
+    const all = (r.leader ? [r.leader] : []).concat(r.deputies, r.members);
+    const yes = all.filter((n) => DATA.joined.includes(n)).length;
+    $("rosterCount").textContent = "총 " + all.length + "명 · 가입 O " + yes + "명 · 미가입 X " + (all.length - yes) + "명";
+    const mark = (n) => { const j = DATA.joined.includes(n); const s = el("span", "mk " + (j ? "o" : "x"), j ? "O" : "X"); s.title = j ? "홈페이지 가입함" : "아직 가입 안 함"; return s; };
+    const chip = (n) => { const s = el("span", "name", n); s.appendChild(mark(n)); return s; };
     const lv = $("rLeaderView"); lv.textContent = "";
     const im = document.createElement("img"); im.src = emblemSrc(); im.alt = ""; im.referrerPolicy = "no-referrer"; lv.appendChild(im);
     lv.appendChild(el("span", "role", "문주"));
     lv.appendChild(el("span", "nm", r.leader || "미정"));
+    if (r.leader) lv.appendChild(mark(r.leader));
     $("rDepCount").textContent = r.deputies.length + "명";
     $("rMemCount").textContent = r.members.length + "명";
-    $("rDepView").replaceChildren(...r.deputies.map((n) => el("span", "name", n)));
-    $("rMemView").replaceChildren(...r.members.map((n) => el("span", "name", n)));
+    $("rDepView").replaceChildren(...r.deputies.map(chip));
+    $("rMemView").replaceChildren(...r.members.map(chip));
   }
   function splitNames(s) {
     const out = [];
