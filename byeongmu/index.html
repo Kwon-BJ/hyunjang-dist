@@ -1228,8 +1228,14 @@ footer .tagline::before, footer .tagline::after { width: clamp(30px, 6vw, 60px);
   }
 
   /* ── 처음 열 때 ── */
+  /* 구글 창구가 처음 답하는 데 2~3초 걸린다. 지난번에 본 것을 먼저 보여 주고 뒤에서 새로 받는다. */
+  try { const c = JSON.parse(localStorage.getItem("bmc-data") || "null"); if (c) { takeData(c); loaded = true; } } catch (e) {}
   async function reloadData() {
-    try { takeData(await call("getData")); loaded = true; applySite(); render(); }
+    try {
+      const d = await call("getData");
+      takeData(d); loaded = true; applySite(); render();
+      try { localStorage.setItem("bmc-data", JSON.stringify(d)); } catch (e) {}
+    }
     catch (e) { loaded = true; render(); setStatus("공지를 불러오지 못했습니다. 새로고침해 주세요. (" + errMsg(e) + ")", true); }
   }
   applySite();
