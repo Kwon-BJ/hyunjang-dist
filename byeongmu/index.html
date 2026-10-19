@@ -618,13 +618,13 @@ footer .tagline::before, footer .tagline::after { width: clamp(30px, 6vw, 60px);
 </footer>
 <script>
 (function () {
-  /* 화면은 깃허브 페이지에 있고, 글은 구글 시트에 있다 (2026-10-19 옮김).
+  /* 화면은 깃허브 페이지, 자료는 깃허브 비공개 창고(vkdnj5700-tech/-), 그 사이 창구는 시트 없는 Apps Script (2026-10-19 옮김 — "구글시트는 없애라").
      구글 Apps Script 창구(API)에 {fn, args} 를 보내 서버 함수를 부른다.
      예전에는 화면도 Apps Script 가 냈는데, 맨 위에 구글 안내 줄이 붙어 옮겼다. */
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610190500";
+  const BUILD = "202610190527";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -635,7 +635,7 @@ footer .tagline::before, footer .tagline::after { width: clamp(30px, 6vw, 60px);
       }
     } catch (e) { /* 못 보면 그냥 지금 화면으로 */ }
   })();
-  const API = "https://script.google.com/macros/s/AKfycbwVyP4cf_jJorAA3tgmSPmkuV7vtU0ixsK0ofoR-_vEebk-N1fOqtT7D1q39H8hqfrsuQ/exec";
+  const API = "https://script.google.com/macros/s/AKfycbwMS742lODEjgRtpv1ZxhEhxgKkVt4L7Qvl_zCDE1iVqGiG0xxNLUBh-D7NHqNLOz64xQ/exec";
   window.__EMBLEM__ = "img/emblem.webp";
   window.__BANNER__ = "img/banner.webp";
   const $ = (id) => document.getElementById(id);
