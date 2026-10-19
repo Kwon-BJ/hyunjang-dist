@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>병무청 문파 · 도깨비의 세계</title>
+<meta name="description" content="도깨비의 세계 병무청 문파 — 공지사항 · 문파 일정 · 규정 · 문파원 안내 · 자유게시판">
+<meta name="robots" content="noindex">
+<meta property="og:type" content="website">
+<meta property="og:title" content="병무청 문파 · 도깨비의 세계">
+<meta property="og:description" content="공지사항 · 문파 일정 · 규정 · 문파원 안내 · 자유게시판">
+<meta property="og:image" content="https://kwon-bj.github.io/hyunjang-dist/byeongmu/img/share.jpg">
+<meta property="og:url" content="https://kwon-bj.github.io/hyunjang-dist/byeongmu/">
+<meta name="theme-color" content="#0a0806">
+<link rel="icon" href="img/emblem.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+html, body { margin: 0; padding: 0; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+/* Layout: 먹색 바탕 위 금박 테두리 — 도깨비 문양과 붉은 달의 배너, 그 아래 금테 액자 안의 공고 장부. 한 가지 어두운 세계로만 그린다. */
+:root {
+  --bg: #0a0806;
+  --panel: #100d09;
+  --panel-hi: #17120b;
+  --ink: #efe6d2;
+  --muted: #a3967b;
+  --gold: #d6b062;
+  --gold-hi: #f6e2a4;
+  --gold-lo: #7d5d27;
+  --line: #4a3a1f;
+  --red: #c4282c;
+  --red-soft: #3a1213;
+  --blue: #1d3b86;
+  --focus: #f6e2a4;
+  --font-display: "Nanum Myeongjo", "Batang", serif;
+  --font-body: "Noto Sans KR", "Malgun Gothic", sans-serif;
+  color-scheme: dark;
+}
+
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.6; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.gold-text {
+  background: linear-gradient(180deg, #fff1bf 0%, var(--gold) 52%, #8f6a2a 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 2px 0 rgba(0,0,0,.85)) drop-shadow(0 0 14px rgba(214,176,98,.25));
+}
+
+/* 배너 */
+.banner {
+  position: relative; overflow: hidden;
+  border-bottom: 1px solid var(--gold-lo);
+  box-shadow: inset 0 -1px 0 #000, 0 1px 0 rgba(214,176,98,.25);
+  background:
+    linear-gradient(90deg, rgba(10,8,6,.92) 0%, rgba(10,8,6,.55) 45%, rgba(10,8,6,.15) 100%),
+    radial-gradient(circle at 78% 30%, var(--red) 0 13%, transparent 13.5%),
+    radial-gradient(ellipse at 78% 40%, rgba(29,59,134,.55), transparent 55%),
+    radial-gradient(ellipse at 20% 120%, rgba(196,40,44,.25), transparent 60%),
+    linear-gradient(180deg, #0d0b14 0%, #120d0a 100%);
+  background-size: cover; background-position: center;
+}
+.banner.has-img { background-size: cover, cover; }
+.banner-inner {
+  max-width: 1120px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 36px 40px;
+  display: grid; grid-template-columns: auto 1fr; gap: 32px; align-items: center;
+}
+.emblem {
+  width: 168px; height: 168px; border-radius: 50%; position: relative; flex: none;
+  background: conic-gradient(from 200deg, var(--red) 0 50%, var(--blue) 50% 100%);
+  box-shadow: 0 0 0 3px #000, 0 0 0 6px var(--gold), 0 0 0 8px #000, 0 0 0 9px var(--gold-lo), 0 10px 30px rgba(0,0,0,.7);
+  display: grid; place-items: center; overflow: hidden;
+}
+.emblem .glyph { font-family: var(--font-display); font-weight: 800; font-size: 86px; line-height: 1; }
+.emblem img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.titles { display: grid; gap: 12px; justify-items: center; text-align: center; min-width: 0; }
+.titles h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: clamp(44px, 9vw, 96px); line-height: 1.05; letter-spacing: -.01em; text-wrap: balance; }
+.tagline { display: flex; align-items: center; gap: 12px; color: var(--gold-hi); font-family: var(--font-display); font-weight: 700; font-size: clamp(14px, 2.4vw, 19px); letter-spacing: .18em; }
+.tagline::before, .tagline::after { content: ""; width: clamp(24px, 6vw, 64px); height: 1px; background: linear-gradient(90deg, transparent, var(--gold)); }
+.tagline::after { transform: scaleX(-1); }
+.banner-tools { position: absolute; right: max(12px, env(safe-area-inset-right, 0px)); bottom: 10px; display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.tiny { border: 1px solid var(--gold-lo); background: rgba(0,0,0,.6); color: var(--gold-hi); font-size: 12px; padding: 4px 10px; border-radius: 6px; cursor: pointer; }
+.tiny:disabled { opacity: .5; cursor: progress; }
+@media (max-width: 640px) {
+  .banner-inner { grid-template-columns: 1fr; justify-items: center; gap: 22px; padding-block: 28px 52px; }
+  .emblem { width: 120px; height: 120px; }
+  .emblem .glyph { font-size: 60px; }
+}
+
+/* 본문 액자 */
+.wrap {
+  max-width: 1120px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 0;
+}
+.frame {
+  position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
+  padding: 22px clamp(14px, 3vw, 28px) 28px; display: flex; flex-direction: column; gap: 20px;
+  box-shadow: inset 0 0 0 1px #000, inset 0 0 40px rgba(0,0,0,.6);
+}
+.frame::before, .frame::after { content: ""; position: absolute; width: 22px; height: 22px; border: 2px solid var(--gold-lo); pointer-events: none; }
+.frame::before { top: 6px; left: 6px; border-right: 0; border-bottom: 0; }
+.frame::after { bottom: 6px; right: 6px; border-left: 0; border-top: 0; }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; flex: 1 1 auto; }
+.chip {
+  display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--panel-hi); color: var(--ink);
+  border-radius: 999px; padding: 7px 16px; font-size: 14px; font-weight: 500;
+}
+.chip svg { width: 16px; height: 16px; flex: none; }
+.chip .n { color: var(--muted); font-variant-numeric: tabular-nums; }
+.chip:hover { border-color: var(--gold-lo); }
+.chip[aria-pressed="true"] { border-color: var(--gold); background: linear-gradient(180deg, #3a2c14, #1f170b); color: var(--gold-hi); box-shadow: 0 0 0 1px #000, 0 0 12px rgba(214,176,98,.25); }
+.chip[aria-pressed="true"] .n { color: var(--gold-hi); }
+.right-tools { display: flex; gap: 10px; flex: 1 1 320px; justify-content: flex-end; flex-wrap: wrap; }
+.search-box { position: relative; flex: 1 1 220px; max-width: 340px; }
+.search-box svg { position: absolute; left: 12px; top: 50%; translate: 0 -50%; width: 16px; height: 16px; color: var(--muted); }
+.search { width: 100%; box-sizing: border-box; background: #0b0907; border: 1px solid var(--gold-lo); border-radius: 6px; padding: 9px 12px 9px 36px; }
+.search::placeholder { color: var(--muted); }
+@media (max-width: 560px) { .search-box { max-width: none; } }
+
+.btn { display: inline-flex; align-items: center; gap: 8px; border-radius: 6px; padding: 8px 16px; cursor: pointer; font-weight: 700; font-size: 14px; border: 1px solid var(--gold); background: linear-gradient(180deg, #4a3818, #241a0b); color: var(--gold-hi); box-shadow: inset 0 1px 0 rgba(246,226,164,.25), 0 0 0 1px #000; }
+.btn svg { width: 16px; height: 16px; }
+.btn:hover { background: linear-gradient(180deg, #5a4520, #2c200e); }
+.btn.ghost { background: transparent; border-color: var(--line); color: var(--ink); box-shadow: none; }
+.btn.ghost:hover { border-color: var(--gold-lo); }
+.btn.danger { background: var(--red); border-color: var(--red); color: #fff; box-shadow: none; }
+.btn:disabled { opacity: .5; cursor: progress; }
+
+.section-label { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; font-family: var(--font-display); font-weight: 800; font-size: 19px; color: var(--gold-hi); }
+.section-label svg { width: 20px; height: 20px; color: var(--gold); flex: none; }
+.section-label::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, var(--gold-lo), transparent); }
+
+/* 작성 */
+.editor { background: var(--panel-hi); border: 1px solid var(--gold-lo); border-radius: 6px; padding: 18px; display: grid; gap: 14px; }
+.editor h2 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 20px; color: var(--gold-hi); }
+.row { display: grid; grid-template-columns: 140px 1fr; gap: 12px; }
+@media (max-width: 520px) { .row { grid-template-columns: 1fr; } }
+.field { display: grid; gap: 4px; min-width: 0; }
+.field label { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: .04em; }
+.field input:not([type="file"]), .field select, .field textarea { background: #0b0907; border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; width: 100%; box-sizing: border-box; }
+.field textarea { min-height: 160px; resize: vertical; line-height: 1.6; }
+.field input[type="file"] { color: var(--muted); font-size: 13px; }
+.check { display: flex; gap: 8px; align-items: center; font-size: 14px; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; align-items: center; }
+.err { color: #ff8a80; font-size: 13px; margin-right: auto; }
+.thumbs { display: flex; flex-wrap: wrap; gap: 8px; }
+.thumb { position: relative; width: 96px; }
+.thumb img { width: 96px; height: 96px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); display: block; }
+.thumb button { position: absolute; top: 4px; right: 4px; border: 0; border-radius: 4px; background: rgba(0,0,0,.8); color: var(--gold-hi); font-size: 11px; padding: 2px 6px; cursor: pointer; }
+
+/* 목록 */
+.list { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+.notice + .notice { border-top: 1px solid var(--line); }
+.notice.pinned { background: linear-gradient(90deg, rgba(196,40,44,.12), transparent 60%); }
+.head { width: 100%; text-align: left; background: none; border: 0; padding: 14px 16px; cursor: pointer; display: grid; grid-template-columns: 70px 1fr; gap: 4px 14px; align-items: baseline; }
+.head:hover { background: rgba(214,176,98,.05); }
+.no { font-family: var(--font-display); font-weight: 800; font-size: 13px; color: var(--gold); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.title-line { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: baseline; min-width: 0; }
+.cat { font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 3px; border: 1px solid var(--gold-lo); color: var(--gold); white-space: nowrap; }
+.cat.must { border-color: var(--red); color: #ffb3a8; background: var(--red-soft); }
+.title { font-size: 16px; font-weight: 700; min-width: 0; overflow-wrap: anywhere; }
+.photo { font-size: 11px; color: var(--muted); white-space: nowrap; }
+.new { font-size: 10px; font-weight: 700; color: #fff; background: var(--red); padding: 0 5px; border-radius: 3px; letter-spacing: .06em; }
+.meta { grid-column: 2; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+@media (max-width: 480px) { .head { grid-template-columns: 1fr; } .meta { grid-column: 1; } }
+.body { padding: 4px 16px 20px 100px; display: grid; gap: 14px; }
+@media (max-width: 480px) { .body { padding-left: 16px; } }
+.gallery { display: grid; gap: 10px; }
+.gallery img { width: 100%; max-width: 720px; height: auto; border-radius: 4px; border: 1px solid var(--line); display: block; }
+.text { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; max-width: 65ch; }
+.confirm { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-end; font-size: 14px; }
+
+.empty { border: 1px solid var(--line); border-radius: 4px; padding: 44px 20px; text-align: center; display: grid; justify-items: center; gap: 6px; background: radial-gradient(ellipse at center, rgba(214,176,98,.06), transparent 70%); }
+.empty svg { width: 64px; height: 64px; color: var(--gold); margin-bottom: 8px; }
+.empty strong { font-family: var(--font-display); font-weight: 800; font-size: 20px; color: var(--gold-hi); }
+.empty span { color: var(--ink); opacity: .85; }
+.status { font-size: 13px; color: var(--muted); margin: 0; }
+.status.bad { color: #ff8a80; }
+
+footer {
+  margin-top: 36px; border-top: 1px solid var(--gold-lo);
+  background: linear-gradient(180deg, #0f0c08, #070605);
+  padding-block: 26px calc(26px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  text-align: center;
+}
+footer .tagline { justify-content: center; font-size: 15px; }
+@media (prefers-reduced-motion: no-preference) { .body { animation: open .18s ease-out; } @keyframes open { from { opacity: .3; transform: translateY(-3px); } } }
+
+/* 시안 맞춤: 상단 메뉴 */
+.topbar { position: relative; z-index: 3; background: linear-gradient(180deg, #0f0c08, #060504); border-bottom: 1px solid var(--gold-lo); box-shadow: 0 1px 0 #000, 0 2px 0 rgba(214,176,98,.18); }
+.topbar-inner {
+  max-width: 1600px; margin: 0 auto; height: 100px; display: flex; align-items: center; gap: 24px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.brand { display: flex; align-items: center; gap: 20px; background: none; border: 0; padding: 0; cursor: pointer; flex: none; }
+.brand-emblem {
+  width: 136px; height: 136px; margin-block: -14px -30px; border-radius: 50%; position: relative; overflow: hidden;
+  display: grid; place-items: center; flex: none;
+  background: conic-gradient(from 200deg, var(--red) 0 50%, var(--blue) 50% 100%);
+  box-shadow: 0 0 0 3px #000, 0 0 0 6px var(--gold), 0 0 0 8px #000, 0 0 0 9px var(--gold-lo), 0 8px 24px rgba(0,0,0,.8);
+}
+.brand-emblem .glyph { font-family: var(--font-display); font-weight: 800; font-size: 66px; line-height: 1; }
+.brand-emblem img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.brand-text { display: grid; justify-items: center; gap: 2px; }
+.brand-name { font-family: var(--font-display); font-weight: 800; font-size: 42px; line-height: 1.1; letter-spacing: -.01em; }
+.brand-sub { display: flex; align-items: center; gap: 8px; color: var(--ink); font-family: var(--font-display); font-weight: 700; font-size: 15px; letter-spacing: .22em; }
+.brand-sub::before, .brand-sub::after { content: ""; width: 30px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold)); }
+.brand-sub::after { transform: scaleX(-1); }
+.menu { flex: 1; display: flex; justify-content: center; gap: clamp(8px, 3.4vw, 60px); min-width: 0; }
+.menu-item { position: relative; background: none; border: 0; cursor: pointer; color: var(--ink); font-size: 17px; font-weight: 500; padding: 34px 10px; white-space: nowrap; }
+.menu-item:hover { color: var(--gold-hi); }
+.menu-item[aria-current="page"] { color: var(--gold-hi); font-weight: 700; }
+.menu-item[aria-current="page"]::after { content: ""; position: absolute; left: -22px; right: -22px; bottom: 18px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+.menu-item[aria-current="page"]::before { content: ""; position: absolute; left: 50%; bottom: 15px; width: 7px; height: 7px; background: var(--gold-hi); transform: translateX(-50%) rotate(45deg); }
+.home { flex: none; width: 44px; height: 44px; display: grid; place-items: center; background: none; border: 0; color: var(--gold-hi); cursor: pointer; }
+.home svg { width: 22px; height: 22px; }
+@media (max-width: 960px) {
+  .topbar-inner { height: auto; flex-wrap: wrap; gap: 6px 12px; padding-block: 10px 0; }
+  .brand-emblem { width: 60px; height: 60px; margin: 0; }
+  .brand-emblem .glyph { font-size: 30px; }
+  .brand-name { font-size: 26px; }
+  .brand-sub { font-size: 12px; }
+  .home { margin-left: auto; }
+  .menu { order: 3; flex: 1 1 100%; justify-content: center; flex-wrap: wrap; gap: 0 4px; }
+  .menu-item { padding: 10px 12px 16px; font-size: 15px; }
+  .menu-item[aria-current="page"]::after { left: 0; right: 0; bottom: 6px; }
+  .menu-item[aria-current="page"]::before { bottom: 3px; }
+}
+
+/* 시안 맞춤: 배너 */
+.banner { background: radial-gradient(ellipse at 30% 50%, #1a130c 0%, #0a0806 60%), #0a0806; }
+.banner-inner { max-width: 1600px; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 24px; padding-block: 16px 18px; position: relative; z-index: 1; }
+.banner .emblem { width: 270px; height: 270px; justify-self: center; }
+.banner .emblem .glyph { font-size: 140px; }
+.titles h1 { font-size: clamp(48px, 7.4vw, 118px); -webkit-text-stroke: 1px rgba(60,40,10,.6); }
+.tagline { color: var(--ink); letter-spacing: .2em; }
+.tagline::before, .tagline::after { width: clamp(30px, 5vw, 70px); background: linear-gradient(90deg, transparent, var(--gold) 70%, var(--gold-hi)); }
+.banner-art { position: absolute; inset: 0 0 0 auto; width: 52%; pointer-events: none; }
+.banner-art svg { width: 100%; height: 100%; display: block; }
+.banner-art::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, #0a0806 0%, rgba(10,8,6,0) 35%); z-index: 1; }
+.banner-clouds { position: absolute; left: 0; top: 0; bottom: 0; width: 40%; pointer-events: none; color: var(--gold); opacity: .55; }
+.banner-clouds svg { width: 100%; height: 100%; display: block; }
+.banner.has-img .banner-art, .banner.has-img .banner-clouds { display: none; }
+.banner.has-img { background-size: cover; background-position: center 42%; }
+.emblem.has-img, .brand-emblem.has-img { background: #000; box-shadow: 0 10px 30px rgba(0,0,0,.75); }
+.emblem.has-img .glyph, .brand-emblem.has-img .glyph { visibility: hidden; }
+.banner .emblem.has-img { width: 290px; height: 290px; }
+@media (max-width: 640px) { .banner .emblem.has-img { width: 170px; height: 170px; } }
+.titles h1 { filter: drop-shadow(0 3px 0 rgba(0,0,0,.9)) drop-shadow(0 0 22px rgba(0,0,0,.9)); }
+@media (max-width: 640px) {
+  .banner-inner { grid-template-columns: 1fr; }
+  .banner .emblem { width: 150px; height: 150px; }
+  .banner .emblem .glyph { font-size: 76px; }
+  .banner-art { width: 100%; opacity: .45; }
+}
+
+/* 시안 맞춤: 빈 칸과 바닥 */
+.empty { position: relative; border-color: var(--line); padding: 34px 20px 40px; }
+.empty::before, .empty::after { content: ""; position: absolute; width: 18px; height: 18px; border: 2px solid var(--gold-lo); }
+.empty::before { top: 6px; left: 6px; border-right: 0; border-bottom: 0; }
+.empty::after { bottom: 6px; right: 6px; border-left: 0; border-top: 0; }
+.empty svg { width: 120px; height: 84px; }
+.empty strong { font-family: var(--font-body); font-weight: 700; font-size: 22px; }
+footer { position: relative; overflow: hidden; padding-block: 56px calc(30px + env(safe-area-inset-bottom, 0px)); background: #070605; }
+footer .mountains { position: absolute; inset: 0; color: #1a150e; pointer-events: none; }
+footer .mountains svg { width: 100%; height: 100%; display: block; }
+footer .tagline { position: relative; font-size: 20px; letter-spacing: .3em; color: var(--gold-hi); }
+footer .tagline::before, footer .tagline::after { width: clamp(30px, 6vw, 60px); }
+@media (max-width: 480px) {
+  footer .tagline { font-size: 14px; letter-spacing: .12em; white-space: nowrap; gap: 8px; }
+  footer .tagline::before, footer .tagline::after { width: 18px; }
+}
+
+/* 문파원 안내 */
+#noticeView { display: flex; flex-direction: column; gap: 20px; }
+#rosterView { display: flex; flex-direction: column; gap: 24px; }
+#boardView { display: flex; flex-direction: column; gap: 20px; }
+.board-box .btn { margin-top: 12px; text-decoration: none; }
+.section-label .count { font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--muted); }
+.roster-tools { display: flex; justify-content: flex-end; margin-top: -12px; }
+.field textarea.short { min-height: 64px; }
+.rank { display: grid; gap: 10px; }
+.rank-title { margin: 0; display: flex; gap: 8px; align-items: baseline; font-size: 14px; font-weight: 700; color: var(--gold); letter-spacing: .14em; }
+.rank-title span { color: var(--muted); font-weight: 500; letter-spacing: 0; font-variant-numeric: tabular-nums; }
+.leader { justify-self: start; display: flex; align-items: center; gap: 14px; padding: 10px 28px 10px 10px; border: 1px solid var(--gold); border-radius: 999px; background: linear-gradient(180deg, #3a2c14, #1a1209); box-shadow: 0 0 0 1px #000, 0 0 18px rgba(214,176,98,.2); max-width: 100%; }
+.leader img { width: 60px; height: 60px; border-radius: 50%; flex: none; }
+.leader .role { font-size: 12px; font-weight: 700; color: var(--gold-hi); border: 1px solid var(--gold-lo); padding: 1px 8px; border-radius: 3px; flex: none; }
+.leader .nm { font-family: var(--font-display); font-weight: 800; font-size: 28px; line-height: 1.2; overflow-wrap: anywhere; min-width: 0; }
+.names { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(140px, 42%), 1fr)); gap: 8px; }
+.menu { scrollbar-width: none; }
+.menu::-webkit-scrollbar { display: none; }
+.name { display: flex; align-items: center; gap: 9px; border: 1px solid var(--line); background: var(--panel-hi); border-radius: 4px; padding: 9px 12px; font-weight: 500; overflow-wrap: anywhere; min-width: 0; }
+.name::before { content: ""; width: 6px; height: 6px; background: var(--gold-lo); transform: rotate(45deg); flex: none; }
+.deputies .name { border-color: var(--gold-lo); color: var(--gold-hi); font-weight: 700; background: linear-gradient(180deg, #2a1f0e, #17120b); }
+.deputies .name::before { background: var(--gold); }
+
+/* Apps Script 판 */
+.status { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 20; margin: 0; max-width: calc(100% - 32px); background: #1b140b; color: var(--gold-hi); border: 1px solid var(--gold-lo); border-radius: 6px; padding: 10px 16px; font-size: 14px; box-shadow: 0 8px 24px rgba(0,0,0,.6); }
+.status.bad { color: #ffb3a8; border-color: var(--red); }
+.board-intro { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin-top: -8px; }
+.board-intro p { margin: 0; color: var(--muted); font-size: 14px; max-width: 60ch; }
+.pw-field { max-width: 320px; }
+@media (max-width: 480px) { .post .no { display: none; } }
+.post .no { font-family: var(--font-body); font-weight: 500; color: var(--muted); }
+.pw-in { background: #0b0907; border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; min-width: 0; flex: 1 1 180px; max-width: 240px; }
+.admin-link { position: relative; margin-top: 14px; background: none; border: 0; color: var(--muted); font-size: 12px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.admin-link:hover { color: var(--gold-hi); }
+#adminForm { max-width: 420px; }
+
+/* 회원 (2026-10-19) — 가입 신청 → 문주 승인 */
+.acct { flex: none; display: flex; align-items: center; gap: 6px; }
+.acct .who { font-size: 14px; color: var(--gold-hi); font-weight: 700; white-space: nowrap; max-width: 12em; overflow: hidden; text-overflow: ellipsis; }
+.acct .btn { padding: 6px 12px; font-size: 13px; }
+@media (max-width: 960px) { .acct { margin-left: auto; } .acct ~ .home { margin-left: 0; } }
+@media (max-width: 420px) { .acct .who { max-width: 7em; } }
+#authView { display: flex; flex-direction: column; gap: 18px; }
+.auth { max-width: 460px; width: 100%; margin: 0 auto; box-sizing: border-box; }
+.auth .tabs { display: flex; gap: 8px; }
+.auth .tabs .chip { flex: 1; justify-content: center; }
+.auth .hint { margin: 0; color: var(--muted); font-size: 13px; }
+.auth .ok { margin: 0; color: var(--gold-hi); font-weight: 700; }
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.login-need { border: 1px dashed var(--gold-lo); border-radius: 6px; padding: 14px 16px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; color: var(--muted); font-size: 14px; }
+#membersView { display: flex; flex-direction: column; gap: 22px; }
+.mrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 14px; align-items: center; padding: 12px 16px; }
+.mrow + .mrow { border-top: 1px solid var(--line); }
+.mrow .nm { font-weight: 700; overflow-wrap: anywhere; }
+.mrow .nm small { font-weight: 500; color: var(--muted); margin-left: 6px; }
+.mrow .meta { grid-column: 1; }
+.mrow .actions { grid-row: 1 / span 2; grid-column: 2; }
+@media (max-width: 480px) { .mrow { grid-template-columns: 1fr; } .mrow .actions { grid-row: auto; grid-column: 1; justify-content: flex-start; margin-top: 6px; } }
+.badge { display: inline-block; min-width: 18px; padding: 0 6px; margin-left: 4px; border-radius: 999px; background: var(--red); color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; }
+.loading { text-align: center; color: var(--muted); padding: 30px 0; }
+/* 폴드 접은 화면에서 「즐거움」 의 「움」 한 글자가 다음 줄로 떨어졌다 (2026-10-19) */
+@media (max-width: 420px) {
+  .banner .tagline { font-size: 13px; letter-spacing: .06em; gap: 8px; white-space: nowrap; }
+  .banner .tagline::before, .banner .tagline::after { width: 18px; }
+}
+
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-all" viewBox="0 0 24 24"><path fill="currentColor" d="M4 5h3v3H4zm5 0.5h11v2H9zM4 10.5h3v3H4zm5 .5h11v2H9zM4 16h3v3H4zm5 .5h11v2H9z"/></symbol>
+    <symbol id="i-must" viewBox="0 0 24 24"><path fill="currentColor" d="M3 10v4h3l5 4V6L6 10zm10-1.5v7a4 4 0 0 0 0-7zm0-4v2a6 6 0 0 1 0 11v2a8 8 0 0 0 0-15z"/></symbol>
+    <symbol id="i-war" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M4 4l11 11M20 4L9 15M13 17l4 4M11 17l-4 4M15 15l3 3M9 15l-3 3"/></symbol>
+    <symbol id="i-event" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" d="M4 6h16v14H4zM4 10h16M8 3v5M16 3v5"/><path fill="currentColor" d="M7 13h3v3H7zm7 0h3v3h-3z"/></symbol>
+    <symbol id="i-rule" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" d="M6 3h9l4 4v14H6z"/><path fill="none" stroke="currentColor" stroke-width="1.8" d="M9 11h7M9 14.5h7M9 18h4"/></symbol>
+    <symbol id="i-gen" viewBox="0 0 24 24"><path fill="currentColor" d="M12 4C6.5 4 3 7.4 3 11c0 2 1.1 3.8 2.9 5L5 20l4.2-2.3c.9.2 1.8.3 2.8.3 5.5 0 9-3.4 9-7s-3.5-7-9-7zM8 10.2a1.3 1.3 0 1 1 0 2.6 1.3 1.3 0 0 1 0-2.6zm4 0a1.3 1.3 0 1 1 0 2.6 1.3 1.3 0 0 1 0-2.6zm4 0a1.3 1.3 0 1 1 0 2.6 1.3 1.3 0 0 1 0-2.6z"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M15.5 15.5L20 20"/></symbol>
+    <symbol id="i-pen" viewBox="0 0 24 24"><path fill="currentColor" d="M4 17.3V20h2.7L17.6 9.1l-2.7-2.7zM19.7 7a1 1 0 0 0 0-1.4l-1.3-1.3a1 1 0 0 0-1.4 0l-1.1 1.1 2.7 2.7z"/></symbol>
+    <symbol id="i-knot" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.6" d="M12 2l4 4-4 4-4-4zM12 14l4 4-4 4-4-4zM2 12l4-4 4 4-4 4zM14 12l4-4 4 4-4 4z"/></symbol>
+    <symbol id="i-scroll" viewBox="0 0 64 64"><circle cx="32" cy="32" r="22" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="32" cy="32" r="18" fill="none" stroke="currentColor" stroke-width=".8" opacity=".6"/><path fill="none" stroke="currentColor" stroke-width="1.8" d="M24 20h13l4 4v20H24z"/><path fill="none" stroke="currentColor" stroke-width="1.5" d="M28 28h9M28 32h9M28 36h6"/><path fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" d="M4 40c3-4 7-4 9-1 1-4 6-5 8-1M60 40c-3-4-7-4-9-1-1-4-6-5-8-1"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path fill="currentColor" d="M12 3l9 8h-3v9h-5v-6h-2v6H6v-9H3z"/></symbol>
+    <symbol id="i-cloud" viewBox="0 0 120 60"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M10 50c-6-10 2-22 14-18 0-12 16-18 24-8 6-12 26-10 28 4 12-4 24 6 18 18M34 40c0-6 8-8 11-3M62 36c2-7 12-6 12 1M18 50h86"/><path fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" d="M24 32c4-4 10-2 10 3M50 26c3-5 11-4 11 2"/></symbol>
+  </defs>
+</svg>
+
+<nav class="topbar" aria-label="문파 메뉴">
+  <div class="topbar-inner">
+    <button type="button" class="brand" id="brandBtn" aria-label="병무청 문파 처음으로">
+      <span class="brand-emblem" id="brandEmblem"><span class="glyph gold-text">兵</span></span>
+      <span class="brand-text"><span class="brand-name gold-text">병무청 문파</span><span class="brand-sub">도깨비의 세계</span></span>
+    </button>
+    <div class="menu" id="menu">
+      <button type="button" class="menu-item" data-go="전체">공지사항</button>
+      <button type="button" class="menu-item" data-go="행사">문파 일정</button>
+      <button type="button" class="menu-item" data-go="규정">문파 규정</button>
+      <button type="button" class="menu-item" data-go="roster">문파원 안내</button>
+      <button type="button" class="menu-item" data-go="board">자유게시판</button>
+      <button type="button" class="menu-item" data-go="members" id="membersMenu" hidden>회원 관리</button>
+    </div>
+    <div class="acct" id="acct"></div>
+    <button type="button" class="home" id="homeBtn" aria-label="처음으로"><svg aria-hidden="true"><use href="#i-home"/></svg></button>
+  </div>
+</nav>
+
+<header class="banner" id="banner">
+  <div class="banner-clouds" aria-hidden="true"><svg viewBox="0 0 600 300" preserveAspectRatio="xMinYMid slice"><use href="#i-cloud" x="-20" y="20" width="200" height="100"/><use href="#i-cloud" x="330" y="10" width="160" height="80"/><use href="#i-cloud" x="20" y="200" width="220" height="110"/><use href="#i-cloud" x="360" y="210" width="190" height="95"/></svg></div>
+  <div class="banner-art" aria-hidden="true">
+    <svg viewBox="0 0 800 300" preserveAspectRatio="xMaxYMid slice">
+      <defs>
+        <radialGradient id="g-sky" cx="55%" cy="35%" r="70%"><stop offset="0" stop-color="#2a2550"/><stop offset=".6" stop-color="#120f22"/><stop offset="1" stop-color="#0a0806"/></radialGradient>
+        <radialGradient id="g-glow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ff9a3c" stop-opacity=".8"/><stop offset="1" stop-color="#ff9a3c" stop-opacity="0"/></radialGradient>
+      </defs>
+      <rect width="800" height="300" fill="url(#g-sky)"/>
+      <circle cx="420" cy="70" r="120" fill="#b3202a"/>
+      <path d="M300 80c60-40 160-50 240-10" fill="none" stroke="#1d3b86" stroke-width="38" opacity=".75"/>
+      <path d="M0 300V190l60-40 40 30 50-90 40 50 30-40 60 80 40-20 50 60V300z" fill="#14121c"/>
+      <path d="M560 300V140l40-60 30 40 40-70 50 80 40-20 40 50V300z" fill="#17141f"/>
+      <path d="M380 300V200l70-70 40 30 30-50 60 90V300z" fill="#1c1824"/>
+      <ellipse cx="560" cy="190" rx="150" ry="60" fill="url(#g-glow)"/>
+      <g fill="#0c0a10">
+        <path d="M440 210h240v14H440z"/><path d="M420 210l140-34 140 34z"/><path d="M470 176h180v-10H470z"/>
+        <path d="M455 166l105-32 105 32z"/><path d="M505 134h110v-10H505z"/><path d="M495 124l65-22 65 22z"/>
+        <path d="M460 224h200v40H460z"/>
+      </g>
+      <g fill="#ffb347"><rect x="478" y="230" width="10" height="12"/><rect x="505" y="230" width="10" height="12"/><rect x="532" y="230" width="10" height="12"/><rect x="578" y="230" width="10" height="12"/><rect x="605" y="230" width="10" height="12"/><rect x="632" y="230" width="10" height="12"/><rect x="520" y="182" width="8" height="10"/><rect x="556" y="182" width="8" height="10"/><rect x="592" y="182" width="8" height="10"/></g>
+      <path d="M0 300c120-30 240-10 360-30s260 10 440-20V300z" fill="#0a0806" opacity=".9"/>
+    </svg>
+  </div>
+  <div class="banner-inner">
+    <div class="emblem" id="emblem"><span class="glyph gold-text">兵</span></div>
+    <div class="titles">
+      <h1 class="gold-text">병무청 문파</h1>
+      <div class="tagline">도깨비의 세계 · 함께하는 즐거움</div>
+    </div>
+  </div>
+  <div class="banner-tools" id="bannerTools" hidden>
+    <button class="tiny" type="button" id="bannerBtn">배너 사진 바꾸기</button>
+    <button class="tiny" type="button" id="emblemBtn">문양 사진 바꾸기</button>
+    <input type="file" id="bannerFile" accept="image/*" hidden>
+    <input type="file" id="emblemFile" accept="image/*" hidden>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="frame">
+    <section id="rosterView" hidden>
+      <h2 class="section-label"><svg aria-hidden="true"><use href="#i-knot"/></svg>문파원 안내 <span class="count" id="rosterCount"></span></h2>
+      <div class="roster-tools" id="rosterTools" hidden><button class="btn ghost" id="rosterEditBtn" type="button">명단 수정</button></div>
+      <form class="editor" id="rosterForm" hidden novalidate>
+        <h2>문파원 명단 수정</h2>
+        <div class="field"><label for="rLeader">문주</label><input id="rLeader" maxlength="30"></div>
+        <div class="field"><label for="rDeputies">부문주 (쉼표로 구분)</label><textarea id="rDeputies" class="short"></textarea></div>
+        <div class="field"><label for="rMembers">문파원 (쉼표로 구분)</label><textarea id="rMembers"></textarea></div>
+        <div class="actions">
+          <span class="err" id="rosterErr" role="alert"></span>
+          <button class="btn ghost" type="button" id="rosterCancel">취소</button>
+          <button class="btn" type="submit" id="rosterSave">저장</button>
+        </div>
+      </form>
+      <div class="rank">
+        <h3 class="rank-title">문주</h3>
+        <div class="leader" id="rLeaderView"></div>
+      </div>
+      <div class="rank">
+        <h3 class="rank-title">부문주 <span id="rDepCount"></span></h3>
+        <div class="names deputies" id="rDepView"></div>
+      </div>
+      <div class="rank">
+        <h3 class="rank-title">문파원 <span id="rMemCount"></span></h3>
+        <div class="names" id="rMemView"></div>
+      </div>
+    </section>
+
+    <section id="boardView" hidden>
+      <h2 class="section-label"><svg aria-hidden="true"><use href="#i-gen"/></svg>자유게시판 <span class="count" id="postCount"></span></h2>
+      <div class="board-intro" id="boardIntro">
+        <p>문파원이면 누구나 글을 남길 수 있어요. 글쓴이는 게임 아이디로 나오고, 내 글은 로그인한 채로 지울 수 있어요.</p>
+        <button class="btn" id="writeBtn" type="button"><svg aria-hidden="true"><use href="#i-pen"/></svg>글쓰기</button>
+      </div>
+      <div class="login-need" id="loginNeed" hidden>
+        <span>자유게시판 글쓰기는 <b>회원</b>만 할 수 있어요. 가입 신청 → 문주 승인 → 로그인.</span>
+        <button class="btn" type="button" id="loginNeedBtn">로그인 · 회원가입</button>
+      </div>
+      <form class="editor" id="postForm" hidden novalidate>
+        <h2>자유게시판 글쓰기</h2>
+        <div class="field"><label for="pTitle">제목</label><input id="pTitle" maxlength="80"></div>
+        <div class="field"><label for="pBody">내용</label><textarea id="pBody" maxlength="3000"></textarea></div>
+        <div class="actions">
+          <span class="err" id="postErr" role="alert"></span>
+          <button class="btn ghost" type="button" id="postCancel">취소</button>
+          <button class="btn" type="submit" id="postSave">올리기</button>
+        </div>
+      </form>
+      <div class="list" id="postList"></div>
+      <div class="empty" id="postEmpty" hidden></div>
+    </section>
+
+    <section id="authView" hidden>
+      <h2 class="section-label"><svg aria-hidden="true"><use href="#i-knot"/></svg><span id="authLabel">로그인</span></h2>
+      <div class="auth">
+        <div class="tabs" role="group" aria-label="로그인 또는 회원가입">
+          <button type="button" class="chip" id="tabLogin" aria-pressed="true">로그인</button>
+          <button type="button" class="chip" id="tabJoin" aria-pressed="false">회원가입</button>
+        </div>
+      </div>
+      <form class="editor auth" id="loginForm" novalidate>
+        <div class="field"><label for="lId">아이디</label><input id="lId" maxlength="20" autocomplete="username" autocapitalize="off" spellcheck="false"></div>
+        <div class="field"><label for="lPw">비밀번호</label><input id="lPw" type="password" maxlength="50" autocomplete="current-password"></div>
+        <div class="actions">
+          <span class="err" id="loginErr" role="alert"></span>
+          <button class="btn" type="submit" id="loginSave">로그인</button>
+        </div>
+      </form>
+      <form class="editor auth" id="joinForm" hidden novalidate>
+        <p class="hint">네 칸만 적으면 됩니다. 신청하면 <b>문주가 승인</b>한 뒤에 로그인할 수 있어요.</p>
+        <div class="field"><label for="jId">아이디 (영어 소문자·숫자 4~20자)</label><input id="jId" maxlength="20" autocomplete="username" autocapitalize="off" spellcheck="false"></div>
+        <div class="field"><label for="jPw">비밀번호 (4자 이상)</label><input id="jPw" type="password" maxlength="50" autocomplete="new-password"></div>
+        <div class="field"><label for="jName">이름</label><input id="jName" maxlength="20" autocomplete="name"></div>
+        <div class="field"><label for="jGame">게임 아이디 (도깨비의 세계 닉네임)</label><input id="jGame" maxlength="20" autocomplete="off"></div>
+        <input class="hp" id="jWeb" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <div class="actions">
+          <span class="err" id="joinErr" role="alert"></span>
+          <button class="btn" type="submit" id="joinSave">가입 신청</button>
+        </div>
+      </form>
+      <div class="editor auth" id="joinDone" hidden>
+        <p class="ok">가입 신청을 받았습니다.</p>
+        <p class="hint">문주가 승인하면 방금 만든 아이디로 로그인할 수 있어요. 카톡방에서 문주에게 알려 주면 더 빨라요.</p>
+        <div class="actions"><button class="btn" type="button" id="joinDoneBtn">로그인 화면으로</button></div>
+      </div>
+    </section>
+
+    <section id="membersView" hidden>
+      <h2 class="section-label"><svg aria-hidden="true"><use href="#i-must"/></svg>가입 신청 <span class="count" id="pendCount"></span></h2>
+      <div class="list" id="pendList"></div>
+      <h2 class="section-label"><svg aria-hidden="true"><use href="#i-knot"/></svg>회원 <span class="count" id="memCount"></span></h2>
+      <div class="list" id="memList"></div>
+    </section>
+
+    <div id="noticeView">
+    <div class="toolbar">
+      <div class="chips" id="chips" role="group" aria-label="분류"></div>
+      <div class="right-tools">
+        <div class="search-box">
+          <svg aria-hidden="true"><use href="#i-search"/></svg>
+          <input class="search" id="search" type="search" placeholder="제목·내용 검색" aria-label="공고 검색">
+        </div>
+        <button class="btn" id="newBtn" type="button" hidden><svg aria-hidden="true"><use href="#i-pen"/></svg>새 공고 작성</button>
+      </div>
+    </div>
+
+    <form class="editor" id="editor" hidden novalidate>
+      <h2 id="editorTitle">새 공고 작성</h2>
+      <div class="row">
+        <div class="field">
+          <label for="fCat">분류</label>
+          <select id="fCat"></select>
+        </div>
+        <div class="field">
+          <label for="fTitle">제목</label>
+          <input id="fTitle" maxlength="80" placeholder="예: 이번 주 토요일 문파전 집합 시간">
+        </div>
+      </div>
+      <div class="field">
+        <label for="fAuthor">작성자 (게임 닉네임)</label>
+        <input id="fAuthor" maxlength="30" placeholder="예: 문파장 ○○○">
+      </div>
+      <div class="field">
+        <label for="fBody">내용</label>
+        <textarea id="fBody" maxlength="5000" placeholder="공고 내용을 적어 주세요. 줄바꿈은 그대로 보입니다. 사진만 올릴 때는 비워 둬도 됩니다."></textarea>
+      </div>
+      <div class="field" id="imgField" hidden>
+        <label for="fImg">사진 (최대 6장, 한 장에 20MB까지)</label>
+        <input id="fImg" type="file" accept="image/*" multiple>
+        <div class="thumbs" id="thumbs"></div>
+      </div>
+      <label class="check"><input type="checkbox" id="fPin"> 맨 위에 고정</label>
+      <div class="actions">
+        <span class="err" id="formErr" role="alert"></span>
+        <button class="btn ghost" type="button" id="cancelBtn">취소</button>
+        <button class="btn" type="submit" id="saveBtn">게시</button>
+      </div>
+    </form>
+
+    <section id="pinnedSec" hidden>
+      <h2 class="section-label"><svg aria-hidden="true"><use href="#i-must"/></svg>상단 고정</h2>
+      <div class="list" id="pinnedList"></div>
+    </section>
+
+    <section id="mainSec">
+      <h2 class="section-label"><svg aria-hidden="true"><use href="#i-knot"/></svg><span id="mainLabel">전체 공지사항</span></h2>
+      <div class="list" id="mainList"></div>
+      <div class="empty" id="empty" hidden></div>
+    </section>
+    </div>
+
+    <form class="editor" id="adminForm" hidden novalidate>
+      <h2>관리자 로그인</h2>
+      <div class="field pw-field"><label for="aPw">관리자 암호</label><input id="aPw" type="password" autocomplete="current-password"></div>
+      <div class="actions">
+        <span class="err" id="adminErr" role="alert"></span>
+        <button class="btn ghost" type="button" id="adminCancel">취소</button>
+        <button class="btn" type="submit" id="adminSave">들어가기</button>
+      </div>
+    </form>
+    <p class="status" id="status" role="status" hidden></p>
+  </div>
+</main>
+
+<footer>
+  <div class="mountains" aria-hidden="true"><svg viewBox="0 0 1600 160" preserveAspectRatio="none"><path fill="currentColor" d="M0 160V70l80-40 70 50 90-60 80 70 60-30 90 50 70-60 90 70 80-40 90 50 70-30 80 40 90-60 70 50 90-40 80 50 90-60 70 40 80-30 70 40V160z"/><path fill="#0f0c08" d="M0 160V110l120-30 100 40 140-40 120 50 160-40 120 40 140-30 120 40 160-50 120 40 160-20 120 30V160z"/></svg></div>
+  <div class="tagline">병무청 문파 · 도깨비의 세계</div>
+  <button class="admin-link" id="adminBtn" type="button">관리자</button>
+</footer>
+<script>
+(function () {
+  /* 화면은 깃허브 페이지에 있고, 글은 구글 시트에 있다 (2026-10-19 옮김).
+     구글 Apps Script 창구(API)에 {fn, args} 를 보내 서버 함수를 부른다.
+     예전에는 화면도 Apps Script 가 냈는데, 맨 위에 구글 안내 줄이 붙어 옮겼다. */
+  const API = "https://script.google.com/macros/s/AKfycbwVyP4cf_jJorAA3tgmSPmkuV7vtU0ixsK0ofoR-_vEebk-N1fOqtT7D1q39H8hqfrsuQ/exec";
+  window.__EMBLEM__ = "img/emblem.webp";
+  window.__BANNER__ = "img/banner.webp";
+  const $ = (id) => document.getElementById(id);
+  const strs = (a) => (Array.isArray(a) ? a : []).filter((x) => typeof x === "string" && x.trim());
+  const DATA = { notices: [], posts: [], site: {}, roster: { leader: "", deputies: [], members: [] } };
+  let loaded = false;
+  function takeData(d) {
+    d = d || {};
+    DATA.notices = Array.isArray(d.notices) ? d.notices : [];
+    DATA.posts = Array.isArray(d.posts) ? d.posts : [];
+    DATA.site = d.site && typeof d.site === "object" ? d.site : {};
+    const r = d.roster && typeof d.roster === "object" ? d.roster : {};
+    DATA.roster = { leader: typeof r.leader === "string" ? r.leader : "", deputies: strs(r.deputies), members: strs(r.members) };
+  }
+  let token = "", me = null, members = [];
+  try { token = localStorage.getItem("bmc-token") || ""; me = JSON.parse(localStorage.getItem("bmc-me") || "null"); } catch (e) {}
+
+  const CATS = ["필독", "문파전", "행사", "규정", "일반"];
+  const ICONS = { "전체": "i-all", "필독": "i-must", "문파전": "i-war", "행사": "i-event", "규정": "i-rule", "일반": "i-gen" };
+  const MAX_IMGS = 6;
+  let adminPw = "";
+  try { adminPw = sessionStorage.getItem("bmc-admin") || ""; } catch (e) {}
+  let canWrite = !!adminPw;
+  let view = "notice", filter = "전체", query = "";
+  let openId = null, editingId = null, confirmId = null;
+  let openPost = null, delPost = null;
+  let draftImgs = [];
+  let statusTimer = 0;
+
+  try { const a = localStorage.getItem("bmc-author"); if (a) $("fAuthor").value = a; } catch (e) {}
+
+  CATS.forEach((c) => { const o = document.createElement("option"); o.value = c; o.textContent = c; $("fCat").appendChild(o); });
+  $("fCat").value = "일반";
+
+  /* ── 도구 ── */
+  function pad(n) { return String(n).padStart(2, "0"); }
+  function fmt(iso) { const d = new Date(iso); return isNaN(d) ? "" : d.getFullYear() + "." + pad(d.getMonth() + 1) + "." + pad(d.getDate()); }
+  function fmtTime(iso) { const d = new Date(iso); return isNaN(d) ? "" : fmt(iso) + " " + pad(d.getHours()) + ":" + pad(d.getMinutes()); }
+  function isNew(iso) { const t = Date.parse(iso); return !isNaN(t) && Date.now() - t < 3 * 864e5; }
+  function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function btn(cls, text, onClick) { const b = el("button", cls, text); b.type = "button"; b.onclick = onClick; return b; }
+  function icon(id) {
+    const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    s.setAttribute("aria-hidden", "true");
+    const u = document.createElementNS("http://www.w3.org/2000/svg", "use");
+    u.setAttribute("href", "#" + id); s.appendChild(u); return s;
+  }
+  function imgUrl(id) { return "https://drive.google.com/thumbnail?id=" + encodeURIComponent(id) + "&sz=w2000"; }
+  function setStatus(msg, bad) {
+    const s = $("status"); clearTimeout(statusTimer);
+    s.textContent = msg || ""; s.classList.toggle("bad", !!bad); s.hidden = !msg;
+    if (msg) statusTimer = setTimeout(() => { s.hidden = true; }, bad ? 6000 : 3000);
+  }
+  function errMsg(e) {
+    const m = String((e && e.message) || e || "").replace(/^(Exception|Error):\s*/i, "");
+    return m || "저장하지 못했습니다. 잠시 뒤 다시 시도하세요.";
+  }
+  /* 몸통을 text/plain 으로 보내야 브라우저가 미리 묻는 절차(구글 창구는 못 받는다) 없이 바로 간다 */
+  async function call(fn) {
+    const args = Array.prototype.slice.call(arguments, 1);
+    /* 구글 창구가 가끔 한 번씩 답을 못 준다(시험 중 실제로 한 번). 읽기만 하는 것은 한 번 더 보낸다.
+       글쓰기 같은 것은 두 번 올라갈 수 있어 다시 보내지 않는다. */
+    const tries = /^(getData|getPosts|me|listMembers)$/.test(fn) ? 3 : 1;
+    let res;
+    for (let i = 0; i < tries && !res; i++) {
+      try {
+        res = await fetch(API, { method: "POST", headers: { "content-type": "text/plain;charset=utf-8" }, body: JSON.stringify({ fn: fn, args: args }) });
+      } catch (e) {
+        if (i + 1 >= tries) throw new Error("서버에 닿지 못했습니다. 인터넷을 확인하고 다시 해 주세요.");
+        await new Promise((r) => setTimeout(r, 1000 * (i + 1)));
+      }
+    }
+    let j = null;
+    try { j = await res.json(); } catch (e) {}
+    if (!j) throw new Error("서버 답을 읽지 못했습니다. 잠시 뒤 다시 해 주세요.");
+    if (!j.ok) throw new Error(j.error || "저장하지 못했습니다.");
+    return j.data;
+  }
+  async function memberCall(fn) {
+    try { return await call.apply(null, arguments); }
+    catch (e) {
+      if (/로그인이 풀렸/.test(errMsg(e))) setMe("", null);
+      throw e;
+    }
+  }
+  async function adminCall(fn) {
+    try { return await call.apply(null, arguments); }
+    catch (e) {
+      if (/관리자 암호가 맞지/.test(errMsg(e))) logout();
+      throw e;
+    }
+  }
+  /* 사진은 올리기 전에 긴 쪽 1600px JPEG 로 줄인다 */
+  function shrink(file, max) {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        const k = Math.min(1, (max || 1600) / Math.max(img.width, img.height));
+        const c = document.createElement("canvas");
+        c.width = Math.max(1, Math.round(img.width * k)); c.height = Math.max(1, Math.round(img.height * k));
+        const g = c.getContext("2d"); g.fillStyle = "#000"; g.fillRect(0, 0, c.width, c.height);
+        g.drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        resolve({ b64: c.toDataURL("image/jpeg", 0.86).split(",")[1], mime: "image/jpeg", name: String(file.name || "photo").replace(/\.[^.]+$/, "") + ".jpg" });
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("사진을 읽지 못했습니다. 다른 사진으로 해 보세요.")); };
+      img.src = url;
+    });
+  }
+
+  /* ── 메뉴 ── */
+  function renderMenu() {
+    const items = Array.from(document.querySelectorAll(".menu-item"));
+    const key = view === "notice" ? filter : view;
+    const hit = items.find((b) => b.dataset.go === key);
+    items.forEach((b) => { if (b === hit) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+  }
+  function goHome() { view = "notice"; filter = "전체"; query = ""; $("search").value = ""; render(); window.scrollTo(0, 0); }
+  const VIEW_EL = { roster: "rosterView", board: "boardView", members: "membersView", auth: "authView" };
+  function go(v) {
+    view = v; render();
+    if (view === "board") refreshPosts();
+    if (view === "members") refreshMembers();
+    $(VIEW_EL[view] || "mainSec").scrollIntoView({ block: "start" });
+  }
+  document.querySelectorAll(".menu-item").forEach((b) => {
+    b.onclick = () => {
+      const g = b.dataset.go;
+      if (VIEW_EL[g]) go(g);
+      else { filter = g; go("notice"); }
+    };
+  });
+  $("homeBtn").onclick = goHome;
+  $("brandBtn").onclick = goHome;
+
+  /* ── 공지사항 ── */
+  function sorted() { return DATA.notices.slice().sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || ""))); }
+  function matches(n) {
+    if (filter !== "전체" && n.category !== filter) return false;
+    if (!query) return true;
+    const q = query.toLowerCase();
+    return [n.title, n.body, n.author].some((x) => String(x || "").toLowerCase().includes(q));
+  }
+  function renderChips() {
+    const box = $("chips"); box.textContent = "";
+    ["전체"].concat(CATS).forEach((c) => {
+      const b = btn("chip", null, () => { filter = c; render(); });
+      b.setAttribute("aria-pressed", String(filter === c));
+      b.appendChild(icon(ICONS[c]));
+      b.appendChild(el("span", null, c));
+      const count = c === "전체" ? DATA.notices.length : DATA.notices.filter((n) => n.category === c).length;
+      b.appendChild(el("span", "n", String(count)));
+      box.appendChild(b);
+    });
+  }
+  function noticeEl(n) {
+    const art = el("article", "notice" + (n.pinned ? " pinned" : ""));
+    const head = btn("head", null, () => { openId = openId === n.id ? null : n.id; confirmId = null; render(); });
+    head.setAttribute("aria-expanded", String(openId === n.id));
+    head.appendChild(el("span", "no", n.no ? "제" + n.no + "호" : ""));
+    const tl = el("span", "title-line");
+    tl.appendChild(el("span", "cat" + (n.category === "필독" ? " must" : ""), n.category || "일반"));
+    tl.appendChild(el("span", "title", n.title || "(제목 없음)"));
+    const imgs = Array.isArray(n.images) ? n.images.filter((x) => typeof x === "string") : [];
+    if (imgs.length) tl.appendChild(el("span", "photo", "사진 " + imgs.length));
+    if (isNew(n.createdAt)) tl.appendChild(el("span", "new", "NEW"));
+    head.appendChild(tl);
+    let meta = (n.author || "병무청 문주 잔량") + " · " + fmt(n.createdAt);
+    if (n.updatedAt) meta += " (수정 " + fmt(n.updatedAt) + ")";
+    head.appendChild(el("span", "meta", meta));
+    art.appendChild(head);
+
+    if (openId === n.id) {
+      const body = el("div", "body");
+      if (imgs.length) {
+        const g = el("div", "gallery");
+        imgs.forEach((id, i) => {
+          const im = document.createElement("img");
+          im.src = imgUrl(id); im.loading = "lazy"; im.referrerPolicy = "no-referrer";
+          im.alt = (n.title || "공고") + " 사진 " + (i + 1);
+          g.appendChild(im);
+        });
+        body.appendChild(g);
+      }
+      if (n.body) body.appendChild(el("p", "text", n.body));
+      if (canWrite) {
+        if (confirmId === n.id) {
+          const c = el("div", "confirm");
+          c.appendChild(el("span", null, "이 공고를 삭제할까요? 되돌릴 수 없습니다."));
+          const yes = btn("btn danger", "삭제", async () => {
+            yes.disabled = true;
+            try { DATA.notices = await adminCall("deleteNotice", adminPw, n.id); confirmId = null; openId = null; render(); setStatus("삭제했습니다."); }
+            catch (e) { yes.disabled = false; setStatus(errMsg(e), true); }
+          });
+          c.append(btn("btn ghost", "취소", () => { confirmId = null; render(); }), yes);
+          body.appendChild(c);
+        } else {
+          const a = el("div", "actions");
+          const pin = btn("btn ghost", n.pinned ? "고정 해제" : "맨 위에 고정", async () => {
+            pin.disabled = true;
+            try { DATA.notices = await adminCall("setPinned", adminPw, n.id, !n.pinned); render(); }
+            catch (e) { pin.disabled = false; setStatus(errMsg(e), true); }
+          });
+          a.append(pin, btn("btn ghost", "수정", () => openEditor(n)), btn("btn ghost", "삭제", () => { confirmId = n.id; render(); }));
+          body.appendChild(a);
+        }
+      }
+      art.appendChild(body);
+    }
+    return art;
+  }
+  function renderNotices() {
+    renderChips();
+    if (!loaded) {
+      $("pinnedSec").hidden = true; $("empty").hidden = true; $("mainList").hidden = false;
+      $("mainList").replaceChildren(el("div", "loading", "공지를 불러오는 중…"));
+      return;
+    }
+    const shown = sorted().filter(matches);
+    const pinned = shown.filter((n) => n.pinned);
+    const rest = shown.filter((n) => !n.pinned);
+    $("pinnedSec").hidden = pinned.length === 0;
+    $("pinnedList").replaceChildren(...pinned.map(noticeEl));
+    $("mainList").replaceChildren(...rest.map(noticeEl));
+    $("mainLabel").textContent = filter === "전체" ? "전체 공지사항" : filter + " 공지사항";
+    $("mainList").hidden = rest.length === 0;
+    const empty = $("empty"); empty.textContent = "";
+    if (rest.length === 0) {
+      empty.appendChild(icon("i-scroll"));
+      if (DATA.notices.length === 0) {
+        empty.appendChild(el("strong", null, "아직 등록된 공고가 없습니다"));
+        empty.appendChild(el("span", null, canWrite ? "새 공고 작성을 눌러 첫 공고를 올려 주세요." : "문주가 공고를 올리면 여기에 나타납니다."));
+      } else if (pinned.length) {
+        empty.appendChild(el("strong", null, "고정 공고 외에 다른 공고가 없습니다"));
+        empty.appendChild(el("span", null, "새 공고가 올라오면 여기에 쌓입니다."));
+      } else {
+        empty.appendChild(el("strong", null, "조건에 맞는 공고가 없습니다"));
+        empty.appendChild(el("span", null, "분류나 검색어를 바꿔 보세요."));
+      }
+      empty.hidden = false;
+    } else empty.hidden = true;
+  }
+
+  function openEditor(n) {
+    editingId = n ? n.id : null;
+    $("editorTitle").textContent = n ? "공고 수정" : "새 공고 작성";
+    $("saveBtn").textContent = n ? "수정 저장" : "게시";
+    $("fCat").value = n ? (n.category || "일반") : "일반";
+    $("fTitle").value = n ? (n.title || "") : "";
+    if (n) $("fAuthor").value = n.author || "";
+    $("fBody").value = n ? (n.body || "") : "";
+    $("fPin").checked = n ? !!n.pinned : false;
+    draftImgs.forEach((d) => { if (d.file) URL.revokeObjectURL(d.url); });
+    draftImgs = (n && Array.isArray(n.images) ? n.images : []).map((id) => ({ id: id, url: imgUrl(id) }));
+    $("fImg").value = ""; renderThumbs();
+    $("formErr").textContent = "";
+    $("editor").hidden = false; $("newBtn").hidden = true;
+    $("fTitle").focus();
+    $("editor").scrollIntoView({ block: "nearest" });
+  }
+  function closeEditor() { editingId = null; $("editor").hidden = true; $("newBtn").hidden = !canWrite; }
+  function renderThumbs() {
+    const box = $("thumbs"); box.textContent = "";
+    draftImgs.forEach((d, i) => {
+      const t = el("div", "thumb");
+      const im = document.createElement("img"); im.src = d.url; im.alt = "첨부 사진 " + (i + 1); im.referrerPolicy = "no-referrer";
+      t.append(im, btn(null, "빼기", () => { if (d.file) URL.revokeObjectURL(d.url); draftImgs.splice(i, 1); renderThumbs(); }));
+      box.appendChild(t);
+    });
+  }
+  $("fImg").addEventListener("change", (e) => {
+    $("formErr").textContent = "";
+    Array.from(e.target.files || []).forEach((f) => {
+      if (!f.type.startsWith("image/")) { $("formErr").textContent = "사진 파일만 올릴 수 있습니다."; return; }
+      if (draftImgs.length >= MAX_IMGS) { $("formErr").textContent = "사진은 한 공고에 6장까지 올릴 수 있습니다."; return; }
+      draftImgs.push({ file: f, url: URL.createObjectURL(f) });
+    });
+    e.target.value = ""; renderThumbs();
+  });
+  $("newBtn").onclick = () => openEditor(null);
+  $("cancelBtn").onclick = closeEditor;
+  $("search").addEventListener("input", (e) => { query = e.target.value.trim(); render(); });
+  $("editor").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const data = {
+      id: editingId || "",
+      category: $("fCat").value,
+      title: $("fTitle").value.trim(),
+      author: $("fAuthor").value.trim(),
+      body: $("fBody").value.trim(),
+      pinned: $("fPin").checked,
+    };
+    if (!data.title) { $("formErr").textContent = "제목을 적어 주세요."; $("fTitle").focus(); return; }
+    if (!data.body && !draftImgs.length) { $("formErr").textContent = "내용을 적거나 사진을 올려 주세요."; $("fBody").focus(); return; }
+    try { if (data.author) localStorage.setItem("bmc-author", data.author); } catch (err) {}
+    const b = $("saveBtn"); b.disabled = true; $("formErr").textContent = "";
+    try {
+      for (let i = 0; i < draftImgs.length; i++) {
+        const d = draftImgs[i];
+        if (d.id) continue;
+        b.textContent = "사진 올리는 중… (" + (i + 1) + "/" + draftImgs.length + ")";
+        const s = await shrink(d.file, 1600);
+        d.id = await adminCall("uploadImage", adminPw, s.b64, s.mime, s.name);
+      }
+      data.images = draftImgs.map((d) => d.id);
+      b.textContent = "저장하는 중…";
+      const wasNew = !editingId;
+      DATA.notices = await adminCall("saveNotice", adminPw, data);
+      if (wasNew) { const latest = sorted()[0]; openId = latest ? latest.id : null; } else openId = editingId;
+      closeEditor(); render(); setStatus("저장했습니다.");
+    } catch (err) {
+      $("formErr").textContent = errMsg(err);
+    } finally { b.disabled = false; b.textContent = editingId ? "수정 저장" : "게시"; }
+  });
+
+  /* ── 문파원 안내 ── */
+  function renderRoster() {
+    const r = DATA.roster;
+    $("rosterCount").textContent = "총 " + ((r.leader ? 1 : 0) + r.deputies.length + r.members.length) + "명";
+    const lv = $("rLeaderView"); lv.textContent = "";
+    const im = document.createElement("img"); im.src = emblemSrc(); im.alt = ""; im.referrerPolicy = "no-referrer"; lv.appendChild(im);
+    lv.appendChild(el("span", "role", "문주"));
+    lv.appendChild(el("span", "nm", r.leader || "미정"));
+    $("rDepCount").textContent = r.deputies.length + "명";
+    $("rMemCount").textContent = r.members.length + "명";
+    $("rDepView").replaceChildren(...r.deputies.map((n) => el("span", "name", n)));
+    $("rMemView").replaceChildren(...r.members.map((n) => el("span", "name", n)));
+  }
+  function splitNames(s) {
+    const out = [];
+    s.split(/[,，、\n]/).map((x) => x.trim()).filter(Boolean).forEach((x) => { if (!out.includes(x)) out.push(x); });
+    return out;
+  }
+  $("rosterEditBtn").onclick = () => {
+    $("rLeader").value = DATA.roster.leader;
+    $("rDeputies").value = DATA.roster.deputies.join(", ");
+    $("rMembers").value = DATA.roster.members.join(", ");
+    $("rosterErr").textContent = "";
+    $("rosterForm").hidden = false; $("rosterTools").hidden = true;
+    $("rLeader").focus();
+  };
+  $("rosterCancel").onclick = () => { $("rosterForm").hidden = true; $("rosterTools").hidden = !canWrite; };
+  $("rosterForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const roster = { leader: $("rLeader").value.trim(), deputies: splitNames($("rDeputies").value), members: splitNames($("rMembers").value) };
+    if (!roster.leader) { $("rosterErr").textContent = "문주 이름을 적어 주세요."; return; }
+    const b = $("rosterSave"); b.disabled = true;
+    try {
+      const saved = await adminCall("saveRoster", adminPw, roster);
+      DATA.roster = { leader: saved.leader || "", deputies: strs(saved.deputies), members: strs(saved.members) };
+      $("rosterForm").hidden = true; $("rosterTools").hidden = !canWrite;
+      render(); setStatus("명단을 저장했습니다.");
+    } catch (err) { $("rosterErr").textContent = errMsg(err); }
+    b.disabled = false;
+  });
+
+  /* ── 자유게시판 (익명) ── */
+  function postEl(p, idx) {
+    const art = el("article", "notice post");
+    const head = btn("head", null, () => { openPost = openPost === p.id ? null : p.id; delPost = null; renderBoard(); });
+    head.setAttribute("aria-expanded", String(openPost === p.id));
+    head.appendChild(el("span", "no", String(DATA.posts.length - idx)));
+    const tl = el("span", "title-line");
+    tl.appendChild(el("span", "title", p.title || "(제목 없음)"));
+    if (isNew(p.createdAt)) tl.appendChild(el("span", "new", "NEW"));
+    head.appendChild(tl);
+    head.appendChild(el("span", "meta", (p.nick || "익명") + " · " + fmtTime(p.createdAt)));
+    art.appendChild(head);
+    if (openPost === p.id) {
+      const body = el("div", "body");
+      body.appendChild(el("p", "text", p.body || ""));
+      const mine = !!(me && p.memberId && p.memberId === me.id);
+      if (!mine && !canWrite) { /* 남의 글에는 지우기 단추가 없다 */ } else if (delPost === p.id) {
+        const c = el("div", "confirm");
+        c.appendChild(el("span", null, "이 글을 삭제할까요?"));
+        const yes = btn("btn danger", "삭제", async () => {
+          yes.disabled = true;
+          try {
+            DATA.posts = await memberCall("deletePost", token, p.id, canWrite ? adminPw : "");
+            delPost = null; openPost = null; renderBoard(); setStatus("삭제했습니다.");
+          } catch (err) { yes.disabled = false; setStatus(errMsg(err), true); }
+        });
+        c.append(btn("btn ghost", "취소", () => { delPost = null; renderBoard(); }), yes);
+        body.appendChild(c);
+      } else {
+        const a = el("div", "actions");
+        a.appendChild(btn("btn ghost", "삭제", () => { delPost = p.id; renderBoard(); }));
+        body.appendChild(a);
+      }
+      art.appendChild(body);
+    }
+    return art;
+  }
+  function renderBoard() {
+    $("postCount").textContent = DATA.posts.length ? "글 " + DATA.posts.length + "개" : "";
+    $("postList").replaceChildren(...DATA.posts.map(postEl));
+    $("postList").hidden = DATA.posts.length === 0;
+    $("boardIntro").hidden = !me;
+    $("loginNeed").hidden = !!me;
+    if (!me) $("postForm").hidden = true;
+    $("writeBtn").hidden = !me || !$("postForm").hidden;
+    const empty = $("postEmpty"); empty.textContent = "";
+    if (!DATA.posts.length && loaded) {
+      empty.appendChild(icon("i-scroll"));
+      empty.appendChild(el("strong", null, "아직 글이 없습니다"));
+      empty.appendChild(el("span", null, me ? "글쓰기를 눌러 첫 글을 남겨 보세요." : "로그인하면 첫 글을 남길 수 있어요."));
+      empty.hidden = false;
+    } else empty.hidden = true;
+  }
+  $("loginNeedBtn").onclick = () => openAuth("login");
+  let refreshing = false;
+  async function refreshPosts() {
+    if (refreshing) return; refreshing = true;
+    try { DATA.posts = await call("getPosts"); renderBoard(); } catch (e) { /* 미리보기 등 */ }
+    refreshing = false;
+  }
+  $("writeBtn").onclick = () => {
+    $("postForm").hidden = false; $("writeBtn").hidden = true; $("postErr").textContent = "";
+    $("pTitle").focus();
+  };
+  $("postCancel").onclick = () => { $("postForm").hidden = true; $("writeBtn").hidden = false; };
+  $("postForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const post = { title: $("pTitle").value.trim(), body: $("pBody").value.trim() };
+    if (!post.title) { $("postErr").textContent = "제목을 적어 주세요."; $("pTitle").focus(); return; }
+    if (!post.body) { $("postErr").textContent = "내용을 적어 주세요."; $("pBody").focus(); return; }
+    const b = $("postSave"); b.disabled = true; b.textContent = "올리는 중…"; $("postErr").textContent = "";
+    try {
+      DATA.posts = await memberCall("createPost", token, post);
+      $("pTitle").value = ""; $("pBody").value = "";
+      $("postForm").hidden = true; $("writeBtn").hidden = false;
+      openPost = DATA.posts[0] ? DATA.posts[0].id : null;
+      renderBoard(); setStatus("글을 올렸습니다.");
+    } catch (err) { $("postErr").textContent = errMsg(err); }
+    b.disabled = false; b.textContent = "올리기";
+  });
+
+  /* ── 배너·문양 ── */
+  function emblemSrc() { return DATA.site.emblemId ? imgUrl(DATA.site.emblemId) : window.__EMBLEM__; }
+  function applySite() {
+    const b = $("banner");
+    const banner = DATA.site.bannerId ? imgUrl(DATA.site.bannerId) : window.__BANNER__;
+    b.classList.add("has-img");
+    b.style.backgroundImage = "radial-gradient(ellipse 38% 70% at 50% 50%, rgba(8,6,4,.72), rgba(8,6,4,0) 100%), linear-gradient(90deg, rgba(8,6,4,.55) 0%, rgba(8,6,4,0) 30%, rgba(8,6,4,0) 80%, rgba(8,6,4,.35) 100%), linear-gradient(0deg, rgba(8,6,4,.6), rgba(8,6,4,0) 35%), url(\"" + banner + "\")";
+    ["emblem", "brandEmblem"].forEach((id) => {
+      const box = $(id);
+      let im = box.querySelector("img");
+      if (!im) { im = document.createElement("img"); im.alt = "병무청 문파 문양"; im.referrerPolicy = "no-referrer"; box.appendChild(im); }
+      im.src = emblemSrc();
+      box.classList.add("has-img");
+    });
+  }
+  async function changeSiteImage(file, key, b) {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { setStatus("사진 파일만 쓸 수 있습니다.", true); return; }
+    b.disabled = true; const label = b.textContent; b.textContent = "올리는 중…";
+    try {
+      const s = await shrink(file, key === "bannerId" ? 2000 : 800);
+      DATA.site = await adminCall("setSiteImage", adminPw, key, s.b64, s.mime, s.name);
+      applySite(); renderRoster(); setStatus("사진을 바꿨습니다.");
+    } catch (e) { setStatus(errMsg(e), true); }
+    b.disabled = false; b.textContent = label;
+  }
+  $("bannerBtn").onclick = () => $("bannerFile").click();
+  $("emblemBtn").onclick = () => $("emblemFile").click();
+  $("bannerFile").addEventListener("change", (e) => { changeSiteImage(e.target.files[0], "bannerId", $("bannerBtn")); e.target.value = ""; });
+  $("emblemFile").addEventListener("change", (e) => { changeSiteImage(e.target.files[0], "emblemId", $("emblemBtn")); e.target.value = ""; });
+
+  /* ── 관리자 ── */
+  function applyWriteUi() {
+    $("newBtn").hidden = !canWrite || !$("editor").hidden;
+    $("bannerTools").hidden = !canWrite;
+    $("imgField").hidden = !canWrite;
+    $("rosterTools").hidden = !canWrite || !$("rosterForm").hidden;
+    $("membersMenu").hidden = !canWrite;
+    if (!canWrite) { $("editor").hidden = true; $("rosterForm").hidden = true; if (view === "members") view = "notice"; }
+    $("adminBtn").textContent = canWrite ? "관리자 나가기" : "관리자";
+  }
+  function logout() {
+    adminPw = ""; canWrite = false; members = [];
+    try { sessionStorage.removeItem("bmc-admin"); } catch (e) {}
+    applyWriteUi(); render();
+  }
+  $("adminBtn").onclick = () => {
+    if (canWrite) { logout(); setStatus("관리자 모드를 끝냈습니다."); return; }
+    $("adminForm").hidden = false; $("adminErr").textContent = ""; $("aPw").value = "";
+    $("adminForm").scrollIntoView({ block: "center" }); $("aPw").focus();
+  };
+  $("adminCancel").onclick = () => { $("adminForm").hidden = true; };
+  $("adminForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const pw = $("aPw").value;
+    if (!pw) { $("adminErr").textContent = "암호를 적어 주세요."; return; }
+    const b = $("adminSave"); b.disabled = true;
+    try {
+      await call("adminLogin", pw);
+      adminPw = pw; canWrite = true;
+      try { sessionStorage.setItem("bmc-admin", pw); } catch (err) {}
+      $("adminForm").hidden = true; $("aPw").value = "";
+      applyWriteUi(); render(); window.scrollTo(0, 0);
+      setStatus("관리자 모드입니다. 공지 작성·명단 수정·사진 바꾸기·회원 승인을 할 수 있어요.");
+      refreshMembers();
+    } catch (err) { $("adminErr").textContent = errMsg(err); }
+    b.disabled = false;
+  });
+
+  /* ── 회원: 로그인 · 가입 신청 ── */
+  function setMe(t, m) {
+    token = t || ""; me = m || null;
+    try {
+      if (token) { localStorage.setItem("bmc-token", token); localStorage.setItem("bmc-me", JSON.stringify(me)); }
+      else { localStorage.removeItem("bmc-token"); localStorage.removeItem("bmc-me"); }
+    } catch (e) {}
+    renderAcct(); renderBoard();
+  }
+  function renderAcct() {
+    const box = $("acct"); box.textContent = "";
+    if (me) {
+      box.appendChild(el("span", "who", me.gameId + " 님"));
+      box.appendChild(btn("btn ghost", "로그아웃", () => { setMe("", null); setStatus("로그아웃했습니다."); }));
+    } else {
+      box.appendChild(btn("btn ghost", "로그인", () => openAuth("login")));
+      box.appendChild(btn("btn", "회원가입", () => openAuth("join")));
+    }
+  }
+  function openAuth(tab) {
+    showTab(tab);
+    go("auth");
+    setTimeout(() => $(tab === "join" ? "jId" : "lId").focus(), 0);
+  }
+  function showTab(tab) {
+    $("tabLogin").setAttribute("aria-pressed", String(tab === "login"));
+    $("tabJoin").setAttribute("aria-pressed", String(tab === "join"));
+    $("authLabel").textContent = tab === "join" ? "회원가입" : "로그인";
+    $("loginForm").hidden = tab !== "login";
+    $("joinForm").hidden = tab !== "join";
+    $("joinDone").hidden = true;
+    $("loginErr").textContent = ""; $("joinErr").textContent = "";
+  }
+  $("tabLogin").onclick = () => showTab("login");
+  $("tabJoin").onclick = () => showTab("join");
+  $("joinDoneBtn").onclick = () => { showTab("login"); $("lPw").focus(); };
+  $("loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = $("lId").value.trim(), pw = $("lPw").value;
+    if (!id) { $("loginErr").textContent = "아이디를 적어 주세요."; $("lId").focus(); return; }
+    if (!pw) { $("loginErr").textContent = "비밀번호를 적어 주세요."; $("lPw").focus(); return; }
+    const b = $("loginSave"); b.disabled = true; $("loginErr").textContent = "";
+    try {
+      const r = await call("memberLogin", id, pw);
+      $("lPw").value = "";
+      setMe(r.token, r.member);
+      go("board"); setStatus(r.member.gameId + " 님, 어서 오세요.");
+    } catch (err) { $("loginErr").textContent = errMsg(err); }
+    b.disabled = false;
+  });
+  $("joinForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const f = { loginId: $("jId").value.trim().toLowerCase(), pw: $("jPw").value, name: $("jName").value.trim(), gameId: $("jGame").value.trim(), website: $("jWeb").value };
+    const bad = (msg, id) => { $("joinErr").textContent = msg; $(id).focus(); };
+    if (!/^[a-z0-9_]{4,20}$/.test(f.loginId)) return bad("아이디는 영어 소문자·숫자 4~20자로 적어 주세요.", "jId");
+    if (f.pw.length < 4) return bad("비밀번호를 4자 이상 적어 주세요.", "jPw");
+    if (!f.name) return bad("이름을 적어 주세요.", "jName");
+    if (!f.gameId) return bad("게임 아이디를 적어 주세요.", "jGame");
+    const b = $("joinSave"); b.disabled = true; b.textContent = "보내는 중…"; $("joinErr").textContent = "";
+    try {
+      await call("signup", f);
+      $("lId").value = f.loginId;
+      ["jId", "jPw", "jName", "jGame"].forEach((id) => { $(id).value = ""; });
+      $("joinForm").hidden = true; $("joinDone").hidden = false;
+    } catch (err) { $("joinErr").textContent = errMsg(err); }
+    b.disabled = false; b.textContent = "가입 신청";
+  });
+
+  /* ── 문주: 회원 관리 ── */
+  async function refreshMembers() {
+    if (!canWrite) return;
+    try { members = await adminCall("listMembers", adminPw); renderMembers(); } catch (e) { setStatus(errMsg(e), true); }
+  }
+  function memberRow(m, pending) {
+    const r = el("div", "mrow");
+    const nm = el("div", "nm", m.gameId);
+    nm.appendChild(el("small", null, m.name + " · 아이디 " + m.loginId));
+    r.appendChild(nm);
+    r.appendChild(el("div", "meta", pending ? "신청 " + fmtTime(m.createdAt) : "승인 " + fmt(m.approvedAt)));
+    const a = el("div", "actions");
+    const act = (label, cls, fn, done) => {
+      const b = btn(cls, label, async () => {
+        b.disabled = true;
+        try { members = await adminCall(fn, adminPw, m.id); renderMembers(); setStatus(done); if (fn === "approveMember") reloadData(); }
+        catch (e) { b.disabled = false; setStatus(errMsg(e), true); }
+      });
+      return b;
+    };
+    if (pending) a.append(act("거절", "btn ghost", "removeMember", "신청을 거절했습니다."), act("승인", "btn", "approveMember", m.gameId + " 님을 승인했습니다. 문파원 명단에도 넣었습니다."));
+    else if (m._sure) a.append(btn("btn ghost", "취소", () => { m._sure = false; renderMembers(); }), act("내보내기", "btn danger", "removeMember", "회원에서 뺐습니다."));
+    else a.append(btn("btn ghost", "내보내기", () => { m._sure = true; renderMembers(); }));
+    r.appendChild(a);
+    return r;
+  }
+  function renderMembers() {
+    const pend = members.filter((m) => m.status !== "승인");
+    const ok = members.filter((m) => m.status === "승인");
+    $("pendCount").textContent = pend.length + "명";
+    $("memCount").textContent = ok.length + "명";
+    const empty = (t) => { const d = el("div", "mrow"); d.appendChild(el("div", "meta", t)); return d; };
+    $("pendList").replaceChildren(...(pend.length ? pend.map((m) => memberRow(m, true)) : [empty("기다리는 신청이 없습니다.")]));
+    $("memList").replaceChildren(...(ok.length ? ok.map((m) => memberRow(m, false)) : [empty("아직 승인한 회원이 없습니다.")]));
+    const mm = $("membersMenu"); mm.textContent = "회원 관리";
+    if (pend.length) mm.appendChild(el("span", "badge", String(pend.length)));
+  }
+
+  /* ── 그리기 ── */
+  function render() {
+    renderMenu();
+    Object.keys(VIEW_EL).forEach((v) => { $(VIEW_EL[v]).hidden = view !== v; });
+    $("noticeView").hidden = view !== "notice";
+    renderNotices();
+    renderRoster();
+    renderBoard();
+  }
+
+  /* ── 처음 열 때 ── */
+  async function reloadData() {
+    try { takeData(await call("getData")); loaded = true; applySite(); render(); }
+    catch (e) { loaded = true; render(); setStatus("공지를 불러오지 못했습니다. 새로고침해 주세요. (" + errMsg(e) + ")", true); }
+  }
+  applySite();
+  applyWriteUi();
+  renderAcct();
+  render();
+  reloadData();
+  if (token) call("me", token).then((m) => setMe(token, m)).catch((e) => { if (/로그인이 풀렸/.test(errMsg(e))) setMe("", null); });
+  if (canWrite) refreshMembers();
+})();
+
+</script>
+</body>
+</html>
