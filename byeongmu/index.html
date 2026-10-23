@@ -674,7 +674,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610230159";
+  const BUILD = "202610230201";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -701,6 +701,8 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     DATA.roster = { leader: typeof r.leader === "string" ? r.leader : "", deputies: strs(r.deputies), members: strs(r.members) };
     DATA.joined = strs(d.joined);
     DATA.avatars = d.avatars && typeof d.avatars === "object" ? d.avatars : {};
+    /* 방금 바꾼 내 사진이, 그 전에 출발한 자료 받기에 덮이지 않게 (로그인 직후 사진을 바꾸면 있었다) */
+    if (me && me.avatar) DATA.avatars[me.gameId] = me.avatar;
   }
   let token = "", me = null, members = [], snapKey = "";
   try { token = localStorage.getItem("bmc-token") || ""; me = JSON.parse(localStorage.getItem("bmc-me") || "null"); snapKey = localStorage.getItem("bmc-key") || ""; } catch (e) {}
