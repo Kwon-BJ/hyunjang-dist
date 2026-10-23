@@ -365,6 +365,16 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
 .acct .av { width: 26px; height: 26px; }
 /* 사진 끌어다 놓기 — "첨부사진 사진을 드래그해서 넣을수 있게해라" (2026-10-23) */
 .drop { border: 1px dashed var(--gold-lo); border-radius: 6px; padding: 14px; display: grid; gap: 10px; color: var(--muted); font-size: 13px; }
+.mem-tools { display: flex; justify-content: flex-end; }
+#memBox { display: flex; flex-direction: column; gap: 22px; }
+#memBox[hidden] { display: none; }
+/* 프로필 사진 크게 보기 — "프로필 사진 넣은사람 사진 크게 볼수 있게" (2026-10-23) */
+.zoomable { cursor: zoom-in; }
+.zoom { position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,.88); display: grid; place-items: center; padding: 16px; cursor: zoom-out; }
+.zoom[hidden] { display: none; }
+.zoom figure { margin: 0; display: grid; justify-items: center; gap: 12px; max-width: 100%; }
+.zoom img { max-width: min(92vw, 640px); max-height: 78vh; width: auto; height: auto; border-radius: 12px; border: 1px solid var(--gold); box-shadow: 0 0 40px rgba(214,176,98,.25); background: #000; }
+.zoom figcaption { font-family: var(--font-display); font-weight: 800; font-size: 22px; color: var(--gold-hi); }
 .drop.over { border-color: var(--gold-hi); background: rgba(214,176,98,.08); color: var(--gold-hi); }
 /* 폴드 접은 화면에서 「즐거움」 의 「움」 한 글자가 다음 줄로 떨어졌다 (2026-10-19) */
 @media (max-width: 420px) {
@@ -563,8 +573,13 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     <section id="membersView" hidden>
       <h2 class="section-label"><svg aria-hidden="true"><use href="#i-must"/></svg>가입 신청 <span class="count" id="pendCount"></span></h2>
       <div class="list" id="pendList"></div>
-      <h2 class="section-label"><svg aria-hidden="true"><use href="#i-knot"/></svg>회원 <span class="count" id="memCount"></span></h2>
-      <div class="list" id="memList"></div>
+      <!-- 회원 목록은 안 보이게 — "가입승인에 회원 목록은 안보이게해라" (2026-10-23).
+           비밀번호 초기화 · 내보내기가 여기 있어서 지우지 않고 접어 둔다. -->
+      <div class="mem-tools"><button class="btn ghost" type="button" id="memToggle" aria-expanded="false">회원 목록 · 비밀번호 초기화 열기</button></div>
+      <div id="memBox" hidden>
+        <h2 class="section-label"><svg aria-hidden="true"><use href="#i-knot"/></svg>회원 <span class="count" id="memCount"></span></h2>
+        <div class="list" id="memList"></div>
+      </div>
     </section>
 
     <div id="noticeView">
@@ -640,6 +655,9 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   </div>
 </main>
 
+<div class="zoom" id="zoom" hidden role="dialog" aria-modal="true" aria-label="프로필 사진 크게 보기">
+  <figure><img id="zoomImg" alt=""><figcaption id="zoomCap"></figcaption></figure>
+</div>
 <footer>
   <div class="mountains" aria-hidden="true"><svg viewBox="0 0 1600 160" preserveAspectRatio="none"><path fill="currentColor" d="M0 160V70l80-40 70 50 90-60 80 70 60-30 90 50 70-60 90 70 80-40 90 50 70-30 80 40 90-60 70 50 90-40 80 50 90-60 70 40 80-30 70 40V160z"/><path fill="#0f0c08" d="M0 160V110l120-30 100 40 140-40 120 50 160-40 120 40 140-30 120 40 160-50 120 40 160-20 120 30V160z"/></svg></div>
   <div class="tagline">병무청 문파 · 도깨비의 세계</div>
@@ -653,7 +671,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610230121";
+  const BUILD = "202610230129";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -733,6 +751,19 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     });
     return g;
   }
+  /* 프로필 사진 크게 보기 — 누르거나 Esc 로 닫는다 */
+  function zoom(src, cap) {
+    $("zoomImg").src = src; $("zoomImg").alt = cap + " 프로필 사진"; $("zoomCap").textContent = cap;
+    $("zoom").hidden = false;
+  }
+  function zoomable(im, src, cap) {
+    im.classList.add("zoomable"); im.tabIndex = 0; im.setAttribute("role", "button"); im.setAttribute("aria-label", cap + " 프로필 사진 크게 보기");
+    im.onclick = (e) => { e.stopPropagation(); zoom(src, cap); };
+    im.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); zoom(src, cap); } };
+    return im;
+  }
+  $("zoom").onclick = () => { $("zoom").hidden = true; };
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") $("zoom").hidden = true; });
   function avatarImg(id, cls) {
     const im = document.createElement("img"); im.className = cls || "av"; im.alt = ""; im.referrerPolicy = "no-referrer";
     im.src = imgUrl(id, 200); im.loading = "lazy"; return im;
@@ -816,8 +847,17 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   function writeHash() {
     const h = hashNow();
     if (h === null || document.body.classList.contains("locked")) return;
-    if (location.hash.slice(1) !== h) history.replaceState(null, "", location.pathname + location.search + (h ? "#" + h : ""));
+    /* 메뉴를 옮길 때마다 방문 기록에 쌓는다 — 휴대폰 [뒤로] 를 누르면 홈페이지를 나가지 않고 전에 보던 메뉴로 (2026-10-23) */
+    if (location.hash.slice(1) !== h) history.pushState(null, "", location.pathname + location.search + (h ? "#" + h : ""));
   }
+  window.addEventListener("popstate", () => {
+    if (document.body.classList.contains("locked")) return;
+    $("zoom").hidden = true;
+    if (!readHash()) { view = "notice"; filter = "전체"; }
+    render();
+    if (view === "board") refreshPosts();
+    if (view === "members") refreshMembers();
+  });
   /* 주소의 # 을 읽어 그 칸으로. 맞는 것이 있으면 true */
   function readHash() {
     const h = decodeURIComponent(location.hash.slice(1));
@@ -1050,13 +1090,13 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     /* 프로필 사진 — "회원가입 한사람들 잔량처럼 프로필 사진 넣을수 있게해라" (2026-10-19 만들어 둠, 2026-10-23 켬) */
     const chip = (n) => {
       const s = el("span", "name");
-      if (DATA.avatars[n]) s.appendChild(avatarImg(DATA.avatars[n]));
+      if (DATA.avatars[n]) s.appendChild(zoomable(avatarImg(DATA.avatars[n]), imgUrl(DATA.avatars[n]), n));
       s.appendChild(el("span", null, n)); s.appendChild(mark(n)); return s;
     };
     const lv = $("rLeaderView"); lv.textContent = "";
-    const im = document.createElement("img"); im.alt = ""; im.referrerPolicy = "no-referrer";
-    im.src = DATA.avatars[r.leader] ? imgUrl(DATA.avatars[r.leader], 300) : emblemSrc(); if (DATA.avatars[r.leader]) im.style.objectFit = "cover";
-    lv.appendChild(im);
+    /* 문주(잔량) 프로필은 병무청 도깨비 문양 그대로 — "문주 잔량 프로필은 병무청 도깨비 저걸로 그대로 삽입시켜라" (2026-10-23) */
+    const im = document.createElement("img"); im.alt = ""; im.referrerPolicy = "no-referrer"; im.src = emblemSrc();
+    lv.appendChild(r.leader ? zoomable(im, emblemSrc(), r.leader) : im);
     lv.appendChild(el("span", "role", "문주"));
     lv.appendChild(el("span", "nm", r.leader || "미정"));
     if (r.leader) lv.appendChild(mark(r.leader));
@@ -1293,9 +1333,13 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     const box = $("acct"); box.textContent = "";
     if (me) {
       /* 내 이름(사진)을 누르면 프로필 사진 바꾸기 — 단추를 하나 더 두면 PC 위 메뉴가 넘친다 */
-      const who = btn("who", null, () => avatarFile.click());
-      who.title = "눌러서 프로필 사진 바꾸기"; who.setAttribute("aria-label", me.gameId + " 님 — 프로필 사진 바꾸기");
-      who.appendChild(me.avatar ? avatarImg(me.avatar) : el("span", "av none", "+"));
+      /* 문주는 프로필이 문양으로 정해져 있어 누르면 크게 보기만 (문양은 관리자 [문양 사진 바꾸기] 로 바꾼다) */
+      const leaderMe = !!(DATA.roster.leader && me.gameId === DATA.roster.leader);
+      const who = btn("who", null, () => (leaderMe ? zoom(emblemSrc(), me.gameId) : avatarFile.click()));
+      who.title = leaderMe ? "문주 프로필 (병무청 문양)" : "눌러서 프로필 사진 바꾸기";
+      who.setAttribute("aria-label", me.gameId + " 님 — " + who.title);
+      if (leaderMe) { const e = document.createElement("img"); e.className = "av"; e.alt = ""; e.referrerPolicy = "no-referrer"; e.src = emblemSrc(); who.appendChild(e); }
+      else who.appendChild(me.avatar ? avatarImg(me.avatar) : el("span", "av none", "+"));
       who.appendChild(el("span", null, me.gameId + " 님"));
       box.appendChild(who);
       box.appendChild(btn("btn ghost", "비밀번호", () => openAuth("pw")));
@@ -1305,7 +1349,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
       box.appendChild(btn("btn", "회원가입", () => openAuth("join")));
     }
   }
-  /* 내 프로필 사진 — 256px 로 줄여 보낸다 */
+  /* 내 프로필 사진 — 크게 보기 때문에 800px 로 줄여 보낸다 (처음엔 256px) */
   const avatarFile = document.createElement("input");
   avatarFile.type = "file"; avatarFile.accept = "image/*"; avatarFile.hidden = true;
   document.body.appendChild(avatarFile);
@@ -1315,7 +1359,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     if (!file.type.startsWith("image/")) { setStatus("사진 파일만 쓸 수 있습니다.", true); return; }
     setStatus("프로필 사진 올리는 중…");
     try {
-      const s = await shrink(file, 256);
+      const s = await shrink(file, 800);
       const m = await memberCall("setAvatar", token, s.b64, s.mime);
       setMe(token, m);
       DATA.avatars[me.gameId] = me.avatar; renderRoster();
@@ -1433,6 +1477,12 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     r.appendChild(a);
     return r;
   }
+  $("memToggle").onclick = () => {
+    const open = $("memBox").hidden;
+    $("memBox").hidden = !open;
+    $("memToggle").setAttribute("aria-expanded", String(open));
+    $("memToggle").textContent = open ? "회원 목록 접기" : "회원 목록 · 비밀번호 초기화 열기";
+  };
   function renderMembers() {
     const pend = members.filter((m) => m.status !== "승인");
     const ok = members.filter((m) => m.status === "승인");
@@ -1515,7 +1565,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   async function reloadData() {
     try {
       const d = await loadPublic();
-      takeData(d); loaded = true; applySite(); render();
+      takeData(d); loaded = true; applySite(); renderAcct(); render();
       try { localStorage.setItem("bmc-data", JSON.stringify(d)); } catch (e) {}
     }
     catch (e) { loaded = true; render(); setStatus("공지를 불러오지 못했습니다. 새로고침해 주세요. (" + errMsg(e) + ")", true); }
