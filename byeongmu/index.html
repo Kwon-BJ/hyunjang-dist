@@ -155,6 +155,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .thumbs { display: flex; flex-wrap: wrap; gap: 8px; }
 .thumb { position: relative; width: 96px; }
 .thumb img { width: 96px; height: 96px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); display: block; }
+.thumb .st { position: absolute; left: 4px; bottom: 4px; font-size: 11px; background: rgba(0,0,0,.8); color: var(--gold-hi); padding: 1px 6px; border-radius: 4px; }
+.thumb.up img { opacity: .45; }
+.thumb.bad .st { color: #ff8a80; }
 .thumb button { position: absolute; top: 4px; right: 4px; border: 0; border-radius: 4px; background: rgba(0,0,0,.8); color: var(--gold-hi); font-size: 11px; padding: 2px 6px; cursor: pointer; }
 
 /* 목록 */
@@ -671,7 +674,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610230129";
+  const BUILD = "202610230159";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -926,23 +929,26 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
       /* 내용이 위, 사진은 아래 — "내용이 위에 올라오고 사진은 밑으로 가게 해라" (2026-10-23) */
       if (n.body) body.appendChild(el("p", "text", n.body));
       if (imgs.length) body.appendChild(gallery(imgs, n.title || "공고"));
-      if (canWrite) {
+      if (canWrite && /^tmp/.test(n.id)) body.appendChild(el("p", "meta", "저장하는 중…"));
+      else if (canWrite) {
         if (confirmId === n.id) {
           const c = el("div", "confirm");
           c.appendChild(el("span", null, "이 공고를 삭제할까요? 되돌릴 수 없습니다."));
           const yes = btn("btn danger", "삭제", async () => {
-            yes.disabled = true;
-            try { DATA.notices = await adminCall("deleteNotice", adminPw, n.id); confirmId = null; openId = null; render(); setStatus("삭제했습니다."); }
-            catch (e) { yes.disabled = false; setStatus(errMsg(e), true); }
+            const prev = DATA.notices;
+            DATA.notices = prev.filter((x) => x.id !== n.id); confirmId = null; openId = null; render(); setStatus("삭제했습니다.");
+            try { DATA.notices = await adminCall("deleteNotice", adminPw, n.id); render(); }
+            catch (e) { DATA.notices = prev; render(); setStatus("삭제하지 못했습니다 — " + errMsg(e), true); }
           });
           c.append(btn("btn ghost", "취소", () => { confirmId = null; render(); }), yes);
           body.appendChild(c);
         } else {
           const a = el("div", "actions");
           const pin = btn("btn ghost", n.pinned ? "고정 해제" : "맨 위에 고정", async () => {
-            pin.disabled = true;
+            const prev = DATA.notices;
+            DATA.notices = prev.map((x) => (x.id === n.id ? Object.assign({}, x, { pinned: !n.pinned }) : x)); render();
             try { DATA.notices = await adminCall("setPinned", adminPw, n.id, !n.pinned); render(); }
-            catch (e) { pin.disabled = false; setStatus(errMsg(e), true); }
+            catch (e) { DATA.notices = prev; render(); setStatus(errMsg(e), true); }
           });
           a.append(pin, btn("btn ghost", "수정", () => openEditor(n)), btn("btn ghost", "삭제", () => { confirmId = n.id; render(); }));
           body.appendChild(a);
@@ -993,7 +999,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     if (n) $("fAuthor").value = n.author || "";
     $("fBody").value = n ? (n.body || "") : "";
     $("fPin").checked = n ? !!n.pinned : false;
-    draftImgs.forEach((d) => { if (d.file) URL.revokeObjectURL(d.url); });
+    draftImgs.forEach((d) => { d.gone = true; if (d.file) URL.revokeObjectURL(d.url); });
     draftImgs = (n && Array.isArray(n.images) ? n.images : []).map((id) => ({ id: id, url: imgUrl(id) }));
     $("fImg").value = ""; renderThumbs("thumbs", draftImgs);
     $("formErr").textContent = "";
@@ -1005,21 +1011,52 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   function renderThumbs(boxId, list) {
     const box = $(boxId); box.textContent = "";
     list.forEach((d, i) => {
-      const t = el("div", "thumb");
+      const t = el("div", "thumb" + (d.file && !d.id ? (d.err ? " bad" : " up") : ""));
       const im = document.createElement("img"); im.src = d.url; im.alt = "첨부 사진 " + (i + 1); im.referrerPolicy = "no-referrer";
-      t.append(im, btn(null, "빼기", () => { if (d.file) URL.revokeObjectURL(d.url); list.splice(i, 1); renderThumbs(boxId, list); }));
+      t.append(im, btn(null, "빼기", () => { d.gone = true; if (d.file) URL.revokeObjectURL(d.url); list.splice(i, 1); renderThumbs(boxId, list); }));
+      if (d.file && !d.id) t.appendChild(el("span", "st", d.err ? "실패" : "올리는 중"));
       box.appendChild(t);
     });
   }
-  function addImgs(files, list, boxId, errId) {
+  /* 사진은 넣자마자 뒤에서 올린다 — 글을 쓰는 동안 끝나서 [게시] 를 누르면 기다릴 것이 거의 없다.
+     "공지사항 글쓰면 너무 느리다" (2026-10-23): 예전엔 [게시] 를 누른 뒤에 한 장씩(장당 2~3초) 올렸다.
+     같은 저장소에 동시에 올리면 깃허브가 서로 막아서 한 장씩 차례로 올린다. */
+  let upChain = Promise.resolve();
+  function queueUpload(d, list, boxId, upload) {
+    d.err = false;
+    d.up = upChain = upChain.catch(() => {}).then(async () => {
+      if (d.gone || d.id) return;
+      try { const sm = await shrink(d.file, 1600); d.id = await upload(sm); }
+      catch (e) { d.err = true; throw e; }
+      finally { if (list.includes(d)) renderThumbs(boxId, list); }
+    });
+    d.up.catch(() => {});
+  }
+  /* [게시] 때 아직 안 끝난 사진을 기다린다. 실패한 사진은 한 번 더 올려 본다. */
+  async function waitUploads(list, boxId, upload, b) {
+    for (let round = 0; round < 2; round++) {
+      const left = list.filter((d) => d.file && !d.id);
+      if (!left.length) return;
+      if (round) left.forEach((d) => queueUpload(d, list, boxId, upload));
+      let done = list.length - left.length;
+      b.textContent = "사진 올리는 중… (" + done + "/" + list.length + ")";
+      await Promise.all(left.map((d) => d.up.then(() => { b.textContent = "사진 올리는 중… (" + (++done) + "/" + list.length + ")"; }, () => {})));
+    }
+    if (list.some((d) => d.file && !d.id)) throw new Error("사진을 올리지 못했습니다. [빼기] 로 빼고 다시 넣어 보세요.");
+  }
+  function addImgs(files, list, boxId, errId, upload) {
     $(errId).textContent = "";
     Array.from(files || []).forEach((f) => {
       if (!f.type || !f.type.startsWith("image/")) { $(errId).textContent = "사진 파일만 올릴 수 있습니다."; return; }
       if (list.length >= MAX_IMGS) { $(errId).textContent = "사진은 한 글에 6장까지 올릴 수 있습니다."; return; }
-      list.push({ file: f, url: URL.createObjectURL(f) });
+      const d = { file: f, url: URL.createObjectURL(f) };
+      list.push(d);
+      queueUpload(d, list, boxId, upload);
     });
     renderThumbs(boxId, list);
   }
+  const upNotice = (sm) => adminCall("uploadImage", adminPw, sm.b64, sm.mime, sm.name);
+  const upPost = (sm) => memberCall("uploadPostImage", token, sm.b64, sm.mime, sm.name);
   /* 사진을 끌어다 놓기 · 붙여넣기(Ctrl+V). 글쓰기 칸 어디에 놓아도 받는다 — "첨부사진 사진을 드래그해서 넣을수 있게해라" (2026-10-23) */
   function dropPhotos(formId, zoneId, add) {
     const form = $(formId), zone = $(zoneId);
@@ -1041,8 +1078,8 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   /* 글쓰기 칸 밖에 잘못 놓으면 브라우저가 사진을 열어 버려 쓰던 글이 날아간다 — 막아 둔다 */
   window.addEventListener("dragover", (e) => e.preventDefault());
   window.addEventListener("drop", (e) => e.preventDefault());
-  $("fImg").addEventListener("change", (e) => { addImgs(e.target.files, draftImgs, "thumbs", "formErr"); e.target.value = ""; });
-  dropPhotos("editor", "fDrop", (files) => addImgs(files, draftImgs, "thumbs", "formErr"));
+  $("fImg").addEventListener("change", (e) => { addImgs(e.target.files, draftImgs, "thumbs", "formErr", upNotice); e.target.value = ""; });
+  dropPhotos("editor", "fDrop", (files) => addImgs(files, draftImgs, "thumbs", "formErr", upNotice));
   $("newBtn").onclick = () => openEditor(null);
   $("cancelBtn").onclick = closeEditor;
   $("search").addEventListener("input", (e) => { query = e.target.value.trim(); render(); });
@@ -1060,23 +1097,35 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     if (!data.body && !draftImgs.length) { $("formErr").textContent = "내용을 적거나 사진을 올려 주세요."; $("fBody").focus(); return; }
     try { if (data.author) localStorage.setItem("bmc-author", data.author); } catch (err) {}
     const b = $("saveBtn"); b.disabled = true; $("formErr").textContent = "";
+    const label = editingId ? "수정 저장" : "게시";
+    try { await waitUploads(draftImgs, "thumbs", upNotice, b); }
+    catch (err) { $("formErr").textContent = errMsg(err); b.disabled = false; b.textContent = label; return; }
+    data.images = draftImgs.map((d) => d.id);
+    /* 화면은 바로 바꾸고 서버 저장은 뒤에서 — "수정 완료하면 바로 반응안하고 왜이리 늦냐" (2026-10-23).
+       서버가 못 받으면 되돌리고 쓰던 글을 다시 연다. 저장 전 공고는 id 가 tmp 로 시작한다(수정 · 삭제 단추 없음). */
+    const prev = DATA.notices, imgs = draftImgs.slice(), now = new Date().toISOString();
+    const old = data.id ? prev.find((x) => x.id === data.id) : null;
+    const local = old ? Object.assign({}, old, data, { author: data.author || old.author, updatedAt: now })
+      : Object.assign({}, data, { id: "tmp" + Date.now(), no: prev.reduce((m, x) => Math.max(m, Number(x.no) || 0), 0) + 1, author: data.author || "병무청 문주 잔량", createdAt: now, updatedAt: "" });
+    DATA.notices = old ? prev.map((x) => (x.id === old.id ? local : x)) : prev.concat([local]);
+    openId = local.id;
+    draftImgs = [];
+    closeEditor(); render(); setStatus("저장하는 중…");
+    b.disabled = false; b.textContent = label;
     try {
-      for (let i = 0; i < draftImgs.length; i++) {
-        const d = draftImgs[i];
-        if (d.id) continue;
-        b.textContent = "사진 올리는 중… (" + (i + 1) + "/" + draftImgs.length + ")";
-        const s = await shrink(d.file, 1600);
-        d.id = await adminCall("uploadImage", adminPw, s.b64, s.mime, s.name);
-      }
-      data.images = draftImgs.map((d) => d.id);
-      b.textContent = "저장하는 중…";
-      const wasNew = !editingId;
-      DATA.notices = await adminCall("saveNotice", adminPw, data);
-      if (wasNew) { const latest = sorted()[0]; openId = latest ? latest.id : null; } else openId = editingId;
-      closeEditor(); render(); setStatus("저장했습니다.");
+      const list = await adminCall("saveNotice", adminPw, data);
+      DATA.notices = list;
+      if (openId === local.id) { const hit = old ? list.find((x) => x.id === old.id) : list.slice().sort((x, y) => String(y.createdAt).localeCompare(String(x.createdAt)))[0]; openId = hit ? hit.id : null; }
+      render(); setStatus("저장했습니다.");
     } catch (err) {
-      $("formErr").textContent = errMsg(err);
-    } finally { b.disabled = false; b.textContent = editingId ? "수정 저장" : "게시"; }
+      DATA.notices = prev; render();
+      openEditor(old || null);
+      ["fCat", "fTitle", "fAuthor", "fBody"].forEach((id, i) => { $(id).value = [data.category, data.title, data.author, data.body][i]; });
+      $("fPin").checked = data.pinned;
+      draftImgs = imgs; renderThumbs("thumbs", draftImgs);
+      $("formErr").textContent = "저장하지 못했습니다 — " + errMsg(err);
+      setStatus("저장하지 못했습니다. 쓰던 글을 다시 열었습니다.", true);
+    }
   });
 
   /* ── 문파원 안내 ── */
@@ -1154,7 +1203,8 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
       /* 지우기: 글쓴이 본인 · 관리자 · 문주(잔량) — "자유게시판은 잔량+관리자는 지울수 있게" (2026-10-19) */
       const mine = !!(me && p.memberId && p.memberId === me.id);
       const leader = !!(me && DATA.roster.leader && me.gameId === DATA.roster.leader);
-      if (!mine && !canWrite && !leader) { /* 남의 글에는 지우기 단추가 없다 */ } else if (delPost === p.id) {
+      if (/^tmp/.test(p.id)) body.appendChild(el("p", "meta", "올리는 중…"));
+      else if (!mine && !canWrite && !leader) { /* 남의 글에는 지우기 단추가 없다 */ } else if (delPost === p.id) {
         const c = el("div", "confirm");
         c.appendChild(el("span", null, "이 글을 삭제할까요?"));
         const yes = btn("btn danger", "삭제", async () => {
@@ -1202,33 +1252,39 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     $("postForm").hidden = false; $("writeBtn").hidden = true; $("postErr").textContent = "";
     $("pTitle").focus();
   };
-  function clearPostImgs() { postImgs.forEach((d) => { if (d.file) URL.revokeObjectURL(d.url); }); postImgs.length = 0; renderThumbs("pThumbs", postImgs); }
+  function clearPostImgs() { postImgs.forEach((d) => { d.gone = true; if (d.file) URL.revokeObjectURL(d.url); }); postImgs.length = 0; renderThumbs("pThumbs", postImgs); }
   $("postCancel").onclick = () => { $("postForm").hidden = true; $("writeBtn").hidden = false; clearPostImgs(); };
-  $("pImg").addEventListener("change", (e) => { addImgs(e.target.files, postImgs, "pThumbs", "postErr"); e.target.value = ""; });
-  dropPhotos("postForm", "pDrop", (files) => addImgs(files, postImgs, "pThumbs", "postErr"));
+  $("pImg").addEventListener("change", (e) => { addImgs(e.target.files, postImgs, "pThumbs", "postErr", upPost); e.target.value = ""; });
+  dropPhotos("postForm", "pDrop", (files) => addImgs(files, postImgs, "pThumbs", "postErr", upPost));
   $("postForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const post = { title: $("pTitle").value.trim(), body: $("pBody").value.trim() };
     if (!post.title) { $("postErr").textContent = "제목을 적어 주세요."; $("pTitle").focus(); return; }
     if (!post.body && !postImgs.length) { $("postErr").textContent = "내용을 적거나 사진을 올려 주세요."; $("pBody").focus(); return; }
-    const b = $("postSave"); b.disabled = true; b.textContent = "올리는 중…"; $("postErr").textContent = "";
-    try {
-      for (let i = 0; i < postImgs.length; i++) {
-        const d = postImgs[i];
-        if (d.id) continue;
-        b.textContent = "사진 올리는 중… (" + (i + 1) + "/" + postImgs.length + ")";
-        const sm = await shrink(d.file, 1600);
-        d.id = await memberCall("uploadPostImage", token, sm.b64, sm.mime, sm.name);
-      }
-      post.images = postImgs.map((d) => d.id);
-      b.textContent = "올리는 중…";
-      DATA.posts = await memberCall("createPost", token, post);
-      $("pTitle").value = ""; $("pBody").value = ""; clearPostImgs();
-      $("postForm").hidden = true; $("writeBtn").hidden = false;
-      openPost = DATA.posts[0] ? DATA.posts[0].id : null;
-      renderBoard(); setStatus("글을 올렸습니다.");
-    } catch (err) { $("postErr").textContent = errMsg(err); }
+    const b = $("postSave"); b.disabled = true; $("postErr").textContent = "";
+    try { await waitUploads(postImgs, "pThumbs", upPost, b); }
+    catch (err) { $("postErr").textContent = errMsg(err); b.disabled = false; b.textContent = "올리기"; return; }
+    post.images = postImgs.map((d) => d.id);
+    /* 공고처럼 화면에 바로 올리고 서버는 뒤에서 (2026-10-23) */
+    const prev = DATA.posts, imgs = postImgs.slice();
+    const local = Object.assign({}, post, { id: "tmp" + Date.now(), nick: me.gameId, memberId: me.id, createdAt: new Date().toISOString() });
+    DATA.posts = [local].concat(prev); openPost = local.id;
+    $("pTitle").value = ""; $("pBody").value = ""; postImgs.length = 0; renderThumbs("pThumbs", postImgs);
+    $("postForm").hidden = true; $("writeBtn").hidden = false;
+    renderBoard(); setStatus("글을 올리는 중…");
     b.disabled = false; b.textContent = "올리기";
+    try {
+      DATA.posts = await memberCall("createPost", token, post);
+      if (openPost === local.id) openPost = DATA.posts[0] ? DATA.posts[0].id : null;
+      renderBoard(); setStatus("글을 올렸습니다.");
+    } catch (err) {
+      DATA.posts = prev; renderBoard();
+      $("pTitle").value = post.title; $("pBody").value = post.body;
+      imgs.forEach((d) => postImgs.push(d)); renderThumbs("pThumbs", postImgs);
+      $("postForm").hidden = false; $("writeBtn").hidden = true;
+      $("postErr").textContent = "올리지 못했습니다 — " + errMsg(err);
+      setStatus("글을 올리지 못했습니다. 쓰던 글을 다시 열었습니다.", true);
+    }
   });
 
   /* ── 배너·문양 ── */
