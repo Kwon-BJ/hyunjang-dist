@@ -653,7 +653,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610230057";
+  const BUILD = "202610230105";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -809,17 +809,18 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   }
   function goHome() { view = "notice"; filter = "전체"; query = ""; $("search").value = ""; render(); window.scrollTo(0, 0); }
   const VIEW_EL = { roster: "rosterView", board: "boardView", members: "membersView", auth: "authView" };
-  function go(v) {
+  function go(v, stay) {
     view = v; render();
     if (view === "board") refreshPosts();
     if (view === "members") refreshMembers();
-    $(VIEW_EL[view] || "mainSec").scrollIntoView({ block: "start" });
+    if (!stay) $(VIEW_EL[view] || "mainSec").scrollIntoView({ block: "start" });
   }
+  /* 위 메뉴를 눌러도 화면을 끌어내리지 않는다 — "클릭하면 안내려가게 해라" (2026-10-23) */
   document.querySelectorAll(".menu-item").forEach((b) => {
     b.onclick = () => {
       const g = b.dataset.go;
-      if (VIEW_EL[g]) go(g);
-      else { filter = g; go("notice"); }
+      if (VIEW_EL[g]) go(g, true);
+      else { filter = g; go("notice", true); }
     };
   });
   $("homeBtn").onclick = goHome;
