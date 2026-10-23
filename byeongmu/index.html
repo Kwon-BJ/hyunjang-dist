@@ -437,6 +437,15 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
 .tchips { display: flex; flex-wrap: wrap; gap: 6px; }
 .tchip { padding: 3px 9px; border-radius: 999px; border: 1px solid var(--gold-lo); background: var(--panel-hi); font-size: 12px; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
 .tchip.tmark { font-size: 15px; }
+/* 조 동그라미 Ⓐ~Ⓓ · 조 명단 (2026-10-24) */
+.mk2.team { color: #fff; font-weight: 800; font-size: 15px; text-shadow: 0 1px 2px rgba(0,0,0,.7); }
+.tchip.tteam { width: 30px; height: 30px; padding: 0; display: grid; place-items: center; border: 2px solid #fff; color: #fff; font-weight: 800; font-size: 15px; }
+.team-roster { border: 1px solid var(--line); border-radius: 6px; padding: 10px; display: grid; gap: 10px; align-content: start; }
+.team-roster h4 { margin: 0; font-size: 13px; color: var(--gold-hi); }
+.team-roster .row { display: grid; grid-template-columns: 30px 1fr; gap: 8px; align-items: start; }
+.team-roster .tdot { width: 26px; height: 26px; border-radius: 50%; border: 2px solid #fff; display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 13px; }
+.team-roster textarea { width: 100%; box-sizing: border-box; min-height: 52px; resize: vertical; background: #0b0907; border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; color: inherit; font: inherit; font-size: 13px; }
+.team-roster p { margin: 4px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; }
 .tray input { background: #0b0907; border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; width: 100%; box-sizing: border-box; color: inherit; }
 .board-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .board-tools .dirty { color: #ffb347; font-size: 13px; font-weight: 700; }
@@ -675,12 +684,12 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
           <aside class="tray" id="tray" hidden>
             <h4>표시</h4>
             <div class="tchips" id="trayMarks"></div>
-            <h4>문파원 — 끌어서 지도에 놓기</h4>
-            <p class="hint">눌러도 지도 가운데에 놓여요. 지도 밖으로 끌어내면 빠져요. 지도에 놓은 이름을 누르면 전략판 이름을 바꿀 수 있어요.</p>
-            <input id="trayFind" type="search" placeholder="이름 찾기" aria-label="문파원 이름 찾기">
-            <div class="tchips" id="trayNames"></div>
+            <h4>조 — 끌어서 지도에 놓기</h4>
+            <p class="hint">눌러도 지도 가운데에 놓여요. 지도 밖으로 끌어내면 빠져요.</p>
+            <div class="tchips" id="trayTeams"></div>
           </aside>
           <div class="board-sel" id="boardSel" hidden></div>
+          <div class="team-roster" id="teamRoster"></div>
         </div>
       </div>
       <div class="legend" id="boardLegend"></div>
@@ -791,7 +800,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610231047";
+  const BUILD = "202610232354";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -1765,7 +1774,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   function canBoard() { return canWrite || !!(me && (me.leader || me.deputy)); }
   function savedBoard(k) {
     const b = (DATA.boards || {})[k] || {};
-    return { bg: b.bg || "", pieces: Array.isArray(b.pieces) ? b.pieces : [], marks: Array.isArray(b.marks) ? b.marks : [], arrows: Array.isArray(b.arrows) ? b.arrows : [], boxes: Array.isArray(b.boxes) ? b.boxes : [], draws: Array.isArray(b.draws) ? b.draws : [], memo: b.memo || "", updatedAt: b.updatedAt || "", by: b.by || "" };
+    return { bg: b.bg || "", pieces: Array.isArray(b.pieces) ? b.pieces : [], marks: Array.isArray(b.marks) ? b.marks : [], arrows: Array.isArray(b.arrows) ? b.arrows : [], boxes: Array.isArray(b.boxes) ? b.boxes : [], draws: Array.isArray(b.draws) ? b.draws : [], memo: b.memo || "", teams: b.teams && typeof b.teams === "object" ? b.teams : {}, updatedAt: b.updatedAt || "", by: b.by || "" };
   }
   function curBoard() { return drafts[mapKey] || savedBoard(mapKey); }
   function editBoard() {
@@ -1775,12 +1784,13 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   document.querySelectorAll("#mapTabs [data-map]").forEach((b) => { b.onclick = () => { mapKey = b.dataset.map; boardSel = null; renderTactics(); }; });
   function allNames() { const r = DATA.roster; return (r.leader ? [r.leader] : []).concat(r.deputies, r.members); }
   /** 전략판에 보이는 이름 — 게임 이름과 다르면 문주 · 부문주가 바꿔 둔 것 (boards._names, 두 전장 같이) */
+  function markName(t) { return TEAMS.includes(t) ? t + "조" : (MARK[t] || ["", ""])[1]; }
   function bName(n) { const m = (DATA.boards || {})._names; return (m && typeof m[n] === "string" && m[n]) || n; }
   function renderTactics() {
     if (view !== "tactics") return;
     const ed = canBoard(), b = curBoard(), dirty = !!drafts[mapKey];
     document.querySelectorAll("#mapTabs [data-map]").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.map === mapKey)));
-    $("boardMeta").textContent = b.updatedAt ? "마지막 저장 " + fmtTime(b.updatedAt) + (b.by ? " · " + b.by : "") : (ed ? "아직 저장한 전략이 없습니다. 문파원을 지도에 끌어 놓고 [저장] 을 누르세요." : "아직 올라온 전략이 없습니다.");
+    $("boardMeta").textContent = b.updatedAt ? "마지막 저장 " + fmtTime(b.updatedAt) + (b.by ? " · " + b.by : "") : (ed ? "아직 저장한 전략이 없습니다. 조 동그라미를 지도에 끌어 놓고 [저장] 을 누르세요." : "아직 올라온 전략이 없습니다.");
     // 지도
     const bd = $("board"); bd.textContent = ""; bd.classList.toggle("view", !ed);
     if (b.bg) {
@@ -1852,8 +1862,10 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     });
     bd.appendChild(svg);
     b.marks.forEach((k, i) => {
-      const m = el("div", "mk2 t-" + k.t + (boardSel && boardSel.kind === "m" && boardSel.i === i ? " sel" : ""), (MARK[k.t] || ["?"])[0]);
-      m.style.left = k.x * 100 + "%"; m.style.top = k.y * 100 + "%"; m.title = (MARK[k.t] || ["", ""])[1]; m.dataset.i = i;
+      const tm = TEAMS.includes(k.t);
+      const m = el("div", "mk2 " + (tm ? "team" : "t-" + k.t) + (boardSel && boardSel.kind === "m" && boardSel.i === i ? " sel" : ""), tm ? k.t : (MARK[k.t] || ["?"])[0]);
+      if (tm) m.style.background = TEAM_COLOR[k.t];
+      m.style.left = k.x * 100 + "%"; m.style.top = k.y * 100 + "%"; m.title = markName(k.t); m.dataset.i = i;
       if (ed) m.addEventListener("pointerdown", (e) => startDrag(e, { kind: "m", i }));
       bd.appendChild(m);
     });
@@ -1865,7 +1877,8 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     });
     // 소대 색 안내
     const lg = $("boardLegend"); lg.textContent = "";
-    SQUAD.forEach((n, g) => { if (!g) return; const it = el("span"); it.append(el("span", "dot g" + g), document.createTextNode(n + " " + b.pieces.filter((p) => (p.g || 0) === g).length + "명")); lg.appendChild(it); });
+    // 소대 인원은 이름 말이 있는 예전 판에만 (2026-10-24 부터 조 동그라미)
+    SQUAD.forEach((n, g) => { if (!g || !b.pieces.length) return; const it = el("span"); it.append(el("span", "dot g" + g), document.createTextNode(n + " " + b.pieces.filter((p) => (p.g || 0) === g).length + "명")); lg.appendChild(it); });
     (b.boxes || []).forEach((x) => {
       const n = b.pieces.filter((p) => p.x >= x.x && p.x <= x.x + x.w && p.y >= x.y && p.y <= x.y + x.h).length;
       const it = el("span"); const d = el("span", "dot"); d.style.cssText = "border-radius:2px;border-color:" + TEAM_COLOR[x.t] + ";background:" + TEAM_BG[x.t];
@@ -1875,10 +1888,24 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     // 문파원 · 표시 쟁반
     $("tray").hidden = !ed;
     if (ed) {
-      const placed = new Set(b.pieces.map((p) => p.name)), q = $("trayFind").value.trim();
-      const left = allNames().filter((n) => !placed.has(n) && (!q || n.includes(q) || bName(n).includes(q)));
-      $("trayNames").replaceChildren(...(left.length ? left.map((n) => { const c = el("span", "tchip", bName(n)); c.addEventListener("pointerdown", (e) => startDrag(e, { kind: "np", name: n })); return c; }) : [el("span", "hint", q ? "찾는 이름이 없습니다." : "모두 지도에 올렸습니다.")]));
+      $("trayTeams").replaceChildren(...TEAMS.map((t) => { const c = el("span", "tchip tteam", t); c.style.background = TEAM_COLOR[t]; c.title = t + "조"; c.addEventListener("pointerdown", (e) => startDrag(e, { kind: "nm", t })); return c; }));
       $("trayMarks").replaceChildren(...Object.keys(MARK).map((t) => { const c = el("span", "tchip tmark", MARK[t][0] + " " + MARK[t][1]); c.addEventListener("pointerdown", (e) => startDrag(e, { kind: "nm", t })); return c; }));
+    }
+    // 조 명단 — "우측에는 A조B조,C조,D조 명단만 나오게" (2026-10-24). 고치는 사람은 글자 칸, 보는 사람은 글.
+    // 쓰는 중에는 다시 안 그린다(글자 칸이 사라지지 않게)
+    const tr = $("teamRoster");
+    if (!tr.contains(document.activeElement)) {
+      const rows = TEAMS.filter((t) => ed || (b.teams[t] || "").trim()).map((t) => {
+        const row = el("div", "row"), d = el("span", "tdot", t); d.style.background = TEAM_COLOR[t];
+        if (ed) {
+          const ta = document.createElement("textarea"); ta.maxLength = 500; ta.value = b.teams[t] || ""; ta.placeholder = "예: 잔량 단량"; ta.setAttribute("aria-label", t + "조 명단");
+          ta.addEventListener("input", () => { const d2 = editBoard(); d2.teams = Object.assign({}, d2.teams, { [t]: ta.value }); if (!$("boardTools").querySelector(".dirty")) renderTactics(); });
+          row.append(d, ta);
+        } else row.append(d, el("p", null, b.teams[t]));
+        return row;
+      });
+      tr.replaceChildren(...(rows.length ? [el("h4", null, "조 명단")].concat(rows) : []));
+      tr.hidden = !rows.length;
     }
     // 도구
     // 고른 것 고치기 — 오른쪽 문파원 밑 (지도 아래에 있으니 불편하다고 2026-10-23 옮김)
@@ -1942,16 +1969,14 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
         const tw = btn("btn ghost", "↔ 양방향", () => { arrowTwo = !arrowTwo; renderTactics(); }); tw.setAttribute("aria-pressed", String(arrowTwo)); sp.appendChild(tw);
         sp.appendChild(el("span", "hint", "지도 위에서 시작점부터 끝점까지 끌면 화살표가 그려져요. 쉬프트를 누르고 끌면 곧은 선(가로 · 세로 · 45도). 화살표 끝의 동그라미에서 다시 끌면 꺾어서 이어져요(ㄱ 모양). [↔ 양방향] 을 켜면 양쪽에 머리가 생겨요."));
       } else if (boardSel && boardSel.kind === "m" && b.marks[boardSel.i]) {
-        sp.appendChild(el("b", null, MARK[b.marks[boardSel.i].t][1] + " 표시"));
+        sp.appendChild(el("b", null, markName(b.marks[boardSel.i].t) + (TEAMS.includes(b.marks[boardSel.i].t) ? "" : " 표시")));
         sp.appendChild(btn("btn ghost", "빼기", () => { editBoard().marks.splice(boardSel.i, 1); boardSel = null; renderTactics(); }));
-      } else sp.appendChild(el("span", "hint", "지도의 이름 · 화살표 · 조 네모 · 그림을 누르면 여기서 소대 · 조 · 이름을 고치거나 뺄 수 있어요. 고른 것은 Delete 키로도 빠져요."));
+      } else sp.appendChild(el("span", "hint", "지도의 조 동그라미 · 표시 · 화살표 · 그림을 누르면 여기서 고치거나 뺄 수 있어요. 고른 것은 Delete 키로도 빠져요."));
       const am = btn("btn" + (drawMode === "arrow" ? "" : " ghost"), drawMode === "arrow" ? "화살표 그리기 끝" : "➚ 화살표 그리기", () => { drawMode = drawMode === "arrow" ? "" : "arrow"; boardSel = null; renderTactics(); });
       am.setAttribute("aria-pressed", String(drawMode === "arrow"));
-      const bm = btn("btn" + (drawMode === "box" ? "" : " ghost"), drawMode === "box" ? "조 묶기 끝" : "▭ 조 묶기", () => { drawMode = drawMode === "box" ? "" : "box"; boardSel = null; renderTactics(); });
-      bm.setAttribute("aria-pressed", String(drawMode === "box"));
       const pm = btn("btn" + (drawMode === "pen" ? "" : " ghost"), drawMode === "pen" ? "연필 끝" : "✎ 연필", () => { drawMode = drawMode === "pen" ? "" : "pen"; penErase = false; boardSel = null; renderTactics(); });
       pm.setAttribute("aria-pressed", String(drawMode === "pen"));
-      tl.append(am, bm, pm);
+      tl.append(am, pm);
       tl.appendChild(btn("btn ghost", "지도 사진 바꾸기", () => $("mapFile").click()));
       tl.appendChild(btn("btn ghost", "모두 빼기", () => { const d = editBoard(); d.pieces = []; d.marks = []; d.arrows = []; d.boxes = []; d.draws = []; boardSel = null; renderTactics(); }));
       if (dirty) {
@@ -1962,7 +1987,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
         sv.disabled = true; sv.textContent = "저장하는 중…";
         const d = curBoard();
         try {
-          DATA.boards[mapKey] = await memberCall("saveBoard", adminPw || token, mapKey, { pieces: d.pieces, marks: d.marks, arrows: d.arrows || [], boxes: d.boxes || [], draws: d.draws || [], memo: d.memo });
+          DATA.boards[mapKey] = await memberCall("saveBoard", adminPw || token, mapKey, { pieces: d.pieces, marks: d.marks, arrows: d.arrows || [], boxes: d.boxes || [], draws: d.draws || [], memo: d.memo, teams: d.teams || {} });
           delete drafts[mapKey]; saveCache(); renderTactics(); setStatus(MAPS[mapKey] + " 전략을 저장했습니다. 문파원 모두에게 보입니다.");
         } catch (e) { sv.disabled = false; sv.textContent = "저장"; setStatus(errMsg(e), true); }
       });
@@ -1974,7 +1999,48 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     if (ed && document.activeElement !== $("boardMemo")) $("boardMemo").value = b.memo;
     $("memoView").replaceChildren(...(!ed && b.memo ? [el("h4", null, "작전 메모"), el("p", "memo-view", b.memo)] : []));
   }
-  $("trayFind").addEventListener("input", renderTactics);
+  /* 조 네모끼리는 겹치지 않는다 — 붙여 놓으면 옆 조 사람까지 같이 끌려가서 ("a,b,c,d조 칸이 서로 같이 안맞물리게" 2026-10-24).
+     가장자리가 딱 맞닿는 것은 괜찮다. skip 은 지금 고치는 네모 번호 */
+  function boxHit(q, skip) {
+    const E = 1e-4;
+    return (curBoard().boxes || []).some((o, j) => j !== skip && q.x < o.x + o.w - E && q.x + q.w > o.x + E && q.y < o.y + o.h - E && q.y + q.h > o.y + E);
+  }
+  // 한 축씩 밀다가 다른 네모에 닿으면 거기서 멈춘다(미끄러지듯). 이미 겹쳐 있는 네모는 막지 않는다
+  function boxSlide(from, to, skip) {
+    const E = 1e-4, others = (curBoard().boxes || []).filter((o, j) => j !== skip);
+    const lap = (a0, a1, b0, b1) => a0 < b1 - E && a1 > b0 + E;
+    let x = to.x, y = from.y;
+    others.forEach((o) => {
+      if (!lap(y, y + from.h, o.y, o.y + o.h)) return;
+      if (x > from.x && o.x >= from.x + from.w - E) x = Math.min(x, o.x - from.w);
+      if (x < from.x && o.x + o.w <= from.x + E) x = Math.max(x, o.x + o.w);
+    });
+    y = to.y;
+    others.forEach((o) => {
+      if (!lap(x, x + from.w, o.x, o.x + o.w)) return;
+      if (y > from.y && o.y >= from.y + from.h - E) y = Math.min(y, o.y - from.h);
+      if (y < from.y && o.y + o.h <= from.y + E) y = Math.max(y, o.y + o.h);
+    });
+    return { x, y, w: from.w, h: from.h };
+  }
+  // 오른쪽 아래 귀퉁이로 키울 때 — 가로 먼저, 그다음 세로를 옆 네모 앞에서 멈춘다
+  function boxGrow(b, w, h, skip) {
+    const E = 1e-4, others = (curBoard().boxes || []).filter((o, j) => j !== skip);
+    const lap = (a0, a1, b0, b1) => a0 < b1 - E && a1 > b0 + E;
+    others.forEach((o) => { if (lap(b.y, b.y + b.h, o.y, o.y + o.h) && o.x >= b.x + b.w - E) w = Math.min(w, o.x - b.x); });
+    others.forEach((o) => { if (lap(b.x, b.x + w, o.x, o.x + o.w) && o.y >= b.y + b.h - E) h = Math.min(h, o.y - b.y); });
+    return { w: Math.max(.03, w), h: Math.max(.03, h) };
+  }
+  // 말 · 표시가 어느 조 네모에 드는지 — 두 네모에 다 들면(예전에 겹쳐 그린 판) 가운데가 더 가까운 네모 하나에만
+  function boxOwner(p) {
+    let best = -1, bd2 = Infinity;
+    (curBoard().boxes || []).forEach((o, j) => {
+      if (p.x < o.x || p.x > o.x + o.w || p.y < o.y || p.y > o.y + o.h) return;
+      const d2 = (p.x - o.x - o.w / 2) ** 2 + (p.y - o.y - o.h / 2) ** 2;
+      if (d2 < bd2) { bd2 = d2; best = j; }
+    });
+    return best;
+  }
   $("board").addEventListener("pointerdown", (e) => {
     if (!drawMode || !canBoard() || view !== "tactics") return;
     if (e.button !== undefined && e.button !== 0) return;
@@ -2017,11 +2083,15 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
       const lb = el("span", "tlabel", boxT + "조"); lb.style.background = TEAM_COLOR[boxT]; pv.appendChild(lb);
       const put = () => Object.assign(pv.style, { left: cur.x * 100 + "%", top: cur.y * 100 + "%", width: cur.w * 100 + "%", height: cur.h * 100 + "%" });
       put(); bd.appendChild(pv);
-      const move = (ev) => { const x1 = fx(ev.clientX), y1 = fy(ev.clientY); cur.x = Math.min(x0, x1); cur.y = Math.min(y0, y1); cur.w = Math.abs(x1 - x0); cur.h = Math.abs(y1 - y0); put(); };
+      const move = (ev) => { // 다른 조 네모에 닿으면 더 안 커진다
+        const x1 = fx(ev.clientX), y1 = fy(ev.clientY), q = { x: Math.min(x0, x1), y: Math.min(y0, y1), w: Math.abs(x1 - x0), h: Math.abs(y1 - y0) };
+        if (boxHit(q, -1)) return;
+        Object.assign(cur, q); put();
+      };
       const up = (ev) => {
         document.removeEventListener("pointermove", move); document.removeEventListener("pointerup", up); document.removeEventListener("pointercancel", up);
         pv.remove();
-        if (ev.type !== "pointercancel" && cur.w >= 0.03 && cur.h >= 0.03) {
+        if (ev.type !== "pointercancel" && cur.w >= 0.03 && cur.h >= 0.03 && !boxHit(cur, -1)) {
           const d = editBoard(); d.boxes = d.boxes || [];
           d.boxes.push({ t: boxT, x: r3(cur.x), y: r3(cur.y), w: r3(cur.w), h: r3(cur.h) });
         }
@@ -2100,20 +2170,23 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     e.preventDefault(); e.stopPropagation();
     const bd = $("board"), r = bd.getBoundingClientRect(), b = curBoard(), x0 = b.boxes[i], sx = e.clientX, sy = e.clientY;
     const bx = e.currentTarget.closest(".tbox");
-    const inside = (p) => p.x >= x0.x && p.x <= x0.x + x0.w && p.y >= x0.y && p.y <= x0.y + x0.h;
+    const inside = (p) => boxOwner(p) === i;
     const ps = mode === "move" ? b.pieces.map((p, j) => (inside(p) ? j : -1)).filter((j) => j >= 0) : [];
     const ms = mode === "move" ? b.marks.map((k, j) => (inside(k) ? j : -1)).filter((j) => j >= 0) : [];
-    let moved = false, dx = 0, dy = 0, w = x0.w, h = x0.h;
+    let moved = false, dx = 0, dy = 0, cdx = 0, cdy = 0, w = x0.w, h = x0.h;
     const move = (ev) => {
       if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) < 5) return;
       moved = true;
       const fx = (ev.clientX - sx) / r.width, fy = (ev.clientY - sy) / r.height;
       if (mode === "size") {
         w = Math.min(1 - x0.x, Math.max(.03, x0.w + fx)); h = Math.min(1 - x0.y, Math.max(.03, x0.h + fy));
+        const g = boxGrow(x0, w, h, i); w = g.w; h = g.h; // 커지다가 옆 조 네모에 닿으면 멈춤
         bx.style.width = w * 100 + "%"; bx.style.height = h * 100 + "%";
         return;
       }
       dx = Math.min(1 - x0.x - x0.w, Math.max(-x0.x, fx)); dy = Math.min(1 - x0.y - x0.h, Math.max(-x0.y, fy)); // 네모가 지도 밖으로 안 나가게
+      const sl = boxSlide({ x: x0.x + cdx, y: x0.y + cdy, w: x0.w, h: x0.h }, { x: x0.x + dx, y: x0.y + dy }, i); // 옆 조 네모에 닿으면 멈춤
+      dx = cdx = sl.x - x0.x; dy = cdy = sl.y - x0.y;
       bx.style.left = (x0.x + dx) * 100 + "%"; bx.style.top = (x0.y + dy) * 100 + "%";
       const put = (sel, list, js) => js.forEach((j) => { const n = bd.querySelector(sel + '[data-i="' + j + '"]'); if (n) { n.style.left = (list[j].x + dx) * 100 + "%"; n.style.top = (list[j].y + dy) * 100 + "%"; } });
       put(".pc", b.pieces, ps); put(".mk2", b.marks, ms);
@@ -2146,7 +2219,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
       if (!ghost) {
         ghost = src.cloneNode(true); ghost.classList.add("drag-ghost"); ghost.classList.remove("sel");
         if (what.kind === "np") ghost.className = "pc g0 drag-ghost";
-        if (what.kind === "nm") { ghost.className = "mk2 drag-ghost t-" + what.t; ghost.textContent = MARK[what.t][0]; }
+        if (what.kind === "nm") { const tm = TEAMS.includes(what.t); ghost.className = "mk2 drag-ghost " + (tm ? "team" : "t-" + what.t); ghost.textContent = tm ? what.t : MARK[what.t][0]; if (tm) ghost.style.background = TEAM_COLOR[what.t]; }
         document.body.appendChild(ghost); src.classList.add("dragging");
       }
       ghost.style.left = ev.clientX + "px"; ghost.style.top = ev.clientY + "px";
