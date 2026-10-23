@@ -388,7 +388,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   background: #120f0b repeating-linear-gradient(0deg, transparent 0 39px, rgba(214,176,98,.08) 39px 40px), repeating-linear-gradient(90deg, transparent 0 39px, rgba(214,176,98,.08) 39px 40px); }
 .board .bgimg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; pointer-events: none; }
 .board .nomap { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 16px; color: var(--muted); font-size: 14px; pointer-events: none; white-space: pre-line; }
-.board-tools .btn[aria-pressed="true"] { border-color: var(--gold-hi); color: var(--gold-hi); background: rgba(214,176,98,.12); }
+.board-tools .btn[aria-pressed="true"], .board-sel .btn[aria-pressed="true"] { border-color: var(--gold-hi); color: var(--gold-hi); background: rgba(214,176,98,.12); }
 .pc { position: absolute; transform: translate(-50%, -50%); padding: 2px 7px; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap; max-width: 9em; overflow: hidden; text-overflow: ellipsis;
   background: #2a1f0e; color: var(--gold-hi); border: 1px solid var(--gold); box-shadow: 0 1px 4px rgba(0,0,0,.85); touch-action: none; cursor: grab; }
 .pc.g1, .dot.g1 { background: #7a1d22; border-color: #ff8a80; color: #fff; }
@@ -407,14 +407,25 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
 .board.drawing { cursor: crosshair; touch-action: none; }
 .board.drawing .pc, .board.drawing .mk2 { cursor: crosshair; }
 /* 조 묶음 상자 — "a조 b조 c조 d조 사각형에 묶을수있으면" (2026-10-23) */
-.tbox { position: absolute; box-sizing: border-box; border: 3px dashed; border-radius: 8px; cursor: pointer; }
+.tbox { position: absolute; box-sizing: border-box; border: 3px dashed; border-radius: 8px; cursor: move; touch-action: none; }
+/* 네모를 끌면 안의 말 · 표시가 같이 움직인다, 오른쪽 아래 귀퉁이는 크기 ("a조 b조 c조 전체로 한번에 움직여야" 2026-10-23) */
+.tbox .rz { position: absolute; right: -3px; bottom: -3px; width: 16px; height: 16px; border-radius: 4px 0 6px 0; background: currentColor; cursor: nwse-resize; touch-action: none; z-index: 3; /* 화살표에 가려지지 않게 */ }
+.board.view .tbox .rz { display: none; }
 .tbox .tlabel { position: absolute; left: 0; top: 0; padding: 1px 8px; font-size: 12px; font-weight: 800; color: #fff; border-radius: 4px 0 6px 0; }
 .tbox.sel { border-style: solid; box-shadow: 0 0 0 2px #fff; }
 .board.view .tbox, .board.drawing .tbox { pointer-events: none; }
 .tbox.preview { pointer-events: none; }
 .drag-ghost { position: fixed; z-index: 60; pointer-events: none; transform: translate(-50%, -50%); opacity: .9; }
 .dragging { opacity: .3; }
-.tray { border: 1px solid var(--line); border-radius: 6px; padding: 10px; display: grid; gap: 10px; align-content: start; max-height: 560px; overflow: auto; }
+.board-side { display: grid; gap: 10px; align-content: start; min-width: 0; }
+.tray { border: 1px solid var(--line); border-radius: 6px; padding: 10px; display: grid; gap: 10px; align-content: start; max-height: 420px; overflow: auto; }
+/* 고른 말 · 화살표 · 네모 고치기 — 지도 아래에 있어 불편하다고 문파원 밑으로 옮김 (2026-10-23) */
+.board-sel { border: 1px solid var(--gold-lo); border-radius: 6px; padding: 10px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.board-sel > b { flex-basis: 100%; color: var(--gold-hi); font-size: 14px; overflow-wrap: anywhere; }
+.board-sel .hint { margin: 0; color: var(--muted); font-size: 12px; flex-basis: 100%; }
+.board-sel .btn { padding: 5px 10px; font-size: 13px; }
+.board-sel .rename { display: flex; gap: 6px; flex-basis: 100%; }
+.board-sel .rename input { flex: 1; min-width: 0; background: #0b0907; border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; color: inherit; font-size: 13px; }
 .tray h4 { margin: 0; font-size: 13px; color: var(--gold-hi); }
 .tray .hint { margin: 0; color: var(--muted); font-size: 12px; }
 .tchips { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -654,14 +665,17 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
       <p class="board-meta" id="boardMeta"></p>
       <div class="board-wrap">
         <div class="board" id="board" aria-label="전략판 지도"></div>
-        <aside class="tray" id="tray" hidden>
-          <h4>표시</h4>
-          <div class="tchips" id="trayMarks"></div>
-          <h4>문파원 — 끌어서 지도에 놓기</h4>
-          <p class="hint">눌러도 지도 가운데에 놓여요. 지도 밖으로 끌어내면 빠져요.</p>
-          <input id="trayFind" type="search" placeholder="이름 찾기" aria-label="문파원 이름 찾기">
-          <div class="tchips" id="trayNames"></div>
-        </aside>
+        <div class="board-side">
+          <aside class="tray" id="tray" hidden>
+            <h4>표시</h4>
+            <div class="tchips" id="trayMarks"></div>
+            <h4>문파원 — 끌어서 지도에 놓기</h4>
+            <p class="hint">눌러도 지도 가운데에 놓여요. 지도 밖으로 끌어내면 빠져요. 지도에 놓은 이름을 누르면 전략판 이름을 바꿀 수 있어요.</p>
+            <input id="trayFind" type="search" placeholder="이름 찾기" aria-label="문파원 이름 찾기">
+            <div class="tchips" id="trayNames"></div>
+          </aside>
+          <div class="board-sel" id="boardSel" hidden></div>
+        </div>
       </div>
       <div class="legend" id="boardLegend"></div>
       <div class="board-tools" id="boardTools" hidden></div>
@@ -771,7 +785,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610230508";
+  const BUILD = "202610230657";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -1746,6 +1760,8 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   }
   document.querySelectorAll("#mapTabs [data-map]").forEach((b) => { b.onclick = () => { mapKey = b.dataset.map; boardSel = null; renderTactics(); }; });
   function allNames() { const r = DATA.roster; return (r.leader ? [r.leader] : []).concat(r.deputies, r.members); }
+  /** 전략판에 보이는 이름 — 게임 이름과 다르면 문주 · 부문주가 바꿔 둔 것 (boards._names, 두 전장 같이) */
+  function bName(n) { const m = (DATA.boards || {})._names; return (m && typeof m[n] === "string" && m[n]) || n; }
   function renderTactics() {
     if (view !== "tactics") return;
     const ed = canBoard(), b = curBoard(), dirty = !!drafts[mapKey];
@@ -1766,9 +1782,12 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     (b.boxes || []).forEach((x, i) => {
       const sel = boardSel && boardSel.kind === "b" && boardSel.i === i;
       const bx = el("div", "tbox" + (sel ? " sel" : ""));
-      Object.assign(bx.style, { left: x.x * 100 + "%", top: x.y * 100 + "%", width: x.w * 100 + "%", height: x.h * 100 + "%", borderColor: TEAM_COLOR[x.t], background: TEAM_BG[x.t] });
+      Object.assign(bx.style, { left: x.x * 100 + "%", top: x.y * 100 + "%", width: x.w * 100 + "%", height: x.h * 100 + "%", borderColor: TEAM_COLOR[x.t], background: TEAM_BG[x.t], color: TEAM_COLOR[x.t] });
       const lb = el("span", "tlabel", x.t + "조"); lb.style.background = TEAM_COLOR[x.t]; bx.appendChild(lb);
-      if (ed) bx.addEventListener("pointerdown", (e) => { e.preventDefault(); e.stopPropagation(); boardSel = sel ? null : { kind: "b", i }; renderTactics(); });
+      if (ed) {
+        bx.addEventListener("pointerdown", (e) => startBox(e, i, "move"));
+        const rz = el("span", "rz"); rz.title = "크기 바꾸기"; rz.addEventListener("pointerdown", (e) => startBox(e, i, "size")); bx.appendChild(rz);
+      }
       bd.appendChild(bx);
     });
     const svg = svgEl("svg", { class: "arrows", "aria-hidden": "true" });
@@ -1795,13 +1814,13 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     bd.appendChild(svg);
     b.marks.forEach((k, i) => {
       const m = el("div", "mk2 t-" + k.t + (boardSel && boardSel.kind === "m" && boardSel.i === i ? " sel" : ""), (MARK[k.t] || ["?"])[0]);
-      m.style.left = k.x * 100 + "%"; m.style.top = k.y * 100 + "%"; m.title = (MARK[k.t] || ["", ""])[1];
+      m.style.left = k.x * 100 + "%"; m.style.top = k.y * 100 + "%"; m.title = (MARK[k.t] || ["", ""])[1]; m.dataset.i = i;
       if (ed) m.addEventListener("pointerdown", (e) => startDrag(e, { kind: "m", i }));
       bd.appendChild(m);
     });
     b.pieces.forEach((p, i) => {
-      const pc = el("div", "pc g" + (p.g || 0) + (boardSel && boardSel.kind === "p" && boardSel.i === i ? " sel" : ""), p.name);
-      pc.style.left = p.x * 100 + "%"; pc.style.top = p.y * 100 + "%"; pc.title = p.name + (p.g ? " · " + SQUAD[p.g] : "");
+      const pc = el("div", "pc g" + (p.g || 0) + (boardSel && boardSel.kind === "p" && boardSel.i === i ? " sel" : ""), bName(p.name));
+      pc.style.left = p.x * 100 + "%"; pc.style.top = p.y * 100 + "%"; pc.title = bName(p.name) + (bName(p.name) !== p.name ? " (" + p.name + ")" : "") + (p.g ? " · " + SQUAD[p.g] : ""); pc.dataset.i = i;
       if (ed) pc.addEventListener("pointerdown", (e) => startDrag(e, { kind: "p", i }));
       bd.appendChild(pc);
     });
@@ -1818,41 +1837,56 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     $("tray").hidden = !ed;
     if (ed) {
       const placed = new Set(b.pieces.map((p) => p.name)), q = $("trayFind").value.trim();
-      const left = allNames().filter((n) => !placed.has(n) && (!q || n.includes(q)));
-      $("trayNames").replaceChildren(...(left.length ? left.map((n) => { const c = el("span", "tchip", n); c.addEventListener("pointerdown", (e) => startDrag(e, { kind: "np", name: n })); return c; }) : [el("span", "hint", q ? "찾는 이름이 없습니다." : "모두 지도에 올렸습니다.")]));
+      const left = allNames().filter((n) => !placed.has(n) && (!q || n.includes(q) || bName(n).includes(q)));
+      $("trayNames").replaceChildren(...(left.length ? left.map((n) => { const c = el("span", "tchip", bName(n)); c.addEventListener("pointerdown", (e) => startDrag(e, { kind: "np", name: n })); return c; }) : [el("span", "hint", q ? "찾는 이름이 없습니다." : "모두 지도에 올렸습니다.")]));
       $("trayMarks").replaceChildren(...Object.keys(MARK).map((t) => { const c = el("span", "tchip tmark", MARK[t][0] + " " + MARK[t][1]); c.addEventListener("pointerdown", (e) => startDrag(e, { kind: "nm", t })); return c; }));
     }
     // 도구
+    // 고른 것 고치기 — 오른쪽 문파원 밑 (지도 아래에 있으니 불편하다고 2026-10-23 옮김)
+    const sp = $("boardSel"); sp.textContent = ""; sp.hidden = !ed;
     const tl = $("boardTools"); tl.textContent = ""; tl.hidden = !ed;
     if (ed) {
       if (boardSel && boardSel.kind === "p" && b.pieces[boardSel.i]) {
         const p = b.pieces[boardSel.i];
-        tl.appendChild(el("b", null, p.name));
-        SQUAD.forEach((n, g) => { const x = btn("btn ghost" + ((p.g || 0) === g ? " on" : ""), null, () => { editBoard().pieces[boardSel.i].g = g; renderTactics(); }); x.append(el("span", "dot g" + g), document.createTextNode(n)); x.setAttribute("aria-pressed", String((p.g || 0) === g)); tl.appendChild(x); });
-        tl.appendChild(btn("btn ghost", "빼기", () => { editBoard().pieces.splice(boardSel.i, 1); boardSel = null; renderTactics(); }));
+        sp.appendChild(el("b", null, bName(p.name)));
+        if (bName(p.name) !== p.name) sp.appendChild(el("span", "hint", "명단 이름: " + p.name));
+        // 전략판 이름 — "문파원 이름이 게임상이랑 틀려서 전략판에서는 내가 직접 수정" (2026-10-23). 바로 저장, 두 전장 같이
+        const rn = el("div", "rename"), ni = document.createElement("input");
+        ni.value = bName(p.name); ni.maxLength = 20; ni.placeholder = p.name; ni.setAttribute("aria-label", "전략판에 보일 이름");
+        const nb = btn("btn ghost", "이름 바꾸기", async () => {
+          nb.disabled = true;
+          try {
+            DATA.boards._names = await memberCall("setBoardName", adminPw || token, p.name, ni.value);
+            saveCache(); renderTactics(); setStatus("전략판 이름을 바꿨습니다 (명단 이름은 그대로).");
+          } catch (e) { nb.disabled = false; setStatus(errMsg(e), true); }
+        });
+        ni.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); nb.click(); } });
+        rn.append(ni, nb); sp.appendChild(rn);
+        SQUAD.forEach((n, g) => { const x = btn("btn ghost" + ((p.g || 0) === g ? " on" : ""), null, () => { editBoard().pieces[boardSel.i].g = g; renderTactics(); }); x.append(el("span", "dot g" + g), document.createTextNode(n)); x.setAttribute("aria-pressed", String((p.g || 0) === g)); sp.appendChild(x); });
+        sp.appendChild(btn("btn ghost", "빼기", () => { editBoard().pieces.splice(boardSel.i, 1); boardSel = null; renderTactics(); }));
       } else if (!drawMode && boardSel && boardSel.kind === "b" && (b.boxes || [])[boardSel.i]) {
         const x = b.boxes[boardSel.i];
-        tl.appendChild(el("b", null, x.t + "조 묶음"));
-        TEAMS.forEach((t) => { const y = btn("btn ghost", t + "조", () => { editBoard().boxes[boardSel.i].t = t; renderTactics(); }); y.style.borderColor = TEAM_COLOR[t]; y.setAttribute("aria-pressed", String(x.t === t)); tl.appendChild(y); });
-        tl.appendChild(btn("btn ghost", "빼기", () => { editBoard().boxes.splice(boardSel.i, 1); boardSel = null; renderTactics(); }));
+        sp.appendChild(el("b", null, x.t + "조 묶음"));
+        TEAMS.forEach((t) => { const y = btn("btn ghost", t + "조", () => { editBoard().boxes[boardSel.i].t = t; renderTactics(); }); y.style.borderColor = TEAM_COLOR[t]; y.setAttribute("aria-pressed", String(x.t === t)); sp.appendChild(y); });
+        sp.appendChild(btn("btn ghost", "빼기", () => { editBoard().boxes.splice(boardSel.i, 1); boardSel = null; renderTactics(); }));
+        sp.appendChild(el("span", "hint", "네모를 끌면 안에 있는 이름 · 표시가 같이 움직여요. 오른쪽 아래 귀퉁이를 끌면 크기가 바뀌어요."));
       } else if (drawMode === "box") {
-        tl.appendChild(el("b", null, "묶을 조"));
-        TEAMS.forEach((t) => { const y = btn("btn ghost", t + "조", () => { boxT = t; renderTactics(); }); y.style.borderColor = TEAM_COLOR[t]; y.setAttribute("aria-pressed", String(boxT === t)); tl.appendChild(y); });
-        tl.appendChild(el("span", "hint", "지도 위에서 한 모서리부터 맞은편 모서리까지 끌면 네모가 그려져요."));
+        sp.appendChild(el("b", null, "묶을 조"));
+        TEAMS.forEach((t) => { const y = btn("btn ghost", t + "조", () => { boxT = t; renderTactics(); }); y.style.borderColor = TEAM_COLOR[t]; y.setAttribute("aria-pressed", String(boxT === t)); sp.appendChild(y); });
+        sp.appendChild(el("span", "hint", "지도 위에서 한 모서리부터 맞은편 모서리까지 끌면 네모가 그려져요."));
       } else if (!drawMode && boardSel && boardSel.kind === "a" && (b.arrows || [])[boardSel.i]) {
         const a = b.arrows[boardSel.i];
-        tl.appendChild(el("b", null, "화살표"));
-        SQUAD.forEach((n, g) => { const x = btn("btn ghost", null, () => { editBoard().arrows[boardSel.i].g = g; renderTactics(); }); x.append(el("span", "dot g" + g), document.createTextNode(n)); x.setAttribute("aria-pressed", String((a.g || 0) === g)); tl.appendChild(x); });
-        tl.appendChild(btn("btn ghost", "빼기", () => { editBoard().arrows.splice(boardSel.i, 1); boardSel = null; renderTactics(); }));
+        sp.appendChild(el("b", null, "화살표"));
+        SQUAD.forEach((n, g) => { const x = btn("btn ghost", null, () => { editBoard().arrows[boardSel.i].g = g; renderTactics(); }); x.append(el("span", "dot g" + g), document.createTextNode(n)); x.setAttribute("aria-pressed", String((a.g || 0) === g)); sp.appendChild(x); });
+        sp.appendChild(btn("btn ghost", "빼기", () => { editBoard().arrows.splice(boardSel.i, 1); boardSel = null; renderTactics(); }));
       } else if (drawMode === "arrow") {
-        tl.appendChild(el("b", null, "화살표 색"));
-        SQUAD.forEach((n, g) => { const x = btn("btn ghost", null, () => { arrowG = g; renderTactics(); }); x.append(el("span", "dot g" + g), document.createTextNode(n)); x.setAttribute("aria-pressed", String(arrowG === g)); tl.appendChild(x); });
-        tl.appendChild(el("span", "hint", "지도 위에서 시작점부터 끝점까지 끌면 화살표가 그려져요."));
+        sp.appendChild(el("b", null, "화살표 색"));
+        SQUAD.forEach((n, g) => { const x = btn("btn ghost", null, () => { arrowG = g; renderTactics(); }); x.append(el("span", "dot g" + g), document.createTextNode(n)); x.setAttribute("aria-pressed", String(arrowG === g)); sp.appendChild(x); });
+        sp.appendChild(el("span", "hint", "지도 위에서 시작점부터 끝점까지 끌면 화살표가 그려져요."));
       } else if (boardSel && boardSel.kind === "m" && b.marks[boardSel.i]) {
-        tl.appendChild(el("b", null, MARK[b.marks[boardSel.i].t][1] + " 표시"));
-        tl.appendChild(btn("btn ghost", "빼기", () => { editBoard().marks.splice(boardSel.i, 1); boardSel = null; renderTactics(); }));
-      } else tl.appendChild(el("span", "hint", "말 · 화살표 · 조 네모를 누르면 색을 고르거나 뺄 수 있어요."));
-      tl.appendChild(el("span", null, ""));
+        sp.appendChild(el("b", null, MARK[b.marks[boardSel.i].t][1] + " 표시"));
+        sp.appendChild(btn("btn ghost", "빼기", () => { editBoard().marks.splice(boardSel.i, 1); boardSel = null; renderTactics(); }));
+      } else sp.appendChild(el("span", "hint", "지도의 이름 · 화살표 · 조 네모를 누르면 여기서 소대 · 조 · 이름을 고치거나 뺄 수 있어요."));
       const am = btn("btn" + (drawMode === "arrow" ? "" : " ghost"), drawMode === "arrow" ? "화살표 그리기 끝" : "➚ 화살표 그리기", () => { drawMode = drawMode === "arrow" ? "" : "arrow"; boardSel = null; renderTactics(); });
       am.setAttribute("aria-pressed", String(drawMode === "arrow"));
       const bm = btn("btn" + (drawMode === "box" ? "" : " ghost"), drawMode === "box" ? "조 묶기 끝" : "▭ 조 묶기", () => { drawMode = drawMode === "box" ? "" : "box"; boardSel = null; renderTactics(); });
@@ -1938,6 +1972,47 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
       saveCache(); renderTactics(); setStatus(MAPS[mapKey] + " 지도 사진을 바꿨습니다.");
     } catch (e) { setStatus(errMsg(e), true); }
   });
+  /* 조 네모 끌기 — 네모 안의 이름 · 표시가 같이 움직인다 ("a조 b조 c조 전체로 한번에 움직여야하니깐" 2026-10-23).
+     mode "size" 는 오른쪽 아래 귀퉁이로 크기만 바꾼다. 안 움직이고 떼면 고르기. */
+  function startBox(e, i, mode) {
+    if (e.button !== undefined && e.button !== 0) return;
+    e.preventDefault(); e.stopPropagation();
+    const bd = $("board"), r = bd.getBoundingClientRect(), b = curBoard(), x0 = b.boxes[i], sx = e.clientX, sy = e.clientY;
+    const bx = e.currentTarget.closest(".tbox");
+    const inside = (p) => p.x >= x0.x && p.x <= x0.x + x0.w && p.y >= x0.y && p.y <= x0.y + x0.h;
+    const ps = mode === "move" ? b.pieces.map((p, j) => (inside(p) ? j : -1)).filter((j) => j >= 0) : [];
+    const ms = mode === "move" ? b.marks.map((k, j) => (inside(k) ? j : -1)).filter((j) => j >= 0) : [];
+    let moved = false, dx = 0, dy = 0, w = x0.w, h = x0.h;
+    const move = (ev) => {
+      if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) < 5) return;
+      moved = true;
+      const fx = (ev.clientX - sx) / r.width, fy = (ev.clientY - sy) / r.height;
+      if (mode === "size") {
+        w = Math.min(1 - x0.x, Math.max(.03, x0.w + fx)); h = Math.min(1 - x0.y, Math.max(.03, x0.h + fy));
+        bx.style.width = w * 100 + "%"; bx.style.height = h * 100 + "%";
+        return;
+      }
+      dx = Math.min(1 - x0.x - x0.w, Math.max(-x0.x, fx)); dy = Math.min(1 - x0.y - x0.h, Math.max(-x0.y, fy)); // 네모가 지도 밖으로 안 나가게
+      bx.style.left = (x0.x + dx) * 100 + "%"; bx.style.top = (x0.y + dy) * 100 + "%";
+      const put = (sel, list, js) => js.forEach((j) => { const n = bd.querySelector(sel + '[data-i="' + j + '"]'); if (n) { n.style.left = (list[j].x + dx) * 100 + "%"; n.style.top = (list[j].y + dy) * 100 + "%"; } });
+      put(".pc", b.pieces, ps); put(".mk2", b.marks, ms);
+    };
+    const up = (ev) => {
+      document.removeEventListener("pointermove", move); document.removeEventListener("pointerup", up); document.removeEventListener("pointercancel", up);
+      if (!moved) { if (mode === "move") boardSel = boardSel && boardSel.kind === "b" && boardSel.i === i ? null : { kind: "b", i }; renderTactics(); return; }
+      if (ev.type === "pointercancel") { renderTactics(); return; }
+      const d = editBoard(), r3 = (v) => Math.round(v * 1000) / 1000;
+      if (mode === "size") { d.boxes[i].w = r3(w); d.boxes[i].h = r3(h); }
+      else {
+        d.boxes[i].x = r3(x0.x + dx); d.boxes[i].y = r3(x0.y + dy);
+        ps.forEach((j) => { d.pieces[j].x = r3(d.pieces[j].x + dx); d.pieces[j].y = r3(d.pieces[j].y + dy); });
+        ms.forEach((j) => { d.marks[j].x = r3(d.marks[j].x + dx); d.marks[j].y = r3(d.marks[j].y + dy); });
+      }
+      boardSel = { kind: "b", i };
+      renderTactics();
+    };
+    document.addEventListener("pointermove", move); document.addEventListener("pointerup", up); document.addEventListener("pointercancel", up);
+  }
   /* 끌어 놓기 — 마우스 · 손가락 모두 (pointer). 조금이라도 움직이면 끌기, 아니면 누르기(고르기 / 쟁반이면 가운데에 놓기). */
   function startDrag(e, what) {
     if (e.button !== undefined && e.button !== 0) return;
