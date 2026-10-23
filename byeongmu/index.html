@@ -785,7 +785,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610230657";
+  const BUILD = "202610230925";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -1740,7 +1740,10 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   const MARK = { atk: ["⚔", "공격"], def: ["🛡", "방어"], warn: ["⚠", "주의"], flag: ["🚩", "깃발"] };
   const SQUAD = ["소대 없음", "1소대", "2소대", "3소대", "4소대"];
   let mapKey = "shingi", boardSel = null;
-  let drawMode = "", arrowG = 1, boxT = "A"; // 그리는 중: "" · "arrow" · "box" / 화살표 색(소대) / 상자 조
+  let drawMode = "", arrowG = 1, arrowTwo = false, boxT = "A"; // 그리는 중: "" · "arrow" · "box" / 화살표 색(소대) · 양방향 / 상자 조
+  /* 화살표 점들 — 꺾인 화살표(ㄱ) 는 pts [[x,y],…] (2026-10-23). 예전 것은 {x1,y1,x2,y2} */
+  function aPts(a) { return Array.isArray(a.pts) ? a.pts : [[a.x1, a.y1], [a.x2, a.y2]]; }
+  function normArrow(a) { if (!Array.isArray(a.pts)) { a.pts = aPts(a); delete a.x1; delete a.y1; delete a.x2; delete a.y2; } return a; }
   const TEAMS = ["A", "B", "C", "D"];
   const TEAM_COLOR = { A: "#ff6b6b", B: "#6fa8ff", C: "#6fd68a", D: "#c9a6ff" };
   const TEAM_BG = { A: "rgba(255,107,107,.12)", B: "rgba(111,168,255,.12)", C: "rgba(111,214,138,.12)", D: "rgba(201,166,255,.12)" };
@@ -1800,15 +1803,23 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     svg.appendChild(defs);
     (b.arrows || []).forEach((a, i) => {
       const sel = boardSel && boardSel.kind === "a" && boardSel.i === i;
-      const at = { x1: a.x1 * 100 + "%", y1: a.y1 * 100 + "%", x2: a.x2 * 100 + "%", y2: a.y2 * 100 + "%" };
+      const ps = aPts(a), last = ps.length - 2, mk = "url(#ah" + (a.g || 0) + ")";
+      const segs = ps.slice(1).map((q, j) => ({ x1: ps[j][0] * 100 + "%", y1: ps[j][1] * 100 + "%", x2: q[0] * 100 + "%", y2: q[1] * 100 + "%" }));
       const g = svgEl("g", {});
-      g.appendChild(svgEl("line", Object.assign({ stroke: sel ? "#fff" : "#000", "stroke-width": sel ? 11 : 9, "stroke-linecap": "round", opacity: sel ? 1 : .7 }, at)));
-      g.appendChild(svgEl("line", Object.assign({ stroke: ARROW_COLOR[a.g || 0], "stroke-width": 6, "stroke-linecap": "round", "marker-end": "url(#ah" + (a.g || 0) + ")" }, at)));
-      if (ed) {
+      segs.forEach((at) => g.appendChild(svgEl("line", Object.assign({ stroke: sel ? "#fff" : "#000", "stroke-width": sel ? 11 : 9, "stroke-linecap": "round", opacity: sel ? 1 : .7 }, at))));
+      segs.forEach((at, j) => { // 머리: 끝 · 양방향이면 처음에도
+        const ln = svgEl("line", Object.assign({ stroke: ARROW_COLOR[a.g || 0], "stroke-width": 6, "stroke-linecap": "round" }, at));
+        if (j === last) ln.setAttribute("marker-end", mk);
+        if (j === 0 && a.two) ln.setAttribute("marker-start", mk);
+        g.appendChild(ln);
+      });
+      if (ed) segs.forEach((at) => {
         const hit = svgEl("line", Object.assign({ class: "hit", stroke: "transparent", "stroke-width": 22 }, at));
         hit.addEventListener("pointerdown", (e) => { e.preventDefault(); e.stopPropagation(); boardSel = sel ? null : { kind: "a", i }; renderTactics(); });
         g.appendChild(hit);
-      }
+      });
+      // 그리는 중에는 끝점에 동그라미 — 여기서 다시 끌면 꺾어서 이어진다
+      if (ed && drawMode === "arrow" && ps.length < 8) g.appendChild(svgEl("circle", { class: "tip", cx: ps[last + 1][0] * 100 + "%", cy: ps[last + 1][1] * 100 + "%", r: 9, fill: "rgba(255,255,255,.25)", stroke: "#fff", "stroke-width": 2, "stroke-dasharray": "3 2" }));
       svg.appendChild(g);
     });
     bd.appendChild(svg);
@@ -1878,11 +1889,15 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
         const a = b.arrows[boardSel.i];
         sp.appendChild(el("b", null, "화살표"));
         SQUAD.forEach((n, g) => { const x = btn("btn ghost", null, () => { editBoard().arrows[boardSel.i].g = g; renderTactics(); }); x.append(el("span", "dot g" + g), document.createTextNode(n)); x.setAttribute("aria-pressed", String((a.g || 0) === g)); sp.appendChild(x); });
+        const tw = btn("btn ghost", "↔ 양방향", () => { const t = editBoard().arrows[boardSel.i]; t.two = !t.two; renderTactics(); }); tw.setAttribute("aria-pressed", String(!!a.two)); sp.appendChild(tw);
+        sp.appendChild(btn("btn ghost", "⇄ 방향 바꾸기", () => { const t = normArrow(editBoard().arrows[boardSel.i]); t.pts = t.pts.slice().reverse(); renderTactics(); }));
+        if (aPts(a).length > 2) sp.appendChild(btn("btn ghost", "마지막 꺾임 빼기", () => { const t = normArrow(editBoard().arrows[boardSel.i]); t.pts = t.pts.slice(0, -1); renderTactics(); }));
         sp.appendChild(btn("btn ghost", "빼기", () => { editBoard().arrows.splice(boardSel.i, 1); boardSel = null; renderTactics(); }));
       } else if (drawMode === "arrow") {
         sp.appendChild(el("b", null, "화살표 색"));
         SQUAD.forEach((n, g) => { const x = btn("btn ghost", null, () => { arrowG = g; renderTactics(); }); x.append(el("span", "dot g" + g), document.createTextNode(n)); x.setAttribute("aria-pressed", String(arrowG === g)); sp.appendChild(x); });
-        sp.appendChild(el("span", "hint", "지도 위에서 시작점부터 끝점까지 끌면 화살표가 그려져요."));
+        const tw = btn("btn ghost", "↔ 양방향", () => { arrowTwo = !arrowTwo; renderTactics(); }); tw.setAttribute("aria-pressed", String(arrowTwo)); sp.appendChild(tw);
+        sp.appendChild(el("span", "hint", "지도 위에서 시작점부터 끝점까지 끌면 화살표가 그려져요. 화살표 끝의 동그라미에서 다시 끌면 꺾어서 이어져요(ㄱ 모양). [↔ 양방향] 을 켜면 양쪽에 머리가 생겨요."));
       } else if (boardSel && boardSel.kind === "m" && b.marks[boardSel.i]) {
         sp.appendChild(el("b", null, MARK[b.marks[boardSel.i].t][1] + " 표시"));
         sp.appendChild(btn("btn ghost", "빼기", () => { editBoard().marks.splice(boardSel.i, 1); boardSel = null; renderTactics(); }));
@@ -1941,9 +1956,17 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
       document.addEventListener("pointermove", move); document.addEventListener("pointerup", up); document.addEventListener("pointercancel", up);
       return;
     }
-    const a = { x1: fx(e.clientX), y1: fy(e.clientY), x2: fx(e.clientX), y2: fy(e.clientY), g: arrowG };
+    // 화살표 끝점(22px 안)에서 시작하면 새 화살표가 아니라 그 화살표를 꺾어서 잇는다 ("<ㄱ 이런식으로" 2026-10-23)
+    const x0 = fx(e.clientX), y0 = fy(e.clientY), arr = curBoard().arrows || [];
+    let ext = -1;
+    for (let j = arr.length - 1; j >= 0; j--) {
+      const ps = aPts(arr[j]), l = ps[ps.length - 1];
+      if (ps.length < 8 && Math.hypot((l[0] - x0) * r.width, (l[1] - y0) * r.height) <= 22) { ext = j; break; }
+    }
+    const st = ext >= 0 ? aPts(arr[ext])[aPts(arr[ext]).length - 1] : [x0, y0], ag = ext >= 0 ? arr[ext].g || 0 : arrowG;
+    const a = { x1: st[0], y1: st[1], x2: x0, y2: y0, g: ag };
     const svg = bd.querySelector(".arrows");
-    const pv = svgEl("line", { stroke: ARROW_COLOR[arrowG], "stroke-width": 6, "stroke-linecap": "round", "stroke-dasharray": "10 6", "marker-end": "url(#ah" + arrowG + ")" });
+    const pv = svgEl("line", { stroke: ARROW_COLOR[ag], "stroke-width": 6, "stroke-linecap": "round", "stroke-dasharray": "10 6", "marker-end": "url(#ah" + ag + ")" });
     const put = () => { pv.setAttribute("x1", a.x1 * 100 + "%"); pv.setAttribute("y1", a.y1 * 100 + "%"); pv.setAttribute("x2", a.x2 * 100 + "%"); pv.setAttribute("y2", a.y2 * 100 + "%"); };
     put(); if (svg) svg.appendChild(pv);
     const move = (ev) => { a.x2 = fx(ev.clientX); a.y2 = fy(ev.clientY); put(); };
@@ -1952,7 +1975,8 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
       pv.remove();
       if (ev.type !== "pointercancel" && Math.hypot(a.x2 - a.x1, a.y2 - a.y1) >= 0.03) {
         const d = editBoard(); d.arrows = d.arrows || [];
-        d.arrows.push({ x1: r3(a.x1), y1: r3(a.y1), x2: r3(a.x2), y2: r3(a.y2), g: a.g });
+        if (ext >= 0) { const t = normArrow(d.arrows[ext]); t.pts = t.pts.concat([[r3(a.x2), r3(a.y2)]]); }
+        else d.arrows.push({ pts: [[r3(a.x1), r3(a.y1)], [r3(a.x2), r3(a.y2)]], g: a.g, two: arrowTwo });
       }
       renderTactics();
     };
