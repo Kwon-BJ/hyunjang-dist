@@ -653,7 +653,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610230110";
+  const BUILD = "202610230118";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -809,6 +809,24 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   }
   function goHome() { view = "notice"; filter = "전체"; query = ""; $("search").value = ""; render(); window.scrollTo(0, 0); }
   const VIEW_EL = { roster: "rosterView", board: "boardView", members: "membersView", auth: "authView" };
+  /* 보던 칸을 주소 끝(#schedule 등)에 적어 둔다 — F5 를 눌러도 공지사항으로 안 돌아가게 (2026-10-23
+     "문파일정은 문파 일정 이런식으로"). 로그인 화면일 때는 안 바꿔서, 로그인하면 보던 칸으로 간다. */
+  const HASH = { "전체": "", "필독": "must", "문파전": "war", "행사": "schedule", "규정": "rules", "일반": "general", roster: "roster", board: "board", members: "members" };
+  function hashNow() { return view === "notice" ? HASH[filter] || "" : HASH[view] || null; }
+  function writeHash() {
+    const h = hashNow();
+    if (h === null || document.body.classList.contains("locked")) return;
+    if (location.hash.slice(1) !== h) history.replaceState(null, "", location.pathname + location.search + (h ? "#" + h : ""));
+  }
+  /* 주소의 # 을 읽어 그 칸으로. 맞는 것이 있으면 true */
+  function readHash() {
+    const h = decodeURIComponent(location.hash.slice(1));
+    const k = Object.keys(HASH).find((x) => HASH[x] && HASH[x] === h);
+    if (!k) return false;
+    if (VIEW_EL[k]) { if (k === "members" && !canWrite) return false; view = k; }
+    else { view = "notice"; filter = k; }
+    return true;
+  }
   function go(v, stay) {
     view = v; render();
     if (view === "board") refreshPosts();
@@ -1336,7 +1354,8 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
       const r = await call("memberLogin", id, pw);
       $("lPw").value = "";
       setMe(r.token, r.member, r.key);
-      goHome(); setStatus(r.member.gameId + " 님, 어서 오세요.");
+      if (readHash()) { render(); window.scrollTo(0, 0); if (view === "board") refreshPosts(); } else goHome();
+      setStatus(r.member.gameId + " 님, 어서 오세요.");
     } catch (err) { $("loginErr").textContent = errMsg(err); }
     b.disabled = false;
   });
@@ -1437,6 +1456,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     renderNotices();
     renderRoster();
     renderBoard();
+    writeHash();
   }
 
   /* ── 처음 열 때 ── */
@@ -1500,6 +1520,8 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     }
     catch (e) { loaded = true; render(); setStatus("공지를 불러오지 못했습니다. 새로고침해 주세요. (" + errMsg(e) + ")", true); }
   }
+  if (token && me && me.admin) { adminPw = token; canWrite = true; }
+  if (token || canWrite) readHash();
   applySite();
   applyWriteUi();
   renderAcct();
