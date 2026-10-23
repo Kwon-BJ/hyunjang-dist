@@ -759,7 +759,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610230426";
+  const BUILD = "202610230429";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -1357,6 +1357,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     return box;
   }
   function renderBoard() {
+    saveCache();
     $("postCount").textContent = DATA.posts.length ? "글 " + DATA.posts.length + "개" : "";
     $("postList").replaceChildren(...DATA.posts.map(postEl));
     $("postList").hidden = DATA.posts.length === 0;
@@ -1791,7 +1792,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
         const d = curBoard();
         try {
           DATA.boards[mapKey] = await memberCall("saveBoard", adminPw || token, mapKey, { pieces: d.pieces, marks: d.marks, memo: d.memo });
-          delete drafts[mapKey]; renderTactics(); setStatus(MAPS[mapKey] + " 전략을 저장했습니다. 문파원 모두에게 보입니다.");
+          delete drafts[mapKey]; saveCache(); renderTactics(); setStatus(MAPS[mapKey] + " 전략을 저장했습니다. 문파원 모두에게 보입니다.");
         } catch (e) { sv.disabled = false; sv.textContent = "저장"; setStatus(errMsg(e), true); }
       });
       sv.disabled = !dirty;
@@ -1813,7 +1814,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
       const sm = await shrink(file, 2000);
       DATA.boards[mapKey] = await memberCall("setBoardImage", adminPw || token, mapKey, sm.b64, sm.mime, sm.name);
       if (drafts[mapKey]) drafts[mapKey].bg = DATA.boards[mapKey].bg;
-      renderTactics(); setStatus(MAPS[mapKey] + " 지도 사진을 바꿨습니다.");
+      saveCache(); renderTactics(); setStatus(MAPS[mapKey] + " 지도 사진을 바꿨습니다.");
     } catch (e) { setStatus(errMsg(e), true); }
   });
   /* 끌어 놓기 — 마우스 · 손가락 모두 (pointer). 조금이라도 움직이면 끌기, 아니면 누르기(고르기 / 쟁반이면 가운데에 놓기). */
@@ -1860,7 +1861,10 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   }
 
   /* ── 그리기 ── */
+  /* 이 기계에 둔 사본(bmc-data)도 바로 고친다 — 안 그러면 저장 직후 F5 에 잠깐 예전 것이 보였다 (2026-10-23) */
+  function saveCache() { if (!loaded || !(me || canWrite)) return; try { localStorage.setItem("bmc-data", JSON.stringify(DATA)); } catch (e) {} }
   function render() {
+    saveCache();
     renderTactics();
     const locked = !me && !canWrite;
     document.body.classList.toggle("locked", locked);
