@@ -653,7 +653,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610230105";
+  const BUILD = "202610230110";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -1306,8 +1306,10 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   });
   function openAuth(tab) {
     showTab(tab);
-    go("auth");
-    setTimeout(() => $(tab === "join" ? "jId" : tab === "pw" ? "cPw" : "lId").focus(), 0);
+    /* 로그인 · 회원가입도 화면을 끌어내리지 않는다 — 내려가는 건 직접 스크롤로 (2026-10-23).
+       휴대폰은 칸에 커서를 넣으면 자판이 뜨며 화면이 밀려서, 마우스 쓰는 PC 에서만 커서를 넣는다(그것도 안 움직이게). */
+    go("auth", true);
+    if (window.matchMedia && matchMedia("(pointer: fine)").matches) setTimeout(() => $(tab === "join" ? "jId" : tab === "pw" ? "cPw" : "lId").focus({ preventScroll: true }), 0);
   }
   function showTab(tab) {
     $("tabLogin").setAttribute("aria-pressed", String(tab === "login"));
