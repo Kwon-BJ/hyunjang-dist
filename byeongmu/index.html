@@ -406,6 +406,12 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
 .board.view .arrows .hit, .board.drawing .arrows .hit { pointer-events: none; }
 .board.drawing { cursor: crosshair; touch-action: none; }
 .board.drawing .pc, .board.drawing .mk2 { cursor: crosshair; }
+/* 조 묶음 상자 — "a조 b조 c조 d조 사각형에 묶을수있으면" (2026-10-23) */
+.tbox { position: absolute; box-sizing: border-box; border: 3px dashed; border-radius: 8px; cursor: pointer; }
+.tbox .tlabel { position: absolute; left: 0; top: 0; padding: 1px 8px; font-size: 12px; font-weight: 800; color: #fff; border-radius: 4px 0 6px 0; }
+.tbox.sel { border-style: solid; box-shadow: 0 0 0 2px #fff; }
+.board.view .tbox, .board.drawing .tbox { pointer-events: none; }
+.tbox.preview { pointer-events: none; }
 .drag-ghost { position: fixed; z-index: 60; pointer-events: none; transform: translate(-50%, -50%); opacity: .9; }
 .dragging { opacity: .3; }
 .tray { border: 1px solid var(--line); border-radius: 6px; padding: 10px; display: grid; gap: 10px; align-content: start; max-height: 560px; overflow: auto; }
@@ -765,7 +771,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610230455";
+  const BUILD = "202610230508";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -1501,7 +1507,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     takeData({});
     Object.keys(drafts).forEach((k) => delete drafts[k]);
     Object.keys(cDraft).forEach((k) => delete cDraft[k]);
-    boardSel = null; arrowMode = false;
+    boardSel = null; drawMode = "";
     try { localStorage.removeItem("bmc-data"); } catch (e) {}
   }
   function setMe(t, m) {
@@ -1720,7 +1726,10 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   const MARK = { atk: ["⚔", "공격"], def: ["🛡", "방어"], warn: ["⚠", "주의"], flag: ["🚩", "깃발"] };
   const SQUAD = ["소대 없음", "1소대", "2소대", "3소대", "4소대"];
   let mapKey = "shingi", boardSel = null;
-  let arrowMode = false, arrowG = 1; // 화살표 그리기 중인지 · 그릴 색(소대)
+  let drawMode = "", arrowG = 1, boxT = "A"; // 그리는 중: "" · "arrow" · "box" / 화살표 색(소대) / 상자 조
+  const TEAMS = ["A", "B", "C", "D"];
+  const TEAM_COLOR = { A: "#ff6b6b", B: "#6fa8ff", C: "#6fd68a", D: "#c9a6ff" };
+  const TEAM_BG = { A: "rgba(255,107,107,.12)", B: "rgba(111,168,255,.12)", C: "rgba(111,214,138,.12)", D: "rgba(201,166,255,.12)" };
   const ARROW_COLOR = ["#d6b062", "#ff6b6b", "#6fa8ff", "#6fd68a", "#c9a6ff"];
   const SVGNS = "http://www.w3.org/2000/svg";
   function svgEl(tag, attrs) { const e = document.createElementNS(SVGNS, tag); Object.keys(attrs).forEach((k) => e.setAttribute(k, attrs[k])); return e; }
@@ -1728,7 +1737,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   function canBoard() { return canWrite || !!(me && (me.leader || me.deputy)); }
   function savedBoard(k) {
     const b = (DATA.boards || {})[k] || {};
-    return { bg: b.bg || "", pieces: Array.isArray(b.pieces) ? b.pieces : [], marks: Array.isArray(b.marks) ? b.marks : [], arrows: Array.isArray(b.arrows) ? b.arrows : [], memo: b.memo || "", updatedAt: b.updatedAt || "", by: b.by || "" };
+    return { bg: b.bg || "", pieces: Array.isArray(b.pieces) ? b.pieces : [], marks: Array.isArray(b.marks) ? b.marks : [], arrows: Array.isArray(b.arrows) ? b.arrows : [], boxes: Array.isArray(b.boxes) ? b.boxes : [], memo: b.memo || "", updatedAt: b.updatedAt || "", by: b.by || "" };
   }
   function curBoard() { return drafts[mapKey] || savedBoard(mapKey); }
   function editBoard() {
@@ -1752,7 +1761,16 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
       bd.style.aspectRatio = ""; bd.style.maxWidth = "";
       bd.appendChild(el("div", "nomap", MAPS[mapKey] + " 지도 사진이 아직 없습니다." + (ed ? "\n아래 [지도 사진 바꾸기] 로 게임 화면을 찍어 올려 주세요." : "")));
     }
-    bd.classList.toggle("drawing", ed && arrowMode);
+    bd.classList.toggle("drawing", ed && !!drawMode);
+    // 조 묶음 상자 — 지도 위, 화살표 · 말 아래
+    (b.boxes || []).forEach((x, i) => {
+      const sel = boardSel && boardSel.kind === "b" && boardSel.i === i;
+      const bx = el("div", "tbox" + (sel ? " sel" : ""));
+      Object.assign(bx.style, { left: x.x * 100 + "%", top: x.y * 100 + "%", width: x.w * 100 + "%", height: x.h * 100 + "%", borderColor: TEAM_COLOR[x.t], background: TEAM_BG[x.t] });
+      const lb = el("span", "tlabel", x.t + "조"); lb.style.background = TEAM_COLOR[x.t]; bx.appendChild(lb);
+      if (ed) bx.addEventListener("pointerdown", (e) => { e.preventDefault(); e.stopPropagation(); boardSel = sel ? null : { kind: "b", i }; renderTactics(); });
+      bd.appendChild(bx);
+    });
     const svg = svgEl("svg", { class: "arrows", "aria-hidden": "true" });
     const defs = svgEl("defs", {});
     ARROW_COLOR.forEach((c, g) => {
@@ -1790,6 +1808,11 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     // 소대 색 안내
     const lg = $("boardLegend"); lg.textContent = "";
     SQUAD.forEach((n, g) => { if (!g) return; const it = el("span"); it.append(el("span", "dot g" + g), document.createTextNode(n + " " + b.pieces.filter((p) => (p.g || 0) === g).length + "명")); lg.appendChild(it); });
+    (b.boxes || []).forEach((x) => {
+      const n = b.pieces.filter((p) => p.x >= x.x && p.x <= x.x + x.w && p.y >= x.y && p.y <= x.y + x.h).length;
+      const it = el("span"); const d = el("span", "dot"); d.style.cssText = "border-radius:2px;border-color:" + TEAM_COLOR[x.t] + ";background:" + TEAM_BG[x.t];
+      it.append(d, document.createTextNode(x.t + "조 " + n + "명")); lg.appendChild(it);
+    });
     Object.keys(MARK).forEach((t) => lg.appendChild(el("span", null, MARK[t][0] + " " + MARK[t][1])));
     // 문파원 · 표시 쟁반
     $("tray").hidden = !ed;
@@ -1807,25 +1830,36 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
         tl.appendChild(el("b", null, p.name));
         SQUAD.forEach((n, g) => { const x = btn("btn ghost" + ((p.g || 0) === g ? " on" : ""), null, () => { editBoard().pieces[boardSel.i].g = g; renderTactics(); }); x.append(el("span", "dot g" + g), document.createTextNode(n)); x.setAttribute("aria-pressed", String((p.g || 0) === g)); tl.appendChild(x); });
         tl.appendChild(btn("btn ghost", "빼기", () => { editBoard().pieces.splice(boardSel.i, 1); boardSel = null; renderTactics(); }));
-      } else if (!arrowMode && boardSel && boardSel.kind === "a" && (b.arrows || [])[boardSel.i]) {
+      } else if (!drawMode && boardSel && boardSel.kind === "b" && (b.boxes || [])[boardSel.i]) {
+        const x = b.boxes[boardSel.i];
+        tl.appendChild(el("b", null, x.t + "조 묶음"));
+        TEAMS.forEach((t) => { const y = btn("btn ghost", t + "조", () => { editBoard().boxes[boardSel.i].t = t; renderTactics(); }); y.style.borderColor = TEAM_COLOR[t]; y.setAttribute("aria-pressed", String(x.t === t)); tl.appendChild(y); });
+        tl.appendChild(btn("btn ghost", "빼기", () => { editBoard().boxes.splice(boardSel.i, 1); boardSel = null; renderTactics(); }));
+      } else if (drawMode === "box") {
+        tl.appendChild(el("b", null, "묶을 조"));
+        TEAMS.forEach((t) => { const y = btn("btn ghost", t + "조", () => { boxT = t; renderTactics(); }); y.style.borderColor = TEAM_COLOR[t]; y.setAttribute("aria-pressed", String(boxT === t)); tl.appendChild(y); });
+        tl.appendChild(el("span", "hint", "지도 위에서 한 모서리부터 맞은편 모서리까지 끌면 네모가 그려져요."));
+      } else if (!drawMode && boardSel && boardSel.kind === "a" && (b.arrows || [])[boardSel.i]) {
         const a = b.arrows[boardSel.i];
         tl.appendChild(el("b", null, "화살표"));
         SQUAD.forEach((n, g) => { const x = btn("btn ghost", null, () => { editBoard().arrows[boardSel.i].g = g; renderTactics(); }); x.append(el("span", "dot g" + g), document.createTextNode(n)); x.setAttribute("aria-pressed", String((a.g || 0) === g)); tl.appendChild(x); });
         tl.appendChild(btn("btn ghost", "빼기", () => { editBoard().arrows.splice(boardSel.i, 1); boardSel = null; renderTactics(); }));
-      } else if (arrowMode) {
+      } else if (drawMode === "arrow") {
         tl.appendChild(el("b", null, "화살표 색"));
         SQUAD.forEach((n, g) => { const x = btn("btn ghost", null, () => { arrowG = g; renderTactics(); }); x.append(el("span", "dot g" + g), document.createTextNode(n)); x.setAttribute("aria-pressed", String(arrowG === g)); tl.appendChild(x); });
         tl.appendChild(el("span", "hint", "지도 위에서 시작점부터 끝점까지 끌면 화살표가 그려져요."));
       } else if (boardSel && boardSel.kind === "m" && b.marks[boardSel.i]) {
         tl.appendChild(el("b", null, MARK[b.marks[boardSel.i].t][1] + " 표시"));
         tl.appendChild(btn("btn ghost", "빼기", () => { editBoard().marks.splice(boardSel.i, 1); boardSel = null; renderTactics(); }));
-      } else tl.appendChild(el("span", "hint", "말 · 화살표를 누르면 소대 색을 고르거나 뺄 수 있어요."));
+      } else tl.appendChild(el("span", "hint", "말 · 화살표 · 조 네모를 누르면 색을 고르거나 뺄 수 있어요."));
       tl.appendChild(el("span", null, ""));
-      const am = btn("btn" + (arrowMode ? "" : " ghost"), arrowMode ? "화살표 그리기 끝" : "➚ 화살표 그리기", () => { arrowMode = !arrowMode; boardSel = null; renderTactics(); });
-      am.setAttribute("aria-pressed", String(arrowMode));
-      tl.appendChild(am);
+      const am = btn("btn" + (drawMode === "arrow" ? "" : " ghost"), drawMode === "arrow" ? "화살표 그리기 끝" : "➚ 화살표 그리기", () => { drawMode = drawMode === "arrow" ? "" : "arrow"; boardSel = null; renderTactics(); });
+      am.setAttribute("aria-pressed", String(drawMode === "arrow"));
+      const bm = btn("btn" + (drawMode === "box" ? "" : " ghost"), drawMode === "box" ? "조 묶기 끝" : "▭ 조 묶기", () => { drawMode = drawMode === "box" ? "" : "box"; boardSel = null; renderTactics(); });
+      bm.setAttribute("aria-pressed", String(drawMode === "box"));
+      tl.append(am, bm);
       tl.appendChild(btn("btn ghost", "지도 사진 바꾸기", () => $("mapFile").click()));
-      tl.appendChild(btn("btn ghost", "모두 빼기", () => { const d = editBoard(); d.pieces = []; d.marks = []; d.arrows = []; boardSel = null; renderTactics(); }));
+      tl.appendChild(btn("btn ghost", "모두 빼기", () => { const d = editBoard(); d.pieces = []; d.marks = []; d.arrows = []; d.boxes = []; boardSel = null; renderTactics(); }));
       if (dirty) {
         tl.appendChild(el("span", "dirty", "저장 안 함"));
         tl.appendChild(btn("btn ghost", "되돌리기", () => { delete drafts[mapKey]; boardSel = null; renderTactics(); }));
@@ -1834,7 +1868,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
         sv.disabled = true; sv.textContent = "저장하는 중…";
         const d = curBoard();
         try {
-          DATA.boards[mapKey] = await memberCall("saveBoard", adminPw || token, mapKey, { pieces: d.pieces, marks: d.marks, arrows: d.arrows || [], memo: d.memo });
+          DATA.boards[mapKey] = await memberCall("saveBoard", adminPw || token, mapKey, { pieces: d.pieces, marks: d.marks, arrows: d.arrows || [], boxes: d.boxes || [], memo: d.memo });
           delete drafts[mapKey]; saveCache(); renderTactics(); setStatus(MAPS[mapKey] + " 전략을 저장했습니다. 문파원 모두에게 보입니다.");
         } catch (e) { sv.disabled = false; sv.textContent = "저장"; setStatus(errMsg(e), true); }
       });
@@ -1848,11 +1882,31 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   }
   $("trayFind").addEventListener("input", renderTactics);
   $("board").addEventListener("pointerdown", (e) => {
-    if (!arrowMode || !canBoard() || view !== "tactics") return;
+    if (!drawMode || !canBoard() || view !== "tactics") return;
     if (e.button !== undefined && e.button !== 0) return;
     e.preventDefault(); e.stopPropagation();
     const bd = $("board"), r = bd.getBoundingClientRect();
     const fx = (cx) => Math.min(1, Math.max(0, (cx - r.left) / r.width)), fy = (cy) => Math.min(1, Math.max(0, (cy - r.top) / r.height));
+    const r3 = (v) => Math.round(v * 1000) / 1000;
+    if (drawMode === "box") { // 조 묶음 네모 — 누른 곳과 뗀 곳이 맞은편 모서리
+      const x0 = fx(e.clientX), y0 = fy(e.clientY), cur = { x: x0, y: y0, w: 0, h: 0 };
+      const pv = el("div", "tbox preview"); Object.assign(pv.style, { borderColor: TEAM_COLOR[boxT], background: TEAM_BG[boxT] });
+      const lb = el("span", "tlabel", boxT + "조"); lb.style.background = TEAM_COLOR[boxT]; pv.appendChild(lb);
+      const put = () => Object.assign(pv.style, { left: cur.x * 100 + "%", top: cur.y * 100 + "%", width: cur.w * 100 + "%", height: cur.h * 100 + "%" });
+      put(); bd.appendChild(pv);
+      const move = (ev) => { const x1 = fx(ev.clientX), y1 = fy(ev.clientY); cur.x = Math.min(x0, x1); cur.y = Math.min(y0, y1); cur.w = Math.abs(x1 - x0); cur.h = Math.abs(y1 - y0); put(); };
+      const up = (ev) => {
+        document.removeEventListener("pointermove", move); document.removeEventListener("pointerup", up); document.removeEventListener("pointercancel", up);
+        pv.remove();
+        if (ev.type !== "pointercancel" && cur.w >= 0.03 && cur.h >= 0.03) {
+          const d = editBoard(); d.boxes = d.boxes || [];
+          d.boxes.push({ t: boxT, x: r3(cur.x), y: r3(cur.y), w: r3(cur.w), h: r3(cur.h) });
+        }
+        renderTactics();
+      };
+      document.addEventListener("pointermove", move); document.addEventListener("pointerup", up); document.addEventListener("pointercancel", up);
+      return;
+    }
     const a = { x1: fx(e.clientX), y1: fy(e.clientY), x2: fx(e.clientX), y2: fy(e.clientY), g: arrowG };
     const svg = bd.querySelector(".arrows");
     const pv = svgEl("line", { stroke: ARROW_COLOR[arrowG], "stroke-width": 6, "stroke-linecap": "round", "stroke-dasharray": "10 6", "marker-end": "url(#ah" + arrowG + ")" });
@@ -1862,7 +1916,6 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     const up = (ev) => {
       document.removeEventListener("pointermove", move); document.removeEventListener("pointerup", up); document.removeEventListener("pointercancel", up);
       pv.remove();
-      const r3 = (v) => Math.round(v * 1000) / 1000;
       if (ev.type !== "pointercancel" && Math.hypot(a.x2 - a.x1, a.y2 - a.y1) >= 0.03) {
         const d = editBoard(); d.arrows = d.arrows || [];
         d.arrows.push({ x1: r3(a.x1), y1: r3(a.y1), x2: r3(a.x2), y2: r3(a.y2), g: a.g });
@@ -1871,7 +1924,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     };
     document.addEventListener("pointermove", move); document.addEventListener("pointerup", up); document.addEventListener("pointercancel", up);
   }, true);
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && arrowMode) { arrowMode = false; renderTactics(); } });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && drawMode) { drawMode = ""; renderTactics(); } });
   $("boardMemo").addEventListener("input", () => { const d = editBoard(), was = d.memo; d.memo = $("boardMemo").value; if (was !== d.memo && !$("boardTools").querySelector(".dirty")) renderTactics(); });
   $("mapFile").addEventListener("change", async () => {
     const file = $("mapFile").files[0]; $("mapFile").value = "";
