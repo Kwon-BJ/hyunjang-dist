@@ -637,7 +637,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
       <h2 class="section-label"><svg aria-hidden="true"><use href="#i-war"/></svg>전략판</h2>
       <div class="btabs" id="mapTabs" role="group" aria-label="전장">
         <button type="button" class="chip" data-map="shingi">신기쟁탈전</button>
-        <button type="button" class="chip" data-map="mihok">미혹의 전장</button>
+        <button type="button" class="chip" data-map="mihok">미혹의 정원</button>
       </div>
       <p class="board-meta" id="boardMeta"></p>
       <div class="board-wrap">
@@ -759,7 +759,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610230429";
+  const BUILD = "202610230437";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -1712,7 +1712,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   /* ── 전략판 — "신기,미혹 맵추가하여, 전략판 게임형식으로 생성" (2026-10-23) ──
      지도(게임 화면을 찍은 사진) 위에 문파원 말 · 표시를 끌어 놓는다. 자리는 지도에 대한 비율(0~1)이라 PC · 휴대폰에서 같은 자리.
      고치기: 관리자 · 문주 · 부문주 — 고친 것은 [저장] 을 눌러야 모두에게 보인다. 나머지 문파원은 보기만. */
-  const MAPS = { shingi: "신기쟁탈전", mihok: "미혹의 전장" };
+  const MAPS = { shingi: "신기쟁탈전", mihok: "미혹의 정원" }; // 게임 공식 이름은 「미혹의 정원」 (2026-10-23 바꿈, 처음엔 「미혹의 전장」)
   const MARK = { atk: ["⚔", "공격"], def: ["🛡", "방어"], warn: ["⚠", "주의"], flag: ["🚩", "깃발"] };
   const SQUAD = ["소대 없음", "1소대", "2소대", "3소대", "4소대"];
   let mapKey = "shingi", boardSel = null;
