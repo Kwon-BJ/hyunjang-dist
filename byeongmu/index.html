@@ -384,7 +384,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
 .board-meta { margin: 0; color: var(--muted); font-size: 13px; }
 .board-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 230px; gap: 12px; align-items: start; }
 @media (max-width: 900px) { .board-wrap { grid-template-columns: 1fr; } }
-.board { position: relative; width: 100%; aspect-ratio: 16 / 10; border: 1px solid var(--gold-lo); border-radius: 6px; overflow: hidden; user-select: none; -webkit-user-select: none;
+.board { position: relative; width: 100%; margin: 0 auto; aspect-ratio: 16 / 10; border: 1px solid var(--gold-lo); border-radius: 6px; overflow: hidden; user-select: none; -webkit-user-select: none;
   background: #120f0b repeating-linear-gradient(0deg, transparent 0 39px, rgba(214,176,98,.08) 39px 40px), repeating-linear-gradient(90deg, transparent 0 39px, rgba(214,176,98,.08) 39px 40px); }
 .board .bgimg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; pointer-events: none; }
 .board .nomap { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 16px; color: var(--muted); font-size: 14px; pointer-events: none; white-space: pre-line; }
@@ -759,7 +759,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610230437";
+  const BUILD = "202610230439";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -1738,10 +1738,10 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     const bd = $("board"); bd.textContent = ""; bd.classList.toggle("view", !ed);
     if (b.bg) {
       const im = document.createElement("img"); im.className = "bgimg"; im.alt = MAPS[mapKey] + " 지도"; im.referrerPolicy = "no-referrer"; im.src = imgUrl(b.bg);
-      im.onload = () => { if (im.naturalWidth) bd.style.aspectRatio = im.naturalWidth + " / " + im.naturalHeight; };
+      im.onload = () => { if (im.naturalWidth) { bd.style.aspectRatio = im.naturalWidth + " / " + im.naturalHeight; bd.style.maxWidth = "calc(80vh * " + im.naturalWidth + " / " + im.naturalHeight + ")"; } }; // 네모난 지도가 노트북 화면보다 길어지지 않게
       bd.appendChild(im);
     } else {
-      bd.style.aspectRatio = "";
+      bd.style.aspectRatio = ""; bd.style.maxWidth = "";
       bd.appendChild(el("div", "nomap", MAPS[mapKey] + " 지도 사진이 아직 없습니다." + (ed ? "\n아래 [지도 사진 바꾸기] 로 게임 화면을 찍어 올려 주세요." : "")));
     }
     b.marks.forEach((k, i) => {
