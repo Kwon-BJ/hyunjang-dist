@@ -229,8 +229,8 @@ footer .tagline { justify-content: center; font-size: 15px; }
 .menu-item[aria-current="page"]::before { content: ""; position: absolute; left: 50%; bottom: 15px; width: 7px; height: 7px; background: var(--gold-hi); transform: translateX(-50%) rotate(45deg); }
 .home { flex: none; width: 44px; height: 44px; display: grid; place-items: center; background: none; border: 0; color: var(--gold-hi); cursor: pointer; }
 .home svg { width: 22px; height: 22px; }
-/* 1280px 아래는 두 줄 — 관리자로 들어가면 메뉴가 6개라 1000~1280px PC 에서 메뉴가 이름 · 계정 칸과 겹쳤다 (2026-10-23) */
-@media (max-width: 1280px) {
+/* 1500px 아래는 두 줄 — 관리자로 들어가면 메뉴가 7개(전략판 더함)라 1366px PC 에서도 메뉴가 계정 칸과 겹쳤다 (2026-10-23) */
+@media (max-width: 1500px) {
   .topbar-inner { height: auto; flex-wrap: wrap; gap: 6px 12px; padding-block: 10px 0; }
   .brand-emblem { width: 60px; height: 60px; margin: 0; }
   .brand-emblem .glyph { font-size: 30px; }
@@ -335,7 +335,7 @@ footer .tagline::before, footer .tagline::after { width: clamp(30px, 6vw, 60px);
 .acct .who > span:last-child { overflow: hidden; text-overflow: ellipsis; }
 .av.none { display: grid; place-items: center; font-size: 15px; line-height: 1; color: var(--gold); background: var(--panel-hi); }
 .acct .btn { padding: 6px 12px; font-size: 13px; }
-@media (max-width: 1280px) { .acct { margin-left: auto; } .acct ~ .home { margin-left: 0; } }
+@media (max-width: 1500px) { .acct { margin-left: auto; } .acct ~ .home { margin-left: 0; } }
 @media (max-width: 420px) { .acct .who { max-width: 7em; } }
 #authView { display: flex; flex-direction: column; gap: 18px; }
 .auth { max-width: 460px; width: 100%; margin: 0 auto; box-sizing: border-box; }
@@ -361,7 +361,7 @@ footer .tagline::before, footer .tagline::after { width: clamp(30px, 6vw, 60px);
 body.locked .gate { display: block; }
 body.locked #menu, body.locked #homeBtn, body.locked #noticeView, body.locked #rosterView,
 body.locked #boardView, body.locked #membersView, body.locked #bannerTools { display: none !important; }
-@media (max-width: 1280px) { body.locked .acct { margin-left: auto; } }
+@media (max-width: 1500px) { body.locked .acct { margin-left: auto; } }
 /* 프로필 사진 */
 .av { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; flex: none; border: 1px solid var(--gold-lo); }
 .name .av { margin-left: -2px; }
@@ -378,6 +378,54 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
 .zoom figure { margin: 0; display: grid; justify-items: center; gap: 12px; max-width: 100%; }
 .zoom img { max-width: min(92vw, 640px); max-height: 78vh; width: auto; height: auto; border-radius: 12px; border: 1px solid var(--gold); box-shadow: 0 0 40px rgba(214,176,98,.25); background: #000; }
 .zoom figcaption { font-family: var(--font-display); font-weight: 800; font-size: 22px; color: var(--gold-hi); }
+/* 전략판 — "신기,미혹 맵추가하여, 전략판 게임형식으로 생성" (2026-10-23) */
+#tacticsView { display: flex; flex-direction: column; gap: 14px; }
+.btabs { display: flex; flex-wrap: wrap; gap: 8px; }
+.board-meta { margin: 0; color: var(--muted); font-size: 13px; }
+.board-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 230px; gap: 12px; align-items: start; }
+@media (max-width: 900px) { .board-wrap { grid-template-columns: 1fr; } }
+.board { position: relative; width: 100%; aspect-ratio: 16 / 10; border: 1px solid var(--gold-lo); border-radius: 6px; overflow: hidden; user-select: none; -webkit-user-select: none;
+  background: #120f0b repeating-linear-gradient(0deg, transparent 0 39px, rgba(214,176,98,.08) 39px 40px), repeating-linear-gradient(90deg, transparent 0 39px, rgba(214,176,98,.08) 39px 40px); }
+.board .bgimg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; pointer-events: none; }
+.board .nomap { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 16px; color: var(--muted); font-size: 14px; pointer-events: none; white-space: pre-line; }
+.board-tools .btn[aria-pressed="true"] { border-color: var(--gold-hi); color: var(--gold-hi); background: rgba(214,176,98,.12); }
+.pc { position: absolute; transform: translate(-50%, -50%); padding: 2px 7px; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap; max-width: 9em; overflow: hidden; text-overflow: ellipsis;
+  background: #2a1f0e; color: var(--gold-hi); border: 1px solid var(--gold); box-shadow: 0 1px 4px rgba(0,0,0,.85); touch-action: none; cursor: grab; }
+.pc.g1, .dot.g1 { background: #7a1d22; border-color: #ff8a80; color: #fff; }
+.pc.g2, .dot.g2 { background: #1d3b86; border-color: #8ab4ff; color: #fff; }
+.pc.g3, .dot.g3 { background: #1e5a2f; border-color: #8fd694; color: #fff; }
+.pc.g4, .dot.g4 { background: #4b2a7a; border-color: #c9a6ff; color: #fff; }
+.dot.g0 { background: #2a1f0e; border-color: var(--gold); }
+.pc.sel, .mk2.sel { outline: 2px solid #fff; outline-offset: 1px; }
+.mk2 { position: absolute; transform: translate(-50%, -50%); width: 30px; height: 30px; display: grid; place-items: center; font-size: 16px; line-height: 1; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 1px 5px rgba(0,0,0,.9); touch-action: none; cursor: grab; }
+.mk2.t-atk { background: #b3202a; } .mk2.t-def { background: #1d3b86; } .mk2.t-warn { background: #b07a10; } .mk2.t-flag { background: #1e5a2f; }
+.board.view .pc, .board.view .mk2 { cursor: default; touch-action: auto; }
+.drag-ghost { position: fixed; z-index: 60; pointer-events: none; transform: translate(-50%, -50%); opacity: .9; }
+.dragging { opacity: .3; }
+.tray { border: 1px solid var(--line); border-radius: 6px; padding: 10px; display: grid; gap: 10px; align-content: start; max-height: 560px; overflow: auto; }
+.tray h4 { margin: 0; font-size: 13px; color: var(--gold-hi); }
+.tray .hint { margin: 0; color: var(--muted); font-size: 12px; }
+.tchips { display: flex; flex-wrap: wrap; gap: 6px; }
+.tchip { padding: 3px 9px; border-radius: 999px; border: 1px solid var(--gold-lo); background: var(--panel-hi); font-size: 12px; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
+.tchip.tmark { font-size: 15px; }
+.tray input { background: #0b0907; border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; width: 100%; box-sizing: border-box; color: inherit; }
+.board-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.board-tools .dirty { color: #ffb347; font-size: 13px; font-weight: 700; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--muted); }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; border: 1px solid; margin-right: 4px; vertical-align: -1px; }
+.memo-view { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; }
+/* 댓글 — "자유게시판 게시글 밑에 댓글 작성 허용" (2026-10-23) */
+.comments { display: grid; gap: 10px; border-top: 1px solid var(--line); padding-top: 12px; max-width: 65ch; }
+.comments h4 { margin: 0; font-size: 13px; color: var(--gold-hi); }
+.cmt { display: grid; gap: 2px; }
+.cmt .ch { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline; font-size: 13px; }
+.cmt .ch b { color: var(--gold-hi); }
+.cmt .ch span { color: var(--muted); font-size: 12px; }
+.cmt .ch .tiny { margin-left: auto; }
+.cmt p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.cform { display: flex; gap: 8px; align-items: flex-end; }
+.cform textarea { min-height: 44px; flex: 1; }
+.auth h3 { margin: 0; font-size: 15px; color: var(--gold-hi); }
 .drop.over { border-color: var(--gold-hi); background: rgba(214,176,98,.08); color: var(--gold-hi); }
 /* 폴드 접은 화면에서 「즐거움」 의 「움」 한 글자가 다음 줄로 떨어졌다 (2026-10-19) */
 @media (max-width: 420px) {
@@ -416,6 +464,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
       <button type="button" class="menu-item" data-go="행사">문파 일정</button>
       <button type="button" class="menu-item" data-go="규정">문파 규정</button>
       <button type="button" class="menu-item" data-go="roster">문파원</button>
+      <button type="button" class="menu-item" data-go="tactics">전략판</button>
       <button type="button" class="menu-item" data-go="board">자유게시판</button>
       <button type="button" class="menu-item" data-go="members" id="membersMenu" hidden>가입 승인</button>
     </div>
@@ -560,8 +609,19 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
         <p class="hint" id="joinHint">문주가 승인하면 방금 만든 아이디로 로그인할 수 있어요. 카톡방에서 문주에게 알려 주면 더 빨라요.</p>
         <div class="actions"><button class="btn" type="button" id="joinDoneBtn">로그인 화면으로</button></div>
       </div>
+      <!-- 게임 닉네임 바꾸기 — "문파원 게임 닉네임 변경 가능하게 할것" (2026-10-23) -->
+      <form class="editor auth" id="nickForm" hidden novalidate>
+        <h3>게임 닉네임 바꾸기</h3>
+        <p class="hint">지금 닉네임: <b id="nickNow"></b><br>게임에서 닉네임을 바꿨으면 여기서도 바꿔 주세요. 문파원 명단 · 내가 쓴 글 · 댓글 · 전략판 이름도 같이 바뀝니다.</p>
+        <div class="field"><label for="nNick">새 게임 닉네임</label><input id="nNick" maxlength="20" autocomplete="off"></div>
+        <div class="actions">
+          <span class="err" id="nickErr" role="alert"></span>
+          <button class="btn" type="submit" id="nickSave">닉네임 바꾸기</button>
+        </div>
+      </form>
       <!-- 비밀번호 변경 — "비밀번호 변경도 할수있게해라" (2026-10-19) -->
       <form class="editor auth" id="pwForm" hidden novalidate>
+        <h3>비밀번호 바꾸기</h3>
         <div class="field"><label for="cPw">지금 비밀번호</label><input id="cPw" type="password" maxlength="50" autocomplete="current-password"></div>
         <div class="field"><label for="nPw">새 비밀번호 (4자 이상)</label><input id="nPw" type="password" maxlength="50" autocomplete="new-password"></div>
         <div class="field"><label for="nPw2">새 비밀번호 한 번 더</label><input id="nPw2" type="password" maxlength="50" autocomplete="new-password"></div>
@@ -571,6 +631,31 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
           <button class="btn" type="submit" id="pwSave">바꾸기</button>
         </div>
       </form>
+    </section>
+
+    <section id="tacticsView" hidden>
+      <h2 class="section-label"><svg aria-hidden="true"><use href="#i-war"/></svg>전략판</h2>
+      <div class="btabs" id="mapTabs" role="group" aria-label="전장">
+        <button type="button" class="chip" data-map="shingi">신기쟁탈전</button>
+        <button type="button" class="chip" data-map="mihok">미혹의 전장</button>
+      </div>
+      <p class="board-meta" id="boardMeta"></p>
+      <div class="board-wrap">
+        <div class="board" id="board" aria-label="전략판 지도"></div>
+        <aside class="tray" id="tray" hidden>
+          <h4>표시</h4>
+          <div class="tchips" id="trayMarks"></div>
+          <h4>문파원 — 끌어서 지도에 놓기</h4>
+          <p class="hint">눌러도 지도 가운데에 놓여요. 지도 밖으로 끌어내면 빠져요.</p>
+          <input id="trayFind" type="search" placeholder="이름 찾기" aria-label="문파원 이름 찾기">
+          <div class="tchips" id="trayNames"></div>
+        </aside>
+      </div>
+      <div class="legend" id="boardLegend"></div>
+      <div class="board-tools" id="boardTools" hidden></div>
+      <div class="field" id="memoEdit" hidden><label for="boardMemo">작전 메모</label><textarea id="boardMemo" maxlength="2000" placeholder="예: 1소대 왼쪽 거점, 2소대 가운데 방어, 20:00 집합"></textarea></div>
+      <div id="memoView"></div>
+      <input type="file" id="mapFile" accept="image/*" hidden>
     </section>
 
     <section id="membersView" hidden>
@@ -674,7 +759,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610230402";
+  const BUILD = "202610230426";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -691,7 +776,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   window.__BANNER__ = "img/banner.webp";
   const $ = (id) => document.getElementById(id);
   const strs = (a) => (Array.isArray(a) ? a : []).filter((x) => typeof x === "string" && x.trim());
-  const DATA = { notices: [], posts: [], site: {}, roster: { leader: "", deputies: [], members: [] }, joined: [], avatars: {} };
+  const DATA = { notices: [], posts: [], site: {}, roster: { leader: "", deputies: [], members: [] }, joined: [], avatars: {}, boards: {} };
   let loaded = false;
   function takeData(d) {
     d = d || {};
@@ -702,6 +787,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     DATA.roster = { leader: typeof r.leader === "string" ? r.leader : "", deputies: strs(r.deputies), members: strs(r.members) };
     DATA.joined = strs(d.joined);
     DATA.avatars = d.avatars && typeof d.avatars === "object" ? d.avatars : {};
+    DATA.boards = d.boards && typeof d.boards === "object" ? d.boards : {};
     /* 방금 바꾼 내 사진이, 그 전에 출발한 자료 받기에 덮이지 않게 (로그인 직후 사진을 바꾸면 있었다) */
     if (me && me.avatar) DATA.avatars[me.gameId] = me.avatar;
   }
@@ -845,10 +931,10 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     items.forEach((b) => { if (b === hit) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   }
   function goHome() { view = "notice"; filter = "전체"; query = ""; $("search").value = ""; render(); window.scrollTo(0, 0); }
-  const VIEW_EL = { roster: "rosterView", board: "boardView", members: "membersView", auth: "authView" };
+  const VIEW_EL = { roster: "rosterView", tactics: "tacticsView", board: "boardView", members: "membersView", auth: "authView" };
   /* 보던 칸을 주소 끝(#schedule 등)에 적어 둔다 — F5 를 눌러도 공지사항으로 안 돌아가게 (2026-10-23
      "문파일정은 문파 일정 이런식으로"). 로그인 화면일 때는 안 바꿔서, 로그인하면 보던 칸으로 간다. */
-  const HASH = { "전체": "", "필독": "must", "문파전": "war", "행사": "schedule", "규정": "rules", "일반": "general", roster: "roster", board: "board", members: "members" };
+  const HASH = { "전체": "", "필독": "must", "문파전": "war", "행사": "schedule", "규정": "rules", "일반": "general", roster: "roster", tactics: "tactics", board: "board", members: "members" };
   function hashNow() { return view === "notice" ? HASH[filter] || "" : HASH[view] || null; }
   function writeHash() {
     const h = hashNow();
@@ -1197,7 +1283,8 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     if (pimgs.length) tl.appendChild(el("span", "photo", "사진 " + pimgs.length));
     if (isNew(p.createdAt)) tl.appendChild(el("span", "new", "NEW"));
     head.appendChild(tl);
-    head.appendChild(el("span", "meta", (p.nick || "익명") + " · " + fmtTime(p.createdAt)));
+    const cms = Array.isArray(p.comments) ? p.comments : [];
+    head.appendChild(el("span", "meta", (p.nick || "익명") + " · " + fmtTime(p.createdAt) + (cms.length ? " · 댓글 " + cms.length : "")));
     art.appendChild(head);
     if (openPost === p.id) {
       const body = el("div", "body");
@@ -1224,9 +1311,50 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
         a.appendChild(btn("btn ghost", "삭제", () => { delPost = p.id; renderBoard(); }));
         body.appendChild(a);
       }
+      if (!/^tmp/.test(p.id)) body.appendChild(commentsEl(p, cms, leader));
       art.appendChild(body);
     }
     return art;
+  }
+  /* 댓글 — 쓴 사람 · 문주 · 관리자가 지운다. 쓰던 댓글은 다시 그려도 남게 cDraft 에 둔다. */
+  const cDraft = {};
+  let delCmt = null;
+  function commentsEl(p, cms, leader) {
+    const box = el("div", "comments");
+    box.appendChild(el("h4", null, "댓글 " + cms.length));
+    cms.forEach((k) => {
+      const row = el("div", "cmt");
+      const h = el("div", "ch");
+      h.append(el("b", null, k.nick || "익명"), el("span", null, fmtTime(k.createdAt)));
+      if (me && (k.memberId === me.id || canWrite || leader)) {
+        const sure = delCmt === k.id;
+        const d = btn("tiny", sure ? "정말 삭제" : "삭제", async () => {
+          if (!sure) { delCmt = k.id; renderBoard(); return; }
+          d.disabled = true;
+          try { DATA.posts = await memberCall("deleteComment", token, p.id, k.id, canWrite ? adminPw : ""); delCmt = null; renderBoard(); setStatus("댓글을 지웠습니다."); }
+          catch (e) { d.disabled = false; setStatus(errMsg(e), true); }
+        });
+        h.appendChild(d);
+      }
+      row.append(h, el("p", null, k.body));
+      box.appendChild(row);
+    });
+    if (me) {
+      const f = el("div", "field cform");
+      const ta = document.createElement("textarea");
+      ta.maxLength = 500; ta.placeholder = "댓글 달기"; ta.setAttribute("aria-label", "댓글 내용"); ta.value = cDraft[p.id] || "";
+      ta.oninput = () => { cDraft[p.id] = ta.value; };
+      const b = btn("btn", "댓글", async () => {
+        const v = ta.value.trim();
+        if (!v) { ta.focus(); return; }
+        b.disabled = true; b.textContent = "올리는 중…";
+        try { DATA.posts = await memberCall("addComment", token, p.id, v); cDraft[p.id] = ""; renderBoard(); }
+        catch (e) { b.disabled = false; b.textContent = "댓글"; setStatus(errMsg(e), true); }
+      });
+      f.append(ta, b);
+      box.appendChild(f);
+    }
+    return box;
   }
   function renderBoard() {
     $("postCount").textContent = DATA.posts.length ? "글 " + DATA.posts.length + "개" : "";
@@ -1401,7 +1529,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
       else who.appendChild(me.avatar ? avatarImg(me.avatar) : el("span", "av none", "+"));
       who.appendChild(el("span", null, me.gameId + " 님"));
       box.appendChild(who);
-      box.appendChild(btn("btn ghost", "비밀번호", () => openAuth("pw")));
+      box.appendChild(btn("btn ghost", "내 정보", () => openAuth("pw")));
       box.appendChild(btn("btn ghost", "로그아웃", () => { setMe("", null); setStatus("로그아웃했습니다."); }));
     } else {
       box.appendChild(btn("btn ghost", "로그인", () => openAuth("login")));
@@ -1435,7 +1563,10 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   function showTab(tab) {
     $("tabLogin").setAttribute("aria-pressed", String(tab === "login"));
     $("tabJoin").setAttribute("aria-pressed", String(tab === "join"));
-    $("authLabel").textContent = tab === "join" ? "회원가입" : tab === "pw" ? "비밀번호 변경" : "로그인";
+    $("authLabel").textContent = tab === "join" ? "회원가입" : tab === "pw" ? "내 정보" : "로그인";
+    /* 관리자 계정은 게임 닉네임이 없다 */
+    $("nickForm").hidden = tab !== "pw" || !me || (me.admin && !me.leader);
+    if (me) { $("nickNow").textContent = me.gameId; $("nNick").value = ""; $("nickErr").textContent = ""; }
     $("authTabs").hidden = tab === "pw";
     $("pwForm").hidden = tab !== "pw";
     $("pwErr").textContent = "";
@@ -1483,6 +1614,19 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     b.disabled = false; b.textContent = "가입 신청";
   });
 
+  $("nickForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const v = $("nNick").value.trim();
+    if (!v) { $("nickErr").textContent = "새 닉네임을 적어 주세요."; $("nNick").focus(); return; }
+    const b = $("nickSave"); b.disabled = true; $("nickErr").textContent = "";
+    try {
+      const m = await memberCall("renameSelf", token, v);
+      setMe(token, m); reloadData();
+      $("nickNow").textContent = m.gameId; $("nNick").value = "";
+      setStatus("닉네임을 「" + m.gameId + "」 (으)로 바꿨습니다.");
+    } catch (err) { $("nickErr").textContent = errMsg(err); }
+    b.disabled = false;
+  });
   $("pwForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const o = $("cPw").value, n = $("nPw").value;
@@ -1522,6 +1666,16 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     };
     if (pending) a.append(act("거절", "btn ghost", "removeMember", "신청을 거절했습니다."), act("승인", "btn", "approveMember", m.gameId + " 님을 승인했습니다. 문파원 명단에도 넣었습니다."));
     else if (m.admin) a.appendChild(el("span", "cat", "관리자"));
+    else if (m._ren) {
+      const inp = document.createElement("input"); inp.value = m.gameId; inp.maxLength = 20; inp.setAttribute("aria-label", m.gameId + " 새 닉네임");
+      inp.style.cssText = "background:#0b0907;border:1px solid var(--line);border-radius:6px;padding:6px 8px;color:inherit;width:9em";
+      const sv = btn("btn", "저장", async () => {
+        sv.disabled = true;
+        try { members = await adminCall("renameMember", adminPw, m.id, inp.value.trim()); renderMembers(); reloadData(); setStatus("닉네임을 바꿨습니다. 명단 · 글 이름도 같이 바뀌었습니다."); }
+        catch (e) { sv.disabled = false; setStatus(errMsg(e), true); }
+      });
+      a.append(inp, btn("btn ghost", "취소", () => { m._ren = false; renderMembers(); }), sv);
+    }
     else if (m._temp) a.append(el("span", null, "임시 비밀번호 "), el("b", "cat must", m._temp), btn("btn ghost", "닫기", () => { m._temp = ""; renderMembers(); }));
     else if (m._sure) a.append(btn("btn ghost", "취소", () => { m._sure = false; renderMembers(); }), act("내보내기", "btn danger", "removeMember", "회원에서 뺐습니다."));
     else {
@@ -1531,7 +1685,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
         try { m._temp = await adminCall("resetPassword", adminPw, m.id); renderMembers(); setStatus(m.gameId + " 님에게 임시 비밀번호를 알려 주세요."); }
         catch (e) { rs.disabled = false; setStatus(errMsg(e), true); }
       });
-      a.append(rs, btn("btn ghost", "내보내기", () => { m._sure = true; renderMembers(); }));
+      a.append(btn("btn ghost", "닉네임", () => { m._ren = true; renderMembers(); }), rs, btn("btn ghost", "내보내기", () => { m._sure = true; renderMembers(); }));
     }
     r.appendChild(a);
     return r;
@@ -1554,8 +1708,160 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     if (pend.length) mm.appendChild(el("span", "badge", String(pend.length)));
   }
 
+  /* ── 전략판 — "신기,미혹 맵추가하여, 전략판 게임형식으로 생성" (2026-10-23) ──
+     지도(게임 화면을 찍은 사진) 위에 문파원 말 · 표시를 끌어 놓는다. 자리는 지도에 대한 비율(0~1)이라 PC · 휴대폰에서 같은 자리.
+     고치기: 관리자 · 문주 · 부문주 — 고친 것은 [저장] 을 눌러야 모두에게 보인다. 나머지 문파원은 보기만. */
+  const MAPS = { shingi: "신기쟁탈전", mihok: "미혹의 전장" };
+  const MARK = { atk: ["⚔", "공격"], def: ["🛡", "방어"], warn: ["⚠", "주의"], flag: ["🚩", "깃발"] };
+  const SQUAD = ["소대 없음", "1소대", "2소대", "3소대", "4소대"];
+  let mapKey = "shingi", boardSel = null;
+  const drafts = {}; // 저장 안 한 고침 — 전장마다
+  function canBoard() { return canWrite || !!(me && (me.leader || me.deputy)); }
+  function savedBoard(k) {
+    const b = (DATA.boards || {})[k] || {};
+    return { bg: b.bg || "", pieces: Array.isArray(b.pieces) ? b.pieces : [], marks: Array.isArray(b.marks) ? b.marks : [], memo: b.memo || "", updatedAt: b.updatedAt || "", by: b.by || "" };
+  }
+  function curBoard() { return drafts[mapKey] || savedBoard(mapKey); }
+  function editBoard() {
+    if (!drafts[mapKey]) drafts[mapKey] = JSON.parse(JSON.stringify(savedBoard(mapKey)));
+    return drafts[mapKey];
+  }
+  document.querySelectorAll("#mapTabs [data-map]").forEach((b) => { b.onclick = () => { mapKey = b.dataset.map; boardSel = null; renderTactics(); }; });
+  function allNames() { const r = DATA.roster; return (r.leader ? [r.leader] : []).concat(r.deputies, r.members); }
+  function renderTactics() {
+    if (view !== "tactics") return;
+    const ed = canBoard(), b = curBoard(), dirty = !!drafts[mapKey];
+    document.querySelectorAll("#mapTabs [data-map]").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.map === mapKey)));
+    $("boardMeta").textContent = b.updatedAt ? "마지막 저장 " + fmtTime(b.updatedAt) + (b.by ? " · " + b.by : "") : (ed ? "아직 저장한 전략이 없습니다. 문파원을 지도에 끌어 놓고 [저장] 을 누르세요." : "아직 올라온 전략이 없습니다.");
+    // 지도
+    const bd = $("board"); bd.textContent = ""; bd.classList.toggle("view", !ed);
+    if (b.bg) {
+      const im = document.createElement("img"); im.className = "bgimg"; im.alt = MAPS[mapKey] + " 지도"; im.referrerPolicy = "no-referrer"; im.src = imgUrl(b.bg);
+      im.onload = () => { if (im.naturalWidth) bd.style.aspectRatio = im.naturalWidth + " / " + im.naturalHeight; };
+      bd.appendChild(im);
+    } else {
+      bd.style.aspectRatio = "";
+      bd.appendChild(el("div", "nomap", MAPS[mapKey] + " 지도 사진이 아직 없습니다." + (ed ? "\n아래 [지도 사진 바꾸기] 로 게임 화면을 찍어 올려 주세요." : "")));
+    }
+    b.marks.forEach((k, i) => {
+      const m = el("div", "mk2 t-" + k.t + (boardSel && boardSel.kind === "m" && boardSel.i === i ? " sel" : ""), (MARK[k.t] || ["?"])[0]);
+      m.style.left = k.x * 100 + "%"; m.style.top = k.y * 100 + "%"; m.title = (MARK[k.t] || ["", ""])[1];
+      if (ed) m.addEventListener("pointerdown", (e) => startDrag(e, { kind: "m", i }));
+      bd.appendChild(m);
+    });
+    b.pieces.forEach((p, i) => {
+      const pc = el("div", "pc g" + (p.g || 0) + (boardSel && boardSel.kind === "p" && boardSel.i === i ? " sel" : ""), p.name);
+      pc.style.left = p.x * 100 + "%"; pc.style.top = p.y * 100 + "%"; pc.title = p.name + (p.g ? " · " + SQUAD[p.g] : "");
+      if (ed) pc.addEventListener("pointerdown", (e) => startDrag(e, { kind: "p", i }));
+      bd.appendChild(pc);
+    });
+    // 소대 색 안내
+    const lg = $("boardLegend"); lg.textContent = "";
+    SQUAD.forEach((n, g) => { if (!g) return; const it = el("span"); it.append(el("span", "dot g" + g), document.createTextNode(n + " " + b.pieces.filter((p) => (p.g || 0) === g).length + "명")); lg.appendChild(it); });
+    Object.keys(MARK).forEach((t) => lg.appendChild(el("span", null, MARK[t][0] + " " + MARK[t][1])));
+    // 문파원 · 표시 쟁반
+    $("tray").hidden = !ed;
+    if (ed) {
+      const placed = new Set(b.pieces.map((p) => p.name)), q = $("trayFind").value.trim();
+      const left = allNames().filter((n) => !placed.has(n) && (!q || n.includes(q)));
+      $("trayNames").replaceChildren(...(left.length ? left.map((n) => { const c = el("span", "tchip", n); c.addEventListener("pointerdown", (e) => startDrag(e, { kind: "np", name: n })); return c; }) : [el("span", "hint", q ? "찾는 이름이 없습니다." : "모두 지도에 올렸습니다.")]));
+      $("trayMarks").replaceChildren(...Object.keys(MARK).map((t) => { const c = el("span", "tchip tmark", MARK[t][0] + " " + MARK[t][1]); c.addEventListener("pointerdown", (e) => startDrag(e, { kind: "nm", t })); return c; }));
+    }
+    // 도구
+    const tl = $("boardTools"); tl.textContent = ""; tl.hidden = !ed;
+    if (ed) {
+      if (boardSel && boardSel.kind === "p" && b.pieces[boardSel.i]) {
+        const p = b.pieces[boardSel.i];
+        tl.appendChild(el("b", null, p.name));
+        SQUAD.forEach((n, g) => { const x = btn("btn ghost" + ((p.g || 0) === g ? " on" : ""), null, () => { editBoard().pieces[boardSel.i].g = g; renderTactics(); }); x.append(el("span", "dot g" + g), document.createTextNode(n)); x.setAttribute("aria-pressed", String((p.g || 0) === g)); tl.appendChild(x); });
+        tl.appendChild(btn("btn ghost", "빼기", () => { editBoard().pieces.splice(boardSel.i, 1); boardSel = null; renderTactics(); }));
+      } else if (boardSel && boardSel.kind === "m" && b.marks[boardSel.i]) {
+        tl.appendChild(el("b", null, MARK[b.marks[boardSel.i].t][1] + " 표시"));
+        tl.appendChild(btn("btn ghost", "빼기", () => { editBoard().marks.splice(boardSel.i, 1); boardSel = null; renderTactics(); }));
+      } else tl.appendChild(el("span", "hint", "말을 누르면 소대 색을 고르거나 뺄 수 있어요."));
+      tl.appendChild(el("span", null, ""));
+      tl.appendChild(btn("btn ghost", "지도 사진 바꾸기", () => $("mapFile").click()));
+      tl.appendChild(btn("btn ghost", "모두 빼기", () => { const d = editBoard(); d.pieces = []; d.marks = []; boardSel = null; renderTactics(); }));
+      if (dirty) {
+        tl.appendChild(el("span", "dirty", "저장 안 함"));
+        tl.appendChild(btn("btn ghost", "되돌리기", () => { delete drafts[mapKey]; boardSel = null; renderTactics(); }));
+      }
+      const sv = btn("btn", "저장", async () => {
+        sv.disabled = true; sv.textContent = "저장하는 중…";
+        const d = curBoard();
+        try {
+          DATA.boards[mapKey] = await memberCall("saveBoard", adminPw || token, mapKey, { pieces: d.pieces, marks: d.marks, memo: d.memo });
+          delete drafts[mapKey]; renderTactics(); setStatus(MAPS[mapKey] + " 전략을 저장했습니다. 문파원 모두에게 보입니다.");
+        } catch (e) { sv.disabled = false; sv.textContent = "저장"; setStatus(errMsg(e), true); }
+      });
+      sv.disabled = !dirty;
+      tl.appendChild(sv);
+    }
+    // 작전 메모
+    $("memoEdit").hidden = !ed;
+    if (ed && document.activeElement !== $("boardMemo")) $("boardMemo").value = b.memo;
+    $("memoView").replaceChildren(...(!ed && b.memo ? [el("h4", null, "작전 메모"), el("p", "memo-view", b.memo)] : []));
+  }
+  $("trayFind").addEventListener("input", renderTactics);
+  $("boardMemo").addEventListener("input", () => { const d = editBoard(), was = d.memo; d.memo = $("boardMemo").value; if (was !== d.memo && !$("boardTools").querySelector(".dirty")) renderTactics(); });
+  $("mapFile").addEventListener("change", async () => {
+    const file = $("mapFile").files[0]; $("mapFile").value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { setStatus("사진 파일만 쓸 수 있습니다.", true); return; }
+    setStatus("지도 사진 올리는 중…");
+    try {
+      const sm = await shrink(file, 2000);
+      DATA.boards[mapKey] = await memberCall("setBoardImage", adminPw || token, mapKey, sm.b64, sm.mime, sm.name);
+      if (drafts[mapKey]) drafts[mapKey].bg = DATA.boards[mapKey].bg;
+      renderTactics(); setStatus(MAPS[mapKey] + " 지도 사진을 바꿨습니다.");
+    } catch (e) { setStatus(errMsg(e), true); }
+  });
+  /* 끌어 놓기 — 마우스 · 손가락 모두 (pointer). 조금이라도 움직이면 끌기, 아니면 누르기(고르기 / 쟁반이면 가운데에 놓기). */
+  function startDrag(e, what) {
+    if (e.button !== undefined && e.button !== 0) return;
+    e.preventDefault();
+    const src = e.currentTarget, sx = e.clientX, sy = e.clientY;
+    let ghost = null;
+    const at = (cx, cy) => { const r = $("board").getBoundingClientRect(); return { x: (cx - r.left) / r.width, y: (cy - r.top) / r.height, inside: cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom }; };
+    const move = (ev) => {
+      if (!ghost && Math.hypot(ev.clientX - sx, ev.clientY - sy) < 5) return;
+      if (!ghost) {
+        ghost = src.cloneNode(true); ghost.classList.add("drag-ghost"); ghost.classList.remove("sel");
+        if (what.kind === "np") ghost.className = "pc g0 drag-ghost";
+        if (what.kind === "nm") { ghost.className = "mk2 drag-ghost t-" + what.t; ghost.textContent = MARK[what.t][0]; }
+        document.body.appendChild(ghost); src.classList.add("dragging");
+      }
+      ghost.style.left = ev.clientX + "px"; ghost.style.top = ev.clientY + "px";
+      ghost.style.opacity = at(ev.clientX, ev.clientY).inside ? ".95" : ".45";
+    };
+    const up = (ev) => {
+      document.removeEventListener("pointermove", move); document.removeEventListener("pointerup", up); document.removeEventListener("pointercancel", up);
+      src.classList.remove("dragging");
+      const clamp = (v) => Math.round(Math.min(.985, Math.max(.015, v)) * 1000) / 1000;
+      if (!ghost) { // 누르기
+        if (what.kind === "p" || what.kind === "m") boardSel = boardSel && boardSel.kind === what.kind && boardSel.i === what.i ? null : { kind: what.kind, i: what.i };
+        else if (what.kind === "np") { const d = editBoard(); d.pieces.push({ name: what.name, x: .5, y: .5, g: 0 }); boardSel = { kind: "p", i: d.pieces.length - 1 }; }
+        else if (what.kind === "nm") { const d = editBoard(); d.marks.push({ t: what.t, x: .5, y: .5 }); boardSel = { kind: "m", i: d.marks.length - 1 }; }
+        renderTactics(); return;
+      }
+      ghost.remove();
+      if (ev.type === "pointercancel") { renderTactics(); return; }
+      const p = at(ev.clientX, ev.clientY), d = editBoard();
+      if (what.kind === "np" && p.inside) { d.pieces.push({ name: what.name, x: clamp(p.x), y: clamp(p.y), g: 0 }); boardSel = { kind: "p", i: d.pieces.length - 1 }; }
+      else if (what.kind === "nm" && p.inside) { d.marks.push({ t: what.t, x: clamp(p.x), y: clamp(p.y) }); boardSel = { kind: "m", i: d.marks.length - 1 }; }
+      else if (what.kind === "p" || what.kind === "m") {
+        const list = what.kind === "p" ? d.pieces : d.marks;
+        if (p.inside) { list[what.i].x = clamp(p.x); list[what.i].y = clamp(p.y); boardSel = { kind: what.kind, i: what.i }; }
+        else { list.splice(what.i, 1); boardSel = null; } // 지도 밖으로 끌어내면 빠진다
+      }
+      renderTactics();
+    };
+    document.addEventListener("pointermove", move); document.addEventListener("pointerup", up); document.addEventListener("pointercancel", up);
+  }
+
   /* ── 그리기 ── */
   function render() {
+    renderTactics();
     const locked = !me && !canWrite;
     document.body.classList.toggle("locked", locked);
     if (locked) view = "auth";
