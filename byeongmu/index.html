@@ -653,7 +653,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610230041";
+  const BUILD = "202610230057";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -718,7 +718,11 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     const u = document.createElementNS("http://www.w3.org/2000/svg", "use");
     u.setAttribute("href", "#" + id); s.appendChild(u); return s;
   }
-  function imgUrl(id, w) { return "https://drive.google.com/thumbnail?id=" + encodeURIComponent(id) + "&sz=w" + (w || 2000); }
+  /* 사진은 깃허브 사진 가지("gh:…", 2026-10-23 부터). 예전 드라이브 id 는 드라이브 썸네일로 */
+  function imgUrl(id, w) {
+    if (/^gh:/.test(id)) return "https://raw.githubusercontent.com/Kwon-BJ/hyunjang-dist/byeongmu-img/" + id.slice(3);
+    return "https://drive.google.com/thumbnail?id=" + encodeURIComponent(id) + "&sz=w" + (w || 2000);
+  }
   function gallery(ids, alt) {
     const g = el("div", "gallery");
     ids.forEach((id, i) => {
