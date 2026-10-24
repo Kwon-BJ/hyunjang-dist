@@ -442,10 +442,18 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
 .tchip.tteam { width: 30px; height: 30px; padding: 0; display: grid; place-items: center; border: 2px solid #fff; color: #fff; font-weight: 800; font-size: 15px; }
 .team-roster { border: 1px solid var(--line); border-radius: 6px; padding: 10px; display: grid; gap: 10px; align-content: start; }
 .team-roster h4 { margin: 0; font-size: 13px; color: var(--gold-hi); }
-.team-roster .row { display: grid; grid-template-columns: 30px 1fr; gap: 8px; align-items: start; }
-.team-roster .tdot { width: 26px; height: 26px; border-radius: 50%; border: 2px solid #fff; display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 13px; }
-.team-roster textarea { width: 100%; box-sizing: border-box; min-height: 52px; resize: vertical; background: #0b0907; border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; color: inherit; font: inherit; font-size: 13px; }
-.team-roster p { margin: 4px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; }
+.team-roster .team { display: grid; gap: 4px; font-size: 13px; }
+.team-roster .team + .team { border-top: 1px solid var(--line); padding-top: 10px; }
+.team-roster .tt { display: flex; align-items: center; gap: 6px; }
+.team-roster .tt b { font-size: 14px; }
+.team-roster .tdot { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #fff; display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 12px; flex: none; }
+.team-roster .ln { display: grid; grid-template-columns: 44px 10px 1fr; align-items: start; gap: 2px; }
+.team-roster .ln .k { color: var(--gold-hi); line-height: 26px; }
+.team-roster .ln .dash { color: var(--muted); line-height: 26px; }
+.team-roster .ln .v { line-height: 26px; overflow-wrap: anywhere; }
+.team-roster .ln input, .team-roster textarea { width: 100%; min-width: 0; box-sizing: border-box; background: #0b0907; border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; color: inherit; font: inherit; font-size: 13px; }
+.team-roster textarea { min-height: 48px; resize: vertical; }
+.team-roster .copy { justify-self: start; padding: 5px 10px; font-size: 13px; }
 .tray input { background: #0b0907; border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; width: 100%; box-sizing: border-box; color: inherit; }
 .board-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .board-tools .dirty { color: #ffb347; font-size: 13px; font-weight: 700; }
@@ -800,7 +808,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610232354";
+  const BUILD = "202610240004";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -1774,7 +1782,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   function canBoard() { return canWrite || !!(me && (me.leader || me.deputy)); }
   function savedBoard(k) {
     const b = (DATA.boards || {})[k] || {};
-    return { bg: b.bg || "", pieces: Array.isArray(b.pieces) ? b.pieces : [], marks: Array.isArray(b.marks) ? b.marks : [], arrows: Array.isArray(b.arrows) ? b.arrows : [], boxes: Array.isArray(b.boxes) ? b.boxes : [], draws: Array.isArray(b.draws) ? b.draws : [], memo: b.memo || "", teams: b.teams && typeof b.teams === "object" ? b.teams : {}, updatedAt: b.updatedAt || "", by: b.by || "" };
+    return { bg: b.bg || "", pieces: Array.isArray(b.pieces) ? b.pieces : [], marks: Array.isArray(b.marks) ? b.marks : [], arrows: Array.isArray(b.arrows) ? b.arrows : [], boxes: Array.isArray(b.boxes) ? b.boxes : [], draws: Array.isArray(b.draws) ? b.draws : [], memo: b.memo || "", teams: b.teams && typeof b.teams === "object" ? b.teams : {}, heads: b.heads && typeof b.heads === "object" ? b.heads : {}, updatedAt: b.updatedAt || "", by: b.by || "" };
   }
   function curBoard() { return drafts[mapKey] || savedBoard(mapKey); }
   function editBoard() {
@@ -1895,15 +1903,56 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     // 쓰는 중에는 다시 안 그린다(글자 칸이 사라지지 않게)
     const tr = $("teamRoster");
     if (!tr.contains(document.activeElement)) {
-      const rows = TEAMS.filter((t) => ed || (b.teams[t] || "").trim()).map((t) => {
-        const row = el("div", "row"), d = el("span", "tdot", t); d.style.background = TEAM_COLOR[t];
+      const hd = (t) => b.heads[t] || {};
+      // A조 / 조장 - 잔량 / 부조장 - 단량 / 조원 - 프롤로그,국철이,… 모양으로 ("이런식으로 나오는걸 원한다" 2026-10-24)
+      const split = (s) => (s || "").split(/[\s,·/]+/).filter(Boolean);
+      const dl = document.createElement("datalist"); dl.id = "hd-names"; // 조장 · 부조장 고르기 — 문파원 이름, 다른 이름도 쓸 수 있다
+      if (ed) dl.replaceChildren(...[...new Set(allNames().map(bName))].map((n) => { const o = document.createElement("option"); o.value = n; return o; }));
+      const rows = TEAMS.filter((t) => ed || (b.teams[t] || "").trim() || hd(t).lead || hd(t).sub).map((t) => {
+        const box = el("div", "team"), top = el("div", "tt"), d = el("span", "tdot", t); d.style.background = TEAM_COLOR[t];
+        top.append(d, el("b", null, t + "조")); box.appendChild(top);
+        const line = (k, v) => { const ln = el("div", "ln"); ln.append(el("span", "k", k), el("span", "dash", "-")); if (typeof v === "string") ln.appendChild(el("span", "v", v)); else ln.appendChild(v); box.appendChild(ln); };
+        const h = hd(t);
         if (ed) {
-          const ta = document.createElement("textarea"); ta.maxLength = 500; ta.value = b.teams[t] || ""; ta.placeholder = "예: 잔량 단량"; ta.setAttribute("aria-label", t + "조 명단");
+          // 조장 · 부조장 — "각 조마다 조장,부조장 선정" (2026-10-24)
+          [["lead", "조장"], ["sub", "부조장"]].forEach(([k, n]) => {
+            const inp = document.createElement("input");
+            inp.maxLength = 20; inp.value = h[k] || ""; inp.setAttribute("list", dl.id); inp.setAttribute("aria-label", t + "조 " + n);
+            inp.addEventListener("input", () => { const d2 = editBoard(); d2.heads = Object.assign({}, d2.heads, { [t]: Object.assign({}, d2.heads && d2.heads[t], { [k]: inp.value.trim() }) }); if (!$("boardTools").querySelector(".dirty")) renderTactics(); });
+            line(n, inp);
+          });
+          const ta = document.createElement("textarea"); ta.maxLength = 500; ta.value = b.teams[t] || ""; ta.placeholder = "예: 프롤로그, 국철이, 별개"; ta.setAttribute("aria-label", t + "조 조원");
           ta.addEventListener("input", () => { const d2 = editBoard(); d2.teams = Object.assign({}, d2.teams, { [t]: ta.value }); if (!$("boardTools").querySelector(".dirty")) renderTactics(); });
-          row.append(d, ta);
-        } else row.append(d, el("p", null, b.teams[t]));
-        return row;
+          line("조원", ta);
+        } else {
+          if (h.lead) line("조장", h.lead);
+          if (h.sub) line("부조장", h.sub);
+          const ms = split(b.teams[t]).filter((n) => n !== h.lead && n !== h.sub); // 조장 · 부조장은 조원 줄에 또 안 쓴다
+          if (ms.length) line("조원", ms.join(","));
+        }
+        return box;
       });
+      if (ed) rows.push(dl);
+      // 다른 전장으로 조 옮기기 — "신기에서 팀 그대로 미혹으로 옮길수 있게, 작전메모는 제외" (2026-10-24).
+      // 조 명단 · 조장 · 부조장만. 지도가 달라서 동그라미 자리는 안 옮긴다. 저쪽은 [저장] 을 눌러야 저장된다
+      if (ed) {
+        const other = mapKey === "shingi" ? "mihok" : "shingi";
+        const has = (x) => TEAMS.some((t) => (x.teams[t] || "").trim() || (x.heads[t] || {}).lead || (x.heads[t] || {}).sub);
+        const dst = drafts[other] || savedBoard(other), go = () => {
+          if (document.activeElement) document.activeElement.blur();
+          if (!drafts[other]) drafts[other] = JSON.parse(JSON.stringify(savedBoard(other)));
+          drafts[other].teams = JSON.parse(JSON.stringify(curBoard().teams)); drafts[other].heads = JSON.parse(JSON.stringify(curBoard().heads));
+          mapKey = other; boardSel = null; renderTactics();
+          setStatus(MAPS[other] + " 으로 조를 옮겼습니다. [저장] 을 눌러야 저장됩니다.");
+        };
+        if (has(b)) {
+          const cp = btn("btn ghost copy", "→ " + MAPS[other] + "으로 조 옮기기", () => {
+            if (has(dst) && !cp.dataset.sure) { cp.dataset.sure = "1"; cp.textContent = MAPS[other] + "에 있는 조를 덮어쓰기"; return; } // 저쪽에 조가 있으면 한 번 더 눌러야
+            go();
+          });
+          rows.push(cp);
+        }
+      }
       tr.replaceChildren(...(rows.length ? [el("h4", null, "조 명단")].concat(rows) : []));
       tr.hidden = !rows.length;
     }
@@ -1971,7 +2020,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
       } else if (boardSel && boardSel.kind === "m" && b.marks[boardSel.i]) {
         sp.appendChild(el("b", null, markName(b.marks[boardSel.i].t) + (TEAMS.includes(b.marks[boardSel.i].t) ? "" : " 표시")));
         sp.appendChild(btn("btn ghost", "빼기", () => { editBoard().marks.splice(boardSel.i, 1); boardSel = null; renderTactics(); }));
-      } else sp.appendChild(el("span", "hint", "지도의 조 동그라미 · 표시 · 화살표 · 그림을 누르면 여기서 고치거나 뺄 수 있어요. 고른 것은 Delete 키로도 빠져요."));
+      } else sp.hidden = true; // 고른 것이 없으면 칸째 숨김 — 안내 글은 "안보이는게 좋다" (2026-10-24)
       const am = btn("btn" + (drawMode === "arrow" ? "" : " ghost"), drawMode === "arrow" ? "화살표 그리기 끝" : "➚ 화살표 그리기", () => { drawMode = drawMode === "arrow" ? "" : "arrow"; boardSel = null; renderTactics(); });
       am.setAttribute("aria-pressed", String(drawMode === "arrow"));
       const pm = btn("btn" + (drawMode === "pen" ? "" : " ghost"), drawMode === "pen" ? "연필 끝" : "✎ 연필", () => { drawMode = drawMode === "pen" ? "" : "pen"; penErase = false; boardSel = null; renderTactics(); });
@@ -1987,7 +2036,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
         sv.disabled = true; sv.textContent = "저장하는 중…";
         const d = curBoard();
         try {
-          DATA.boards[mapKey] = await memberCall("saveBoard", adminPw || token, mapKey, { pieces: d.pieces, marks: d.marks, arrows: d.arrows || [], boxes: d.boxes || [], draws: d.draws || [], memo: d.memo, teams: d.teams || {} });
+          DATA.boards[mapKey] = await memberCall("saveBoard", adminPw || token, mapKey, { pieces: d.pieces, marks: d.marks, arrows: d.arrows || [], boxes: d.boxes || [], draws: d.draws || [], memo: d.memo, teams: d.teams || {}, heads: d.heads || {} });
           delete drafts[mapKey]; saveCache(); renderTactics(); setStatus(MAPS[mapKey] + " 전략을 저장했습니다. 문파원 모두에게 보입니다.");
         } catch (e) { sv.disabled = false; sv.textContent = "저장"; setStatus(errMsg(e), true); }
       });
