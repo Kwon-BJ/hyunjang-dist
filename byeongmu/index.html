@@ -382,8 +382,11 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
 #tacticsView { display: flex; flex-direction: column; gap: 14px; }
 .btabs { display: flex; flex-wrap: wrap; gap: 8px; }
 .board-meta { margin: 0; color: var(--muted); font-size: 13px; }
-.board-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 230px; gap: 12px; align-items: start; }
-@media (max-width: 900px) { .board-wrap { grid-template-columns: 1fr; } }
+/* 안내 · 작전 메모는 지도 바로 밑(PC) — 오른쪽 조 명단이 길어도 지도 밑이 비지 않게 (2026-10-24). 폰은 맨 아래 */
+.board-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 230px; grid-template-areas: "map side" "under side"; grid-template-rows: auto 1fr; gap: 12px; align-items: start; }
+.board-wrap > .board { grid-area: map; } .board-wrap > .board-side { grid-area: side; } .board-wrap > .board-under { grid-area: under; }
+.board-under { display: grid; gap: 14px; min-width: 0; }
+@media (max-width: 900px) { .board-wrap { grid-template-columns: 1fr; grid-template-areas: "map" "side" "under"; grid-template-rows: auto; } }
 .board { position: relative; width: 100%; margin: 0 auto; aspect-ratio: 16 / 10; border: 1px solid var(--gold-lo); border-radius: 6px; overflow: hidden; user-select: none; -webkit-user-select: none;
   background: #120f0b repeating-linear-gradient(0deg, transparent 0 39px, rgba(214,176,98,.08) 39px 40px), repeating-linear-gradient(90deg, transparent 0 39px, rgba(214,176,98,.08) 39px 40px); }
 .board .bgimg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; pointer-events: none; }
@@ -398,6 +401,8 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
 .dot.g0 { background: #2a1f0e; border-color: var(--gold); }
 .pc.sel, .mk2.sel { outline: 2px solid #fff; outline-offset: 1px; }
 .mk2 { position: absolute; transform: translate(-50%, -50%); width: 30px; height: 30px; display: grid; place-items: center; font-size: 16px; line-height: 1; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 1px 5px rgba(0,0,0,.9); touch-action: none; cursor: grab; }
+.mk2.t-e1, .mk2.t-e2, .mk2.t-e3 { width: 34px; height: 34px; font-size: 12px; font-weight: 800; color: #fff; border-color: #ff5a5a; letter-spacing: -.5px; }
+.mk2.t-e1 { background: #3a0d10; } .mk2.t-e2 { background: #4a1a06; } .mk2.t-e3 { background: #2e0c2c; }
 .mk2.t-atk { background: #b3202a; } .mk2.t-def { background: #1d3b86; } .mk2.t-warn { background: #b07a10; } .mk2.t-flag { background: #1e5a2f; }
 .board.view .pc, .board.view .mk2 { cursor: default; touch-action: auto; }
 /* 화살표 — "각 조마다 화살표로 표시할수 있게" (2026-10-23) */
@@ -457,6 +462,10 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
 .tray input { background: #0b0907; border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; width: 100%; box-sizing: border-box; color: inherit; }
 .board-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .board-tools .dirty { color: #ffb347; font-size: 13px; font-weight: 700; }
+.board-top { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.board-dl { display: flex; margin-left: auto; }
+.board-dl .btn { padding: 6px 12px; font-size: 13px; }
+.team-roster .tt .cnt { color: var(--muted); font-weight: 400; font-size: 13px; }
 .legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--muted); }
 .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; border: 1px solid; margin-right: 4px; vertical-align: -1px; }
 .memo-view { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; }
@@ -686,6 +695,10 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
         <button type="button" class="chip" data-map="mihok">미혹의 정원</button>
       </div>
       <p class="board-meta" id="boardMeta"></p>
+      <div class="board-top">
+        <div class="board-tools" id="boardTools" hidden></div>
+        <div class="board-dl"><button type="button" class="btn ghost" id="boardJpg">JPG로 내려받기</button></div>
+      </div>
       <div class="board-wrap">
         <div class="board" id="board" aria-label="전략판 지도"></div>
         <div class="board-side">
@@ -699,11 +712,12 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
           <div class="board-sel" id="boardSel" hidden></div>
           <div class="team-roster" id="teamRoster"></div>
         </div>
+        <div class="board-under">
+          <div class="legend" id="boardLegend"></div>
+          <div class="field" id="memoEdit" hidden><label for="boardMemo">작전 메모</label><textarea id="boardMemo" maxlength="2000" placeholder="예: 1소대 왼쪽 거점, 2소대 가운데 방어, 20:00 집합"></textarea></div>
+          <div id="memoView"></div>
+        </div>
       </div>
-      <div class="legend" id="boardLegend"></div>
-      <div class="board-tools" id="boardTools" hidden></div>
-      <div class="field" id="memoEdit" hidden><label for="boardMemo">작전 메모</label><textarea id="boardMemo" maxlength="2000" placeholder="예: 1소대 왼쪽 거점, 2소대 가운데 방어, 20:00 집합"></textarea></div>
-      <div id="memoView"></div>
       <input type="file" id="mapFile" accept="image/*" hidden>
     </section>
 
@@ -808,7 +822,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610240004";
+  const BUILD = "202610240019";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -1760,7 +1774,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
      지도(게임 화면을 찍은 사진) 위에 문파원 말 · 표시를 끌어 놓는다. 자리는 지도에 대한 비율(0~1)이라 PC · 휴대폰에서 같은 자리.
      고치기: 관리자 · 문주 · 부문주 — 고친 것은 [저장] 을 눌러야 모두에게 보인다. 나머지 문파원은 보기만. */
   const MAPS = { shingi: "신기쟁탈전", mihok: "미혹의 정원" }; // 게임 공식 이름은 「미혹의 정원」 (2026-10-23 바꿈, 처음엔 「미혹의 전장」)
-  const MARK = { atk: ["⚔", "공격"], def: ["🛡", "방어"], warn: ["⚠", "주의"], flag: ["🚩", "깃발"] };
+  const MARK = { atk: ["⚔", "공격"], def: ["🛡", "방어"], warn: ["⚠", "주의"], flag: ["🚩", "깃발"], e1: ["적1", "적진1팀"], e2: ["적2", "적진2팀"], e3: ["적3", "적진3팀"] }; // 적진 1~3팀 (2026-10-24)
   const SQUAD = ["소대 없음", "1소대", "2소대", "3소대", "4소대"];
   let mapKey = "shingi", boardSel = null;
   let drawMode = "", arrowG = 1, arrowTwo = false, boxT = "A"; // 그리는 중: "" · "arrow" · "box" · "pen" / 화살표 색(소대) · 양방향 / 상자 조
@@ -1905,12 +1919,12 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     if (!tr.contains(document.activeElement)) {
       const hd = (t) => b.heads[t] || {};
       // A조 / 조장 - 잔량 / 부조장 - 단량 / 조원 - 프롤로그,국철이,… 모양으로 ("이런식으로 나오는걸 원한다" 2026-10-24)
-      const split = (s) => (s || "").split(/[\s,·/]+/).filter(Boolean);
       const dl = document.createElement("datalist"); dl.id = "hd-names"; // 조장 · 부조장 고르기 — 문파원 이름, 다른 이름도 쓸 수 있다
       if (ed) dl.replaceChildren(...[...new Set(allNames().map(bName))].map((n) => { const o = document.createElement("option"); o.value = n; return o; }));
       const rows = TEAMS.filter((t) => ed || (b.teams[t] || "").trim() || hd(t).lead || hd(t).sub).map((t) => {
         const box = el("div", "team"), top = el("div", "tt"), d = el("span", "tdot", t); d.style.background = TEAM_COLOR[t];
-        top.append(d, el("b", null, t + "조")); box.appendChild(top);
+        const cnt = el("span", "cnt", "(" + teamCount(b, t) + "명)"); cnt.dataset.t = t;
+        top.append(d, el("b", null, t + "조"), cnt); box.appendChild(top);
         const line = (k, v) => { const ln = el("div", "ln"); ln.append(el("span", "k", k), el("span", "dash", "-")); if (typeof v === "string") ln.appendChild(el("span", "v", v)); else ln.appendChild(v); box.appendChild(ln); };
         const h = hd(t);
         if (ed) {
@@ -1918,16 +1932,16 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
           [["lead", "조장"], ["sub", "부조장"]].forEach(([k, n]) => {
             const inp = document.createElement("input");
             inp.maxLength = 20; inp.value = h[k] || ""; inp.setAttribute("list", dl.id); inp.setAttribute("aria-label", t + "조 " + n);
-            inp.addEventListener("input", () => { const d2 = editBoard(); d2.heads = Object.assign({}, d2.heads, { [t]: Object.assign({}, d2.heads && d2.heads[t], { [k]: inp.value.trim() }) }); if (!$("boardTools").querySelector(".dirty")) renderTactics(); });
+            inp.addEventListener("input", () => { const d2 = editBoard(); d2.heads = Object.assign({}, d2.heads, { [t]: Object.assign({}, d2.heads && d2.heads[t], { [k]: inp.value.trim() }) }); recount(); if (!$("boardTools").querySelector(".dirty")) renderTactics(); });
             line(n, inp);
           });
           const ta = document.createElement("textarea"); ta.maxLength = 500; ta.value = b.teams[t] || ""; ta.placeholder = "예: 프롤로그, 국철이, 별개"; ta.setAttribute("aria-label", t + "조 조원");
-          ta.addEventListener("input", () => { const d2 = editBoard(); d2.teams = Object.assign({}, d2.teams, { [t]: ta.value }); if (!$("boardTools").querySelector(".dirty")) renderTactics(); });
+          ta.addEventListener("input", () => { const d2 = editBoard(); d2.teams = Object.assign({}, d2.teams, { [t]: ta.value }); recount(); if (!$("boardTools").querySelector(".dirty")) renderTactics(); });
           line("조원", ta);
         } else {
           if (h.lead) line("조장", h.lead);
           if (h.sub) line("부조장", h.sub);
-          const ms = split(b.teams[t]).filter((n) => n !== h.lead && n !== h.sub); // 조장 · 부조장은 조원 줄에 또 안 쓴다
+          const ms = teamMembers(b, t); // 조장 · 부조장은 조원 줄에 또 안 쓴다
           if (ms.length) line("조원", ms.join(","));
         }
         return box;
@@ -2048,6 +2062,118 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     if (ed && document.activeElement !== $("boardMemo")) $("boardMemo").value = b.memo;
     $("memoView").replaceChildren(...(!ed && b.memo ? [el("h4", null, "작전 메모"), el("p", "memo-view", b.memo)] : []));
   }
+  /* 조 인원 — "A조 (6명)", 조장 + 부조장 + 조원 자동 합산 (2026-10-24). 조원 칸에 조장 · 부조장 이름을 또 써도 한 번만 센다 */
+  function teamMembers(b, t) { const h = (b.heads || {})[t] || {}; return [...new Set(((b.teams || {})[t] || "").split(/[\s,·/]+/).filter(Boolean))].filter((n) => n !== h.lead && n !== h.sub); }
+  function teamCount(b, t) { const h = (b.heads || {})[t] || {}; return teamMembers(b, t).length + (h.lead ? 1 : 0) + (h.sub && h.sub !== h.lead ? 1 : 0); }
+  function recount() { const b = curBoard(); document.querySelectorAll("#teamRoster .cnt").forEach((c) => { c.textContent = "(" + teamCount(b, c.dataset.t) + "명)"; }); } // 쓰는 중에도 숫자는 바로
+
+  /* JPG로 내려받기 — "전략판 저장하고 나면 JPG로 저장할수 있게, 매번 캡처하는게 힘들다" (2026-10-24).
+     지도 · 조 네모 · 연필 · 화살표 · 표시 · 조 동그라미 · 이름 말을 캔버스에 다시 그리고, 오른쪽에 조 명단, 아래에 작전 메모. 화면에 보이는 그대로(저장 안 한 고침도) */
+  async function boardJpg() {
+    const b = curBoard(), bd = $("board"), font = getComputedStyle(document.body).fontFamily;
+    let im = null;
+    if (b.bg) im = await new Promise((ok) => { const x = new Image(); x.crossOrigin = "anonymous"; x.onload = () => ok(x); x.onerror = () => ok(null); x.src = imgUrl(b.bg); });
+    const W = im ? Math.min(1600, im.naturalWidth) : 1280, H = im ? Math.round(W * im.naturalHeight / im.naturalWidth) : 800;
+    const k = W / (bd.clientWidth || W); // 화면 1px → 그림 몇 px
+    const S = Math.max(1, W / 1000); // 오른쪽 명단 · 제목 글자 크기
+    const side = Math.round(380 * S), pad = Math.round(20 * S), head = Math.round(56 * S);
+    const tf = (px, w) => (w || "") + " " + Math.round(px) + "px " + font;
+    const cv = document.createElement("canvas"), g = cv.getContext("2d");
+    const wrap = (text, f, maxW) => { g.font = f; const out = []; String(text).split("\n").forEach((para) => { let line = ""; for (const ch of para) { if (g.measureText(line + ch).width > maxW && line) { out.push(line); line = ch; } else line += ch; } out.push(line); }); return out; };
+    // 오른쪽 명단 · 아래 메모 줄 미리 나누기
+    const fs1 = 18 * S, lh = Math.round(fs1 * 1.5), roster = [];
+    TEAMS.forEach((t) => {
+      const h = (b.heads || {})[t] || {}, ms = teamMembers(b, t);
+      if (!h.lead && !h.sub && !ms.length) return;
+      roster.push({ t, title: t + "조 (" + teamCount(b, t) + "명)" });
+      [["조장", h.lead], ["부조장", h.sub], ["조원", ms.join(",")]].forEach(([n, v]) => { if (v) wrap(n + " - " + v, tf(fs1), side - pad * 2 - 30 * S).forEach((l) => roster.push({ l })); });
+    });
+    const rosterH = roster.reduce((s, r) => s + (r.t ? lh * 1.4 : lh), 0) + (roster.length ? lh * 1.6 : 0);
+    const memo = (b.memo || "").trim() ? wrap(b.memo, tf(fs1), W + side - pad * 3) : [];
+    const memoH = memo.length ? Math.round(lh * (memo.length + 1.6) + pad) : 0;
+    const bodyH = Math.max(H, rosterH + pad);
+    cv.width = W + side + pad * 3; cv.height = head + bodyH + memoH + pad * 2;
+    g.fillStyle = "#14100b"; g.fillRect(0, 0, cv.width, cv.height);
+    g.textBaseline = "middle";
+    g.fillStyle = "#e9c77b"; g.font = tf(26 * S, "800"); g.fillText(MAPS[mapKey] + " 전략", pad, pad + head / 2 - 4 * S);
+    g.fillStyle = "#9b8f7a"; g.font = tf(15 * S); g.textAlign = "right";
+    g.fillText(b.updatedAt ? "저장 " + fmtTime(b.updatedAt) + (b.by ? " · " + b.by : "") : "", cv.width - pad, pad + head / 2 - 4 * S); g.textAlign = "left";
+    // 지도
+    const X = pad, Y = pad + head;
+    g.save(); g.beginPath(); g.rect(X, Y, W, H); g.clip();
+    if (im) g.drawImage(im, X, Y, W, H); else { g.fillStyle = "#0b0907"; g.fillRect(X, Y, W, H); }
+    const px = (v) => X + v * W, py = (v) => Y + v * H;
+    (b.boxes || []).forEach((x) => { // 예전 조 네모
+      g.fillStyle = TEAM_BG[x.t]; g.fillRect(px(x.x), py(x.y), x.w * W, x.h * H);
+      g.setLineDash([8 * k, 6 * k]); g.lineWidth = 3 * k; g.strokeStyle = TEAM_COLOR[x.t]; g.strokeRect(px(x.x), py(x.y), x.w * W, x.h * H); g.setLineDash([]);
+      g.font = tf(12 * k, "800"); const lw = g.measureText(x.t + "조").width + 16 * k; g.fillStyle = TEAM_COLOR[x.t]; g.fillRect(px(x.x), py(x.y), lw, 18 * k); g.fillStyle = "#fff"; g.fillText(x.t + "조", px(x.x) + 8 * k, py(x.y) + 9 * k);
+    });
+    g.lineCap = "round"; g.lineJoin = "round";
+    const poly = (pts) => { g.beginPath(); pts.forEach((p, i) => (i ? g.lineTo(px(p[0]), py(p[1])) : g.moveTo(px(p[0]), py(p[1])))); };
+    (b.draws || []).forEach((s) => { // 연필
+      poly(s.pts); g.strokeStyle = "rgba(0,0,0,.6)"; g.lineWidth = ((s.w || 6) + 3) * k; g.stroke();
+      poly(s.pts); g.strokeStyle = PEN_COLOR[s.g || 0]; g.lineWidth = (s.w || 6) * k; g.stroke();
+    });
+    const headAt = (a, b2, c) => { // 화살 머리 — 화면의 marker 와 같은 크기(굵기 6 × 4)
+      const ang = Math.atan2(py(b2[1]) - py(a[1]), px(b2[0]) - px(a[0])), L = 24 * k, tx = px(b2[0]) + Math.cos(ang) * 9.6 * k, ty = py(b2[1]) + Math.sin(ang) * 9.6 * k;
+      g.beginPath(); g.moveTo(tx, ty); g.lineTo(tx - Math.cos(ang) * L + Math.sin(ang) * L / 2, ty - Math.sin(ang) * L - Math.cos(ang) * L / 2); g.lineTo(tx - Math.cos(ang) * L - Math.sin(ang) * L / 2, ty - Math.sin(ang) * L + Math.cos(ang) * L / 2); g.closePath();
+      g.fillStyle = c; g.fill(); g.lineWidth = 1.5 * k; g.strokeStyle = "#000"; g.stroke();
+    };
+    (b.arrows || []).forEach((a) => { // 화살표
+      const ps = aPts(a), c = ARROW_COLOR[a.g || 0];
+      poly(ps); g.strokeStyle = "rgba(0,0,0,.7)"; g.lineWidth = 9 * k; g.stroke();
+      poly(ps); g.strokeStyle = c; g.lineWidth = 6 * k; g.stroke();
+      headAt(ps[ps.length - 2], ps[ps.length - 1], c);
+      if (a.two) headAt(ps[1], ps[0], c);
+    });
+    const MARK_BG = { atk: "#b3202a", def: "#1d3b86", warn: "#b07a10", flag: "#1e5a2f", e1: "#3a0d10", e2: "#4a1a06", e3: "#2e0c2c" };
+    (b.marks || []).forEach((m) => { // 표시 · 조 동그라미 · 적진
+      const tm = TEAMS.includes(m.t), en = /^ed$/.test(m.t), r = (en ? 17 : 15) * k;
+      g.beginPath(); g.arc(px(m.x), py(m.y), r, 0, Math.PI * 2); g.fillStyle = tm ? TEAM_COLOR[m.t] : MARK_BG[m.t] || "#333"; g.shadowColor = "rgba(0,0,0,.9)"; g.shadowBlur = 5 * k; g.fill(); g.shadowBlur = 0;
+      g.lineWidth = 2 * k; g.strokeStyle = en ? "#ff5a5a" : "#fff"; g.stroke();
+      g.textAlign = "center"; g.fillStyle = "#fff"; g.font = tf((tm ? 15 : en ? 12 : 16) * k, tm || en ? "800" : ""); g.fillText(tm ? m.t : (MARK[m.t] || ["?"])[0], px(m.x), py(m.y) + 1 * k); g.textAlign = "left";
+    });
+    const PC_BG = ["#2a1f0e", "#7a1d22", "#1d3b86", "#1e5a2f", "#4b2a7a"], PC_LINE = ["#d6b062", "#ff8a80", "#8ab4ff", "#8fd694", "#c9a6ff"];
+    (b.pieces || []).forEach((p) => { // 예전 이름 말
+      const n = bName(p.name); g.font = tf(12 * k, "700"); const w = g.measureText(n).width + 14 * k, h = 20 * k, x0 = px(p.x) - w / 2, y0 = py(p.y) - h / 2;
+      g.beginPath(); if (g.roundRect) g.roundRect(x0, y0, w, h, h / 2); else g.rect(x0, y0, w, h); g.fillStyle = PC_BG[p.g || 0]; g.fill(); g.lineWidth = 1.5 * k; g.strokeStyle = PC_LINE[p.g || 0]; g.stroke();
+      g.fillStyle = "#fff"; g.textAlign = "center"; g.fillText(n, px(p.x), py(p.y) + 1 * k); g.textAlign = "left";
+    });
+    g.restore();
+    g.lineWidth = 2; g.strokeStyle = "#7a6033"; g.strokeRect(X, Y, W, H);
+    // 오른쪽 조 명단
+    const SX = X + W + pad; let sy = Y;
+    if (roster.length) {
+      g.fillStyle = "#e9c77b"; g.font = tf(20 * S, "800"); g.fillText("조 명단", SX, sy + lh / 2); sy += lh * 1.6;
+      roster.forEach((r) => {
+        if (r.t) {
+          const rr = 12 * S, cy = sy + lh * .35;
+          g.beginPath(); g.arc(SX + rr, cy, rr, 0, Math.PI * 2); g.fillStyle = TEAM_COLOR[r.t]; g.fill(); g.lineWidth = 2 * S; g.strokeStyle = "#fff"; g.stroke();
+          g.fillStyle = "#fff"; g.textAlign = "center"; g.font = tf(13 * S, "800"); g.fillText(r.t, SX + rr, cy + 1 * S); g.textAlign = "left";
+          g.fillStyle = "#f3e7cf"; g.font = tf(fs1 + 1 * S, "800"); g.fillText(r.title, SX + rr * 2 + 8 * S, cy); sy += lh * 1.4;
+        } else { g.fillStyle = "#e8dcc4"; g.font = tf(fs1); g.fillText(r.l, SX + 30 * S, sy + lh * .2); sy += lh; }
+      });
+    }
+    // 아래 작전 메모
+    if (memo.length) {
+      let my = Y + bodyH + pad;
+      g.fillStyle = "#e9c77b"; g.font = tf(20 * S, "800"); g.fillText("작전 메모", X, my + lh / 2); my += lh * 1.4;
+      g.fillStyle = "#e8dcc4"; g.font = tf(fs1); memo.forEach((l) => { g.fillText(l, X, my + lh / 2); my += lh; });
+    }
+    let blob = null;
+    try { blob = await new Promise((ok) => cv.toBlob(ok, "image/jpeg", 0.92)); } catch (e) { blob = null; }
+    if (!blob) throw new Error("전략판을 그림으로 못 만들었습니다.");
+    const a = document.createElement("a"), d = new Date(), p2 = (n) => String(n).padStart(2, "0");
+    a.href = URL.createObjectURL(blob); a.download = MAPS[mapKey] + "-전략-" + d.getFullYear() + p2(d.getMonth() + 1) + p2(d.getDate()) + "-" + p2(d.getHours()) + p2(d.getMinutes()) + ".jpg";
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+    return { ok: !b.bg || !!im, name: a.download, size: blob.size };
+  }
+  $("boardJpg").addEventListener("click", async () => {
+    const x = $("boardJpg"); x.disabled = true; x.textContent = "만드는 중…";
+    try { const r = await boardJpg(); setStatus(r.ok ? "JPG로 내려받았습니다." : "JPG로 내려받았습니다. (지도 사진은 못 넣었습니다)", !r.ok); }
+    catch (e) { setStatus(errMsg(e), true); }
+    finally { x.disabled = false; x.textContent = "JPG로 내려받기"; }
+  });
   /* 조 네모끼리는 겹치지 않는다 — 붙여 놓으면 옆 조 사람까지 같이 끌려가서 ("a,b,c,d조 칸이 서로 같이 안맞물리게" 2026-10-24).
      가장자리가 딱 맞닿는 것은 괜찮다. skip 은 지금 고치는 네모 번호 */
   function boxHit(q, skip) {
@@ -2260,6 +2386,8 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   function startDrag(e, what) {
     if (e.button !== undefined && e.button !== 0) return;
     e.preventDefault();
+    // 글 칸(조원 · 메모)에 커서가 남아 있으면 Delete 가 글자를 지운다 — 지도 · 쟁반을 누르면 커서를 뺀다 (2026-10-24)
+    if (document.activeElement && /^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)) document.activeElement.blur();
     const src = e.currentTarget, sx = e.clientX, sy = e.clientY;
     let ghost = null;
     const at = (cx, cy) => { const r = $("board").getBoundingClientRect(); return { x: (cx - r.left) / r.width, y: (cy - r.top) / r.height, inside: cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom }; };
