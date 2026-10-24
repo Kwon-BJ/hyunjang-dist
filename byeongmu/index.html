@@ -386,6 +386,26 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
 .board-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 230px; grid-template-areas: "map side" "under side"; grid-template-rows: auto 1fr; gap: 12px; align-items: start; }
 .board-wrap > .board { grid-area: map; } .board-wrap > .board-side { grid-area: side; } .board-wrap > .board-under { grid-area: under; }
 .board-under { display: grid; gap: 14px; min-width: 0; }
+/* 영상 장면 (2026-10-24) */
+.scene-box { border: 1px solid var(--line); border-radius: 6px; padding: 10px; display: grid; gap: 8px; }
+.scene-box h4 { margin: 0; font-size: 13px; color: var(--gold-hi); }
+.scene-box .hint { margin: 0; color: var(--muted); font-size: 12px; }
+.scene-box .in { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) auto; gap: 6px; }
+.scene-box input, .scene-box select { min-width: 0; background: #0b0907; border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; color: inherit; font: inherit; font-size: 13px; }
+.scene-box .btn { padding: 5px 10px; font-size: 13px; }
+.scene-box ol { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+.scene-box li { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 4px 6px; border-radius: 6px; font-size: 13px; }
+.scene-box li.on { background: rgba(214,176,98,.12); outline: 1px solid var(--gold-lo); }
+.scene-box li .n { color: var(--gold-hi); font-weight: 800; min-width: 1.6em; }
+.scene-box li .t { flex: 1; min-width: 8em; overflow-wrap: anywhere; }
+.scene-box li .t small { color: var(--muted); display: block; }
+.scene-box li .btn { padding: 2px 8px; font-size: 12px; }
+.scene-box .go { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+@media (max-width: 600px) { .scene-box .in { grid-template-columns: 1fr; } }
+.vid-cover { position: fixed; inset: 0; z-index: 90; background: rgba(0,0,0,.82); display: grid; place-items: center; padding: 16px; }
+.vid-cover .in { display: grid; gap: 10px; justify-items: center; max-width: 100%; }
+.vid-cover canvas { max-width: min(92vw, 560px); max-height: 72vh; width: auto; height: auto; border: 1px solid var(--gold-lo); border-radius: 6px; }
+.vid-cover p { margin: 0; color: #e8dcc4; font-size: 14px; text-align: center; }
 @media (max-width: 900px) { .board-wrap { grid-template-columns: 1fr; grid-template-areas: "map" "side" "under"; grid-template-rows: auto; } }
 .board { position: relative; width: 100%; margin: 0 auto; aspect-ratio: 16 / 10; border: 1px solid var(--gold-lo); border-radius: 6px; overflow: hidden; user-select: none; -webkit-user-select: none;
   background: #120f0b repeating-linear-gradient(0deg, transparent 0 39px, rgba(214,176,98,.08) 39px 40px), repeating-linear-gradient(90deg, transparent 0 39px, rgba(214,176,98,.08) 39px 40px); }
@@ -713,6 +733,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
           <div class="team-roster" id="teamRoster"></div>
         </div>
         <div class="board-under">
+          <div class="scene-box" id="sceneBox" hidden></div>
           <div class="legend" id="boardLegend"></div>
           <div class="field" id="memoEdit" hidden><label for="boardMemo">작전 메모</label><textarea id="boardMemo" maxlength="2000" placeholder="예: 1소대 왼쪽 거점, 2소대 가운데 방어, 20:00 집합"></textarea></div>
           <div id="memoView"></div>
@@ -822,7 +843,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610240026";
+  const BUILD = "202610240043";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -1796,14 +1817,14 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   function canBoard() { return canWrite || !!(me && (me.leader || me.deputy)); }
   function savedBoard(k) {
     const b = (DATA.boards || {})[k] || {};
-    return { bg: b.bg || "", pieces: Array.isArray(b.pieces) ? b.pieces : [], marks: Array.isArray(b.marks) ? b.marks : [], arrows: Array.isArray(b.arrows) ? b.arrows : [], boxes: Array.isArray(b.boxes) ? b.boxes : [], draws: Array.isArray(b.draws) ? b.draws : [], memo: b.memo || "", teams: b.teams && typeof b.teams === "object" ? b.teams : {}, heads: b.heads && typeof b.heads === "object" ? b.heads : {}, updatedAt: b.updatedAt || "", by: b.by || "" };
+    return { bg: b.bg || "", pieces: Array.isArray(b.pieces) ? b.pieces : [], marks: Array.isArray(b.marks) ? b.marks : [], arrows: Array.isArray(b.arrows) ? b.arrows : [], boxes: Array.isArray(b.boxes) ? b.boxes : [], draws: Array.isArray(b.draws) ? b.draws : [], memo: b.memo || "", teams: b.teams && typeof b.teams === "object" ? b.teams : {}, heads: b.heads && typeof b.heads === "object" ? b.heads : {}, scenes: Array.isArray(b.scenes) ? b.scenes : [], sceneSec: b.sceneSec || 3, updatedAt: b.updatedAt || "", by: b.by || "" };
   }
   function curBoard() { return drafts[mapKey] || savedBoard(mapKey); }
   function editBoard() {
     if (!drafts[mapKey]) drafts[mapKey] = JSON.parse(JSON.stringify(savedBoard(mapKey)));
     return drafts[mapKey];
   }
-  document.querySelectorAll("#mapTabs [data-map]").forEach((b) => { b.onclick = () => { mapKey = b.dataset.map; boardSel = null; renderTactics(); }; });
+  document.querySelectorAll("#mapTabs [data-map]").forEach((b) => { b.onclick = () => { mapKey = b.dataset.map; boardSel = null; sceneSel = -1; renderTactics(); }; });
   function allNames() { const r = DATA.roster; return (r.leader ? [r.leader] : []).concat(r.deputies, r.members); }
   /** 전략판에 보이는 이름 — 게임 이름과 다르면 문주 · 부문주가 바꿔 둔 것 (boards._names, 두 전장 같이) */
   function markName(t) { return TEAMS.includes(t) ? t + "조" : (MARK[t] || ["", ""])[1]; }
@@ -2050,13 +2071,14 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
         sv.disabled = true; sv.textContent = "저장하는 중…";
         const d = curBoard();
         try {
-          DATA.boards[mapKey] = await memberCall("saveBoard", adminPw || token, mapKey, { pieces: d.pieces, marks: d.marks, arrows: d.arrows || [], boxes: d.boxes || [], draws: d.draws || [], memo: d.memo, teams: d.teams || {}, heads: d.heads || {} });
+          DATA.boards[mapKey] = await memberCall("saveBoard", adminPw || token, mapKey, { pieces: d.pieces, marks: d.marks, arrows: d.arrows || [], boxes: d.boxes || [], draws: d.draws || [], memo: d.memo, teams: d.teams || {}, heads: d.heads || {}, scenes: d.scenes || [], sceneSec: d.sceneSec || 3 });
           delete drafts[mapKey]; saveCache(); renderTactics(); setStatus(MAPS[mapKey] + " 전략을 저장했습니다. 문파원 모두에게 보입니다.");
         } catch (e) { sv.disabled = false; sv.textContent = "저장"; setStatus(errMsg(e), true); }
       });
       sv.disabled = !dirty;
       tl.appendChild(sv);
     }
+    renderScenes(ed, b);
     // 작전 메모
     $("memoEdit").hidden = !ed;
     if (ed && document.activeElement !== $("boardMemo")) $("boardMemo").value = b.memo;
@@ -2066,6 +2088,67 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   function teamMembers(b, t) { const h = (b.heads || {})[t] || {}; return [...new Set(((b.teams || {})[t] || "").split(/[\s,·/]+/).filter(Boolean))].filter((n) => n !== h.lead && n !== h.sub); }
   function teamCount(b, t) { const h = (b.heads || {})[t] || {}; return teamMembers(b, t).length + (h.lead ? 1 : 0) + (h.sub && h.sub !== h.lead ? 1 : 0); }
   function recount() { const b = curBoard(); document.querySelectorAll("#teamRoster .cnt").forEach((c) => { c.textContent = "(" + teamCount(b, c.dataset.t) + "명)"; }); } // 쓰는 중에도 숫자는 바로
+
+  /* 지도 위 그림 — JPG · 영상이 같이 쓴다. k 는 화면 1px 이 그림에서 몇 px 인지 */
+  function paintBoard(g, b, X, Y, W, H, k, font, im) {
+    const tf = (px, w) => (w || "") + " " + Math.round(px) + "px " + font;
+    g.save(); g.beginPath(); g.rect(X, Y, W, H); g.clip();
+    if (im) g.drawImage(im, X, Y, W, H); else { g.fillStyle = "#0b0907"; g.fillRect(X, Y, W, H); }
+    const px = (v) => X + v * W, py = (v) => Y + v * H;
+    (b.boxes || []).forEach((x) => { // 예전 조 네모
+      g.fillStyle = TEAM_BG[x.t]; g.fillRect(px(x.x), py(x.y), x.w * W, x.h * H);
+      g.setLineDash([8 * k, 6 * k]); g.lineWidth = 3 * k; g.strokeStyle = TEAM_COLOR[x.t]; g.strokeRect(px(x.x), py(x.y), x.w * W, x.h * H); g.setLineDash([]);
+      g.font = tf(12 * k, "800"); const lw = g.measureText(x.t + "조").width + 16 * k; g.fillStyle = TEAM_COLOR[x.t]; g.fillRect(px(x.x), py(x.y), lw, 18 * k); g.fillStyle = "#fff"; g.fillText(x.t + "조", px(x.x) + 8 * k, py(x.y) + 9 * k);
+    });
+    g.lineCap = "round"; g.lineJoin = "round";
+    const poly = (pts) => { g.beginPath(); pts.forEach((p, i) => (i ? g.lineTo(px(p[0]), py(p[1])) : g.moveTo(px(p[0]), py(p[1])))); };
+    (b.draws || []).forEach((s) => { // 연필
+      poly(s.pts); g.strokeStyle = "rgba(0,0,0,.6)"; g.lineWidth = ((s.w || 6) + 3) * k; g.stroke();
+      poly(s.pts); g.strokeStyle = PEN_COLOR[s.g || 0]; g.lineWidth = (s.w || 6) * k; g.stroke();
+    });
+    const headAt = (a, b2, c) => { // 화살 머리 — 화면의 marker 와 같은 크기(굵기 6 × 4)
+      const ang = Math.atan2(py(b2[1]) - py(a[1]), px(b2[0]) - px(a[0])), L = 24 * k, tx = px(b2[0]) + Math.cos(ang) * 9.6 * k, ty = py(b2[1]) + Math.sin(ang) * 9.6 * k;
+      g.beginPath(); g.moveTo(tx, ty); g.lineTo(tx - Math.cos(ang) * L + Math.sin(ang) * L / 2, ty - Math.sin(ang) * L - Math.cos(ang) * L / 2); g.lineTo(tx - Math.cos(ang) * L - Math.sin(ang) * L / 2, ty - Math.sin(ang) * L + Math.cos(ang) * L / 2); g.closePath();
+      g.fillStyle = c; g.fill(); g.lineWidth = 1.5 * k; g.strokeStyle = "#000"; g.stroke();
+    };
+    (b.arrows || []).forEach((a) => { // 화살표 — 영상에서는 alpha(흐려짐) · prog(그려진 만큼 0~1)
+      const al = a.alpha == null ? 1 : a.alpha; if (al <= 0) return;
+      const ps = a.prog == null || a.prog >= 1 ? aPts(a) : partPts(aPts(a), a.prog, W, H), c = ARROW_COLOR[a.g || 0];
+      if (ps.length < 2) return;
+      g.globalAlpha = al;
+      poly(ps); g.strokeStyle = "rgba(0,0,0,.7)"; g.lineWidth = 9 * k; g.stroke();
+      poly(ps); g.strokeStyle = c; g.lineWidth = 6 * k; g.stroke();
+      headAt(ps[ps.length - 2], ps[ps.length - 1], c);
+      if (a.two) headAt(ps[1], ps[0], c);
+      g.globalAlpha = 1;
+    });
+    const MARK_BG = { atk: "#b3202a", def: "#1d3b86", warn: "#b07a10", flag: "#1e5a2f", e1: "#3a0d10", e2: "#4a1a06", e3: "#2e0c2c" };
+    (b.marks || []).forEach((m) => { // 표시 · 조 동그라미 · 적진 — 영상에서는 alpha
+      const al = m.alpha == null ? 1 : m.alpha; if (al <= 0) return; g.globalAlpha = al;
+      const tm = TEAMS.includes(m.t), en = /^e\d$/.test(m.t), r = (en ? 17 : 15) * k;
+      g.beginPath(); g.arc(px(m.x), py(m.y), r, 0, Math.PI * 2); g.fillStyle = tm ? TEAM_COLOR[m.t] : MARK_BG[m.t] || "#333"; g.shadowColor = "rgba(0,0,0,.9)"; g.shadowBlur = 5 * k; g.fill(); g.shadowBlur = 0;
+      g.lineWidth = 2 * k; g.strokeStyle = en ? "#ff5a5a" : "#fff"; g.stroke();
+      g.textAlign = "center"; g.fillStyle = "#fff"; g.font = tf((tm ? 15 : en ? 12 : 16) * k, tm || en ? "800" : ""); g.fillText(tm ? m.t : (MARK[m.t] || ["?"])[0], px(m.x), py(m.y) + 1 * k); g.textAlign = "left";
+      g.globalAlpha = 1;
+    });
+    const PC_BG = ["#2a1f0e", "#7a1d22", "#1d3b86", "#1e5a2f", "#4b2a7a"], PC_LINE = ["#d6b062", "#ff8a80", "#8ab4ff", "#8fd694", "#c9a6ff"];
+    (b.pieces || []).forEach((p) => { // 예전 이름 말
+      const n = bName(p.name); g.font = tf(12 * k, "700"); const w = g.measureText(n).width + 14 * k, h = 20 * k, x0 = px(p.x) - w / 2, y0 = py(p.y) - h / 2;
+      g.beginPath(); if (g.roundRect) g.roundRect(x0, y0, w, h, h / 2); else g.rect(x0, y0, w, h); g.fillStyle = PC_BG[p.g || 0]; g.fill(); g.lineWidth = 1.5 * k; g.strokeStyle = PC_LINE[p.g || 0]; g.stroke();
+      g.fillStyle = "#fff"; g.textAlign = "center"; g.fillText(n, px(p.x), py(p.y) + 1 * k); g.textAlign = "left";
+    });
+    g.restore();
+  }
+  // 화살표를 앞에서부터 prog(0~1) 만큼만 — 영상에서 그려지듯이
+  function partPts(ps, prog, W, H) {
+    const L = ps.slice(1).map((q, i) => Math.hypot((q[0] - ps[i][0]) * W, (q[1] - ps[i][1]) * H)), tot = L.reduce((x, y) => x + y, 0);
+    let left = tot * Math.max(0, prog); const out = [ps[0]];
+    for (let i = 0; i < L.length; i++) {
+      if (left >= L[i]) { out.push(ps[i + 1]); left -= L[i]; continue; }
+      const f = L[i] ? left / L[i] : 0; out.push([ps[i][0] + (ps[i + 1][0] - ps[i][0]) * f, ps[i][1] + (ps[i + 1][1] - ps[i][1]) * f]); break;
+    }
+    return out.length >= 2 && tot * prog > 2 ? out : [];
+  }
 
   /* JPG로 내려받기 — "전략판 저장하고 나면 JPG로 저장할수 있게, 매번 캡처하는게 힘들다" (2026-10-24).
      지도 · 조 네모 · 연필 · 화살표 · 표시 · 조 동그라미 · 이름 말을 캔버스에 다시 그리고, 오른쪽에 조 명단, 아래에 작전 메모. 화면에 보이는 그대로(저장 안 한 고침도) */
@@ -2106,46 +2189,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     g.fillText(b.updatedAt ? "저장 " + fmtTime(b.updatedAt) + (b.by ? " · " + b.by : "") : "", cv.width - pad, pad + head / 2 - 4 * S); g.textAlign = "left";
     // 지도
     const X = pad, Y = pad + head;
-    g.save(); g.beginPath(); g.rect(X, Y, W, H); g.clip();
-    if (im) g.drawImage(im, X, Y, W, H); else { g.fillStyle = "#0b0907"; g.fillRect(X, Y, W, H); }
-    const px = (v) => X + v * W, py = (v) => Y + v * H;
-    (b.boxes || []).forEach((x) => { // 예전 조 네모
-      g.fillStyle = TEAM_BG[x.t]; g.fillRect(px(x.x), py(x.y), x.w * W, x.h * H);
-      g.setLineDash([8 * k, 6 * k]); g.lineWidth = 3 * k; g.strokeStyle = TEAM_COLOR[x.t]; g.strokeRect(px(x.x), py(x.y), x.w * W, x.h * H); g.setLineDash([]);
-      g.font = tf(12 * k, "800"); const lw = g.measureText(x.t + "조").width + 16 * k; g.fillStyle = TEAM_COLOR[x.t]; g.fillRect(px(x.x), py(x.y), lw, 18 * k); g.fillStyle = "#fff"; g.fillText(x.t + "조", px(x.x) + 8 * k, py(x.y) + 9 * k);
-    });
-    g.lineCap = "round"; g.lineJoin = "round";
-    const poly = (pts) => { g.beginPath(); pts.forEach((p, i) => (i ? g.lineTo(px(p[0]), py(p[1])) : g.moveTo(px(p[0]), py(p[1])))); };
-    (b.draws || []).forEach((s) => { // 연필
-      poly(s.pts); g.strokeStyle = "rgba(0,0,0,.6)"; g.lineWidth = ((s.w || 6) + 3) * k; g.stroke();
-      poly(s.pts); g.strokeStyle = PEN_COLOR[s.g || 0]; g.lineWidth = (s.w || 6) * k; g.stroke();
-    });
-    const headAt = (a, b2, c) => { // 화살 머리 — 화면의 marker 와 같은 크기(굵기 6 × 4)
-      const ang = Math.atan2(py(b2[1]) - py(a[1]), px(b2[0]) - px(a[0])), L = 24 * k, tx = px(b2[0]) + Math.cos(ang) * 9.6 * k, ty = py(b2[1]) + Math.sin(ang) * 9.6 * k;
-      g.beginPath(); g.moveTo(tx, ty); g.lineTo(tx - Math.cos(ang) * L + Math.sin(ang) * L / 2, ty - Math.sin(ang) * L - Math.cos(ang) * L / 2); g.lineTo(tx - Math.cos(ang) * L - Math.sin(ang) * L / 2, ty - Math.sin(ang) * L + Math.cos(ang) * L / 2); g.closePath();
-      g.fillStyle = c; g.fill(); g.lineWidth = 1.5 * k; g.strokeStyle = "#000"; g.stroke();
-    };
-    (b.arrows || []).forEach((a) => { // 화살표
-      const ps = aPts(a), c = ARROW_COLOR[a.g || 0];
-      poly(ps); g.strokeStyle = "rgba(0,0,0,.7)"; g.lineWidth = 9 * k; g.stroke();
-      poly(ps); g.strokeStyle = c; g.lineWidth = 6 * k; g.stroke();
-      headAt(ps[ps.length - 2], ps[ps.length - 1], c);
-      if (a.two) headAt(ps[1], ps[0], c);
-    });
-    const MARK_BG = { atk: "#b3202a", def: "#1d3b86", warn: "#b07a10", flag: "#1e5a2f", e1: "#3a0d10", e2: "#4a1a06", e3: "#2e0c2c" };
-    (b.marks || []).forEach((m) => { // 표시 · 조 동그라미 · 적진
-      const tm = TEAMS.includes(m.t), en = /^ed$/.test(m.t), r = (en ? 17 : 15) * k;
-      g.beginPath(); g.arc(px(m.x), py(m.y), r, 0, Math.PI * 2); g.fillStyle = tm ? TEAM_COLOR[m.t] : MARK_BG[m.t] || "#333"; g.shadowColor = "rgba(0,0,0,.9)"; g.shadowBlur = 5 * k; g.fill(); g.shadowBlur = 0;
-      g.lineWidth = 2 * k; g.strokeStyle = en ? "#ff5a5a" : "#fff"; g.stroke();
-      g.textAlign = "center"; g.fillStyle = "#fff"; g.font = tf((tm ? 15 : en ? 12 : 16) * k, tm || en ? "800" : ""); g.fillText(tm ? m.t : (MARK[m.t] || ["?"])[0], px(m.x), py(m.y) + 1 * k); g.textAlign = "left";
-    });
-    const PC_BG = ["#2a1f0e", "#7a1d22", "#1d3b86", "#1e5a2f", "#4b2a7a"], PC_LINE = ["#d6b062", "#ff8a80", "#8ab4ff", "#8fd694", "#c9a6ff"];
-    (b.pieces || []).forEach((p) => { // 예전 이름 말
-      const n = bName(p.name); g.font = tf(12 * k, "700"); const w = g.measureText(n).width + 14 * k, h = 20 * k, x0 = px(p.x) - w / 2, y0 = py(p.y) - h / 2;
-      g.beginPath(); if (g.roundRect) g.roundRect(x0, y0, w, h, h / 2); else g.rect(x0, y0, w, h); g.fillStyle = PC_BG[p.g || 0]; g.fill(); g.lineWidth = 1.5 * k; g.strokeStyle = PC_LINE[p.g || 0]; g.stroke();
-      g.fillStyle = "#fff"; g.textAlign = "center"; g.fillText(n, px(p.x), py(p.y) + 1 * k); g.textAlign = "left";
-    });
-    g.restore();
+    paintBoard(g, b, X, Y, W, H, k, font, im);
     g.lineWidth = 2; g.strokeStyle = "#7a6033"; g.strokeRect(X, Y, W, H);
     // 오른쪽 작전 메모
     if (memo.length) {
@@ -2180,6 +2224,174 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     catch (e) { setStatus(errMsg(e), true); }
     finally { x.disabled = false; x.textContent = "JPG로 내려받기"; }
   });
+  /* 영상 장면 — "이런 영상도 만들수 있게해라" (2026-10-24, 미혹 3문파전 작전 영상처럼).
+     지도에 조 동그라미 · 표시 · 화살표를 놓고 제목 · 설명을 쓴 뒤 [장면 추가]. 장면을 쌓으면 [영상 만들기] 가
+     장면 사이에 동그라미를 미끄러지듯 옮기고 화살표를 그려 가며 영상 파일(mp4, 안 되면 webm)로 내려준다.
+     장면에는 연필 그림 · 예전 이름 말 · 조 네모는 안 들어간다(지도 사진 위 표시 · 동그라미 · 화살표만). */
+  let sceneSel = -1, sceneTitle = "", sceneSub = "";
+  const clone = (x) => JSON.parse(JSON.stringify(x || []));
+  function renderScenes(ed, b) {
+    const sb = $("sceneBox"), f = document.activeElement;
+    if (sb.contains(f) && /^(INPUT|SELECT)$/.test(f.tagName)) return; // 쓰는 중에는 다시 안 그린다
+    const sc = b.scenes || [];
+    sb.hidden = !ed && !sc.length;
+    if (sb.hidden) { sb.textContent = ""; return; }
+    const kids = [el("h4", null, "영상 장면" + (sc.length ? " (" + sc.length + "개)" : ""))];
+    if (ed) {
+      kids.push(el("p", "hint", "지도에 동그라미 · 표시 · 화살표를 놓고 제목 · 설명을 쓴 뒤 [장면 추가]. 다음 장면은 동그라미를 옮기고 또 추가. 영상에서는 장면 사이에 동그라미가 움직여요. [저장] 을 눌러야 장면도 저장돼요."));
+      const row = el("div", "in"), ti = document.createElement("input"), su = document.createElement("input");
+      ti.maxLength = 40; ti.placeholder = "제목 — 예: 0~1분 · 출발"; ti.value = sceneTitle; ti.setAttribute("aria-label", "장면 제목");
+      su.maxLength = 160; su.placeholder = "설명 — 예: 전원 동행 상태로 출발 · 싸움 없이 사냥"; su.value = sceneSub; su.setAttribute("aria-label", "장면 설명");
+      ti.addEventListener("input", () => { sceneTitle = ti.value; }); su.addEventListener("input", () => { sceneSub = su.value; });
+      const add = btn("btn", "+ 장면 추가", () => {
+        if (document.activeElement) document.activeElement.blur();
+        const d = editBoard(); d.scenes = (d.scenes || []).slice();
+        if (d.scenes.length >= 20) { setStatus("장면은 20개까지예요.", true); return; }
+        d.scenes.push({ title: sceneTitle.trim(), sub: sceneSub.trim(), marks: clone(d.marks), arrows: clone(d.arrows) });
+        sceneSel = d.scenes.length - 1; sceneTitle = ""; sceneSub = "";
+        renderTactics(); setStatus((sceneSel + 1) + "번째 장면을 넣었습니다. 동그라미를 옮기고 다음 장면을 넣어 보세요.");
+      });
+      row.append(ti, su, add); kids.push(row);
+    }
+    if (sc.length) {
+      const ol = el("ol");
+      sc.forEach((x, i) => {
+        const li = el("li", i === sceneSel ? "on" : null), t = el("span", "t", x.title || "(제목 없음)");
+        if (x.sub) t.appendChild(el("small", null, x.sub));
+        li.append(el("span", "n", (i + 1) + "."), t);
+        if (ed) {
+          const mv = (j) => { const d = editBoard(); d.scenes = d.scenes.slice(); const [y] = d.scenes.splice(i, 1); d.scenes.splice(j, 0, y); sceneSel = j; renderTactics(); };
+          li.append(
+            btn("btn ghost", "보기", () => { const d = editBoard(); d.marks = clone(x.marks); d.arrows = clone(x.arrows); sceneSel = i; sceneTitle = x.title || ""; sceneSub = x.sub || ""; boardSel = null; renderTactics(); }),
+            btn("btn ghost", "지금 모습으로 바꾸기", () => { const d = editBoard(); d.scenes = d.scenes.slice(); d.scenes[i] = { title: sceneTitle.trim() || x.title || "", sub: sceneSub.trim() || x.sub || "", marks: clone(d.marks), arrows: clone(d.arrows) }; sceneSel = i; renderTactics(); setStatus((i + 1) + "번째 장면을 지금 지도 모습으로 바꿨습니다."); }));
+          if (i > 0) li.appendChild(btn("btn ghost", "↑", () => mv(i - 1)));
+          if (i < sc.length - 1) li.appendChild(btn("btn ghost", "↓", () => mv(i + 1)));
+          li.appendChild(btn("btn ghost", "빼기", () => { const d = editBoard(); d.scenes = d.scenes.slice(); d.scenes.splice(i, 1); sceneSel = -1; renderTactics(); }));
+        }
+        ol.appendChild(li);
+      });
+      kids.push(ol);
+      const go = el("div", "go");
+      if (ed) {
+        const sel = document.createElement("select"); sel.setAttribute("aria-label", "장면 길이");
+        [2, 3, 4, 5, 6, 8].forEach((n) => { const o = document.createElement("option"); o.value = n; o.textContent = "장면마다 " + n + "초"; if (n === (b.sceneSec || 3)) o.selected = true; sel.appendChild(o); });
+        sel.addEventListener("change", () => { editBoard().sceneSec = +sel.value; sel.blur(); renderTactics(); });
+        go.appendChild(sel);
+      }
+      const total = Math.round((sc.length * (b.sceneSec || 3) * 1000 + Math.max(0, sc.length - 1) * 1200) / 1000);
+      const vb = btn("btn", "▶ 영상 만들기 (" + total + "초)", async () => {
+        vb.disabled = true;
+        try { const r = await makeVideo(); if (r) setStatus("영상을 내려받았습니다 (" + r.name + ")" + (r.map ? "" : " — 지도 사진은 못 넣었습니다"), !r.map); }
+        catch (e) { setStatus(errMsg(e), true); }
+        finally { vb.disabled = false; }
+      });
+      vb.id = "sceneVideo"; go.appendChild(vb);
+      kids.push(go);
+    }
+    sb.replaceChildren(...kids);
+  }
+  // 앞 장면 표시 ↔ 다음 장면 표시 짝짓기 — 같은 종류(A조끼리, 공격끼리)에서 가까운 것부터
+  function matchMarks(A, Bs) {
+    const used = new Set(), out = [];
+    Bs.forEach((m) => {
+      let best = -1, bd2 = Infinity;
+      A.forEach((a, i) => { if (used.has(i) || a.t !== m.t) return; const d2 = (a.x - m.x) ** 2 + (a.y - m.y) ** 2; if (d2 < bd2) { bd2 = d2; best = i; } });
+      if (best >= 0) { used.add(best); out.push([A[best], m]); } else out.push([null, m]);
+    });
+    A.forEach((a, i) => { if (!used.has(i)) out.push([a, null]); });
+    return out;
+  }
+  async function makeVideo() {
+    const b = curBoard(), sc = b.scenes || [], bd = $("board");
+    if (!sc.length) throw new Error("장면이 없습니다. 먼저 [장면 추가] 를 눌러 주세요.");
+    if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) throw new Error("이 브라우저는 영상 만들기를 못 합니다. 크롬으로 열어 주세요.");
+    const mime = ["video/mp4;codecs=avc1.42E01E", "video/mp4", "video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm"].find((m) => MediaRecorder.isTypeSupported(m));
+    if (!mime) throw new Error("이 브라우저는 영상 만들기를 못 합니다. 크롬으로 열어 주세요.");
+    const font = getComputedStyle(document.body).fontFamily, tf = (px, w) => (w || "") + " " + Math.round(px) + "px " + font;
+    let im = null;
+    if (b.bg) im = await new Promise((ok) => { const x = new Image(); x.crossOrigin = "anonymous"; x.onload = () => ok(x); x.onerror = () => ok(null); x.src = imgUrl(b.bg); });
+    // 세로 영상 — 위에 전장 이름 · 장면 제목 띠 · 설명, 가운데 지도, 아래 조 안내 · 진행 줄
+    const CW = 900, pad = 24, MW = CW - pad * 2, MH = Math.min(1100, im ? Math.round(MW * im.naturalHeight / im.naturalWidth) : Math.round(MW * 10 / 16));
+    const MWr = im && MH === 1100 ? Math.round(MH * im.naturalWidth / im.naturalHeight) : MW, MX = (CW - MWr) / 2;
+    const k = Math.max(1.4, MWr / (bd.clientWidth || MWr)); // 영상은 휴대폰으로 보니 동그라미 · 화살표를 조금 크게
+    const headH = pad + 40 + 12 + 60 + 10 + 64, footH = 84, CH = Math.round((headH + MH + footH) / 2) * 2;
+    const cv = document.createElement("canvas"); cv.width = CW; cv.height = CH;
+    const g = cv.getContext("2d");
+    const lines = (text, f, maxW, max) => { g.font = f; const out = []; let line = ""; for (const tok of String(text || "").split(/(?<=\s)/)) { if (g.measureText(line + tok).width <= maxW || !line) line += tok; else { out.push(line.trim()); line = tok; } } if (line.trim()) out.push(line.trim()); return out.slice(0, max); };
+    const teamsIn = TEAMS.filter((t) => sc.some((x) => (x.marks || []).some((m) => m.t === t)));
+    const HOLD = (b.sceneSec || 3) * 1000, TR = 1200, n = sc.length, total = n * HOLD + (n - 1) * TR;
+    const ease = (p) => (p < .5 ? 2 * p * p : 1 - (-2 * p + 2) ** 2 / 2), cl = (v) => Math.max(0, Math.min(1, v));
+    function frame(t) {
+      const i = Math.min(n - 1, Math.floor(t / (HOLD + TR))), loc = t - i * (HOLD + TR), cur = sc[i];
+      let st, title = cur, ta = 1;
+      if (loc < HOLD || i === n - 1) { // 장면 그대로 — 첫 장면은 화살표가 그려지면서 시작
+        const grow = i === 0 ? cl(loc / 700) : 1;
+        st = { marks: cur.marks || [], arrows: (cur.arrows || []).map((a) => Object.assign({}, a, { prog: grow })) };
+      } else { // 다음 장면으로 — 동그라미 이동, 앞 화살표는 사라지고 새 화살표가 그려진다
+        const nx = sc[i + 1], q = ease(cl((loc - HOLD) / TR));
+        st = {
+          marks: matchMarks(cur.marks || [], nx.marks || []).map(([a, m]) => (a && m ? { t: m.t, x: a.x + (m.x - a.x) * q, y: a.y + (m.y - a.y) * q } : a ? Object.assign({}, a, { alpha: 1 - q }) : Object.assign({}, m, { alpha: q }))),
+          arrows: (cur.arrows || []).map((a) => Object.assign({}, a, { alpha: cl(1 - q * 2) })).concat((nx.arrows || []).map((a) => Object.assign({}, a, { prog: cl(q * 2 - 1) }))),
+        };
+        if (q >= .5) title = nx; ta = Math.abs(1 - q * 2) * .7 + .3;
+      }
+      const si = title === cur ? i : i + 1;
+      g.fillStyle = "#14100b"; g.fillRect(0, 0, CW, CH); g.textBaseline = "middle";
+      // 머리
+      let y = pad + 20;
+      g.fillStyle = "#e9c77b"; g.font = tf(28, "800"); g.textAlign = "center"; g.fillText(MAPS[mapKey] + " 작전", CW / 2, y);
+      g.fillStyle = "#9b8f7a"; g.font = tf(16); g.textAlign = "right"; g.fillText("장면 " + (si + 1) + " / " + n, CW - pad, y); g.textAlign = "left";
+      y += 32;
+      g.globalAlpha = ta;
+      g.fillStyle = "#f5c451"; g.beginPath(); if (g.roundRect) g.roundRect(pad, y, CW - pad * 2, 60, 12); else g.rect(pad, y, CW - pad * 2, 60); g.fill();
+      g.fillStyle = "#1a1208"; g.font = tf(28, "800"); g.textAlign = "center"; g.fillText(title.title || "장면 " + (si + 1), CW / 2, y + 31, CW - pad * 4);
+      y += 70;
+      g.fillStyle = "#e8dcc4"; g.font = tf(20); lines(title.sub, tf(20), CW - pad * 3, 2).forEach((l, j) => g.fillText(l, CW / 2, y + 16 + j * 30, CW - pad * 2));
+      g.textAlign = "left"; g.globalAlpha = 1;
+      // 지도
+      paintBoard(g, st, MX, headH, MWr, MH, k, font, im);
+      g.lineWidth = 2; g.strokeStyle = "#7a6033"; g.strokeRect(MX, headH, MWr, MH);
+      // 아래 — 조 안내 · 진행 줄
+      let fx = pad; const fy = headH + MH + 32;
+      g.font = tf(18, "700");
+      teamsIn.forEach((t) => {
+        g.beginPath(); g.arc(fx + 10, fy, 10, 0, Math.PI * 2); g.fillStyle = TEAM_COLOR[t]; g.fill(); g.lineWidth = 2; g.strokeStyle = "#fff"; g.stroke();
+        const lb = t + "조" + (teamCount(b, t) ? " " + teamCount(b, t) + "명" : ""); g.fillStyle = "#e8dcc4"; g.fillText(lb, fx + 26, fy + 1); fx += 26 + g.measureText(lb).width + 22;
+      });
+      g.fillStyle = "#2a2116"; g.fillRect(pad, CH - 22, CW - pad * 2, 6); g.fillStyle = "#e9c77b"; g.fillRect(pad, CH - 22, (CW - pad * 2) * cl(t / total), 6);
+    }
+    // 보이는 창 — 만드는 동안 미리 보기 · 그만
+    const cover = el("div", "vid-cover"), box = el("div", "in"), msg = el("p", null, "영상 만드는 중…");
+    let stop = false;
+    const cancel = btn("btn ghost", "그만", () => { stop = true; });
+    box.append(cv, msg, el("p", null, "다 될 때까지 이 화면을 켜 두세요 (다른 창으로 가면 멈춰요)."), cancel); cover.appendChild(box); document.body.appendChild(cover);
+    try {
+      frame(0);
+      const stream = cv.captureStream(30), rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 6000000 }), chunks = [];
+      rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+      const done = new Promise((ok) => { rec.onstop = ok; });
+      rec.start(500);
+      const t0 = performance.now();
+      await new Promise((ok) => {
+        const tick = () => {
+          const t = performance.now() - t0;
+          frame(Math.min(t, total));
+          msg.textContent = "영상 만드는 중… " + Math.min(Math.round(total / 1000), Math.floor(t / 1000)) + " / " + Math.round(total / 1000) + "초";
+          if (stop || t >= total + 400) return ok();
+          requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      });
+      rec.stop(); await done; stream.getTracks().forEach((x) => x.stop());
+      if (stop) { setStatus("영상 만들기를 그만뒀습니다."); return null; }
+      const ext = mime.startsWith("video/mp4") ? "mp4" : "webm", blob = new Blob(chunks, { type: mime.split(";")[0] });
+      if (!blob.size) throw new Error("영상을 못 만들었습니다.");
+      const a = document.createElement("a"), d = new Date(), p2 = (x) => String(x).padStart(2, "0");
+      a.href = URL.createObjectURL(blob); a.download = MAPS[mapKey] + "-작전영상-" + d.getFullYear() + p2(d.getMonth() + 1) + p2(d.getDate()) + "-" + p2(d.getHours()) + p2(d.getMinutes()) + "." + ext;
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 30000);
+      return { name: a.download, size: blob.size, map: !b.bg || !!im };
+    } finally { cover.remove(); }
+  }
   /* 조 네모끼리는 겹치지 않는다 — 붙여 놓으면 옆 조 사람까지 같이 끌려가서 ("a,b,c,d조 칸이 서로 같이 안맞물리게" 2026-10-24).
      가장자리가 딱 맞닿는 것은 괜찮다. skip 은 지금 고치는 네모 번호 */
   function boxHit(q, skip) {
