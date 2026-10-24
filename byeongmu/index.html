@@ -479,6 +479,11 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
 .team-roster .ln input, .team-roster textarea { width: 100%; min-width: 0; box-sizing: border-box; background: #0b0907; border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; color: inherit; font: inherit; font-size: 13px; }
 .team-roster textarea { min-height: 48px; resize: vertical; }
 .team-roster .copy { justify-self: start; padding: 5px 10px; font-size: 13px; }
+.team-roster .tt .tname { flex: 1; min-width: 0; width: 6em; background: #0b0907; border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; color: inherit; font: inherit; font-size: 14px; font-weight: 700; }
+.team-roster .tt .cnt { flex: none; }
+.team-roster .tdel { flex: none; padding: 3px 8px; font-size: 12px; }
+.team-roster .tback { display: flex; flex-wrap: wrap; gap: 6px; }
+.team-roster .tback .btn { padding: 4px 10px; font-size: 13px; }
 .tray input { background: #0b0907; border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; width: 100%; box-sizing: border-box; color: inherit; }
 .board-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .board-tools .dirty { color: #ffb347; font-size: 13px; font-weight: 700; }
@@ -843,7 +848,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610240043";
+  const BUILD = "202610241045";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -1810,6 +1815,11 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   const TEAMS = ["A", "B", "C", "D"];
   const TEAM_COLOR = { A: "#ff6b6b", B: "#6fa8ff", C: "#6fd68a", D: "#c9a6ff" };
   const TEAM_BG = { A: "rgba(255,107,107,.12)", B: "rgba(111,168,255,.12)", C: "rgba(111,214,138,.12)", D: "rgba(201,166,255,.12)" };
+  /* 조 이름 바꾸기 · 지우기 — "미혹의 정원 D조는 없어도 돼서 이름 바꾸고 지울 수 있게" (2026-10-24). 전장마다 따로.
+     속 이름(A~D)과 색은 그대로, 보이는 이름만 b.tnames, 지운 조는 b.toff */
+  function tName(b, t) { const n = ((b.tnames || {})[t] || "").trim(); return n || t + "조"; }
+  function tShort(b, t) { const n = ((b.tnames || {})[t] || "").trim(); return n ? [...n][0] : t; } // 동그라미 안 한 글자
+  function liveTeams(b) { const off = Array.isArray(b.toff) ? b.toff : []; return TEAMS.filter((t) => !off.includes(t)); }
   const ARROW_COLOR = ["#d6b062", "#ff6b6b", "#6fa8ff", "#6fd68a", "#c9a6ff"];
   const SVGNS = "http://www.w3.org/2000/svg";
   function svgEl(tag, attrs) { const e = document.createElementNS(SVGNS, tag); Object.keys(attrs).forEach((k) => e.setAttribute(k, attrs[k])); return e; }
@@ -1817,7 +1827,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   function canBoard() { return canWrite || !!(me && (me.leader || me.deputy)); }
   function savedBoard(k) {
     const b = (DATA.boards || {})[k] || {};
-    return { bg: b.bg || "", pieces: Array.isArray(b.pieces) ? b.pieces : [], marks: Array.isArray(b.marks) ? b.marks : [], arrows: Array.isArray(b.arrows) ? b.arrows : [], boxes: Array.isArray(b.boxes) ? b.boxes : [], draws: Array.isArray(b.draws) ? b.draws : [], memo: b.memo || "", teams: b.teams && typeof b.teams === "object" ? b.teams : {}, heads: b.heads && typeof b.heads === "object" ? b.heads : {}, scenes: Array.isArray(b.scenes) ? b.scenes : [], sceneSec: b.sceneSec || 3, updatedAt: b.updatedAt || "", by: b.by || "" };
+    return { bg: b.bg || "", pieces: Array.isArray(b.pieces) ? b.pieces : [], marks: Array.isArray(b.marks) ? b.marks : [], arrows: Array.isArray(b.arrows) ? b.arrows : [], boxes: Array.isArray(b.boxes) ? b.boxes : [], draws: Array.isArray(b.draws) ? b.draws : [], memo: b.memo || "", teams: b.teams && typeof b.teams === "object" ? b.teams : {}, heads: b.heads && typeof b.heads === "object" ? b.heads : {}, tnames: b.tnames && typeof b.tnames === "object" ? b.tnames : {}, toff: Array.isArray(b.toff) ? b.toff : [], scenes: Array.isArray(b.scenes) ? b.scenes : [], sceneSec: b.sceneSec || 3, updatedAt: b.updatedAt || "", by: b.by || "" };
   }
   function curBoard() { return drafts[mapKey] || savedBoard(mapKey); }
   function editBoard() {
@@ -1827,7 +1837,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   document.querySelectorAll("#mapTabs [data-map]").forEach((b) => { b.onclick = () => { mapKey = b.dataset.map; boardSel = null; sceneSel = -1; renderTactics(); }; });
   function allNames() { const r = DATA.roster; return (r.leader ? [r.leader] : []).concat(r.deputies, r.members); }
   /** 전략판에 보이는 이름 — 게임 이름과 다르면 문주 · 부문주가 바꿔 둔 것 (boards._names, 두 전장 같이) */
-  function markName(t) { return TEAMS.includes(t) ? t + "조" : (MARK[t] || ["", ""])[1]; }
+  function markName(t) { return TEAMS.includes(t) ? tName(curBoard(), t) : (MARK[t] || ["", ""])[1]; }
   function bName(n) { const m = (DATA.boards || {})._names; return (m && typeof m[n] === "string" && m[n]) || n; }
   function renderTactics() {
     if (view !== "tactics") return;
@@ -1850,7 +1860,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
       const sel = boardSel && boardSel.kind === "b" && boardSel.i === i;
       const bx = el("div", "tbox" + (sel ? " sel" : ""));
       Object.assign(bx.style, { left: x.x * 100 + "%", top: x.y * 100 + "%", width: x.w * 100 + "%", height: x.h * 100 + "%", borderColor: TEAM_COLOR[x.t], background: TEAM_BG[x.t], color: TEAM_COLOR[x.t] });
-      const lb = el("span", "tlabel", x.t + "조"); lb.style.background = TEAM_COLOR[x.t]; bx.appendChild(lb);
+      const lb = el("span", "tlabel", tName(b, x.t)); lb.style.background = TEAM_COLOR[x.t]; bx.appendChild(lb);
       if (ed) {
         bx.addEventListener("pointerdown", (e) => startBox(e, i, "move"));
         const rz = el("span", "rz"); rz.title = "크기 바꾸기"; rz.addEventListener("pointerdown", (e) => startBox(e, i, "size")); bx.appendChild(rz);
@@ -1906,7 +1916,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     bd.appendChild(svg);
     b.marks.forEach((k, i) => {
       const tm = TEAMS.includes(k.t);
-      const m = el("div", "mk2 " + (tm ? "team" : "t-" + k.t) + (boardSel && boardSel.kind === "m" && boardSel.i === i ? " sel" : ""), tm ? k.t : (MARK[k.t] || ["?"])[0]);
+      const m = el("div", "mk2 " + (tm ? "team" : "t-" + k.t) + (boardSel && boardSel.kind === "m" && boardSel.i === i ? " sel" : ""), tm ? tShort(b, k.t) : (MARK[k.t] || ["?"])[0]);
       if (tm) m.style.background = TEAM_COLOR[k.t];
       m.style.left = k.x * 100 + "%"; m.style.top = k.y * 100 + "%"; m.title = markName(k.t); m.dataset.i = i;
       if (ed) m.addEventListener("pointerdown", (e) => startDrag(e, { kind: "m", i }));
@@ -1925,13 +1935,13 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     (b.boxes || []).forEach((x) => {
       const n = b.pieces.filter((p) => p.x >= x.x && p.x <= x.x + x.w && p.y >= x.y && p.y <= x.y + x.h).length;
       const it = el("span"); const d = el("span", "dot"); d.style.cssText = "border-radius:2px;border-color:" + TEAM_COLOR[x.t] + ";background:" + TEAM_BG[x.t];
-      it.append(d, document.createTextNode(x.t + "조 " + n + "명")); lg.appendChild(it);
+      it.append(d, document.createTextNode(tName(b, x.t) + " " + n + "명")); lg.appendChild(it);
     });
     Object.keys(MARK).forEach((t) => lg.appendChild(el("span", null, MARK[t][0] + " " + MARK[t][1])));
     // 문파원 · 표시 쟁반
     $("tray").hidden = !ed;
     if (ed) {
-      $("trayTeams").replaceChildren(...TEAMS.map((t) => { const c = el("span", "tchip tteam", t); c.style.background = TEAM_COLOR[t]; c.title = t + "조"; c.addEventListener("pointerdown", (e) => startDrag(e, { kind: "nm", t })); return c; }));
+      $("trayTeams").replaceChildren(...liveTeams(b).map((t) => { const c = el("span", "tchip tteam", tShort(b, t)); c.style.background = TEAM_COLOR[t]; c.title = tName(b, t); c.addEventListener("pointerdown", (e) => startDrag(e, { kind: "nm", t })); return c; }));
       $("trayMarks").replaceChildren(...Object.keys(MARK).map((t) => { const c = el("span", "tchip tmark", MARK[t][0] + " " + MARK[t][1]); c.addEventListener("pointerdown", (e) => startDrag(e, { kind: "nm", t })); return c; }));
     }
     // 조 명단 — "우측에는 A조B조,C조,D조 명단만 나오게" (2026-10-24). 고치는 사람은 글자 칸, 보는 사람은 글.
@@ -1942,21 +1952,40 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
       // A조 / 조장 - 잔량 / 부조장 - 단량 / 조원 - 프롤로그,국철이,… 모양으로 ("이런식으로 나오는걸 원한다" 2026-10-24)
       const dl = document.createElement("datalist"); dl.id = "hd-names"; // 조장 · 부조장 고르기 — 문파원 이름, 다른 이름도 쓸 수 있다
       if (ed) dl.replaceChildren(...[...new Set(allNames().map(bName))].map((n) => { const o = document.createElement("option"); o.value = n; return o; }));
-      const rows = TEAMS.filter((t) => ed || (b.teams[t] || "").trim() || hd(t).lead || hd(t).sub).map((t) => {
-        const box = el("div", "team"), top = el("div", "tt"), d = el("span", "tdot", t); d.style.background = TEAM_COLOR[t];
+      const rows = liveTeams(b).filter((t) => ed || (b.teams[t] || "").trim() || hd(t).lead || hd(t).sub).map((t) => {
+        const box = el("div", "team"), top = el("div", "tt"), d = el("span", "tdot", tShort(b, t)); d.style.background = TEAM_COLOR[t];
         const cnt = el("span", "cnt", "(" + teamCount(b, t) + "명)"); cnt.dataset.t = t;
-        top.append(d, el("b", null, t + "조"), cnt); box.appendChild(top);
+        if (ed) {
+          // 조 이름 — 비우면 「A조」 처럼 원래 이름
+          const nm = document.createElement("input"); nm.className = "tname"; nm.maxLength = 10; nm.value = (b.tnames || {})[t] || ""; nm.placeholder = t + "조"; nm.setAttribute("aria-label", t + "조 이름");
+          nm.addEventListener("input", () => { const d2 = editBoard(); d2.tnames = Object.assign({}, d2.tnames, { [t]: nm.value.trim() }); if (!$("boardTools").querySelector(".dirty")) renderTactics(); });
+          nm.addEventListener("change", () => renderTactics());
+          // 조 지우기 — 지도 위 그 조 동그라미 · 네모 · 명단도 같이. 한 번 더 눌러야 지운다
+          const del = btn("btn ghost tdel", "조 지우기", () => {
+            if (!del.dataset.sure) { del.dataset.sure = "1"; del.textContent = "정말 지우기"; return; }
+            if (document.activeElement) document.activeElement.blur(); // 조 명단은 누른 단추가 안에 있으면 다시 안 그린다
+            const d2 = editBoard(), gone = (m) => m.t !== t;
+            d2.toff = [...new Set((d2.toff || []).concat(t))];
+            d2.marks = d2.marks.filter(gone); d2.boxes = (d2.boxes || []).filter(gone);
+            d2.scenes = (d2.scenes || []).map((s) => Object.assign({}, s, { marks: (s.marks || []).filter(gone) }));
+            ["teams", "heads", "tnames"].forEach((k) => { d2[k] = Object.assign({}, d2[k]); delete d2[k][t]; });
+            if (boxT === t) boxT = liveTeams(d2)[0] || "A";
+            boardSel = null; renderTactics(); setStatus(tName(b, t) + " 를 지웠습니다. [저장] 을 눌러야 저장됩니다.");
+          });
+          top.append(d, nm, cnt, del);
+        } else top.append(d, el("b", null, tName(b, t)), cnt);
+        box.appendChild(top);
         const line = (k, v) => { const ln = el("div", "ln"); ln.append(el("span", "k", k), el("span", "dash", "-")); if (typeof v === "string") ln.appendChild(el("span", "v", v)); else ln.appendChild(v); box.appendChild(ln); };
         const h = hd(t);
         if (ed) {
           // 조장 · 부조장 — "각 조마다 조장,부조장 선정" (2026-10-24)
           [["lead", "조장"], ["sub", "부조장"]].forEach(([k, n]) => {
             const inp = document.createElement("input");
-            inp.maxLength = 20; inp.value = h[k] || ""; inp.setAttribute("list", dl.id); inp.setAttribute("aria-label", t + "조 " + n);
+            inp.maxLength = 20; inp.value = h[k] || ""; inp.setAttribute("list", dl.id); inp.setAttribute("aria-label", tName(b, t) + " " + n);
             inp.addEventListener("input", () => { const d2 = editBoard(); d2.heads = Object.assign({}, d2.heads, { [t]: Object.assign({}, d2.heads && d2.heads[t], { [k]: inp.value.trim() }) }); recount(); if (!$("boardTools").querySelector(".dirty")) renderTactics(); });
             line(n, inp);
           });
-          const ta = document.createElement("textarea"); ta.maxLength = 500; ta.value = b.teams[t] || ""; ta.placeholder = "예: 프롤로그, 국철이, 별개"; ta.setAttribute("aria-label", t + "조 조원");
+          const ta = document.createElement("textarea"); ta.maxLength = 500; ta.value = b.teams[t] || ""; ta.placeholder = "예: 프롤로그, 국철이, 별개"; ta.setAttribute("aria-label", tName(b, t) + " 조원");
           ta.addEventListener("input", () => { const d2 = editBoard(); d2.teams = Object.assign({}, d2.teams, { [t]: ta.value }); recount(); if (!$("boardTools").querySelector(".dirty")) renderTactics(); });
           line("조원", ta);
         } else {
@@ -1968,6 +1997,12 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
         return box;
       });
       if (ed) rows.push(dl);
+      // 지운 조 다시 넣기
+      if (ed && b.toff && b.toff.length) {
+        const back = el("div", "tback");
+        TEAMS.filter((t) => b.toff.includes(t)).forEach((t) => { const y = btn("btn ghost", "+ " + t + "조 다시 넣기", () => { if (document.activeElement) document.activeElement.blur(); const d2 = editBoard(); d2.toff = d2.toff.filter((x) => x !== t); renderTactics(); }); y.style.borderColor = TEAM_COLOR[t]; back.appendChild(y); });
+        rows.push(back);
+      }
       // 다른 전장으로 조 옮기기 — "신기에서 팀 그대로 미혹으로 옮길수 있게, 작전메모는 제외" (2026-10-24).
       // 조 명단 · 조장 · 부조장만. 지도가 달라서 동그라미 자리는 안 옮긴다. 저쪽은 [저장] 을 눌러야 저장된다
       if (ed) {
@@ -1976,7 +2011,8 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
         const dst = drafts[other] || savedBoard(other), go = () => {
           if (document.activeElement) document.activeElement.blur();
           if (!drafts[other]) drafts[other] = JSON.parse(JSON.stringify(savedBoard(other)));
-          drafts[other].teams = JSON.parse(JSON.stringify(curBoard().teams)); drafts[other].heads = JSON.parse(JSON.stringify(curBoard().heads));
+          const o = drafts[other], src = JSON.parse(JSON.stringify(curBoard())), off = o.toff || [];
+          ["teams", "heads", "tnames"].forEach((k) => { o[k] = src[k] || {}; off.forEach((t) => delete o[k][t]); }); // 저쪽에서 지운 조는 안 옮긴다
           mapKey = other; boardSel = null; renderTactics();
           setStatus(MAPS[other] + " 으로 조를 옮겼습니다. [저장] 을 눌러야 저장됩니다.");
         };
@@ -2016,13 +2052,14 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
         sp.appendChild(btn("btn ghost", "빼기", () => { editBoard().pieces.splice(boardSel.i, 1); boardSel = null; renderTactics(); }));
       } else if (!drawMode && boardSel && boardSel.kind === "b" && (b.boxes || [])[boardSel.i]) {
         const x = b.boxes[boardSel.i];
-        sp.appendChild(el("b", null, x.t + "조 묶음"));
-        TEAMS.forEach((t) => { const y = btn("btn ghost", t + "조", () => { editBoard().boxes[boardSel.i].t = t; renderTactics(); }); y.style.borderColor = TEAM_COLOR[t]; y.setAttribute("aria-pressed", String(x.t === t)); sp.appendChild(y); });
+        sp.appendChild(el("b", null, tName(b, x.t) + " 묶음"));
+        liveTeams(b).forEach((t) => { const y = btn("btn ghost", tName(b, t), () => { editBoard().boxes[boardSel.i].t = t; renderTactics(); }); y.style.borderColor = TEAM_COLOR[t]; y.setAttribute("aria-pressed", String(x.t === t)); sp.appendChild(y); });
         sp.appendChild(btn("btn ghost", "빼기", () => { editBoard().boxes.splice(boardSel.i, 1); boardSel = null; renderTactics(); }));
         sp.appendChild(el("span", "hint", "네모를 끌면 안에 있는 이름 · 표시가 같이 움직여요. 오른쪽 아래 귀퉁이를 끌면 크기가 바뀌어요."));
       } else if (drawMode === "box") {
         sp.appendChild(el("b", null, "묶을 조"));
-        TEAMS.forEach((t) => { const y = btn("btn ghost", t + "조", () => { boxT = t; renderTactics(); }); y.style.borderColor = TEAM_COLOR[t]; y.setAttribute("aria-pressed", String(boxT === t)); sp.appendChild(y); });
+        if (!liveTeams(b).includes(boxT)) boxT = liveTeams(b)[0] || "A";
+        liveTeams(b).forEach((t) => { const y = btn("btn ghost", tName(b, t), () => { boxT = t; renderTactics(); }); y.style.borderColor = TEAM_COLOR[t]; y.setAttribute("aria-pressed", String(boxT === t)); sp.appendChild(y); });
         sp.appendChild(el("span", "hint", "지도 위에서 한 모서리부터 맞은편 모서리까지 끌면 네모가 그려져요."));
       } else if (!drawMode && boardSel && boardSel.kind === "a" && (b.arrows || [])[boardSel.i]) {
         const a = b.arrows[boardSel.i];
@@ -2071,7 +2108,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
         sv.disabled = true; sv.textContent = "저장하는 중…";
         const d = curBoard();
         try {
-          DATA.boards[mapKey] = await memberCall("saveBoard", adminPw || token, mapKey, { pieces: d.pieces, marks: d.marks, arrows: d.arrows || [], boxes: d.boxes || [], draws: d.draws || [], memo: d.memo, teams: d.teams || {}, heads: d.heads || {}, scenes: d.scenes || [], sceneSec: d.sceneSec || 3 });
+          DATA.boards[mapKey] = await memberCall("saveBoard", adminPw || token, mapKey, { pieces: d.pieces, marks: d.marks, arrows: d.arrows || [], boxes: d.boxes || [], draws: d.draws || [], memo: d.memo, teams: d.teams || {}, heads: d.heads || {}, tnames: d.tnames || {}, toff: d.toff || [], scenes: d.scenes || [], sceneSec: d.sceneSec || 3 });
           delete drafts[mapKey]; saveCache(); renderTactics(); setStatus(MAPS[mapKey] + " 전략을 저장했습니다. 문파원 모두에게 보입니다.");
         } catch (e) { sv.disabled = false; sv.textContent = "저장"; setStatus(errMsg(e), true); }
       });
@@ -2098,7 +2135,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     (b.boxes || []).forEach((x) => { // 예전 조 네모
       g.fillStyle = TEAM_BG[x.t]; g.fillRect(px(x.x), py(x.y), x.w * W, x.h * H);
       g.setLineDash([8 * k, 6 * k]); g.lineWidth = 3 * k; g.strokeStyle = TEAM_COLOR[x.t]; g.strokeRect(px(x.x), py(x.y), x.w * W, x.h * H); g.setLineDash([]);
-      g.font = tf(12 * k, "800"); const lw = g.measureText(x.t + "조").width + 16 * k; g.fillStyle = TEAM_COLOR[x.t]; g.fillRect(px(x.x), py(x.y), lw, 18 * k); g.fillStyle = "#fff"; g.fillText(x.t + "조", px(x.x) + 8 * k, py(x.y) + 9 * k);
+      g.font = tf(12 * k, "800"); const lw = g.measureText(tName(b, x.t)).width + 16 * k; g.fillStyle = TEAM_COLOR[x.t]; g.fillRect(px(x.x), py(x.y), lw, 18 * k); g.fillStyle = "#fff"; g.fillText(tName(b, x.t), px(x.x) + 8 * k, py(x.y) + 9 * k);
     });
     g.lineCap = "round"; g.lineJoin = "round";
     const poly = (pts) => { g.beginPath(); pts.forEach((p, i) => (i ? g.lineTo(px(p[0]), py(p[1])) : g.moveTo(px(p[0]), py(p[1])))); };
@@ -2128,7 +2165,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
       const tm = TEAMS.includes(m.t), en = /^e\d$/.test(m.t), r = (en ? 17 : 15) * k;
       g.beginPath(); g.arc(px(m.x), py(m.y), r, 0, Math.PI * 2); g.fillStyle = tm ? TEAM_COLOR[m.t] : MARK_BG[m.t] || "#333"; g.shadowColor = "rgba(0,0,0,.9)"; g.shadowBlur = 5 * k; g.fill(); g.shadowBlur = 0;
       g.lineWidth = 2 * k; g.strokeStyle = en ? "#ff5a5a" : "#fff"; g.stroke();
-      g.textAlign = "center"; g.fillStyle = "#fff"; g.font = tf((tm ? 15 : en ? 12 : 16) * k, tm || en ? "800" : ""); g.fillText(tm ? m.t : (MARK[m.t] || ["?"])[0], px(m.x), py(m.y) + 1 * k); g.textAlign = "left";
+      g.textAlign = "center"; g.fillStyle = "#fff"; g.font = tf((tm ? 15 : en ? 12 : 16) * k, tm || en ? "800" : ""); g.fillText(tm ? tShort(b, m.t) : (MARK[m.t] || ["?"])[0], px(m.x), py(m.y) + 1 * k); g.textAlign = "left";
       g.globalAlpha = 1;
     });
     const PC_BG = ["#2a1f0e", "#7a1d22", "#1d3b86", "#1e5a2f", "#4b2a7a"], PC_LINE = ["#d6b062", "#ff8a80", "#8ab4ff", "#8fd694", "#c9a6ff"];
@@ -2175,11 +2212,11 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     const memo = (b.memo || "").trim() ? wrap(b.memo, tf(fs1), side - pad) : [];
     const memoH = memo.length ? Math.round(lh * (memo.length + 1.4)) : 0;
     const topH = Math.max(H, memoH), fullW = W + (memo.length ? side + pad : 0);
-    const teams = TEAMS.filter((t) => { const h = (b.heads || {})[t] || {}; return h.lead || h.sub || teamMembers(b, t).length; });
+    const teams = liveTeams(b).filter((t) => { const h = (b.heads || {})[t] || {}; return h.lead || h.sub || teamMembers(b, t).length; });
     const colW = teams.length ? (fullW - pad * (teams.length - 1)) / teams.length : 0;
     const cols = teams.map((t) => { const h = (b.heads || {})[t] || {}, ls = [];
       [["조장", h.lead], ["부조장", h.sub], ["조원", teamMembers(b, t).join(",")]].forEach(([n, v]) => { if (v) ls.push(...wrap(n + " - " + v, tf(fs1), colW - 8 * S)); });
-      return { t, title: t + "조 (" + teamCount(b, t) + "명)", ls }; });
+      return { t, title: tName(b, t) + " (" + teamCount(b, t) + "명)", ls }; });
     const rosterH = cols.length ? Math.round(lh * 1.6 + lh * 1.4 + Math.max(...cols.map((c) => c.ls.length)) * lh) : 0;
     cv.width = fullW + pad * 2; cv.height = head + topH + (rosterH ? pad * 1.5 + rosterH : 0) + pad * 2;
     g.fillStyle = "#14100b"; g.fillRect(0, 0, cv.width, cv.height);
@@ -2318,7 +2355,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     const cv = document.createElement("canvas"); cv.width = CW; cv.height = CH;
     const g = cv.getContext("2d");
     const lines = (text, f, maxW, max) => { g.font = f; const out = []; let line = ""; for (const tok of String(text || "").split(/(?<=\s)/)) { if (g.measureText(line + tok).width <= maxW || !line) line += tok; else { out.push(line.trim()); line = tok; } } if (line.trim()) out.push(line.trim()); return out.slice(0, max); };
-    const teamsIn = TEAMS.filter((t) => sc.some((x) => (x.marks || []).some((m) => m.t === t)));
+    const teamsIn = liveTeams(b).filter((t) => sc.some((x) => (x.marks || []).some((m) => m.t === t)));
     const HOLD = (b.sceneSec || 3) * 1000, TR = 1200, n = sc.length, total = n * HOLD + (n - 1) * TR;
     const ease = (p) => (p < .5 ? 2 * p * p : 1 - (-2 * p + 2) ** 2 / 2), cl = (v) => Math.max(0, Math.min(1, v));
     function frame(t) {
@@ -2356,7 +2393,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
       g.font = tf(18, "700");
       teamsIn.forEach((t) => {
         g.beginPath(); g.arc(fx + 10, fy, 10, 0, Math.PI * 2); g.fillStyle = TEAM_COLOR[t]; g.fill(); g.lineWidth = 2; g.strokeStyle = "#fff"; g.stroke();
-        const lb = t + "조" + (teamCount(b, t) ? " " + teamCount(b, t) + "명" : ""); g.fillStyle = "#e8dcc4"; g.fillText(lb, fx + 26, fy + 1); fx += 26 + g.measureText(lb).width + 22;
+        const lb = tName(b, t) + (teamCount(b, t) ? " " + teamCount(b, t) + "명" : ""); g.fillStyle = "#e8dcc4"; g.fillText(lb, fx + 26, fy + 1); fx += 26 + g.measureText(lb).width + 22;
       });
       g.fillStyle = "#2a2116"; g.fillRect(pad, CH - 22, CW - pad * 2, 6); g.fillStyle = "#e9c77b"; g.fillRect(pad, CH - 22, (CW - pad * 2) * cl(t / total), 6);
     }
@@ -2473,7 +2510,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     if (drawMode === "box") { // 조 묶음 네모 — 누른 곳과 뗀 곳이 맞은편 모서리
       const x0 = fx(e.clientX), y0 = fy(e.clientY), cur = { x: x0, y: y0, w: 0, h: 0 };
       const pv = el("div", "tbox preview"); Object.assign(pv.style, { borderColor: TEAM_COLOR[boxT], background: TEAM_BG[boxT] });
-      const lb = el("span", "tlabel", boxT + "조"); lb.style.background = TEAM_COLOR[boxT]; pv.appendChild(lb);
+      const lb = el("span", "tlabel", tName(curBoard(), boxT)); lb.style.background = TEAM_COLOR[boxT]; pv.appendChild(lb);
       const put = () => Object.assign(pv.style, { left: cur.x * 100 + "%", top: cur.y * 100 + "%", width: cur.w * 100 + "%", height: cur.h * 100 + "%" });
       put(); bd.appendChild(pv);
       const move = (ev) => { // 다른 조 네모에 닿으면 더 안 커진다
@@ -2614,7 +2651,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
       if (!ghost) {
         ghost = src.cloneNode(true); ghost.classList.add("drag-ghost"); ghost.classList.remove("sel");
         if (what.kind === "np") ghost.className = "pc g0 drag-ghost";
-        if (what.kind === "nm") { const tm = TEAMS.includes(what.t); ghost.className = "mk2 drag-ghost " + (tm ? "team" : "t-" + what.t); ghost.textContent = tm ? what.t : MARK[what.t][0]; if (tm) ghost.style.background = TEAM_COLOR[what.t]; }
+        if (what.kind === "nm") { const tm = TEAMS.includes(what.t); ghost.className = "mk2 drag-ghost " + (tm ? "team" : "t-" + what.t); ghost.textContent = tm ? tShort(curBoard(), what.t) : MARK[what.t][0]; if (tm) ghost.style.background = TEAM_COLOR[what.t]; }
         document.body.appendChild(ghost); src.classList.add("dragging");
       }
       ghost.style.left = ev.clientX + "px"; ghost.style.top = ev.clientY + "px";
