@@ -822,7 +822,7 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610240019";
+  const BUILD = "202610240026";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -2076,23 +2076,29 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     const W = im ? Math.min(1600, im.naturalWidth) : 1280, H = im ? Math.round(W * im.naturalHeight / im.naturalWidth) : 800;
     const k = W / (bd.clientWidth || W); // 화면 1px → 그림 몇 px
     const S = Math.max(1, W / 1000); // 오른쪽 명단 · 제목 글자 크기
-    const side = Math.round(380 * S), pad = Math.round(20 * S), head = Math.round(56 * S);
+    const side = Math.round(560 * S), pad = Math.round(20 * S), head = Math.round(56 * S);
     const tf = (px, w) => (w || "") + " " + Math.round(px) + "px " + font;
     const cv = document.createElement("canvas"), g = cv.getContext("2d");
-    const wrap = (text, f, maxW) => { g.font = f; const out = []; String(text).split("\n").forEach((para) => { let line = ""; for (const ch of para) { if (g.measureText(line + ch).width > maxW && line) { out.push(line); line = ch; } else line += ch; } out.push(line); }); return out; };
-    // 오른쪽 명단 · 아래 메모 줄 미리 나누기
-    const fs1 = 18 * S, lh = Math.round(fs1 * 1.5), roster = [];
-    TEAMS.forEach((t) => {
-      const h = (b.heads || {})[t] || {}, ms = teamMembers(b, t);
-      if (!h.lead && !h.sub && !ms.length) return;
-      roster.push({ t, title: t + "조 (" + teamCount(b, t) + "명)" });
-      [["조장", h.lead], ["부조장", h.sub], ["조원", ms.join(",")]].forEach(([n, v]) => { if (v) wrap(n + " - " + v, tf(fs1), side - pad * 2 - 30 * S).forEach((l) => roster.push({ l })); });
-    });
-    const rosterH = roster.reduce((s, r) => s + (r.t ? lh * 1.4 : lh), 0) + (roster.length ? lh * 1.6 : 0);
-    const memo = (b.memo || "").trim() ? wrap(b.memo, tf(fs1), W + side - pad * 3) : [];
-    const memoH = memo.length ? Math.round(lh * (memo.length + 1.6) + pad) : 0;
-    const bodyH = Math.max(H, rosterH + pad);
-    cv.width = W + side + pad * 3; cv.height = head + bodyH + memoH + pad * 2;
+    const wrap = (text, f, maxW) => { g.font = f; const out = []; String(text).split("\n").forEach((para) => { // 쉼표 · 띄어쓰기에서 끊는다(이름이 둘로 안 갈리게). 한 덩이가 한 줄보다 길면 글자로
+      let line = "";
+      for (const tok of para.split(/(?<=[,\s])/)) {
+        if (g.measureText(line + tok).width <= maxW) { line += tok; continue; }
+        if (line) { out.push(line.trimEnd()); line = ""; }
+        for (const ch of tok) { if (g.measureText(line + ch).width > maxW && line) { out.push(line); line = ch; } else line += ch; }
+      }
+      out.push(line.trimEnd()); }); return out; };
+    // 모양 — 약도 | 오른쪽 작전 메모, 그 밑에 조 명단 A · B · C · D 가로로 ("작전메모 때문에 우측 하단에 너무 공백이 많다" 2026-10-24)
+    const fs1 = 18 * S, lh = Math.round(fs1 * 1.5);
+    const memo = (b.memo || "").trim() ? wrap(b.memo, tf(fs1), side - pad) : [];
+    const memoH = memo.length ? Math.round(lh * (memo.length + 1.4)) : 0;
+    const topH = Math.max(H, memoH), fullW = W + (memo.length ? side + pad : 0);
+    const teams = TEAMS.filter((t) => { const h = (b.heads || {})[t] || {}; return h.lead || h.sub || teamMembers(b, t).length; });
+    const colW = teams.length ? (fullW - pad * (teams.length - 1)) / teams.length : 0;
+    const cols = teams.map((t) => { const h = (b.heads || {})[t] || {}, ls = [];
+      [["조장", h.lead], ["부조장", h.sub], ["조원", teamMembers(b, t).join(",")]].forEach(([n, v]) => { if (v) ls.push(...wrap(n + " - " + v, tf(fs1), colW - 8 * S)); });
+      return { t, title: t + "조 (" + teamCount(b, t) + "명)", ls }; });
+    const rosterH = cols.length ? Math.round(lh * 1.6 + lh * 1.4 + Math.max(...cols.map((c) => c.ls.length)) * lh) : 0;
+    cv.width = fullW + pad * 2; cv.height = head + topH + (rosterH ? pad * 1.5 + rosterH : 0) + pad * 2;
     g.fillStyle = "#14100b"; g.fillRect(0, 0, cv.width, cv.height);
     g.textBaseline = "middle";
     g.fillStyle = "#e9c77b"; g.font = tf(26 * S, "800"); g.fillText(MAPS[mapKey] + " 전략", pad, pad + head / 2 - 4 * S);
@@ -2141,24 +2147,24 @@ body.locked #boardView, body.locked #membersView, body.locked #bannerTools { dis
     });
     g.restore();
     g.lineWidth = 2; g.strokeStyle = "#7a6033"; g.strokeRect(X, Y, W, H);
-    // 오른쪽 조 명단
-    const SX = X + W + pad; let sy = Y;
-    if (roster.length) {
-      g.fillStyle = "#e9c77b"; g.font = tf(20 * S, "800"); g.fillText("조 명단", SX, sy + lh / 2); sy += lh * 1.6;
-      roster.forEach((r) => {
-        if (r.t) {
-          const rr = 12 * S, cy = sy + lh * .35;
-          g.beginPath(); g.arc(SX + rr, cy, rr, 0, Math.PI * 2); g.fillStyle = TEAM_COLOR[r.t]; g.fill(); g.lineWidth = 2 * S; g.strokeStyle = "#fff"; g.stroke();
-          g.fillStyle = "#fff"; g.textAlign = "center"; g.font = tf(13 * S, "800"); g.fillText(r.t, SX + rr, cy + 1 * S); g.textAlign = "left";
-          g.fillStyle = "#f3e7cf"; g.font = tf(fs1 + 1 * S, "800"); g.fillText(r.title, SX + rr * 2 + 8 * S, cy); sy += lh * 1.4;
-        } else { g.fillStyle = "#e8dcc4"; g.font = tf(fs1); g.fillText(r.l, SX + 30 * S, sy + lh * .2); sy += lh; }
-      });
-    }
-    // 아래 작전 메모
+    // 오른쪽 작전 메모
     if (memo.length) {
-      let my = Y + bodyH + pad;
-      g.fillStyle = "#e9c77b"; g.font = tf(20 * S, "800"); g.fillText("작전 메모", X, my + lh / 2); my += lh * 1.4;
-      g.fillStyle = "#e8dcc4"; g.font = tf(fs1); memo.forEach((l) => { g.fillText(l, X, my + lh / 2); my += lh; });
+      const MX = X + W + pad; let my = Y;
+      g.fillStyle = "#e9c77b"; g.font = tf(20 * S, "800"); g.fillText("작전 메모", MX, my + lh / 2); my += lh * 1.4;
+      g.fillStyle = "#e8dcc4"; g.font = tf(fs1); memo.forEach((l) => { g.fillText(l, MX, my + lh / 2); my += lh; });
+    }
+    // 아래 조 명단 — A · B · C · D 칸 나란히
+    if (cols.length) {
+      let ry = Y + topH + pad * 1.5;
+      g.fillStyle = "#e9c77b"; g.font = tf(20 * S, "800"); g.fillText("조 명단", X, ry + lh / 2); ry += lh * 1.6;
+      cols.forEach((c, i) => {
+        const cx = X + i * (colW + pad), rr = 12 * S, cy = ry + lh * .35;
+        if (i) { g.strokeStyle = "#3a2e1c"; g.lineWidth = 1; g.beginPath(); g.moveTo(cx - pad / 2, ry - 4 * S); g.lineTo(cx - pad / 2, ry + rosterH - lh * 1.6); g.stroke(); }
+        g.beginPath(); g.arc(cx + rr, cy, rr, 0, Math.PI * 2); g.fillStyle = TEAM_COLOR[c.t]; g.fill(); g.lineWidth = 2 * S; g.strokeStyle = "#fff"; g.stroke();
+        g.fillStyle = "#fff"; g.textAlign = "center"; g.font = tf(13 * S, "800"); g.fillText(c.t, cx + rr, cy + 1 * S); g.textAlign = "left";
+        g.fillStyle = "#f3e7cf"; g.font = tf(fs1 + 1 * S, "800"); g.fillText(c.title, cx + rr * 2 + 8 * S, cy);
+        g.fillStyle = "#e8dcc4"; g.font = tf(fs1); c.ls.forEach((l, j) => g.fillText(l, cx, ry + lh * 1.4 + j * lh + lh * .2));
+      });
     }
     let blob = null;
     try { blob = await new Promise((ok) => cv.toBlob(ok, "image/jpeg", 0.92)); } catch (e) { blob = null; }
