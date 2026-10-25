@@ -293,7 +293,7 @@ footer .tagline::before, footer .tagline::after { width: clamp(30px, 6vw, 60px);
 #boardView { display: flex; flex-direction: column; gap: 20px; }
 .board-box .btn { margin-top: 12px; text-decoration: none; }
 .section-label .count { font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--muted); }
-.roster-tools { display: flex; justify-content: flex-end; margin-top: -12px; }
+.roster-tools { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; margin-top: -12px; }
 .field textarea.short { min-height: 64px; }
 .rank { display: grid; gap: 10px; }
 .rank-title { margin: 0; display: flex; gap: 8px; align-items: baseline; font-size: 14px; font-weight: 700; color: var(--gold); letter-spacing: .14em; }
@@ -643,7 +643,18 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
     <section id="rosterView" hidden>
       <h2 class="section-label"><svg aria-hidden="true"><use href="#i-knot"/></svg>문파원</h2>
       <p class="roster-sum" id="rosterCount"></p>
-      <div class="roster-tools" id="rosterTools" hidden><button class="btn ghost" id="rosterEditBtn" type="button">명단 수정</button></div>
+      <div class="roster-tools" id="rosterTools" hidden><button class="btn ghost" id="kickBtn" type="button">문파원 내보내기</button><button class="btn ghost" id="rosterEditBtn" type="button">명단 수정</button></div>
+      <!-- 문파 나간 사람 — 명단에서 빼고 가입 계정도 지운다 (2026-10-25) -->
+      <form class="editor" id="kickForm" hidden novalidate>
+        <h2>문파원 내보내기</h2>
+        <div class="field"><label for="kickName">내보낼 사람</label><select id="kickName"></select></div>
+        <p style="margin:0;font-size:13px;color:var(--muted)">문파원 명단에서 빠지고, 홈페이지에 가입했으면 계정도 지워져 로그인이 안 됩니다. 쓴 글은 남아요.</p>
+        <div class="actions">
+          <span class="err" id="kickErr" role="alert"></span>
+          <button class="btn ghost" type="button" id="kickCancel">취소</button>
+          <button class="btn danger" type="submit" id="kickSave">내보내기</button>
+        </div>
+      </form>
       <form class="editor" id="rosterForm" hidden novalidate>
         <h2>문파원 명단 수정</h2>
         <div class="field"><label for="rLeader">문주</label><input id="rLeader" maxlength="30"></div>
@@ -935,7 +946,7 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610250021";
+  const BUILD = "202610250821";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -1455,9 +1466,38 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
     $("rDeputies").value = DATA.roster.deputies.join(", ");
     $("rMembers").value = DATA.roster.members.join(", ");
     $("rosterErr").textContent = "";
-    $("rosterForm").hidden = false; $("rosterTools").hidden = true;
+    $("rosterForm").hidden = false; $("rosterTools").hidden = true; $("kickForm").hidden = true;
     $("rLeader").focus();
   };
+  /* 문파원 내보내기 — "아박 이사람 우리 길드 나갔는데 홈페이지에서 내보내기가 없다" (2026-10-25)
+     [내보내기] 를 한 번 더 눌러야(「정말 ○○ 내보내기」) 실제로 뺀다 */
+  function kickReset() { const b = $("kickSave"); b.textContent = "내보내기"; delete b.dataset.sure; b.disabled = false; $("kickErr").textContent = ""; }
+  $("kickBtn").onclick = () => {
+    const r = DATA.roster;
+    const opt = (n, tag) => { const o = document.createElement("option"); o.value = n; o.textContent = n + (tag ? " (" + tag + ")" : "") + (DATA.joined.includes(n) ? " · 가입 O" : ""); return o; };
+    const blank = document.createElement("option"); blank.value = ""; blank.textContent = "— 골라 주세요 —";
+    $("kickName").replaceChildren(blank, ...r.deputies.map((n) => opt(n, "부문주")), ...r.members.map((n) => opt(n)));
+    kickReset();
+    $("kickForm").hidden = false; $("rosterTools").hidden = true; $("rosterForm").hidden = true;
+    $("kickName").focus();
+  };
+  $("kickName").onchange = kickReset;
+  $("kickCancel").onclick = () => { $("kickForm").hidden = true; $("rosterTools").hidden = !canWrite; };
+  $("kickForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const n = $("kickName").value, b = $("kickSave");
+    if (!n) { $("kickErr").textContent = "내보낼 사람을 골라 주세요."; return; }
+    if (!b.dataset.sure) { b.dataset.sure = "1"; b.textContent = "정말 " + n + " 내보내기"; $("kickErr").textContent = ""; return; }
+    b.disabled = true;
+    try {
+      const out = await adminCall("kickMember", adminPw, n);
+      DATA.roster = { leader: out.roster.leader || "", deputies: strs(out.roster.deputies), members: strs(out.roster.members) };
+      DATA.joined = DATA.joined.filter((x) => x !== n);
+      $("kickForm").hidden = true; $("rosterTools").hidden = !canWrite;
+      render(); setStatus(n + " 님을 내보냈습니다." + (out.account ? " 가입 계정도 지웠습니다." : ""));
+      refreshMembers(); reloadData();
+    } catch (err) { kickReset(); $("kickErr").textContent = errMsg(err); }
+  });
   $("rosterCancel").onclick = () => { $("rosterForm").hidden = true; $("rosterTools").hidden = !canWrite; };
   $("rosterForm").addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -1908,9 +1948,9 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
     $("newBtn").hidden = !canWrite || !$("editor").hidden;
     $("bannerTools").hidden = !canWrite;
     $("imgField").hidden = !canWrite;
-    $("rosterTools").hidden = !canWrite || !$("rosterForm").hidden;
+    $("rosterTools").hidden = !canWrite || !$("rosterForm").hidden || !$("kickForm").hidden;
     $("membersMenu").hidden = !canWrite;
-    if (!canWrite) { $("editor").hidden = true; $("rosterForm").hidden = true; if (view === "members") view = "notice"; }
+    if (!canWrite) { $("editor").hidden = true; $("rosterForm").hidden = true; $("kickForm").hidden = true; if (view === "members") view = "notice"; }
     $("adminBtn").textContent = canWrite ? "관리자 나가기" : "관리자";
   }
   function logout() {
