@@ -336,11 +336,17 @@ footer .tagline::before, footer .tagline::after { width: clamp(30px, 6vw, 60px);
 .plat { flex: none; font-size: 11px; font-weight: 700; line-height: 1; padding: 3px 6px; border-radius: 3px; border: 1px solid; letter-spacing: 0; white-space: nowrap; }
 .plat-pc { color: #9cc4ff; border-color: #3d5a85; background: #121b29; }
 .plat-mo { color: #f0c27a; border-color: #7a5a2a; background: #241a0c; }
+.plat-both { color: #c9a6ff; border-color: #5b437f; background: #1c1428; }
 /* 문파원 칸에서는 오른쪽 위 귀퉁이에 — 칸 안에 넣으면 긴 이름이 세 줄로 꺾였다 */
 .names { row-gap: 14px; }
 .name { position: relative; }
 .name .plat { position: absolute; top: -8px; right: 6px; font-size: 10px; padding: 2px 5px; }
 .leader .plat { font-size: 13px; padding: 4px 8px; }
+/* 문파원 칸 위 — 내 것 바로 고르기 (2026-10-25 "pc형,모바일형은 회원들이 직접 선택할수 있게해라") */
+.my-pf { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; border: 1px solid var(--gold-lo); border-radius: 6px; background: var(--panel-hi); padding: 10px 14px; margin-top: -10px; }
+.my-pf.need { border-color: var(--red); box-shadow: 0 0 0 1px rgba(255,138,128,.25); }
+.my-pf > b { color: var(--gold-hi); font-size: 14px; }
+.my-pf .err { margin-right: 0; }
 .pf-sum { margin: -18px 0 0; color: var(--muted); font-size: 14px; display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; }
 .pf-btns { display: flex; gap: 8px; flex-wrap: wrap; }
 .pf-btns .chip { padding: 6px 14px; }
@@ -677,11 +683,12 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
       <h2 class="section-label"><svg aria-hidden="true"><use href="#i-knot"/></svg>문파원</h2>
       <p class="roster-sum" id="rosterCount"></p>
       <p class="pf-sum" id="pfCount"></p>
+      <div class="my-pf" id="rosterMyPf" hidden><b id="rosterMyPfQ">내 게임은 어디서?</b><div class="pf-btns" id="rosterMyPfBtns"></div><span class="err" id="rosterMyPfErr" role="alert"></span></div>
       <div class="roster-tools" id="rosterTools" hidden><button class="btn ghost" id="pfEditBtn" type="button">PC · 모바일 정하기</button><button class="btn ghost" id="kickBtn" type="button">문파원 내보내기</button><button class="btn ghost" id="rosterEditBtn" type="button">명단 수정</button></div>
       <!-- PC · 모바일 — 관리자 · 문주가 명단 누구나 (고르면 바로 저장) (2026-10-25) -->
       <div class="editor" id="pfForm" hidden>
         <h2>PC · 모바일 정하기</h2>
-        <p style="margin:0;font-size:13px;color:var(--muted)">게임을 어디서 하는지 고르면 바로 저장돼요. 문파원 본인도 「내 정보」 에서 고를 수 있어요.</p>
+        <p style="margin:0;font-size:13px;color:var(--muted)">게임을 어디서 하는지 누르면 바로 저장돼요. 둘 다 하면 둘 다 누르고, 다시 누르면 꺼져요. 문파원 본인도 「내 정보」 에서 고를 수 있어요.</p>
         <div class="pf-list" id="pfList"></div>
         <div class="actions"><span class="err" id="pfErr" role="alert"></span><button class="btn" type="button" id="pfDone">닫기</button></div>
       </div>
@@ -832,7 +839,7 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
       <!-- PC · 모바일 — "PC유저,모바일유저 구분이 필요하다" (2026-10-25) -->
       <div class="editor auth" id="myPf" hidden>
         <h3>게임은 어디서 하세요?</h3>
-        <p class="hint">문파원 칸에 내 이름 옆으로 표시돼요. 고르면 바로 저장돼요.</p>
+        <p class="hint">문파원 칸에 내 이름 옆으로 표시돼요. 둘 다 하면 둘 다 누르세요. 누르면 바로 저장돼요.</p>
         <div class="pf-btns" id="myPfBtns"></div>
         <span class="err" id="myPfErr" role="alert"></span>
       </div>
@@ -997,7 +1004,7 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610250904";
+  const BUILD = "202610250918";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -1512,10 +1519,11 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
     const yes = all.filter((n) => DATA.joined.includes(n)).length;
     $("rosterCount").textContent = "총 " + all.length + "명 · 가입 O " + yes + "명 · 미가입 X " + (all.length - yes) + "명";
     /* PC · 모바일 (2026-10-25) */
-    const pc = all.filter((n) => pfOf(n) === "pc").length, mo = all.filter((n) => pfOf(n) === "mobile").length;
+    /* 둘 다 하는 사람은 따로 센다 (2026-10-25 "둘다로 해라") */
+    const pc = all.filter((n) => pfOf(n) === "pc").length, mo = all.filter((n) => pfOf(n) === "mobile").length, bo = all.filter((n) => pfOf(n) === "both").length;
     const ps = $("pfCount"); ps.textContent = "";
-    ps.append(el("span", "plat plat-pc", "PC"), el("span", null, pc + "명"), el("span", "plat plat-mo", "모바일"), el("span", null, mo + "명"), el("span", null, "· 안 정함 " + (all.length - pc - mo) + "명"));
-    const pfTag = (n) => { const p = pfOf(n); return p ? el("span", "plat plat-" + (p === "pc" ? "pc" : "mo"), PF_NAME[p]) : null; };
+    ps.append(el("span", "plat plat-pc", "PC"), el("span", null, pc + "명"), el("span", "plat plat-mo", "모바일"), el("span", null, mo + "명"), el("span", "plat plat-both", "PC+모바일"), el("span", null, bo + "명"), el("span", null, "· 안 정함 " + (all.length - pc - mo - bo) + "명"));
+    const pfTag = (n) => { const p = pfOf(n); return p ? el("span", "plat " + PF_CLASS[p], PF_NAME[p]) : null; };
     const mark = (n) => { const j = DATA.joined.includes(n); const s = el("span", "mk " + (j ? "o" : "x"), j ? "O" : "X"); s.title = j ? "홈페이지 가입함" : "아직 가입 안 함"; return s; };
     /* 프로필 사진 — "회원가입 한사람들 잔량처럼 프로필 사진 넣을수 있게해라" (2026-10-19 만들어 둠, 2026-10-23 켬) */
     const chip = (n) => {
@@ -1535,6 +1543,7 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
     $("rMemCount").textContent = r.members.length + "명";
     $("rDepView").replaceChildren(...r.deputies.map(chip));
     $("rMemView").replaceChildren(...r.members.map(chip));
+    renderMyPf();
   }
   function splitNames(s) {
     const out = [];
@@ -1553,11 +1562,15 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
      [내보내기] 를 한 번 더 눌러야(「정말 ○○ 내보내기」) 실제로 뺀다 */
   /* PC · 모바일 — "PC유저,모바일유저 구분이 필요하다 이것도 표시할수있게 해라" (2026-10-25)
      본인은 「내 정보」 에서, 관리자 · 문주는 [PC · 모바일 정하기] 에서 명단 누구나. 고르면 바로 저장 */
-  const PF_NAME = { pc: "PC", mobile: "모바일" };
-  function pfOf(n) { return DATA.platform[n] === "pc" || DATA.platform[n] === "mobile" ? DATA.platform[n] : ""; }
+  const PF_NAME = { pc: "PC", mobile: "모바일", both: "PC+모바일" };
+  const PF_CLASS = { pc: "plat-pc", mobile: "plat-mo", both: "plat-both" };
+  function pfOf(n) { return PF_NAME[DATA.platform[n]] ? DATA.platform[n] : ""; }
+  /* PC · 모바일 단추는 따로따로 켜고 끈다 — 둘 다 켜면 both, 둘 다 끄면 안 정함 ("아니지 둘다 클릭할수 있게해라" 2026-10-25) */
   function pfPick(cur, onPick) {
-    return [["pc", "PC"], ["mobile", "모바일"], ["", "안 정함"]].map(([v, t]) => {
-      const b = btn("chip", t, () => onPick(v, b)); b.setAttribute("aria-pressed", String(cur === v)); return b;
+    const pc = cur === "pc" || cur === "both", mo = cur === "mobile" || cur === "both";
+    const val = (p, m) => (p && m ? "both" : p ? "pc" : m ? "mobile" : "");
+    return [["PC", pc, () => val(!pc, mo)], ["모바일", mo, () => val(pc, !mo)]].map(([t, on, next]) => {
+      const b = btn("chip", t, () => onPick(next(), b)); b.setAttribute("aria-pressed", String(on)); return b;
     });
   }
   async function savePf(name, v, errId) {
@@ -1575,15 +1588,24 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
       return row;
     }));
   }
+  /* 내 것 고르기 — 「내 정보」 와 문파원 칸 위 두 곳 (문파원 칸 위는 2026-10-25 "회원들이 직접 선택할수 있게해라" 로 더함) */
+  function myPfButtons(errId) {
+    return pfPick(pfOf(me.gameId), async (v, b) => {
+      b.disabled = true;
+      if (await savePf(me.gameId, v, errId)) { renderMyPf(); setStatus(v ? PF_NAME[v] + " (으)로 표시했습니다." : "표시를 뺐습니다."); } else b.disabled = false;
+    });
+  }
   function renderMyPf() {
     const r = DATA.roster;
     const show = !!me && [r.leader].concat(r.deputies, r.members).includes(me.gameId);
     $("myPf").hidden = !show || $("pwForm").hidden;
+    $("rosterMyPf").hidden = !show;
     if (!show) return;
-    $("myPfBtns").replaceChildren(...pfPick(pfOf(me.gameId), async (v, b) => {
-      b.disabled = true;
-      if (await savePf(me.gameId, v, "myPfErr")) { renderMyPf(); setStatus(v ? PF_NAME[v] + " (으)로 표시했습니다." : "표시를 뺐습니다."); } else b.disabled = false;
-    }));
+    $("myPfBtns").replaceChildren(...myPfButtons("myPfErr"));
+    const cur = pfOf(me.gameId);
+    $("rosterMyPf").classList.toggle("need", !cur);
+    $("rosterMyPfQ").textContent = cur ? "내 게임: " + PF_NAME[cur] : "내 게임은 어디서 하세요? (둘 다면 둘 다)";
+    $("rosterMyPfBtns").replaceChildren(...myPfButtons("rosterMyPfErr"));
   }
   $("pfEditBtn").onclick = () => {
     renderPfList(); $("pfErr").textContent = "";
