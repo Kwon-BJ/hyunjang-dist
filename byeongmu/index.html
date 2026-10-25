@@ -405,6 +405,24 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
 .bad-open .top .btn { flex: none; padding: 6px 12px; font-size: 13px; }
 .album-photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); gap: 10px; }
 .album-photos img { width: 100%; height: auto; border-radius: 4px; border: 1px solid var(--line); display: block; background: #000; }
+.bad-row { display: grid; grid-template-columns: minmax(0, 1fr) 180px; gap: 0 14px; }
+@media (max-width: 480px) { .bad-row { grid-template-columns: 1fr; } }
+.bad-tools { display: grid; gap: 10px; }
+.bad-tools .chips .chip, .bad-top .chip { padding: 5px 12px; font-size: 13px; }
+.bad-top { display: grid; gap: 6px; }
+.bad-top > span { font-size: 13px; color: var(--muted); }
+.acard .pic .okd { position: absolute; right: 6px; top: 6px; }
+.acard .cap .sub { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; }
+.acard .cap .rep { font-size: 11px; color: #ffb3a8; font-weight: 700; }
+.acard .cap .tl { color: var(--ink); font-size: 13px; overflow-wrap: anywhere; }
+.bad-open .top b .cat { margin-left: 8px; vertical-align: 2px; }
+.bad-open .top .tl { color: var(--ink); font-size: 14px; }
+.bad-open .same { justify-self: start; padding: 6px 12px; font-size: 13px; }
+/* 크게 보기 — 사진 여러 장이면 ◀ ▶ (휴대폰은 밀어서) */
+.zoom-nav { position: fixed; top: 50%; transform: translateY(-50%); z-index: 51; width: 46px; height: 64px; border: 1px solid var(--gold-lo); border-radius: 8px; background: rgba(0,0,0,.7); color: var(--gold-hi); font-size: 30px; line-height: 1; cursor: pointer; }
+.zoom-nav.prev { left: 10px; } .zoom-nav.next { right: 10px; }
+.zoom-nav[hidden] { display: none; }
+@media (max-width: 480px) { .zoom-nav { width: 38px; height: 54px; font-size: 24px; } }
 /* 전략판 — "신기,미혹 맵추가하여, 전략판 게임형식으로 생성" (2026-10-23) */
 #tacticsView { display: flex; flex-direction: column; gap: 14px; }
 .btabs { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -687,13 +705,16 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
     <section id="badView" hidden>
       <h2 class="section-label"><svg aria-hidden="true"><use href="#i-must"/></svg>비매너 게시판 <span class="count" id="badCount"></span></h2>
       <div class="board-intro">
-        <p>비매너 유저를 사진으로 모아 두는 사진첩이에요. 게임 화면을 찍어 올리고 제목에 상대 닉네임을 적어 주세요. 사진을 누르면 크게 보여요.</p>
+        <p>비매너 유저를 사진으로 모아 두는 사진첩이에요. 닉네임 · 분류를 적어 올리면 같은 닉네임끼리 모아 볼 수 있어요. 사진은 로그인한 문파원만 볼 수 있게 따로 보관해요.</p>
         <button class="btn" id="badWriteBtn" type="button"><svg aria-hidden="true"><use href="#i-pen"/></svg>사진 올리기</button>
       </div>
-      <label class="bad-find"><svg aria-hidden="true"><use href="#i-search"/></svg><input id="badSearch" type="search" placeholder="닉네임 · 내용으로 찾기" aria-label="비매너 게시판 찾기"></label>
       <form class="editor" id="badForm" hidden novalidate>
-        <h2>비매너 사진 올리기</h2>
-        <div class="field"><label for="bTitle">비매너 닉네임 · 제목</label><input id="bTitle" maxlength="80" placeholder="예: 홍길동 — 사냥터 뺏기"></div>
+        <h2 id="badFormTitle">비매너 사진 올리기</h2>
+        <div class="bad-row">
+          <div class="field"><label for="bTarget">비매너 닉네임</label><input id="bTarget" maxlength="30" list="badNames" placeholder="예: 홍길동" autocomplete="off"><datalist id="badNames"></datalist></div>
+          <div class="field"><label for="bCat">분류</label><select id="bCat"></select></div>
+        </div>
+        <div class="field"><label for="bTitle">한 줄 요약 (안 적어도 돼요)</label><input id="bTitle" maxlength="80" placeholder="예: 원림고개 사냥터 뺏기"></div>
         <div class="field"><label for="bBody">무슨 일이 있었나요 (안 적어도 돼요)</label><textarea id="bBody" class="short" maxlength="3000" placeholder="언제 · 어디서 · 무슨 일"></textarea></div>
         <div class="field">
           <label for="bImg">사진 (1~6장)</label>
@@ -709,6 +730,11 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
           <button class="btn" type="submit" id="badSave">올리기</button>
         </div>
       </form>
+      <div class="bad-tools">
+        <label class="bad-find"><svg aria-hidden="true"><use href="#i-search"/></svg><input id="badSearch" type="search" placeholder="닉네임 · 내용으로 찾기" aria-label="비매너 게시판 찾기"></label>
+        <div class="chips" id="badChips" role="group" aria-label="비매너 분류"></div>
+      </div>
+      <div class="bad-top" id="badTop" hidden><span>여러 번 올라온 닉네임</span><div class="chips" id="badTopList" role="group" aria-label="같은 닉네임 모아 보기"></div></div>
       <div id="badOpen"></div>
       <div class="album" id="badList"></div>
       <div class="empty" id="badEmpty" hidden></div>
@@ -893,6 +919,8 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
 
 <div class="zoom" id="zoom" hidden role="dialog" aria-modal="true" aria-label="프로필 사진 크게 보기">
   <figure><img id="zoomImg" alt=""><figcaption id="zoomCap"></figcaption></figure>
+  <button type="button" class="zoom-nav prev" id="zoomPrev" aria-label="앞 사진" hidden>‹</button>
+  <button type="button" class="zoom-nav next" id="zoomNext" aria-label="다음 사진" hidden>›</button>
 </div>
 <footer>
   <div class="mountains" aria-hidden="true"><svg viewBox="0 0 1600 160" preserveAspectRatio="none"><path fill="currentColor" d="M0 160V70l80-40 70 50 90-60 80 70 60-30 90 50 70-60 90 70 80-40 90 50 70-30 80 40 90-60 70 50 90-40 80 50 90-60 70 40 80-30 70 40V160z"/><path fill="#0f0c08" d="M0 160V110l120-30 100 40 140-40 120 50 160-40 120 40 140-30 120 40 160-50 120 40 160-20 120 30V160z"/></svg></div>
@@ -907,7 +935,7 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610250000";
+  const BUILD = "202610250021";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -937,6 +965,7 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
     DATA.joined = strs(d.joined);
     DATA.avatars = d.avatars && typeof d.avatars === "object" ? d.avatars : {};
     DATA.boards = d.boards && typeof d.boards === "object" ? d.boards : {};
+    DATA.imgKey = typeof d.imgKey === "string" ? d.imgKey : "";
     /* 방금 바꾼 내 사진이, 그 전에 출발한 자료 받기에 덮이지 않게 (로그인 직후 사진을 바꾸면 있었다) */
     if (me && me.avatar) DATA.avatars[me.gameId] = me.avatar;
   }
@@ -978,6 +1007,7 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
   }
   /* 사진은 깃허브 사진 가지("gh:…", 2026-10-23 부터). 예전 드라이브 id 는 드라이브 썸네일로 */
   function imgUrl(id, w) {
+    if (/^db:/.test(id)) return API + "/img/" + id.slice(3) + "?k=" + encodeURIComponent(DATA.imgKey || "");
     if (/^gh:/.test(id)) return "https://raw.githubusercontent.com/Kwon-BJ/hyunjang-dist/byeongmu-img/" + id.slice(3);
     return "https://drive.google.com/thumbnail?id=" + encodeURIComponent(id) + "&sz=w" + (w || 2000);
   }
@@ -992,20 +1022,42 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
     return g;
   }
   /* 프로필 사진 크게 보기 — 누르거나 Esc 로 닫는다 */
-  function zoom(src, cap, photo) {
+  /* list = [{src, cap}] 이면 ◀ ▶ · 화살표 키 · 밀어서 넘긴다 (비매너 사진, 2026-10-25) */
+  let zoomList = [], zoomAt = 0, zoomSwiped = false;
+  function zoom(src, cap, photo, list, at) {
+    zoomList = list || []; zoomAt = at || 0;
     $("zoomImg").src = src; $("zoomImg").alt = cap + (photo ? " 사진" : " 프로필 사진"); $("zoomCap").textContent = cap;
     $("zoom").classList.toggle("photo", !!photo);
     $("zoom").setAttribute("aria-label", photo ? "사진 크게 보기" : "프로필 사진 크게 보기");
+    $("zoomPrev").hidden = $("zoomNext").hidden = zoomList.length < 2;
     $("zoom").hidden = false;
   }
+  function zoomGo(d) {
+    if (zoomList.length < 2 || $("zoom").hidden) return;
+    zoomAt = (zoomAt + d + zoomList.length) % zoomList.length;
+    const z = zoomList[zoomAt];
+    $("zoomImg").src = z.src; $("zoomImg").alt = z.cap + " 사진"; $("zoomCap").textContent = z.cap;
+  }
+  $("zoomPrev").onclick = (e) => { e.stopPropagation(); zoomGo(-1); };
+  $("zoomNext").onclick = (e) => { e.stopPropagation(); zoomGo(1); };
+  let zoomX = null;
+  $("zoom").addEventListener("touchstart", (e) => { zoomX = e.touches.length === 1 ? e.touches[0].clientX : null; }, { passive: true });
+  $("zoom").addEventListener("touchend", (e) => {
+    if (zoomX == null || zoomList.length < 2) return;
+    const dx = e.changedTouches[0].clientX - zoomX; zoomX = null;
+    if (Math.abs(dx) > 50) { zoomSwiped = true; zoomGo(dx < 0 ? 1 : -1); }
+  });
   function zoomable(im, src, cap) {
     im.classList.add("zoomable"); im.tabIndex = 0; im.setAttribute("role", "button"); im.setAttribute("aria-label", cap + " 프로필 사진 크게 보기");
     im.onclick = (e) => { e.stopPropagation(); zoom(src, cap); };
     im.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); zoom(src, cap); } };
     return im;
   }
-  $("zoom").onclick = () => { $("zoom").hidden = true; };
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") $("zoom").hidden = true; });
+  $("zoom").onclick = () => { if (zoomSwiped) { zoomSwiped = false; return; } $("zoom").hidden = true; };
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") $("zoom").hidden = true;
+    else if (!$("zoom").hidden && (e.key === "ArrowLeft" || e.key === "ArrowRight")) { e.preventDefault(); zoomGo(e.key === "ArrowLeft" ? -1 : 1); }
+  });
   function avatarImg(id, cls) {
     const im = document.createElement("img"); im.className = cls || "av"; im.alt = ""; im.referrerPolicy = "no-referrer";
     im.src = imgUrl(id, 200); im.loading = "lazy"; return im;
@@ -1265,7 +1317,7 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
     d.err = false;
     d.up = upChain = upChain.catch(() => {}).then(async () => {
       if (d.gone || d.id) return;
-      try { const sm = await shrink(d.file, 1600); d.id = await upload(sm); }
+      try { const sm = await shrink(d.file, 1600); d.id = await upload(sm, d.file); }
       catch (e) { d.err = true; throw e; }
       finally { if (list.includes(d)) renderThumbs(boxId, list); }
     });
@@ -1535,6 +1587,7 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
       const d = await loadPublic();
       DATA.posts = Array.isArray(d.posts) ? d.posts : DATA.posts;
       DATA.manners = Array.isArray(d.manners) ? d.manners : DATA.manners;
+      if (typeof d.imgKey === "string") DATA.imgKey = d.imgKey;
       DATA.joined = strs(d.joined); renderBoard(); renderBad();
     } catch (e) { /* 미리보기 등 */ }
     refreshing = false;
@@ -1579,15 +1632,24 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
   });
 
   /* ── 비매너 게시판 — 사진첩 ("비매너게시판도 1개만들어라, 사진첩으로 보관할수잇께" 2026-10-25) ──
-     목록은 첫 사진을 크게 깐 사진첩, 누르면 위에 펼쳐 사진 전부(누르면 크게) · 내용 · 댓글.
-     글 · 사진 · 지우기 · 댓글 규칙은 자유게시판과 같다(쓰기는 회원, 지우기는 쓴 사람 · 문주 · 관리자). 사진은 1장 넘게 있어야 한다. */
+     목록은 첫 사진을 크게 깐 사진첩, 누르면 위에 펼쳐 사진 전부(누르면 크게, ◀ ▶ 로 넘김) · 내용 · 댓글.
+     글 · 사진 · 지우기 · 댓글 규칙은 자유게시판과 같다(쓰기는 회원, 지우기는 쓴 사람 · 문주 · 관리자). 사진은 1장 넘게 있어야 한다.
+     같은 날 "1~7번": 비매너 닉네임(같은 닉네임 모아 보기) · 분류 칩 · 확인됨(문주 · 관리자) · 고치기 · 안 본 글 수 · 사진은 D1 에 비공개로. */
+  const BAD_CATS = ["사냥터", "욕설", "사기", "문파전 방해", "기타"];
+  let badCat = "전체", badNick = "", editingBad = null;
+  /* 닉네임 맞춰 보기 — 띄어쓰기 · 대소문자 무시 */
+  const nkey = (s) => String(s || "").toLowerCase().replace(/\s+/g, "");
+  function badTarget(p) { return p.target || p.title || "(닉네임 없음)"; }
+  function badCounts() { const m = {}; DATA.manners.forEach((p) => { const k = nkey(badTarget(p)); m[k] = (m[k] || 0) + 1; }); return m; }
   function badShown() {
-    const q = badQuery.trim().toLowerCase();
-    if (!q) return DATA.manners;
-    return DATA.manners.filter((p) => [p.title, p.body, p.nick].some((x) => String(x || "").toLowerCase().includes(q)));
+    const q = nkey(badQuery);
+    return DATA.manners.filter((p) => (badCat === "전체" || (p.cat || "기타") === badCat)
+      && (!badNick || nkey(badTarget(p)) === badNick)
+      && (!q || [p.target, p.title, p.body, p.nick].some((x) => nkey(x).includes(q))));
   }
   function badImgsOf(p) { return Array.isArray(p.images) ? p.images.filter((x) => typeof x === "string") : []; }
-  function badCard(p) {
+  function canEditBad(p) { return !!(me && (p.memberId === me.id || canWrite)); }
+  function badCard(p, counts) {
     const imgs = badImgsOf(p), cms = Array.isArray(p.comments) ? p.comments : [];
     const c = btn("acard", null, () => {
       openBad = openBad === p.id ? null : p.id; delBad = null; renderBad();
@@ -1602,36 +1664,54 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
     }
     if (imgs.length > 1) pic.appendChild(el("span", "n", "사진 " + imgs.length));
     if (isNew(p.createdAt)) pic.appendChild(el("span", "new", "NEW"));
+    if (p.checked) pic.appendChild(el("span", "cat must okd", "확인됨"));
     const cap = el("span", "cap");
-    cap.append(el("b", null, p.title || "(제목 없음)"), el("span", null, (p.nick || "익명") + " · " + fmt(p.createdAt) + (cms.length ? " · 댓글 " + cms.length : "")));
+    cap.appendChild(el("b", null, badTarget(p)));
+    const sub = el("span", "sub");
+    sub.appendChild(el("span", "cat", p.cat || "기타"));
+    const n = counts[nkey(badTarget(p))] || 1;
+    if (n > 1) sub.appendChild(el("span", "rep", "같은 닉네임 " + n + "건"));
+    cap.appendChild(sub);
+    if (p.title && p.target) cap.appendChild(el("span", "tl", p.title));
+    cap.appendChild(el("span", null, (p.nick || "익명") + " · " + fmt(p.createdAt) + (cms.length ? " · 댓글 " + cms.length : "")));
     c.append(pic, cap);
     return c;
   }
-  function badDetail(p) {
+  function badDetail(p, counts) {
     const imgs = badImgsOf(p), cms = Array.isArray(p.comments) ? p.comments : [];
     const box = el("article", "bad-open");
     const top = el("div", "top"), t = el("div");
-    t.append(el("b", null, p.title || "(제목 없음)"), el("span", null, (p.nick || "익명") + " · " + fmtTime(p.createdAt)));
+    const name = el("b", null, badTarget(p));
+    if (p.checked) name.appendChild(el("span", "cat must", "확인됨"));
+    t.appendChild(name);
+    t.appendChild(el("span", "tl", (p.cat || "기타") + (p.title && p.target ? " · " + p.title : "")));
+    t.appendChild(el("span", null, "올린 사람 " + (p.nick || "익명") + " · " + fmtTime(p.createdAt) + (p.editedAt ? " (수정 " + fmt(p.editedAt) + ")" : "")));
     top.append(t, btn("btn ghost", "닫기", () => { openBad = null; delBad = null; renderBad(); }));
     box.appendChild(top);
+    const n = counts[nkey(badTarget(p))] || 1;
+    if (n > 1 && !badNick) {
+      box.appendChild(btn("btn ghost same", "「" + badTarget(p) + "」 글 " + n + "건 모아 보기", () => {
+        badNick = nkey(badTarget(p)); badCat = "전체"; openBad = null; renderBad();
+        $("badView").scrollIntoView({ block: "start", behavior: "smooth" });
+      }));
+    }
     if (p.body) box.appendChild(el("p", "text", p.body));
     if (imgs.length) {
       const g = el("div", "album-photos");
+      const list = imgs.map((id, i) => ({ src: imgUrl(id), cap: badTarget(p) + (imgs.length > 1 ? " (" + (i + 1) + "/" + imgs.length + ")" : "") }));
       imgs.forEach((id, i) => {
         const im = document.createElement("img");
-        im.src = imgUrl(id); im.loading = "lazy"; im.referrerPolicy = "no-referrer"; im.alt = (p.title || "비매너") + " 사진 " + (i + 1);
-        const cap = (p.title || "비매너") + (imgs.length > 1 ? " (" + (i + 1) + "/" + imgs.length + ")" : "");
+        im.src = list[i].src; im.loading = "lazy"; im.referrerPolicy = "no-referrer"; im.alt = badTarget(p) + " 사진 " + (i + 1);
         im.classList.add("zoomable"); im.tabIndex = 0; im.setAttribute("role", "button"); im.setAttribute("aria-label", "사진 " + (i + 1) + " 크게 보기");
-        im.onclick = () => zoom(im.src, cap, true);
-        im.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); zoom(im.src, cap, true); } };
+        im.onclick = () => zoom(list[i].src, list[i].cap, true, list, i);
+        im.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); zoom(list[i].src, list[i].cap, true, list, i); } };
         g.appendChild(im);
       });
       box.appendChild(g);
     }
-    const mine = !!(me && p.memberId && p.memberId === me.id);
     const leader = !!(me && DATA.roster.leader && me.gameId === DATA.roster.leader);
     if (/^tmp/.test(p.id)) box.appendChild(el("p", "meta", "올리는 중…"));
-    else if (!mine && !canWrite && !leader) { /* 남의 글에는 지우기 단추가 없다 */ } else if (delBad === p.id) {
+    else if (delBad === p.id) {
       const c = el("div", "confirm");
       c.appendChild(el("span", null, "이 글과 사진을 삭제할까요?"));
       const yes = btn("btn danger", "삭제", async () => {
@@ -1645,65 +1725,148 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
       box.appendChild(c);
     } else {
       const a = el("div", "actions");
-      a.appendChild(btn("btn ghost", "삭제", () => { delBad = p.id; renderBad(); }));
-      box.appendChild(a);
+      /* 확인됨 — 문주 · 관리자가 "사실이다" 확인한 글 */
+      if (canWrite) {
+        const ck = btn("btn ghost", p.checked ? "확인됨 빼기" : "확인됨 표시", async () => {
+          ck.disabled = true;
+          try { DATA.manners = await adminCall("setChecked", adminPw, p.id, !p.checked); renderBad(); setStatus(p.checked ? "확인됨을 뺐습니다." : "확인됨으로 표시했습니다."); }
+          catch (err) { ck.disabled = false; setStatus(errMsg(err), true); }
+        });
+        a.appendChild(ck);
+      }
+      if (canEditBad(p)) {
+        a.appendChild(btn("btn ghost", "고치기", () => openBadForm(p)));
+        a.appendChild(btn("btn ghost", "삭제", () => { delBad = p.id; renderBad(); }));
+      }
+      if (a.childNodes.length) box.appendChild(a);
     }
     if (!/^tmp/.test(p.id)) box.appendChild(commentsEl(p, cms, leader, "bad"));
     return box;
   }
+  function chipBtn(text, n, on, onClick) {
+    const b = btn("chip", null, onClick);
+    b.setAttribute("aria-pressed", String(on));
+    b.appendChild(el("span", null, text));
+    if (n != null) b.appendChild(el("span", "n", String(n)));
+    return b;
+  }
+  /* 안 본 글 수 — 이 기계에 마지막으로 본 때를 적어 두고, 그 뒤에 남이 올린 글을 센다 (위 메뉴 빨간 숫자) */
+  function badSeenKey() { return "bmc-bad-seen-" + (me ? me.id : ""); }
+  function badUnseen() {
+    if (!me) return 0;
+    let s = 0;
+    try { s = Number(localStorage.getItem(badSeenKey())) || 0; } catch (e) {}
+    return DATA.manners.filter((p) => !/^tmp/.test(p.id) && p.memberId !== me.id && Date.parse(p.createdAt) > s).length;
+  }
+  function markBadSeen() {
+    if (!me || !loaded) return;
+    const last = DATA.manners.reduce((m, p) => Math.max(m, Date.parse(p.createdAt) || 0), 0);
+    try { localStorage.setItem(badSeenKey(), String(Math.max(Date.now(), last))); } catch (e) {}
+  }
+  function renderBadMenu() {
+    const b = document.querySelector('.menu-item[data-go="bad"]');
+    b.textContent = "비매너 게시판";
+    const n = badUnseen();
+    if (n) { const s = el("span", "badge", n > 99 ? "99+" : String(n)); s.setAttribute("aria-label", "안 본 글 " + n + "개"); b.appendChild(s); }
+  }
   function renderBad() {
     saveCache();
-    const all = DATA.manners, shown = badShown();
+    if (view === "bad") markBadSeen();
+    renderBadMenu();
+    const all = DATA.manners, shown = badShown(), counts = badCounts();
     $("badCount").textContent = all.length ? "사진첩 " + all.length + "개" : "";
+    /* 분류 칩 — 전체 · 사냥터 · 욕설 · 사기 · 문파전 방해 · 기타 */
+    const catN = (k) => all.filter((p) => (p.cat || "기타") === k).length;
+    $("badChips").replaceChildren(chipBtn("전체", all.length, badCat === "전체", () => { badCat = "전체"; renderBad(); }),
+      ...BAD_CATS.map((k) => chipBtn(k, catN(k), badCat === k, () => { badCat = badCat === k ? "전체" : k; renderBad(); })));
+    /* 여러 번 올라온 닉네임 — 누르면 그 닉네임 글만 */
+    const names = {};
+    all.forEach((p) => { const k = nkey(badTarget(p)); if (!names[k]) names[k] = badTarget(p); });
+    const rep = Object.keys(counts).filter((k) => counts[k] > 1 || k === badNick).sort((a, b) => counts[b] - counts[a]).slice(0, 12);
+    if (badNick && rep.indexOf(badNick) < 0) rep.unshift(badNick);
+    $("badTop").hidden = !rep.length;
+    $("badTopList").replaceChildren(...rep.map((k) => chipBtn(names[k] || k, counts[k] || 0, badNick === k, () => { badNick = badNick === k ? "" : k; openBad = null; renderBad(); })));
+    $("badNames").replaceChildren(...Object.keys(names).map((k) => { const o = document.createElement("option"); o.value = names[k]; return o; }));
     const op = openBad && all.find((x) => x.id === openBad);
     if (openBad && !op) openBad = null;
-    $("badOpen").replaceChildren(...(op ? [badDetail(op)] : []));
-    $("badList").replaceChildren(...shown.map(badCard));
+    $("badOpen").replaceChildren(...(op ? [badDetail(op, counts)] : []));
+    $("badList").replaceChildren(...shown.map((p) => badCard(p, counts)));
     $("badList").hidden = shown.length === 0;
     if (!me) $("badForm").hidden = true;
     $("badWriteBtn").hidden = !me || !$("badForm").hidden;
     const empty = $("badEmpty"); empty.textContent = "";
     if (!shown.length && loaded) {
       empty.appendChild(icon("i-scroll"));
-      if (all.length) { empty.appendChild(el("strong", null, "찾는 글이 없습니다")); empty.appendChild(el("span", null, "다른 닉네임으로 찾아 보세요.")); }
+      if (all.length) { empty.appendChild(el("strong", null, "찾는 글이 없습니다")); empty.appendChild(el("span", null, "다른 닉네임 · 분류로 찾아 보세요.")); }
       else { empty.appendChild(el("strong", null, "아직 올린 사진이 없습니다")); empty.appendChild(el("span", null, "[사진 올리기] 로 비매너 유저 사진을 남겨 보세요.")); }
       empty.hidden = false;
     } else empty.hidden = true;
   }
+  BAD_CATS.forEach((k) => { const o = document.createElement("option"); o.value = k; o.textContent = k; $("bCat").appendChild(o); });
   $("badSearch").addEventListener("input", (e) => { badQuery = e.target.value; renderBad(); });
-  $("badWriteBtn").onclick = () => {
-    $("badForm").hidden = false; $("badWriteBtn").hidden = true; $("badErr").textContent = "";
-    $("bTitle").focus();
+  /* 비매너 사진은 D1 에 비공개로 (db:…) — 한 줄 2MB 라 너무 크면 한 번 더 줄인다 */
+  const upBad = async (sm, file) => {
+    if (sm.b64.length > 1800000 && file) sm = await shrink(file, 1100);
+    return memberCall("uploadBadImage", token, sm.b64, sm.mime);
   };
+  /* 글쓰기 칸 — p 가 있으면 그 글 고치기 */
+  function openBadForm(p) {
+    clearBadImgs();
+    editingBad = p ? p.id : null;
+    $("badFormTitle").textContent = p ? "비매너 글 고치기" : "비매너 사진 올리기";
+    $("badSave").textContent = p ? "고친 것 저장" : "올리기";
+    $("bTarget").value = p ? p.target || p.title || "" : "";
+    $("bCat").value = p && BAD_CATS.indexOf(p.cat) >= 0 ? p.cat : "기타";
+    $("bTitle").value = p && p.target ? p.title || "" : "";
+    $("bBody").value = p ? p.body || "" : "";
+    if (p) badImgsOf(p).forEach((id) => badImgs.push({ id, url: imgUrl(id, 400) }));
+    renderThumbs("bThumbs", badImgs);
+    $("badForm").hidden = false; $("badWriteBtn").hidden = true; $("badErr").textContent = "";
+    $("badForm").scrollIntoView({ block: "start", behavior: "smooth" });
+    $("bTarget").focus({ preventScroll: true });
+  }
+  function closeBadForm() { $("badForm").hidden = true; $("badWriteBtn").hidden = false; editingBad = null; clearBadImgs(); }
+  $("badWriteBtn").onclick = () => openBadForm(null);
   function clearBadImgs() { badImgs.forEach((d) => { d.gone = true; if (d.file) URL.revokeObjectURL(d.url); }); badImgs.length = 0; renderThumbs("bThumbs", badImgs); }
-  $("badCancel").onclick = () => { $("badForm").hidden = true; $("badWriteBtn").hidden = false; clearBadImgs(); };
-  $("bImg").addEventListener("change", (e) => { addImgs(e.target.files, badImgs, "bThumbs", "badErr", upPost); e.target.value = ""; });
-  dropPhotos("badForm", "bDrop", (files) => addImgs(files, badImgs, "bThumbs", "badErr", upPost));
+  $("badCancel").onclick = closeBadForm;
+  $("bImg").addEventListener("change", (e) => { addImgs(e.target.files, badImgs, "bThumbs", "badErr", upBad); e.target.value = ""; });
+  dropPhotos("badForm", "bDrop", (files) => addImgs(files, badImgs, "bThumbs", "badErr", upBad));
   $("badForm").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const post = { board: "bad", title: $("bTitle").value.trim(), body: $("bBody").value.trim() };
-    if (!post.title) { $("badErr").textContent = "비매너 닉네임이나 제목을 적어 주세요."; $("bTitle").focus(); return; }
+    const post = { board: "bad", target: $("bTarget").value.trim(), cat: $("bCat").value, title: $("bTitle").value.trim(), body: $("bBody").value.trim() };
+    if (!post.target) { $("badErr").textContent = "비매너 닉네임을 적어 주세요."; $("bTarget").focus(); return; }
     if (!badImgs.length) { $("badErr").textContent = "사진을 1장 이상 올려 주세요."; return; }
-    const b = $("badSave"); b.disabled = true; $("badErr").textContent = "";
-    try { await waitUploads(badImgs, "bThumbs", upPost, b); }
-    catch (err) { $("badErr").textContent = errMsg(err); b.disabled = false; b.textContent = "올리기"; return; }
+    const b = $("badSave"), label = b.textContent; b.disabled = true; $("badErr").textContent = "";
+    try { await waitUploads(badImgs, "bThumbs", upBad, b); }
+    catch (err) { $("badErr").textContent = errMsg(err); b.disabled = false; b.textContent = label; return; }
     post.images = badImgs.map((d) => d.id);
-    b.disabled = false; b.textContent = "올리기";
+    /* 고치기 — 서버 답을 받고 바꾼다 */
+    if (editingBad) {
+      const id = editingBad;
+      b.textContent = "저장하는 중…";
+      try {
+        DATA.manners = await memberCall("editPost", token, id, post, canWrite ? adminPw : "");
+        badImgs.length = 0; closeBadForm(); openBad = id; renderBad(); setStatus("고쳤습니다.");
+        $("badOpen").scrollIntoView({ block: "start", behavior: "smooth" });
+      } catch (err) { $("badErr").textContent = "고치지 못했습니다 — " + errMsg(err); }
+      b.disabled = false; b.textContent = label;
+      return;
+    }
+    b.disabled = false; b.textContent = label;
     /* 화면은 바로 바꾸고 서버는 뒤에서 — 못 받으면 되돌리고 쓰던 것을 다시 연다 (자유게시판과 같게) */
     const prev = DATA.manners, imgs = badImgs.slice();
     const local = Object.assign({}, post, { id: "tmp" + Date.now(), nick: me.gameId, memberId: me.id, createdAt: new Date().toISOString() });
     DATA.manners = [local].concat(prev); openBad = null;
-    $("bTitle").value = ""; $("bBody").value = ""; badImgs.length = 0; renderThumbs("bThumbs", badImgs);
-    $("badForm").hidden = true; $("badWriteBtn").hidden = false;
+    badImgs.length = 0; closeBadForm();
     renderBad(); setStatus("사진을 올리는 중…");
     try {
       DATA.manners = await memberCall("createPost", token, post);
       renderBad(); setStatus("비매너 게시판에 올렸습니다.");
     } catch (err) {
       DATA.manners = prev; renderBad();
-      $("bTitle").value = post.title; $("bBody").value = post.body;
+      openBadForm(null);
+      $("bTarget").value = post.target; $("bCat").value = post.cat; $("bTitle").value = post.title; $("bBody").value = post.body;
       imgs.forEach((d) => badImgs.push(d)); renderThumbs("bThumbs", badImgs);
-      $("badForm").hidden = false; $("badWriteBtn").hidden = true;
       $("badErr").textContent = "올리지 못했습니다 — " + errMsg(err);
       setStatus("사진을 올리지 못했습니다. 쓰던 글을 다시 열었습니다.", true);
     }
@@ -1787,7 +1950,7 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
     takeData({});
     Object.keys(drafts).forEach((k) => delete drafts[k]);
     Object.keys(cDraft).forEach((k) => delete cDraft[k]);
-    boardSel = null; drawMode = ""; openBad = null; delBad = null;
+    boardSel = null; drawMode = ""; openBad = null; delBad = null; badNick = ""; badCat = "전체"; editingBad = null;
     try { localStorage.removeItem("bmc-data"); } catch (e) {}
   }
   function setMe(t, m) {
