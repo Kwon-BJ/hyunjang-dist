@@ -314,6 +314,22 @@ footer .tagline::before, footer .tagline::after { width: clamp(30px, 6vw, 60px);
 .mk { margin-left: auto; padding-left: 8px; font-weight: 800; font-size: 15px; line-height: 1; flex: none; }
 .mk.o { color: #8fd694; }
 .mk.x { color: #ff8a80; }
+/* PC · 모바일 (2026-10-25) */
+/* 전략판 말이 .pc 를 써서 plat-pc · plat-mo 로 */
+.plat { flex: none; font-size: 11px; font-weight: 700; line-height: 1; padding: 3px 6px; border-radius: 3px; border: 1px solid; letter-spacing: 0; white-space: nowrap; }
+.plat-pc { color: #9cc4ff; border-color: #3d5a85; background: #121b29; }
+.plat-mo { color: #f0c27a; border-color: #7a5a2a; background: #241a0c; }
+/* 문파원 칸에서는 오른쪽 위 귀퉁이에 — 칸 안에 넣으면 긴 이름이 세 줄로 꺾였다 */
+.names { row-gap: 14px; }
+.name { position: relative; }
+.name .plat { position: absolute; top: -8px; right: 6px; font-size: 10px; padding: 2px 5px; }
+.leader .plat { font-size: 13px; padding: 4px 8px; }
+.pf-sum { margin: -18px 0 0; color: var(--muted); font-size: 14px; display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; }
+.pf-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.pf-btns .chip { padding: 6px 14px; }
+.pf-list { display: grid; gap: 6px; }
+.pf-row { display: flex; align-items: center; gap: 10px; justify-content: space-between; flex-wrap: wrap; border-bottom: 1px solid var(--line); padding: 4px 0 8px; }
+.pf-row > span { overflow-wrap: anywhere; min-width: 0; font-weight: 700; }
 .leader .mk { font-size: 22px; margin-left: 4px; }
 
 /* Apps Script 판 */
@@ -643,7 +659,15 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
     <section id="rosterView" hidden>
       <h2 class="section-label"><svg aria-hidden="true"><use href="#i-knot"/></svg>문파원</h2>
       <p class="roster-sum" id="rosterCount"></p>
-      <div class="roster-tools" id="rosterTools" hidden><button class="btn ghost" id="kickBtn" type="button">문파원 내보내기</button><button class="btn ghost" id="rosterEditBtn" type="button">명단 수정</button></div>
+      <p class="pf-sum" id="pfCount"></p>
+      <div class="roster-tools" id="rosterTools" hidden><button class="btn ghost" id="pfEditBtn" type="button">PC · 모바일 정하기</button><button class="btn ghost" id="kickBtn" type="button">문파원 내보내기</button><button class="btn ghost" id="rosterEditBtn" type="button">명단 수정</button></div>
+      <!-- PC · 모바일 — 관리자 · 문주가 명단 누구나 (고르면 바로 저장) (2026-10-25) -->
+      <div class="editor" id="pfForm" hidden>
+        <h2>PC · 모바일 정하기</h2>
+        <p style="margin:0;font-size:13px;color:var(--muted)">게임을 어디서 하는지 고르면 바로 저장돼요. 문파원 본인도 「내 정보」 에서 고를 수 있어요.</p>
+        <div class="pf-list" id="pfList"></div>
+        <div class="actions"><span class="err" id="pfErr" role="alert"></span><button class="btn" type="button" id="pfDone">닫기</button></div>
+      </div>
       <!-- 문파 나간 사람 — 명단에서 빼고 가입 계정도 지운다 (2026-10-25) -->
       <form class="editor" id="kickForm" hidden novalidate>
         <h2>문파원 내보내기</h2>
@@ -784,6 +808,13 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
         <p class="ok" id="joinOk">가입 신청을 받았습니다.</p>
         <p class="hint" id="joinHint">문주가 승인하면 방금 만든 아이디로 로그인할 수 있어요. 카톡방에서 문주에게 알려 주면 더 빨라요.</p>
         <div class="actions"><button class="btn" type="button" id="joinDoneBtn">로그인 화면으로</button></div>
+      </div>
+      <!-- PC · 모바일 — "PC유저,모바일유저 구분이 필요하다" (2026-10-25) -->
+      <div class="editor auth" id="myPf" hidden>
+        <h3>게임은 어디서 하세요?</h3>
+        <p class="hint">문파원 칸에 내 이름 옆으로 표시돼요. 고르면 바로 저장돼요.</p>
+        <div class="pf-btns" id="myPfBtns"></div>
+        <span class="err" id="myPfErr" role="alert"></span>
       </div>
       <!-- 게임 닉네임 바꾸기 — "문파원 게임 닉네임 변경 가능하게 할것" (2026-10-23) -->
       <form class="editor auth" id="nickForm" hidden novalidate>
@@ -946,7 +977,7 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610250821";
+  const BUILD = "202610250850";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -963,7 +994,7 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
   window.__BANNER__ = "img/banner.webp";
   const $ = (id) => document.getElementById(id);
   const strs = (a) => (Array.isArray(a) ? a : []).filter((x) => typeof x === "string" && x.trim());
-  const DATA = { notices: [], posts: [], manners: [], site: {}, roster: { leader: "", deputies: [], members: [] }, joined: [], avatars: {}, boards: {} };
+  const DATA = { notices: [], posts: [], manners: [], site: {}, roster: { leader: "", deputies: [], members: [] }, joined: [], avatars: {}, boards: {}, platform: {} };
   let loaded = false;
   function takeData(d) {
     d = d || {};
@@ -976,6 +1007,7 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
     DATA.joined = strs(d.joined);
     DATA.avatars = d.avatars && typeof d.avatars === "object" ? d.avatars : {};
     DATA.boards = d.boards && typeof d.boards === "object" ? d.boards : {};
+    DATA.platform = d.platform && typeof d.platform === "object" ? d.platform : {};
     DATA.imgKey = typeof d.imgKey === "string" ? d.imgKey : "";
     /* 방금 바꾼 내 사진이, 그 전에 출발한 자료 받기에 덮이지 않게 (로그인 직후 사진을 바꾸면 있었다) */
     if (me && me.avatar) DATA.avatars[me.gameId] = me.avatar;
@@ -1437,12 +1469,17 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
     const all = (r.leader ? [r.leader] : []).concat(r.deputies, r.members);
     const yes = all.filter((n) => DATA.joined.includes(n)).length;
     $("rosterCount").textContent = "총 " + all.length + "명 · 가입 O " + yes + "명 · 미가입 X " + (all.length - yes) + "명";
+    /* PC · 모바일 (2026-10-25) */
+    const pc = all.filter((n) => pfOf(n) === "pc").length, mo = all.filter((n) => pfOf(n) === "mobile").length;
+    const ps = $("pfCount"); ps.textContent = "";
+    ps.append(el("span", "plat plat-pc", "PC"), el("span", null, pc + "명"), el("span", "plat plat-mo", "모바일"), el("span", null, mo + "명"), el("span", null, "· 안 정함 " + (all.length - pc - mo) + "명"));
+    const pfTag = (n) => { const p = pfOf(n); return p ? el("span", "plat plat-" + (p === "pc" ? "pc" : "mo"), PF_NAME[p]) : null; };
     const mark = (n) => { const j = DATA.joined.includes(n); const s = el("span", "mk " + (j ? "o" : "x"), j ? "O" : "X"); s.title = j ? "홈페이지 가입함" : "아직 가입 안 함"; return s; };
     /* 프로필 사진 — "회원가입 한사람들 잔량처럼 프로필 사진 넣을수 있게해라" (2026-10-19 만들어 둠, 2026-10-23 켬) */
     const chip = (n) => {
       const s = el("span", "name");
       if (DATA.avatars[n]) s.appendChild(zoomable(avatarImg(DATA.avatars[n]), imgUrl(DATA.avatars[n]), n));
-      s.appendChild(el("span", null, n)); s.appendChild(mark(n)); return s;
+      s.appendChild(el("span", null, n)); const t = pfTag(n); if (t) s.appendChild(t); s.appendChild(mark(n)); return s;
     };
     const lv = $("rLeaderView"); lv.textContent = "";
     /* 문주(잔량) 프로필은 병무청 도깨비 문양 그대로 — "문주 잔량 프로필은 병무청 도깨비 저걸로 그대로 삽입시켜라" (2026-10-23) */
@@ -1450,6 +1487,7 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
     lv.appendChild(r.leader ? zoomable(im, emblemSrc(), r.leader) : im);
     lv.appendChild(el("span", "role", "문주"));
     lv.appendChild(el("span", "nm", r.leader || "미정"));
+    if (r.leader && pfTag(r.leader)) lv.appendChild(pfTag(r.leader));
     if (r.leader) lv.appendChild(mark(r.leader));
     $("rDepCount").textContent = r.deputies.length + "명";
     $("rMemCount").textContent = r.members.length + "명";
@@ -1466,11 +1504,50 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
     $("rDeputies").value = DATA.roster.deputies.join(", ");
     $("rMembers").value = DATA.roster.members.join(", ");
     $("rosterErr").textContent = "";
-    $("rosterForm").hidden = false; $("rosterTools").hidden = true; $("kickForm").hidden = true;
+    $("rosterForm").hidden = false; $("rosterTools").hidden = true; $("kickForm").hidden = true; $("pfForm").hidden = true;
     $("rLeader").focus();
   };
   /* 문파원 내보내기 — "아박 이사람 우리 길드 나갔는데 홈페이지에서 내보내기가 없다" (2026-10-25)
      [내보내기] 를 한 번 더 눌러야(「정말 ○○ 내보내기」) 실제로 뺀다 */
+  /* PC · 모바일 — "PC유저,모바일유저 구분이 필요하다 이것도 표시할수있게 해라" (2026-10-25)
+     본인은 「내 정보」 에서, 관리자 · 문주는 [PC · 모바일 정하기] 에서 명단 누구나. 고르면 바로 저장 */
+  const PF_NAME = { pc: "PC", mobile: "모바일" };
+  function pfOf(n) { return DATA.platform[n] === "pc" || DATA.platform[n] === "mobile" ? DATA.platform[n] : ""; }
+  function pfPick(cur, onPick) {
+    return [["pc", "PC"], ["mobile", "모바일"], ["", "안 정함"]].map(([v, t]) => {
+      const b = btn("chip", t, () => onPick(v, b)); b.setAttribute("aria-pressed", String(cur === v)); return b;
+    });
+  }
+  async function savePf(name, v, errId) {
+    $(errId).textContent = "";
+    try { DATA.platform = await call("setPlatform", canWrite ? adminPw : token, name, v); renderRoster(); return true; }
+    catch (e) { $(errId).textContent = errMsg(e); return false; }
+  }
+  function renderPfList() {
+    const r = DATA.roster, all = (r.leader ? [r.leader] : []).concat(r.deputies, r.members);
+    $("pfList").replaceChildren(...all.map((n) => {
+      const row = el("div", "pf-row"); row.appendChild(el("span", null, n));
+      const box = el("div", "pf-btns");
+      box.append(...pfPick(pfOf(n), async (v, b) => { b.disabled = true; if (await savePf(n, v, "pfErr")) renderPfList(); else b.disabled = false; }));
+      row.appendChild(box);
+      return row;
+    }));
+  }
+  function renderMyPf() {
+    const r = DATA.roster;
+    const show = !!me && [r.leader].concat(r.deputies, r.members).includes(me.gameId);
+    $("myPf").hidden = !show || $("pwForm").hidden;
+    if (!show) return;
+    $("myPfBtns").replaceChildren(...pfPick(pfOf(me.gameId), async (v, b) => {
+      b.disabled = true;
+      if (await savePf(me.gameId, v, "myPfErr")) { renderMyPf(); setStatus(v ? PF_NAME[v] + " (으)로 표시했습니다." : "표시를 뺐습니다."); } else b.disabled = false;
+    }));
+  }
+  $("pfEditBtn").onclick = () => {
+    renderPfList(); $("pfErr").textContent = "";
+    $("pfForm").hidden = false; $("rosterTools").hidden = true; $("rosterForm").hidden = true; $("kickForm").hidden = true;
+  };
+  $("pfDone").onclick = () => { $("pfForm").hidden = true; $("rosterTools").hidden = !canWrite; };
   function kickReset() { const b = $("kickSave"); b.textContent = "내보내기"; delete b.dataset.sure; b.disabled = false; $("kickErr").textContent = ""; }
   $("kickBtn").onclick = () => {
     const r = DATA.roster;
@@ -1478,7 +1555,7 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
     const blank = document.createElement("option"); blank.value = ""; blank.textContent = "— 골라 주세요 —";
     $("kickName").replaceChildren(blank, ...r.deputies.map((n) => opt(n, "부문주")), ...r.members.map((n) => opt(n)));
     kickReset();
-    $("kickForm").hidden = false; $("rosterTools").hidden = true; $("rosterForm").hidden = true;
+    $("kickForm").hidden = false; $("rosterTools").hidden = true; $("rosterForm").hidden = true; $("pfForm").hidden = true;
     $("kickName").focus();
   };
   $("kickName").onchange = kickReset;
@@ -1948,9 +2025,9 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
     $("newBtn").hidden = !canWrite || !$("editor").hidden;
     $("bannerTools").hidden = !canWrite;
     $("imgField").hidden = !canWrite;
-    $("rosterTools").hidden = !canWrite || !$("rosterForm").hidden || !$("kickForm").hidden;
+    $("rosterTools").hidden = !canWrite || !$("rosterForm").hidden || !$("kickForm").hidden || !$("pfForm").hidden;
     $("membersMenu").hidden = !canWrite;
-    if (!canWrite) { $("editor").hidden = true; $("rosterForm").hidden = true; $("kickForm").hidden = true; if (view === "members") view = "notice"; }
+    if (!canWrite) { $("editor").hidden = true; $("rosterForm").hidden = true; $("kickForm").hidden = true; $("pfForm").hidden = true; if (view === "members") view = "notice"; }
     $("adminBtn").textContent = canWrite ? "관리자 나가기" : "관리자";
   }
   function logout() {
@@ -2063,6 +2140,7 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
     if (me) { $("nickNow").textContent = me.gameId; $("nNick").value = ""; $("nickErr").textContent = ""; }
     $("authTabs").hidden = tab === "pw";
     $("pwForm").hidden = tab !== "pw";
+    renderMyPf();
     $("pwErr").textContent = "";
     $("loginForm").hidden = tab !== "login";
     $("joinForm").hidden = tab !== "join";
