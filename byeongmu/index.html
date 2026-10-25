@@ -84,6 +84,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .tagline::before, .tagline::after { content: ""; width: clamp(24px, 6vw, 64px); height: 1px; background: linear-gradient(90deg, transparent, var(--gold)); }
 .tagline::after { transform: scaleX(-1); }
 .banner-tools { position: absolute; right: max(12px, env(safe-area-inset-right, 0px)); bottom: 10px; display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+/* 좁은 화면에서는 배너 글귀(도깨비의 세계 · 함께하는 즐거움)를 덮어서 배너 밑으로 (2026-10-25) */
+@media (max-width: 1100px) { .banner-tools { position: static; justify-content: center; padding: 8px 16px 10px; } }
 .tiny { border: 1px solid var(--gold-lo); background: rgba(0,0,0,.6); color: var(--gold-hi); font-size: 12px; padding: 4px 10px; border-radius: 6px; cursor: pointer; }
 .tiny:disabled { opacity: .5; cursor: progress; }
 @media (max-width: 640px) {
@@ -170,6 +172,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .title-line { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: baseline; min-width: 0; }
 .cat { font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 3px; border: 1px solid var(--gold-lo); color: var(--gold); white-space: nowrap; }
 .cat.must { border-color: var(--red); color: #ffb3a8; background: var(--red-soft); }
+/* 제목 앞 [분류] (2026-10-25) */
+.ttag { color: var(--gold); font-weight: 700; margin-right: 4px; }
+.ttag.must { color: #ff8a80; }
 .title { font-size: 16px; font-weight: 700; min-width: 0; overflow-wrap: anywhere; }
 .photo { font-size: 11px; color: var(--muted); white-space: nowrap; }
 .new { font-size: 10px; font-weight: 700; color: #fff; background: var(--red); padding: 0 5px; border-radius: 3px; letter-spacing: .06em; }
@@ -242,6 +247,18 @@ footer .tagline { justify-content: center; font-size: 15px; }
   .menu-item[aria-current="page"]::after { left: 0; right: 0; bottom: 6px; }
   .menu-item[aria-current="page"]::before { bottom: 3px; }
 }
+/* 1500px 넘어도 안 들어가면 두 줄 — 메뉴 8개(비매너 · 가입 승인) · 빨간 숫자 · 긴 닉네임이면 1819px 에서도 메뉴가
+   왼쪽 「병무청 문파」 · 오른쪽 계정 칸에 겹쳤다 (2026-10-25). 화면이 재서 .two 를 붙인다(fitTopbar) */
+.topbar.two .topbar-inner { height: auto; flex-wrap: wrap; gap: 6px 12px; padding-block: 10px 0; }
+.topbar.two .brand-emblem { width: 60px; height: 60px; margin: 0; }
+.topbar.two .brand-emblem .glyph { font-size: 30px; }
+.topbar.two .brand-name { font-size: 26px; }
+.topbar.two .brand-sub { font-size: 12px; }
+.topbar.two .acct { margin-left: auto; }
+.topbar.two .menu { order: 3; flex: 1 1 100%; justify-content: center; flex-wrap: wrap; gap: 0 4px; }
+.topbar.two .menu-item { padding: 10px 12px 16px; font-size: 15px; }
+.topbar.two .menu-item[aria-current="page"]::after { left: 0; right: 0; bottom: 6px; }
+.topbar.two .menu-item[aria-current="page"]::before { bottom: 3px; }
 
 /* 시안 맞춤: 배너 */
 .banner { background: radial-gradient(ellipse at 30% 50%, #1a130c 0%, #0a0806 60%), #0a0806; }
@@ -716,7 +733,10 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
       </div>
       <form class="editor" id="postForm" hidden novalidate>
         <h2>자유게시판 글쓰기</h2>
-        <div class="field"><label for="pTitle">제목</label><input id="pTitle" maxlength="80"></div>
+        <div class="row">
+          <div class="field"><label for="pCat">분류</label><select id="pCat"></select></div>
+          <div class="field"><label for="pTitle">제목</label><input id="pTitle" maxlength="80" placeholder="[분류] 는 저절로 붙어요"></div>
+        </div>
         <div class="field"><label for="pBody">내용</label><textarea id="pBody" maxlength="3000"></textarea></div>
         <div class="field">
           <label for="pImg">사진 (최대 6장)</label>
@@ -907,7 +927,7 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
         </div>
         <div class="field">
           <label for="fTitle">제목</label>
-          <input id="fTitle" maxlength="80" placeholder="예: 이번 주 토요일 문파전 집합 시간">
+          <input id="fTitle" maxlength="80" placeholder="예: 이번 주 토요일 문파전 집합 시간 ([분류] 는 저절로 붙어요)">
         </div>
       </div>
       <div class="field">
@@ -977,7 +997,7 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610250850";
+  const BUILD = "202610250904";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -1169,6 +1189,19 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
   }
 
   /* ── 메뉴 ── */
+  /* 한 줄에 다 안 들어가면 두 줄로 (2026-10-25) — 1500px 아래는 원래 두 줄(CSS) */
+  const topbar = document.querySelector(".topbar");
+  function fitTopbar() {
+    topbar.classList.remove("two");
+    if (innerWidth <= 1500) return;
+    const m = $("menu");
+    if (m.scrollWidth > m.clientWidth + 1) topbar.classList.add("two");
+  }
+  window.addEventListener("resize", fitTopbar);
+  /* 메뉴 · 계정 칸이 바뀌면(로그인 · 가입 승인 숫자 · 닉네임) 다시 잰다 */
+  new MutationObserver(fitTopbar).observe($("menu"), { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ["hidden"] });
+  new MutationObserver(fitTopbar).observe($("acct"), { childList: true, subtree: true, characterData: true });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitTopbar);
   function renderMenu() {
     const items = Array.from(document.querySelectorAll(".menu-item"));
     const key = view === "notice" ? filter : view;
@@ -1247,8 +1280,7 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
     head.setAttribute("aria-expanded", String(openId === n.id));
     head.appendChild(el("span", "no", n.no ? "제" + n.no + "호" : ""));
     const tl = el("span", "title-line");
-    tl.appendChild(el("span", "cat" + (n.category === "필독" ? " must" : ""), n.category || "일반"));
-    tl.appendChild(el("span", "title", n.title || "(제목 없음)"));
+    tl.appendChild(tagTitle(n.category || "일반", n.title));
     const imgs = Array.isArray(n.images) ? n.images.filter((x) => typeof x === "string") : [];
     if (imgs.length) tl.appendChild(el("span", "photo", "사진 " + imgs.length));
     if (isNew(n.createdAt)) tl.appendChild(el("span", "new", "NEW"));
@@ -1329,7 +1361,7 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
     $("editorTitle").textContent = n ? "공고 수정" : "새 공고 작성";
     $("saveBtn").textContent = n ? "수정 저장" : "게시";
     $("fCat").value = n ? (n.category || "일반") : "일반";
-    $("fTitle").value = n ? (n.title || "") : "";
+    $("fTitle").value = n ? untag(n.title) : "";
     if (n) $("fAuthor").value = n.author || "";
     $("fBody").value = n ? (n.body || "") : "";
     $("fPin").checked = n ? !!n.pinned : false;
@@ -1422,7 +1454,7 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
     const data = {
       id: editingId || "",
       category: $("fCat").value,
-      title: $("fTitle").value.trim(),
+      title: untag($("fTitle").value),
       author: $("fAuthor").value.trim(),
       body: $("fBody").value.trim(),
       pinned: $("fPin").checked,
@@ -1462,6 +1494,16 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
     }
   });
 
+  /* 제목 앞 [분류] — "분야 필독 선택하면 제목에 자동으로 [필독] [일반] 이렇게 나오게해라 매번 … 내가 만들어서 쓰니깐 불편하다" (2026-10-25).
+     예전에 손으로 쓴 [일반] 같은 것은 떼고 분류로 다시 붙여 두 번 안 나오게 */
+  const TAG_RE = /^\s*(\[(필독|문파전|행사|규정|일반|사냥터|욕설|사기|문파전 방해|기타)\]\s*)+/;
+  function untag(t) { return String(t || "").replace(TAG_RE, "").trim(); }
+  function tagTitle(cat, title) {
+    const s = el("span", "title");
+    s.appendChild(el("span", "ttag" + (cat === "필독" ? " must" : ""), "[" + cat + "]"));
+    s.appendChild(document.createTextNode(untag(title) || "(제목 없음)"));
+    return s;
+  }
   /* ── 문파원 안내 ── */
   function renderRoster() {
     const r = DATA.roster;
@@ -1597,7 +1639,7 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
     head.setAttribute("aria-expanded", String(openPost === p.id));
     head.appendChild(el("span", "no", String(DATA.posts.length - idx)));
     const tl = el("span", "title-line");
-    tl.appendChild(el("span", "title", p.title || "(제목 없음)"));
+    tl.appendChild(tagTitle(p.cat || "일반", p.title));
     const pimgs = Array.isArray(p.images) ? p.images.filter((x) => typeof x === "string") : [];
     if (pimgs.length) tl.appendChild(el("span", "photo", "사진 " + pimgs.length));
     if (isNew(p.createdAt)) tl.appendChild(el("span", "new", "NEW"));
@@ -1710,6 +1752,10 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
     refreshing = false;
   }
   $("writeBtn").onclick = () => {
+    /* 분류 — 「필독」 은 문주 · 관리자만 (2026-10-25) */
+    const top = canWrite || !!(me && DATA.roster.leader && me.gameId === DATA.roster.leader);
+    $("pCat").replaceChildren(...CATS.filter((c) => top || c !== "필독").map((c) => { const o = document.createElement("option"); o.value = c; o.textContent = c; return o; }));
+    $("pCat").value = "일반";
     $("postForm").hidden = false; $("writeBtn").hidden = true; $("postErr").textContent = "";
     $("pTitle").focus();
   };
@@ -1719,7 +1765,7 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
   dropPhotos("postForm", "pDrop", (files) => addImgs(files, postImgs, "pThumbs", "postErr", upPost));
   $("postForm").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const post = { title: $("pTitle").value.trim(), body: $("pBody").value.trim() };
+    const post = { title: untag($("pTitle").value), cat: $("pCat").value, body: $("pBody").value.trim() };
     if (!post.title) { $("postErr").textContent = "제목을 적어 주세요."; $("pTitle").focus(); return; }
     if (!post.body && !postImgs.length) { $("postErr").textContent = "내용을 적거나 사진을 올려 주세요."; $("pBody").focus(); return; }
     const b = $("postSave"); b.disabled = true; $("postErr").textContent = "";
@@ -1789,7 +1835,7 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
     const n = counts[nkey(badTarget(p))] || 1;
     if (n > 1) sub.appendChild(el("span", "rep", "같은 닉네임 " + n + "건"));
     cap.appendChild(sub);
-    if (p.title && p.target) cap.appendChild(el("span", "tl", p.title));
+    if (p.title && p.target) { const tt = el("span", "tl"); tt.appendChild(tagTitle(p.cat || "기타", p.title)); cap.appendChild(tt); }
     cap.appendChild(el("span", null, (p.nick || "익명") + " · " + fmt(p.createdAt) + (cms.length ? " · 댓글 " + cms.length : "")));
     c.append(pic, cap);
     return c;
@@ -1801,7 +1847,7 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
     const name = el("b", null, badTarget(p));
     if (p.checked) name.appendChild(el("span", "cat must", "확인됨"));
     t.appendChild(name);
-    t.appendChild(el("span", "tl", (p.cat || "기타") + (p.title && p.target ? " · " + p.title : "")));
+    { const tt = el("span", "tl"); if (p.title && p.target) tt.appendChild(tagTitle(p.cat || "기타", p.title)); else tt.textContent = "[" + (p.cat || "기타") + "]"; t.appendChild(tt); }
     t.appendChild(el("span", null, "올린 사람 " + (p.nick || "익명") + " · " + fmtTime(p.createdAt) + (p.editedAt ? " (수정 " + fmt(p.editedAt) + ")" : "")));
     top.append(t, btn("btn ghost", "닫기", () => { openBad = null; delBad = null; renderBad(); }));
     box.appendChild(top);
