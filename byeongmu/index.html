@@ -632,8 +632,9 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
 .game-hud .boss .bar i { display: block; height: 100%; background: linear-gradient(90deg, #c4282c, #ff6a4a); }
 .game-hud .msg { position: absolute; left: 8px; right: 8px; top: 30%; text-align: center; font-family: var(--font-display); font-weight: 800; font-size: clamp(20px, 6vw, 30px); color: var(--gold-hi); text-shadow: 0 2px 6px #000; opacity: 0; transition: opacity .3s; }
 .game-hud .msg.on { opacity: 1; }
-.game-hud .dashbtn { position: absolute; left: 10px; bottom: 10px; pointer-events: auto; }
-.game-hud .skills { position: absolute; right: 10px; bottom: 10px; display: flex; flex-wrap: wrap-reverse; justify-content: flex-end; gap: 8px; max-width: 214px; pointer-events: auto; }
+/* 대쉬는 오른쪽 아래 — "휴대폰으로 하는 사람이 대시 왼쪽에 있어서 불편하단다" (2026-10-26). 스킬은 그 왼쪽 */
+.game-hud .dashbtn { position: absolute; right: 10px; bottom: 10px; pointer-events: auto; }
+.game-hud .skills { position: absolute; right: 78px; bottom: 10px; display: flex; flex-wrap: wrap-reverse; justify-content: flex-end; gap: 8px; max-width: 214px; pointer-events: auto; }
 .gskill .ic { display: block; width: 20px; height: 20px; margin: 0 auto 1px; filter: drop-shadow(0 0 4px currentColor); }
 .gskill .ic svg { width: 100%; height: 100%; display: block; }
 .gskill span:not(.ic) { display: block; font-size: 11px; white-space: nowrap; }
@@ -652,6 +653,11 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
 .game-over .best { color: var(--muted); font-size: 13px; }
 .game-over .btn { font-size: 16px; padding: 10px 22px; }
 .game-picks { display: grid; gap: 8px; width: 100%; }
+/* 캐릭터 고르기 */
+.hero-pick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; }
+.hero-pick button { display: grid; justify-items: center; gap: 2px; padding: 6px 4px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-hi); color: var(--ink); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+.hero-pick button[aria-pressed="true"] { border-color: var(--gold); color: var(--gold-hi); box-shadow: 0 0 0 1px #000, 0 0 12px rgba(214,176,98,.35); }
+.game-box .hero-pick canvas { width: 60px; height: 70px; min-height: 0; flex: none; } /* 게임판 canvas 규칙(min-height 360px)을 받지 않게 */
 .game-picks button { display: grid; gap: 2px; text-align: left; padding: 12px 14px; border: 1px solid var(--gold-lo); border-radius: 6px; background: var(--panel-hi); color: var(--ink); cursor: pointer; font: inherit; }
 .game-picks button:hover, .game-picks button:focus-visible { border-color: var(--gold); }
 .game-picks button:disabled { opacity: .55; cursor: wait; }
@@ -1001,7 +1007,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     <!-- 연병장 — 점검 시간 미니게임. 점수는 이 기기에만 저장(창구 안 씀) (2026-10-26) -->
     <section id="gameView" hidden>
       <h2 class="section-label"><svg aria-hidden="true"><use href="#i-war"/></svg>연병장</h2>
-      <p class="game-hint">화면을 누른 채 끌면 움직이고(PC 는 방향키 · WASD), 총은 <b>바라보는 쪽</b>으로 쏘고, 그쪽 둘레 3m(밝은 동그라미) 안 몬스터는 어느 쪽이든 자동 조준돼요. 30초마다 단계가 올라 잡귀가 늘고, 1분마다 대장이 나와요. 레벨이 오르면 강화나 <b>스킬</b>을 고르고, 스킬(6가지)은 오른쪽 아래 단추(PC 는 1 ~ 6), <b>대쉬</b>는 왼쪽 아래 단추(PC 는 스페이스) — 5초마다, 대쉬하는 동안은 안 맞아요. <b>죽을 때까지</b> 버틴 만큼 점수 — 끝나면 순위표에 올라가요!</p>
+      <p class="game-hint">화면을 누른 채 끌면 움직이고(PC 는 방향키 · WASD), 총은 <b>바라보는 쪽</b>으로 쏘고, 그쪽 둘레 3m(밝은 동그라미) 안 몬스터는 어느 쪽이든 자동 조준돼요. 30초마다 단계가 올라 잡귀가 늘고, 1분마다 대장이 나와요. 레벨이 오르면 강화나 <b>스킬</b>을 고르고, 스킬(6가지)은 오른쪽 아래 단추(PC 는 1 ~ 6), <b>대쉬</b>는 오른쪽 아래 단추(PC 는 스페이스) — 5초마다, 대쉬하는 동안은 안 맞아요. <b>죽을 때까지</b> 버틴 만큼 점수 — 끝나면 순위표에 올라가요!</p>
       <div class="game-box" id="gameBox">
         <canvas id="gameCv" aria-label="연병장 게임 화면"></canvas>
         <div class="game-hud" id="gameHud" hidden>
@@ -1130,7 +1136,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610260602";
+  const BUILD = "202610260616";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -3456,8 +3462,9 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     function intro() {
       $("gameHud").hidden = true;
       panel([el("h3", null, "연병장"), el("p", null, nick() + " 님, 죽을 때까지 버텨 보세요."),
-        el("p", "best", "움직이기 — 휴대폰은 화면을 누른 채 끌기 · PC 는 방향키(또는 WASD). 둘레 3m 동그라미 안은 자동 조준, 없으면 바라보는 쪽. 대쉬는 스페이스(휴대폰은 왼쪽 아래 단추) 5초마다. 스킬 6가지는 1 ~ 6"),
-        el("p", "best", "30초마다 단계가 올라 잡귀가 세지고 많아져요. 1분마다 대장이 나와요. 끝나면 순위표에 올라가요."), bestLine(), gBtn("시작", begin)]);
+        el("p", "best", "움직이기 — 휴대폰은 화면을 누른 채 끌기 · PC 는 방향키(또는 WASD). 둘레 3m 동그라미 안은 자동 조준, 없으면 바라보는 쪽. 대쉬는 스페이스(휴대폰은 오른쪽 아래 단추) 5초마다. 스킬 6가지는 1 ~ 6"),
+        el("p", "best", "30초마다 단계가 올라 잡귀가 세지고 많아져요. 1분마다 대장이 나와요. 끝나면 순위표에 올라가요."), pickRow(), bestLine(), gBtn("시작", begin)]);
+      drawPick();
     }
     function mine() { return UPS.filter((u) => s.up[u.k]).map((u) => u.n + " " + s.up[u.k]).join(" · ") || "아직 강화 없음"; }
     function showPause() {
@@ -3806,20 +3813,64 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
        검은 머리 · 검은 전술복에 파란 줄 · 소총, 발밑 파란 원(예전 원형 아이콘 자리). 겨누는 쪽으로 몸을 돌린다 —
        위 = 뒷모습 · 아래 = 앞모습 · 좌우 = 옆모습. 걸으면 다리, 쏘면 총구 불꽃, 맞으면 붉게, 죽으면 눕는다 */
     const SKIN = "#f3cba5", HAIR = "#161a22", HAIR_HI = "#2c3a55", SUIT = "#1c2230", VEST = "#11151d", BLUE = "#2f7bff", GUN = "#2a2e35", DARK = "#0c0e13";
+    /* 검객 — 은빛 초승달 검기, 여검객 — 금빛 부적(붉은 글씨 줄 · 주황 빛). 꿰뚫기 단계 색(파랑 · 보라)은 빛으로 */
+    function shotArt(kind, x, y, a, c) {
+      const glow = ["255,190,80", "96,165,250", "192,132,252"][c];
+      g.save(); g.translate(x, y); g.rotate(a);
+      g.fillStyle = "rgba(" + glow + ",.3)"; g.beginPath(); g.arc(0, 0, 9, 0, Math.PI * 2); g.fill();
+      if (kind === "blade") {
+        g.fillStyle = "#eef3fb"; g.strokeStyle = "#6f7f99"; g.lineWidth = 1;
+        g.beginPath(); g.arc(-6, 0, 12, -1.15, 1.15); g.arc(-10, 0, 10, 1.05, -1.05, true); g.closePath(); g.fill(); g.stroke();
+      } else {
+        g.rotate(Math.PI / 2); g.fillStyle = "#ffd75e"; g.fillRect(-4, -8, 8, 16); g.strokeStyle = "#c4282c"; g.lineWidth = 1.4;
+        g.beginPath(); g.moveTo(0, -6); g.lineTo(0, 6); g.moveTo(-2.5, -3); g.lineTo(2.5, -3); g.moveTo(-2.5, 2); g.lineTo(2.5, 2); g.stroke();
+      }
+      g.restore(); g.lineWidth = 1;
+    }
     function box(x, y, w, h, col, r) { g.beginPath(); if (g.roundRect) g.roundRect(x, y, w, h, r == null ? 1.5 : r); else g.rect(x, y, w, h); g.fillStyle = col; g.fill(); }
     function dot(x, y, r, col) { g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fillStyle = col; g.fill(); }
     /* 주인공 그림 — 부장님이 주신 일러스트를 잘라 배경을 지운 것(img/hero.png · 시험/주인공-그림-자르기.cjs, 2026-10-26).
        못 읽으면 아래 도형 그림으로. 옆모습은 오른쪽 보는 그림을 뒤집어 왼쪽으로 쓴다(원본의 왼 · 오 표시가 칸마다 달라서) */
     const HERO = new Image(), HF = {"idle-up":[0,0,68,117],"idle-down":[70,0,68,111],"idle-left":[140,0,67,114],"idle-right":[209,0,68,117],"move-up":[279,0,67,116],"move-down":[348,0,67,112],"move-left":[417,0,71,113],"move-right":[490,0,67,116],"shot-up":[559,0,59,100],"shot-down":[620,0,56,93],"shot-left":[678,0,96,90],"shot-right":[776,0,86,90],"hit-up":[864,0,61,87],"hit-down":[927,0,66,91],"hit-left":[995,0,64,90],"hit-right":[1061,0,63,90],"dead-up":[1126,0,64,76],"dead-down":[1192,0,73,57],"dead-left":[1267,0,70,74],"dead-right":[1339,0,74,68]};
     const HSIDE = { idle: "idle-right", move: "move-right", shot: "shot-left", hit: "hit-right", dead: "dead-right" };
-    let heroOk = false;
-    HERO.onload = () => { heroOk = true; draw(); };
-    HERO.src = "img/hero.png";
+    /* 캐릭터 고르기 — "캐릭터 고를수 있게해라" (2026-10-26). 총잡이 · 검객 · 여검객(부장님 일러스트, 시험/캐릭터-그림-자르기.cjs).
+       능력은 같고 그림 · 총알 모양만 다르다(총잡이 예광탄 · 검객 은빛 검기 · 여검객 금빛 부적). 고른 것은 이 기기에 기억(bmc-game-hero).
+       옆모습은 오른쪽을 보는 칸을 골라 뒤집어 쓴다 — 원본마다 왼 · 오 표시가 칸마다 달라서. 검객의 위 공격 · 위 사망 칸은 배경 지우기가 깨져 다른 칸으로 */
+    const HEROES = {
+      gun: { name: "총잡이", src: "img/hero.png", F: HF, side: HSIDE, alias: {}, shot: "tracer" },
+      sword: { name: "검객", src: "img/hero-sword.png", F: {"idle-up":[0,0,62,111],"idle-down":[64,0,64,117],"idle-left":[130,0,72,112],"idle-right":[204,0,71,112],"move-up":[277,0,62,112],"move-down":[341,0,65,119],"move-left":[408,0,79,111],"move-right":[489,0,79,111],"shot-up":[570,0,83,91],"shot-down":[655,0,93,94],"shot-left":[750,0,106,91],"shot-right":[858,0,98,90],"hit-up":[958,0,66,90],"hit-down":[1026,0,74,93],"hit-left":[1102,0,69,88],"hit-right":[1173,0,67,89],"dead-up":[1242,0,63,72],"dead-down":[1307,0,70,55],"dead-left":[1379,0,73,65],"dead-right":[1454,0,74,66]}, side: { idle: "idle-left", move: "move-right", shot: "shot-left", hit: "hit-left", dead: "dead-right" }, alias: { "shot-up": "idle-up", "dead-up": "dead-down" }, shot: "blade" },
+      girl: { name: "여검객", src: "img/hero-girl.png", F: {"idle-up":[0,0,66,120],"idle-down":[68,0,75,117],"idle-left":[145,0,75,119],"idle-right":[222,0,74,118],"move-up":[298,0,65,120],"move-down":[365,0,73,118],"move-left":[440,0,95,116],"move-right":[537,0,100,117],"shot-up":[639,0,93,95],"shot-down":[734,0,134,104],"shot-left":[870,0,119,95],"shot-right":[991,0,119,95],"hit-up":[1112,0,68,91],"hit-down":[1182,0,79,96],"hit-left":[1263,0,70,91],"hit-right":[1335,0,70,91],"dead-up":[1407,0,82,80],"dead-down":[1491,0,92,58],"dead-left":[1585,0,82,70],"dead-right":[1669,0,84,68]}, side: { idle: "idle-left", move: "move-right", shot: "shot-left", hit: "hit-left", dead: "dead-right" }, alias: {}, shot: "talisman" },
+    };
+    let heroKey = "gun";
+    try { const k = localStorage.getItem("bmc-game-hero"); if (HEROES[k]) heroKey = k; } catch (e) {}
+    Object.keys(HEROES).forEach((k) => { const C = HEROES[k]; C.img = k === "gun" ? HERO : new Image(); C.img.onload = () => { C.ok = true; draw(); drawPick(); }; C.img.src = C.src; });
     function heroImg(cx, cy, view, flip, act) {
-      const key = view === "side" ? HSIDE[act] : act + "-" + (view === "front" ? "down" : "up"), f = HF[key];
+      const C = HEROES[heroKey], k0 = view === "side" ? C.side[act] : act + "-" + (view === "front" ? "down" : "up"), key = C.alias[k0] || k0, f = C.F[key];
       const w = f[2] * 0.6, h = f[3] * 0.6, ax = key === "shot-left" ? 0.38 : 0.5;
       g.save(); g.translate(cx, cy + 19); if (flip < 0) g.scale(-1, 1);
-      g.drawImage(HERO, f[0], f[1], f[2], f[3], -w * ax, -h, w, h); g.restore();
+      g.drawImage(C.img, f[0], f[1], f[2], f[3], -w * ax, -h, w, h); g.restore();
+    }
+    /* 시작 안내의 캐릭터 고르기 칸 */
+    function pickRow() {
+      const row = el("div", "hero-pick");
+      Object.keys(HEROES).forEach((k) => {
+        const b = el("button"); b.type = "button"; b.dataset.k = k; b.setAttribute("aria-pressed", String(k === heroKey));
+        const c = document.createElement("canvas"); c.width = 120; c.height = 140; c.style.width = "60px"; c.style.height = "70px";
+        b.append(c, el("span", null, HEROES[k].name));
+        b.onclick = () => { heroKey = k; try { localStorage.setItem("bmc-game-hero", k); } catch (e) {} drawPick(); draw(); };
+        row.appendChild(b);
+      });
+      return row;
+    }
+    function drawPick() {
+      document.querySelectorAll(".hero-pick button").forEach((b) => {
+        const C = HEROES[b.dataset.k], c = b.querySelector("canvas"), x = c.getContext("2d");
+        b.setAttribute("aria-pressed", String(b.dataset.k === heroKey));
+        x.clearRect(0, 0, c.width, c.height);
+        if (!C.ok) return;
+        const f = C.F["idle-down"], k = Math.min(110 / f[2], 130 / f[3]);
+        x.drawImage(C.img, f[0], f[1], f[2], f[3], (c.width - f[2] * k) / 2, c.height - f[3] * k - 4, f[2] * k, f[3] * k);
+      });
     }
     /* 몬스터 그림 (img/mon.png · 시험/몬스터-그림-합치기.cjs). 긴 쪽 = 몸 크기의 2.8배, 주인공 쪽을 보게 뒤집고, 맞으면 밝게 */
     const MON = new Image(), MF = {"bat":[0,51,104,53],"carnivorous_plant":[106,8,104,96],"goblin":[212,0,101,104],"red_demon":[315,16,104,88],"skeleton_archer":[421,0,104,104],"skeleton_warrior":[527,0,88,104],"slime":[617,15,104,89],"stone_golem":[723,5,104,99],"wolf":[829,2,104,102]};
@@ -3847,7 +3898,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       g.save(); g.translate(cx, cy); g.scale(1.35, 1.35); // 보는 크기만 (맞는 범위는 그대로)
       g.beginPath(); g.ellipse(0, 15, 19, 7, 0, 0, Math.PI * 2);
       g.fillStyle = "rgba(47,123,255,.16)"; g.fill(); g.lineWidth = 2; g.strokeStyle = s && s.ward ? "#9fbcff" : BLUE; g.stroke(); g.lineWidth = 1;
-      if (heroOk) {
+      if (HEROES[heroKey].ok) {
         g.restore();
         const act = dead ? "dead" : s && s.hurt > 0.05 ? "hit" : s && s.shotT > 0.25 ? "shot" : mv && Math.sin(s.walk) > 0 ? "move" : "idle";
         heroImg(cx, cy, view, side ? flip : 1, act);
@@ -3978,7 +4029,9 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
         g.beginPath(); s.ebs.forEach((b) => { const x = b.x + ox, y = b.y + oy; g.moveTo(x + 5, y); g.arc(x, y, 5, 0, Math.PI * 2); }); g.fill();
         /* 총알 — 꼬리가 흐려지는 빛줄기(예광탄). 노랑 → 꿰뚫기 1 파랑 → 3 보라 */
         g.lineCap = "round";
+        const shotLook = HEROES[heroKey].shot;
         s.shots.forEach((b) => {
+          if (shotLook !== "tracer") { shotArt(shotLook, b.x + ox, b.y + oy, b.a, b.c || 0); return; }
           const x = b.x + ox, y = b.y + oy, c = TRACER[b.c || 0], tx = x - Math.cos(b.a) * 26, ty = y - Math.sin(b.a) * 26;
           const gr = g.createLinearGradient(tx, ty, x, y); gr.addColorStop(0, "rgba(" + c[0] + ",0)"); gr.addColorStop(1, "rgba(" + c[0] + ",1)");
           g.strokeStyle = gr; g.lineWidth = 3.2; g.beginPath(); g.moveTo(tx, ty); g.lineTo(x, y); g.stroke();
