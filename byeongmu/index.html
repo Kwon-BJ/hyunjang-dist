@@ -995,7 +995,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     <!-- 연병장 — 점검 시간 미니게임. 점수는 이 기기에만 저장(창구 안 씀) (2026-10-26) -->
     <section id="gameView" hidden>
       <h2 class="section-label"><svg aria-hidden="true"><use href="#i-war"/></svg>연병장</h2>
-      <p class="game-hint">화면을 누른 채 끌면 움직이고(PC 는 방향키 · WASD), 부적은 저절로 날아가요. 30초마다 단계가 올라 잡귀가 늘고, 1분마다 대장이 나와요. 레벨이 오르면 강화나 <b>스킬</b>을 고르고, 스킬은 오른쪽 아래 단추(PC 는 1 · 2 · 3), <b>대쉬</b>는 왼쪽 아래 단추(PC 는 스페이스) — 5초마다, 대쉬하는 동안은 안 맞아요. <b>죽을 때까지</b> 버틴 만큼 점수 — 끝나면 순위표에 올라가요!</p>
+      <p class="game-hint">화면을 누른 채 끌면 움직이고(PC 는 방향키 · WASD), 총은 <b>바라보는 쪽</b>으로 쏘고, 그쪽 3m(밝은 부채꼴) 안 몬스터는 자동 조준돼요. 30초마다 단계가 올라 잡귀가 늘고, 1분마다 대장이 나와요. 레벨이 오르면 강화나 <b>스킬</b>을 고르고, 스킬은 오른쪽 아래 단추(PC 는 1 · 2 · 3), <b>대쉬</b>는 왼쪽 아래 단추(PC 는 스페이스) — 5초마다, 대쉬하는 동안은 안 맞아요. <b>죽을 때까지</b> 버틴 만큼 점수 — 끝나면 순위표에 올라가요!</p>
       <div class="game-box" id="gameBox">
         <canvas id="gameCv" aria-label="연병장 게임 화면"></canvas>
         <div class="game-hud" id="gameHud" hidden>
@@ -1124,7 +1124,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610260459";
+  const BUILD = "202610260503";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -3433,7 +3433,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     function intro() {
       $("gameHud").hidden = true;
       panel([el("h3", null, "연병장"), el("p", null, nick() + " 님, 죽을 때까지 버텨 보세요."),
-        el("p", "best", "움직이기 — 휴대폰은 화면을 누른 채 끌기 · PC 는 방향키(또는 WASD). 대쉬는 스페이스(휴대폰은 왼쪽 아래 단추) 5초마다. 스킬은 1 · 2 · 3"),
+        el("p", "best", "움직이기 — 휴대폰은 화면을 누른 채 끌기 · PC 는 방향키(또는 WASD). 총은 바라보는 쪽, 3m 안은 자동 조준. 대쉬는 스페이스(휴대폰은 왼쪽 아래 단추) 5초마다. 스킬은 1 · 2 · 3"),
         el("p", "best", "30초마다 단계가 올라 잡귀가 세지고 많아져요. 1분마다 대장이 나와요. 끝나면 순위표에 올라가요."), bestLine(), gBtn("시작", begin)]);
     }
     function mine() { return UPS.filter((u) => s.up[u.k]).map((u) => u.n + " " + s.up[u.k]).join(" · ") || "아직 강화 없음"; }
@@ -3481,7 +3481,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       $("gameBox").scrollIntoView({ block: "center", behavior: "smooth" });
       s = { t: 0, hp: 100, max: 100, x: 0, y: 0, spd: 150, lv: 1, xp: 0, need: 6, kills: 0, foes: [], shots: [], ebs: [], gems: [], fx: [],
         spawn: 0, fire: 0, rate: 0.7, dmg: 10, multi: 1, pierce: 0, orbs: 0, orbA: 0, aura: 0, magnet: 60, regen: 0, hurt: 0,
-        stage: 1, bossN: 0, bossNow: null, aim: Math.PI / 2, mvA: Math.PI / 2, dashT: 0, dashCd: 0, dashX: 0, dashY: 1, trail: [], walk: 0, moving: false, flash: 0, shotT: 0, bossKills: 0, up: {}, skills: [], cd: {}, cool: 1, ward: 0, msgT: 0, over: false };
+        stage: 1, bossN: 0, bossNow: null, aim: Math.PI / 2, mvA: Math.PI / 2, dashT: 0, dashCd: 0, dashX: 0, dashY: 1, trail: [], lock: null, walk: 0, moving: false, flash: 0, shotT: 0, bossKills: 0, up: {}, skills: [], cd: {}, cool: 1, ward: 0, msgT: 0, over: false };
       renderSkills(); resume(); msg("1단계 — 죽을 때까지 버텨라!");
     }
     function resume() {
@@ -3629,10 +3629,23 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       } else s.ward = 1.5 + 0.5 * l;
     }
     function hurt(f, n, flash) { f.hp -= n; if (flash) f.hit = 0.08; }
+    /* 쏘기 — "바라보는 방향에 따라 공격, 바라보는 방향 3m 내에는 자동으로 타겟팅" (2026-10-26).
+       바라보는 쪽 = 마지막으로 움직인 쪽(s.mvA). 그 쪽 부채꼴(좌우 60°) 3m(= 240px) 안 잡귀를 가까운 순으로 겨누고,
+       없으면 바라보는 쪽으로 곧게 쏜다(여러 장이면 부채처럼 벌려서) */
+    const AIM_R = 240, AIM_HALF = Math.PI / 3;
+    function targets() {
+      return s.foes.map((f) => {
+        const dx = f.x - s.x, dy = f.y - s.y;
+        let da = Math.abs(Math.atan2(dy, dx) - s.mvA) % (Math.PI * 2); if (da > Math.PI) da = Math.PI * 2 - da;
+        return [Math.hypot(dx, dy), da, f];
+      }).filter((x) => x[0] <= AIM_R + x[2].r && x[1] <= AIM_HALF).sort((a, b) => a[0] - b[0]).map((x) => x[2]);
+    }
     function shoot() {
-      const near = s.foes.map((f) => [(f.x - s.x) ** 2 + (f.y - s.y) ** 2, f]).sort((a, b) => a[0] - b[0]);
+      const near = targets();
+      s.lock = near[0] || null;
       for (let i = 0; i < s.multi; i++) {
-        const f = near[i % near.length][1], a = Math.atan2(f.y - s.y, f.x - s.x) + (i >= near.length ? (i - near.length + 1) * 0.15 : 0);
+        const a = near.length ? Math.atan2(near[i % near.length].y - s.y, near[i % near.length].x - s.x) + (i >= near.length ? (i - near.length + 1) * 0.15 : 0)
+          : s.mvA + (i - (s.multi - 1) / 2) * 0.15;
         s.shots.push({ x: s.x + Math.cos(a) * 20, y: s.y - 2 + Math.sin(a) * 20, vx: Math.cos(a) * 430, vy: Math.sin(a) * 430, a: a, life: 1.1, p: s.pierce, hit: [], c: s.pierce >= 3 ? 2 : s.pierce >= 1 ? 1 : 0 });
         if (!i) s.aim = a;
       }
@@ -3893,6 +3906,18 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
         const x = p.x - s.x + W / 2, y = p.y - s.y + H / 2;
         g.fillStyle = "rgba(80,160,255," + (p.life * 1.6).toFixed(2) + ")"; g.beginPath(); g.ellipse(x, y, 16, 22, 0, 0, Math.PI * 2); g.fill();
       });
+      /* 조준 범위(바라보는 쪽 3m 부채꼴) · 겨눈 잡귀 표시 */
+      if (s && !s.over) {
+        g.fillStyle = "rgba(246,226,164,.05)"; g.strokeStyle = "rgba(246,226,164,.2)";
+        g.beginPath(); g.moveTo(W / 2, H / 2); g.arc(W / 2, H / 2, AIM_R, s.mvA - AIM_HALF, s.mvA + AIM_HALF); g.closePath(); g.fill(); g.stroke();
+        const L = s.lock;
+        if (L && L.hp > 0 && s.foes.includes(L)) {
+          const lx = L.x - s.x + W / 2, ly = L.y - s.y + H / 2, r = L.r * 1.5 + 4;
+          g.strokeStyle = "#ff5a4a"; g.lineWidth = 2; g.beginPath(); g.arc(lx, ly, r, 0, Math.PI * 2);
+          for (let i = 0; i < 4; i++) { const q = i * Math.PI / 2; g.moveTo(lx + Math.cos(q) * (r - 4), ly + Math.sin(q) * (r - 4)); g.lineTo(lx + Math.cos(q) * (r + 6), ly + Math.sin(q) * (r + 6)); }
+          g.stroke(); g.lineWidth = 1;
+        }
+      }
       hero(W / 2, H / 2);
       if (stick) {
         g.strokeStyle = "rgba(246,226,164,.45)"; g.beginPath(); g.arc(stick.ox, stick.oy, 50, 0, Math.PI * 2); g.stroke();
