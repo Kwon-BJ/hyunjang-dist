@@ -15,7 +15,8 @@ self.addEventListener('fetch', (e) => {
   if (!keep) return;
   const key = page ? HOME : r;
   e.respondWith(fetch(r).then((res) => {
-    if (res.ok) { const copy = res.clone(); e.waitUntil(caches.open(CACHE).then((c) => c.put(key, copy))); }
+    // 그림 주소에 판 번호(?v=)가 붙어 판마다 새로 저장된다 — 같은 그림의 예전 판은 지운다 (2026-10-26)
+    if (res.ok) { const copy = res.clone(), path = new URL(r.url).pathname; e.waitUntil(caches.open(CACHE).then(async (c) => { if (!page) for (const k of await c.keys()) if (new URL(k.url).pathname === path && k.url !== r.url) await c.delete(k); await c.put(key, copy); })); }
     return res;
   }).catch(() => caches.match(key).then((m) => m || (page ? caches.match(HOME) : undefined)).then((m) => m || Response.error())));
 });
