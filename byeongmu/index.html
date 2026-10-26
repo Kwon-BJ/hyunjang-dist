@@ -689,6 +689,17 @@ body.game-full { overflow: hidden; }
 .game-card .det { font-size: 13px; color: var(--muted); }
 .game-card .rank { margin-top: 2px; font-size: clamp(16px, 4.6vw, 20px); font-weight: 800; color: var(--ink); }
 /* 순위표 (2026-10-26) */
+.game-live { border: 1px solid #2f6b3c; border-radius: 6px; background: #0f1a12; padding: 10px 14px; display: grid; gap: 6px; }
+.game-live[hidden] { display: none; }
+.game-live h3 { margin: 0; font-size: 15px; color: #8ef0a8; font-family: var(--font-display); }
+.game-live h3::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 6px; border-radius: 50%; background: #3ccf6a; box-shadow: 0 0 6px #3ccf6a; vertical-align: 2px; }
+.game-live ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; font-size: 14px; }
+.game-live li { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.game-live li b { color: var(--ink); }
+.game-live li em { font-style: normal; font-size: 12px; font-weight: 700; padding: 0 6px; border-radius: 4px; background: #1e6b34; color: #d8ffe2; }
+.game-live li.done em { background: #444; color: #ccc; }
+.game-live li.done b { color: var(--muted); }
+.game-live li span { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
 .game-rank { border: 1px solid var(--line); border-radius: 6px; background: var(--panel-hi); padding: 14px clamp(12px, 3vw, 18px); display: grid; gap: 10px; }
 .game-rank .head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
 .game-rank h3 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 18px; color: var(--gold-hi); }
@@ -1044,6 +1055,8 @@ body.game-full { overflow: hidden; }
         <div class="game-over" id="gameOver"><div id="gameOverIn"></div></div>
       </div>
       <!-- 순위표 — 판이 끝날 때마다 창구에 올라간다 (2026-10-26) -->
+      <!-- 지금 하는 사람 (2026-10-26) -->
+      <div class="game-live" id="liveBox" hidden><h3>연병장 지금 <span id="liveN"></span></h3><ul id="liveList"></ul></div>
       <div class="game-rank">
         <div class="head"><h3>순위표</h3><span>판이 끝날 때마다 바뀌어요 · 한 사람 최고 점수만</span><button class="tiny" type="button" id="rankReload">새로고침</button><button class="tiny" type="button" id="rankAdmin" hidden>초기화</button></div>
         <!-- 순위표 지우기 — 문주 · 관리자만 (2026-10-26) -->
@@ -1160,7 +1173,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610261044";
+  const BUILD = "202610261057";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -3600,6 +3613,7 @@ body.game-full { overflow: hidden; }
       const sec = Math.floor(s.t), run = s;
       if (window.__bmcNewBuildIdle) setTimeout(window.__bmcNewBuildIdle, 20000); // 결과를 캡처할 틈을 두고 새 판으로
       draw(); showResult(s.stage * 10000 + Math.min(9999, s.kills + s.bossKills * 100), new Date().toISOString()); // 단계가 먼저 (창구 gameScore 와 같은 셈, 2026-10-26)
+      ping(true); // 지금 하는 사람 목록에서 뺀다
       if (!me || !token || s.test) return; // 테스트 모드는 순위표에 안 올림
       call("saveGameScore", token, { sec: sec, stage: s.stage, kills: s.kills, bosses: s.bossKills, lv: s.lv }).then((r) => {
         takeRanks(r);
@@ -3648,6 +3662,26 @@ body.game-full { overflow: hidden; }
       $("rankRecentBox").hidden = !ranks.recent.length;
     }
     $("rankReload").onclick = loadRanks;
+    /* 지금 하는 사람 — 하는 중(멈춘 판 포함)엔 10초마다 창구에 알리고, 연병장을 보는 동안 15초마다 받아 온다. 시간은 받은 뒤로도 1초씩 올려 보여 준다 (2026-10-26) */
+    let live = [], liveAt = 0, liveGot = 0, pingAt = 0;
+    function ping(end) {
+      if (!me || !token) return;
+      call("gamePing", token, Object.assign({ sec: Math.floor(s.t), stage: s.stage, hero: heroKey, test: s.test ? 1 : 0 }, end ? { end: 1 } : {})).then(takeLive).catch(() => {});
+    }
+    function takeLive(r) { live = Array.isArray(r) ? r : []; liveGot = Date.now(); drawLive(); }
+    function loadLive() { liveAt = Date.now(); call("getLive", token || adminPw).then(takeLive).catch(() => {}); }
+    function drawLive() {
+      $("liveBox").hidden = !live.length;
+      if (!live.length) return;
+      const pass = (Date.now() - liveGot) / 1000;
+      $("liveN").textContent = live.filter((p) => !p.end).length + "명 진행 중";
+      $("liveList").replaceChildren(...live.map((p) => {
+        const t0 = Math.floor(p.end ? p.sec : p.sec + p.ago + pass), tt = String(Math.floor(t0 / 60)).padStart(2, "0") + ":" + pad(t0 % 60);
+        const li = el("li", p.end ? "done" : null); li.append(el("b", null, p.nick), el("span", null, ((HEROES[p.hero] || {}).name || "") + " · " + p.stage + "단계 · " + tt), el("em", null, p.end ? "종료" : "진행 중"), el("span", null, "오늘 " + (p.plays || 0) + "판" + (p.test ? " · 🧪" : "")));
+        return li;
+      }));
+    }
+    setInterval(() => { if (s && !s.over && me && Date.now() - pingAt > 10000) { pingAt = Date.now(); ping(); } if (view === "game" && Date.now() - liveAt > 15000) loadLive(); else if (view === "game") drawLive(); }, 1000 * 5);
     /* 순위표 지우기 — "순위표 초기화 기준량 문주한테 권한 줘라" (2026-10-26). 문주 · 관리자만 보이고, 한 번 더 눌러야 지운다 */
     function drawResetTools() { $("rankAdmin").hidden = !canWrite; if (!canWrite) $("rankReset").hidden = true; }
     $("rankAdmin").onclick = () => { $("rankReset").hidden = !$("rankReset").hidden; };
@@ -3706,6 +3740,7 @@ body.game-full { overflow: hidden; }
       return pick(s.stage >= 4 ? ["slime", "goblin", "skeleton_warrior"] : s.stage >= 2 ? ["slime", "goblin"] : ["slime"]);
     }
     function spawn(kind, x, y) {
+      if (s.arena) return; // 대장전 중엔 잡귀 안 나옴 (대장 졸개 · 상자 함정도)
       if (!kind) { const q = Math.random(); kind = s.stage >= 5 && q < 0.1 ? "spit" : s.stage >= 3 && q < 0.22 ? "rock" : s.stage >= 2 && q < 0.45 ? "fast" : "imp"; }
       /* 정해진 쪽을 지킨다 — 맵 밖이면 같은 쪽 맵 가장자리로(아래 inMap). 예전엔 다른 쪽으로 다시 뽑아, 세로가 짧은 맵에서는 위 · 아래로 하나도 안 나왔다 */
       /* 사방 랜덤으로, 맵 안 · 주인공과 떨어진 곳 — "한쪽 구석에서만 나오니 구석에 있으면 몹이 안 나온다" (2026-10-26) */
@@ -3751,13 +3786,22 @@ body.game-full { overflow: hidden; }
       s.fx.push({ x: b.x, y: b.y, r: 30, c: "#ffe08a", life: 0.3 });
     }
     function nextStage(pre) { s.stage++; s.stageT = 0; horde(); msg(pre + s.stage + "단계 — 잡귀가 사방에서 몰려온다!"); }
+    function arenaClamp(p) { const A = s.arena; if (!A) return; p.x = Math.min(A.x + A.h, Math.max(A.x - A.h, p.x)); p.y = Math.min(A.y + A.h, Math.max(A.y - A.h, p.y)); }
     function spawnBoss(i) {
       const B = BOSSES[i % BOSSES.length], lap = Math.floor(i / BOSSES.length), k = 1 + lap * 1.0, name = B.name + (lap ? " " + (lap + 1) : "");
       let a = Math.random() * Math.PI * 2; const d = Math.max(260, Math.hypot(W, H) / 2 + 40);
       for (let k = 0; k < 12 && mapOk && !inside(s.x + Math.cos(a) * d, s.y + Math.sin(a) * d); k++) a = Math.random() * Math.PI * 2; // 대장도 맵 안 랜덤 쪽
       const f = { k: "boss", skin: B.skin, name: name, act: B.act, x: s.x + Math.cos(a) * d, y: s.y + Math.sin(a) * d, r: B.r, hp: B.hp * k * (1 + (s.stage - 1) * 0.2), full: B.hp * k * (1 + (s.stage - 1) * 0.2),
         spd: B.spd * (1 + lap * 0.1) * Math.min(1.8, 1 + (s.stage - 1) * 0.04), dps: B.dps * (1 + lap * 0.5) * (1 + (s.stage - 1) * 0.1), bd: 1 + (s.stage - 1) * 0.12, c: B.c, xp: B.xp * (1 + lap), hit: 0, oc: 0, cd: 2.5, dash: 0, n: 0, ph: Math.random() * 10, age: 0 };
-      inMap(f); s.foes.push(f); s.bossNow = f; msg(name + " 나타남!");
+      inMap(f);
+      /* 대장전 — 10 · 20 · 30 …단계 대장은 잡귀를 다 처치하고 맵 가운데 10m × 10m(800) 결투장에서. 잡을 때까지 잡귀 안 나옴 (2026-10-26) */
+      if (s.stage % 10 === 0) {
+        s.foes.forEach((o) => { o.hp = 0; }); s.ebs = []; s.hz = [];
+        s.arena = { x: 0, y: 0, h: 400 };
+        const q = Math.random() * Math.PI * 2; f.x = Math.cos(q) * 300; f.y = Math.sin(q) * 300; arenaClamp(s); arenaClamp(f);
+        s.foes.push(f); s.bossNow = f; s.ward = Math.max(s.ward, 1.5); msg("대장전! " + name + " — 결투장에서 싸워라"); return;
+      }
+      s.foes.push(f); s.bossNow = f; msg(name + " 나타남!");
     }
     function bullet(x, y, a, v, dmg, r, c) { s.ebs.push({ x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 4, dmg: dmg, r: r || 5, c: c || "#ff3b8d" }); } // 몬스터 탄은 분홍 — 경험치 구슬(금 · 주황)과 헷갈려서 (2026-10-26)
     /* 땅에 미리 표시되고 t 초 뒤 터지는 공격 — 붉은(또는 보라) 동그라미가 차오르면 피하라 */
@@ -3890,7 +3934,7 @@ body.game-full { overflow: hidden; }
       if (s.dashN < dashMax) { s.dashCd -= dt; if (s.dashCd <= 0) { s.dashN++; s.dashCd = s.dashN < dashMax ? DASH_CD : 0; } } else s.dashCd = 0;
       if (s.dashT > 0) { s.dashT -= dt; s.x += s.dashX * 900 * dt; s.y += s.dashY * 900 * dt; s.trail.push({ x: s.x, y: s.y, life: 0.3 }); }
       s.trail.forEach((p) => { p.life -= dt; }); s.trail = s.trail.filter((p) => p.life > 0);
-      inMap(s);
+      inMap(s); arenaClamp(s);
       /* 숨 고르기 — 맞은 뒤 2초 동안은 안 찬다. 예전엔 맞는 중에도 초당 4까지 차서 안 죽었다 (2026-10-26) */
       s.calm = Math.max(0, (s.calm || 0) - dt);
       if (s.regen && !s.calm) s.hp = Math.min(s.max, s.hp + s.regen * dt);
@@ -3961,6 +4005,7 @@ body.game-full { overflow: hidden; }
         if (enr) { sp *= 1 + enr / 60; if (!f.enraged) { f.enraged = 1; msg(f.name + " — 분노! 점점 강해진다"); } }
         if (f.k === "spit" && L < 170) sp = L < 140 ? -f.spd * 0.6 : 0;
         f.x += dx / L * sp * dt; f.y += dy / L * sp * dt;
+        if (f.k === "boss") arenaClamp(f);
         f.hit = Math.max(0, f.hit - dt); f.oc -= dt; f.age = (f.age || 0) + dt; f.near = L < f.r + 45;
         if ((f.k === "spit" || f.k === "boss") && (f.cd -= dt) <= 0) act(f, dx / L, dy / L);
         if (L < f.r + 15 && !s.ward && !(s.dashT > 0)) { s.hp -= f.dps * (1 + enr / 30) * dt; s.hurt = 0.15; s.hitFx = 0.35; s.calm = 2; }
@@ -3973,7 +4018,7 @@ body.game-full { overflow: hidden; }
       s.foes = s.foes.filter((f) => {
         if (f.hp > 0) return true;
         s.kills++;
-        if (f.k === "boss") { s.bossKills++; if (s.bossNow === f) s.bossNow = null; s.advance = f.name + " 쓰러뜨림! "; } // 다음 단계는 이 정리가 끝난 뒤에(무리를 새로 넣으므로)
+        if (f.k === "boss") { s.bossKills++; if (s.bossNow === f) { s.bossNow = null; s.arena = null; } s.advance = f.name + " 쓰러뜨림! "; } // 다음 단계는 이 정리가 끝난 뒤에(무리를 새로 넣으므로)
         s.gems.push({ x: f.x, y: f.y, v: f.xp });
         if (f.k === "boss") s.items.push({ k: "hp", x: f.x, y: f.y }); // "보스 잡을 때마다 HP 포션" (2026-10-26)
         if (f.skin) { const face = mon2Ok && MF2[SKIN2[f.skin]] ? FACE2[SKIN2[f.skin]] : FACE_R[f.skin], d2 = mon2Ok && MF2[SKIN2[f.skin]] ? (MF2[SKIN2[f.skin]].dead.length > 1 ? 1.2 : 0.7) : 0.35; s.fx.push({ corpse: true, skin: f.skin, x: f.x, y: f.y, r: f.r, flip: face && (s.x < f.x ? -1 : 1) !== face ? -1 : 1, life: d2, dur: d2 }); }
@@ -4365,6 +4410,11 @@ body.game-full { overflow: hidden; }
           g.fillStyle = "#6b3f1d"; g.fillRect(x - 15, y - 9, 30, 20); g.fillStyle = "#8a5328"; g.fillRect(x - 16, y - 15, 32, 9);
           g.fillStyle = "#e8c15a"; g.fillRect(x - 16, y - 7, 32, 3); g.fillRect(x - 2, y - 15, 4, 26); g.fillStyle = "#fff6c8"; g.fillRect(x - 1.5, y - 4, 3, 4); g.restore();
         });
+        if (s.arena) { // 결투장 — 붉게 빛나는 테두리 · 밖은 어둡게
+          const A = s.arena, x0 = A.x - A.h + ox, y0 = A.y - A.h + oy, w = A.h * 2;
+          g.fillStyle = "rgba(0,0,0,.55)"; g.fillRect(0, 0, W, Math.max(0, y0)); g.fillRect(0, y0 + w, W, H); g.fillRect(0, y0, Math.max(0, x0), w); g.fillRect(x0 + w, y0, W, w);
+          g.strokeStyle = "rgba(255,70,50," + (0.6 + 0.3 * Math.sin(s.t * 4)).toFixed(2) + ")"; g.lineWidth = 4; g.strokeRect(x0, y0, w, w); g.lineWidth = 1;
+        }
         s.hz.forEach((z) => { // 땅 표시 — 바깥 테두리 + 차오르는 안쪽
           const x = z.x + ox, y = z.y + oy, p = 1 - z.t / z.full;
           g.fillStyle = "rgba(" + z.c + ",.12)"; g.strokeStyle = "rgba(" + z.c + ",.85)"; g.lineWidth = 2;
@@ -4524,6 +4574,7 @@ body.game-full { overflow: hidden; }
         if (shown !== nick()) { shown = nick(); s = null; running = false; stick = null; if (!restoreGame()) intro(); drawRanks(); }
         drawResetTools();
         if (Date.now() - ranksAt > 30000) loadRanks();
+        if (Date.now() - liveAt > 3000) loadLive(); // 연병장에 들어올 때마다 바로
         size();
       },
     };
