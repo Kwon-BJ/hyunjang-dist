@@ -649,6 +649,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
 .game-picks { display: grid; gap: 8px; width: 100%; }
 .game-picks button { display: grid; gap: 2px; text-align: left; padding: 12px 14px; border: 1px solid var(--gold-lo); border-radius: 6px; background: var(--panel-hi); color: var(--ink); cursor: pointer; font: inherit; }
 .game-picks button:hover, .game-picks button:focus-visible { border-color: var(--gold); }
+.game-picks button:disabled { opacity: .55; cursor: wait; }
 .game-picks b { color: var(--gold-hi); font-size: 15px; }
 .game-picks span { color: var(--muted); font-size: 13px; }
 /* 결과 — 카톡에 캡처해 올리기 좋게 닉네임 · 점수 · 날짜를 크게 */
@@ -1124,7 +1125,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610260550";
+  const BUILD = "202610260556";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -3456,12 +3457,18 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
         b.append(el("b", null, u.n + (have ? " Lv " + have + " → " + (have + 1) : u.skill ? " · 새 스킬" : "")), el("span", null, have && u.up ? u.up : u.d));
         b.onclick = () => take(u); box.appendChild(b);
       });
-      panel([el("h3", null, "Lv " + s.lv + " — 하나 고르세요"), box]);
+      /* "렙업하고 스킬 고를 때 몬스터가 때려서 자꾸 죽는다 — 일시정지로" (2026-10-26). 고르는 동안은 원래 멈춰 있었다 —
+         죽는 것은 고른 직후 둘러싸여서 · 끌던 손가락을 떼며 잘못 눌려서. 그래서 「일시정지」 라고 보이고, 0.5초는 못 누르게, 고른 뒤 1.5초 보호막 */
+      const bs = box.querySelectorAll("button"); bs.forEach((b) => { b.disabled = true; });
+      setTimeout(() => bs.forEach((b) => { b.disabled = false; }), 500);
+      panel([el("h3", null, "Lv " + s.lv + " — 하나 고르세요"), el("p", "best", "⏸ 일시정지 중 — 고르면 1.5초 보호막과 함께 다시 시작해요"), box]);
     }
     function take(u) {
       s.up[u.k] = (s.up[u.k] || 0) + 1;
       if (u.f) u.f();
       if (u.skill && s.up[u.k] === 1) { s.skills.push(u.k); s.cd[u.k] = 0; }
+      s.ward = Math.max(s.ward, 1.5);
+      s.foes.forEach((f) => { const dx = f.x - s.x, dy = f.y - s.y, L = Math.hypot(dx, dy) || 1; if (L < 110 && f.k !== "boss") { f.x += dx / L * (110 - L); f.y += dy / L * (110 - L); } });
       renderSkills(); resume();
     }
     function showResult(score, when) {
