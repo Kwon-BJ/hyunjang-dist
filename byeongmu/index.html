@@ -666,7 +666,7 @@ body.game-full { overflow: hidden; }
 .game-over .btn { font-size: 16px; padding: 10px 22px; }
 .game-picks { display: grid; gap: 8px; width: 100%; }
 /* 캐릭터 고르기 */
-.hero-pick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; }
+.hero-pick { display: grid; grid-template-columns: repeat(auto-fit, minmax(62px, 1fr)); gap: 8px; width: 100%; }
 .hero-pick button { display: grid; justify-items: center; gap: 2px; padding: 6px 4px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-hi); color: var(--ink); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
 .hero-pick button[aria-pressed="true"] { border-color: var(--gold); color: var(--gold-hi); box-shadow: 0 0 0 1px #000, 0 0 12px rgba(214,176,98,.35); }
 .game-box .hero-pick canvas { width: 60px; height: 70px; min-height: 0; flex: none; } /* 게임판 canvas 규칙(min-height 360px)을 받지 않게 */
@@ -1154,7 +1154,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610260834";
+  const BUILD = "202610260859";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -3658,9 +3658,10 @@ body.game-full { overflow: hidden; }
        세계 크기는 그대로(원본 1066px 의 2배) — 그림 크기가 바뀌어도 MAP_K · MAP_O 를 그림 폭으로 맞춘다 */
     const MAP = new Image(), MAP_PAD = 50;
     let mapOk = false, MAP_K = 2, MAP_O = [588, 338];
-    MAP.onload = () => { const r = MAP.width / 1066; MAP_K = 2 / r; MAP_O = [588 * r, 338 * r]; mapOk = true; draw(); };
+    MAP.onload = () => { const r = MAP.width / 1066; MAP_K = 2 / r; MAP_O = /map2/.test(MAP.src) ? [MAP.width / 2, MAP.height * 0.49] : [588 * r, 338 * r]; mapOk = true; draw(); };
     /* "좀더 어두운 용암맵으로 바꿔라 몹이 잘안보인다" (2026-10-26) — 숲 맵 색만 바꾼 용암 맵(무료, 시험/용암맵-만들기.cjs). 숲 맵(map.jpg)은 남겨 둠 */
-    MAP.src = "img/map-lava.jpg";
+    /* 맵 바꿈 — 부장님이 주신 어두운 돌바닥 법진 맵 (2026-10-26, img/map2.jpg · 시험/맵2-만들기.cjs). 크기 · 시작 자리는 MAP.onload 에서 그림에 맞춘다 */
+    MAP.src = "img/map2.jpg";
     function bounds() { return [-MAP_O[0] * MAP_K + MAP_PAD, (MAP.width - MAP_O[0]) * MAP_K - MAP_PAD, -MAP_O[1] * MAP_K + MAP_PAD, (MAP.height - MAP_O[1]) * MAP_K - MAP_PAD]; }
     function inside(x, y) { const b = bounds(); return x >= b[0] && x <= b[1] && y >= b[2] && y <= b[3]; }
     function inMap(p) { if (!mapOk) return p; const b = bounds(); p.x = Math.min(b[1], Math.max(b[0], p.x)); p.y = Math.min(b[3], Math.max(b[2], p.y)); return p; }
@@ -3674,7 +3675,8 @@ body.game-full { overflow: hidden; }
     }
     function spawn(kind, x, y) {
       if (!kind) { const q = Math.random(); kind = s.stage >= 5 && q < 0.1 ? "spit" : s.stage >= 3 && q < 0.22 ? "rock" : s.stage >= 2 && q < 0.45 ? "fast" : "imp"; }
-      if (x == null) for (let k = 0; k < 8; k++) { const a = sideAngle(), d = Math.max(260, Math.hypot(W, H) / 2 + 40); x = s.x + Math.cos(a) * d; y = s.y + Math.sin(a) * d; if (!mapOk || inside(x, y)) break; }
+      /* 정해진 쪽을 지킨다 — 맵 밖이면 같은 쪽 맵 가장자리로(아래 inMap). 예전엔 다른 쪽으로 다시 뽑아, 세로가 짧은 맵에서는 위 · 아래로 하나도 안 나왔다 */
+      if (x == null) { const a = sideAngle(), d = Math.max(260, Math.hypot(W, H) / 2 + 40); x = s.x + Math.cos(a) * d; y = s.y + Math.sin(a) * d; }
       const P = inMap({ x: x, y: y }); x = P.x; y = P.y;
       const F = FOES[kind], hp = F.hp * (1 + (s.stage - 1) * 0.45);
       s.foes.push({ k: kind, skin: skinOf(kind), x: x, y: y, r: F.r, hp: hp, full: hp, spd: F.spd * Math.min(1.6, 1 + (s.stage - 1) * 0.05), dps: F.dps, c: F.c, xp: F.xp, hit: 0, oc: 0, cd: 1 + Math.random() * 2, dash: 0, ph: Math.random() * 10, age: 0 });
@@ -3885,7 +3887,7 @@ body.game-full { overflow: hidden; }
         if (f.k === "boss") { s.bossKills++; if (s.bossNow === f) s.bossNow = null; s.advance = f.name + " 쓰러뜨림! "; } // 다음 단계는 이 정리가 끝난 뒤에(무리를 새로 넣으므로)
         s.gems.push({ x: f.x, y: f.y, v: f.xp });
         if (f.k === "boss") s.items.push({ k: "hp", x: f.x, y: f.y }); // "보스 잡을 때마다 HP 포션" (2026-10-26)
-        if (f.skin) { const face = mon2Ok && MF2[SKIN2[f.skin]] ? FACE2[SKIN2[f.skin]] : FACE_R[f.skin], d2 = mon2Ok && MF2[SKIN2[f.skin]] ? 0.7 : 0.35; s.fx.push({ corpse: true, skin: f.skin, x: f.x, y: f.y, r: f.r, flip: face && (s.x < f.x ? -1 : 1) !== face ? -1 : 1, life: d2, dur: d2 }); }
+        if (f.skin) { const face = mon2Ok && MF2[SKIN2[f.skin]] ? FACE2[SKIN2[f.skin]] : FACE_R[f.skin], d2 = mon2Ok && MF2[SKIN2[f.skin]] ? (MF2[SKIN2[f.skin]].dead.length > 1 ? 1.2 : 0.7) : 0.35; s.fx.push({ corpse: true, skin: f.skin, x: f.x, y: f.y, r: f.r, flip: face && (s.x < f.x ? -1 : 1) !== face ? -1 : 1, life: d2, dur: d2 }); }
         s.fx.push({ boom: true, spr: "smoke", x: f.x, y: f.y, r: f.r, c: f.c, size: f.r * 3.4, life: 0.4, dur: 0.4 });
         return false;
       });
@@ -3946,7 +3948,17 @@ body.game-full { overflow: hidden; }
       const glow = ["255,190,80", "96,165,250", "192,132,252"][c];
       g.save(); g.translate(x, y); g.rotate(a);
       g.fillStyle = "rgba(" + glow + ",.3)"; g.beginPath(); g.arc(0, 0, 9, 0, Math.PI * 2); g.fill();
-      if (kind === "blade") {
+      if (kind === "shock") {
+        g.strokeStyle = "#ffd75e"; g.lineWidth = 3; g.beginPath(); g.arc(-4, 0, 9, -1.2, 1.2); g.stroke();
+        g.strokeStyle = "rgba(255,215,94,.5)"; g.beginPath(); g.arc(-10, 0, 9, -1, 1); g.stroke();
+      } else if (kind === "arrow") {
+        g.strokeStyle = "#cfe9c8"; g.lineWidth = 2; g.beginPath(); g.moveTo(-12, 0); g.lineTo(8, 0); g.stroke();
+        g.fillStyle = "#e9f3f7"; g.beginPath(); g.moveTo(12, 0); g.lineTo(5, -4); g.lineTo(5, 4); g.fill();
+        g.fillStyle = "#3fbf7a"; g.fillRect(-14, -3, 4, 6);
+      } else if (kind === "dagger") {
+        g.fillStyle = "#c58cff"; g.beginPath(); g.moveTo(11, 0); g.lineTo(0, -3); g.lineTo(-4, 0); g.lineTo(0, 3); g.fill();
+        g.fillStyle = "#4b2a6b"; g.fillRect(-10, -1.5, 7, 3);
+      } else if (kind === "blade") {
         g.fillStyle = "#eef3fb"; g.strokeStyle = "#6f7f99"; g.lineWidth = 1;
         g.beginPath(); g.arc(-6, 0, 12, -1.15, 1.15); g.arc(-10, 0, 10, 1.05, -1.05, true); g.closePath(); g.fill(); g.stroke();
       } else {
@@ -3957,26 +3969,40 @@ body.game-full { overflow: hidden; }
     }
     function box(x, y, w, h, col, r) { g.beginPath(); if (g.roundRect) g.roundRect(x, y, w, h, r == null ? 1.5 : r); else g.rect(x, y, w, h); g.fillStyle = col; g.fill(); }
     function dot(x, y, r, col) { g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fillStyle = col; g.fill(); }
-    /* 주인공 그림 — 부장님이 주신 일러스트를 잘라 배경을 지운 것(img/hero.png · 시험/주인공-그림-자르기.cjs, 2026-10-26).
-       못 읽으면 아래 도형 그림으로. 옆모습은 오른쪽 보는 그림을 뒤집어 왼쪽으로 쓴다(원본의 왼 · 오 표시가 칸마다 달라서) */
-    const HERO = new Image(), HF = {"idle-up":[0,0,68,117],"idle-down":[70,0,68,111],"idle-left":[140,0,67,114],"idle-right":[209,0,68,117],"move-up":[279,0,67,116],"move-down":[348,0,67,112],"move-left":[417,0,71,113],"move-right":[490,0,67,116],"shot-up":[559,0,59,100],"shot-down":[620,0,56,93],"shot-left":[678,0,96,90],"shot-right":[776,0,86,90],"hit-up":[864,0,61,87],"hit-down":[927,0,66,91],"hit-left":[995,0,64,90],"hit-right":[1061,0,63,90],"dead-up":[1126,0,64,76],"dead-down":[1192,0,73,57],"dead-left":[1267,0,70,74],"dead-right":[1339,0,74,68]};
-    const HSIDE = { idle: "idle-right", move: "move-right", shot: "shot-left", hit: "hit-right", dead: "dead-right" };
-    /* 캐릭터 고르기 — "캐릭터 고를수 있게해라" (2026-10-26). 총잡이 · 검객 · 여검객(부장님 일러스트, 시험/캐릭터-그림-자르기.cjs).
-       능력은 같고 그림 · 총알 모양만 다르다(총잡이 예광탄 · 검객 은빛 검기 · 여검객 금빛 부적). 고른 것은 이 기기에 기억(bmc-game-hero).
-       옆모습은 오른쪽을 보는 칸을 골라 뒤집어 쓴다 — 원본마다 왼 · 오 표시가 칸마다 달라서. 검객의 위 공격 · 위 사망 칸은 배경 지우기가 깨져 다른 칸으로 */
-    const HEROES = {
-      gun: { name: "총잡이", src: "img/hero.png", F: HF, side: HSIDE, alias: {}, shot: "tracer" },
-      sword: { name: "검객", src: "img/hero-sword.png", F: {"idle-up":[0,0,62,111],"idle-down":[64,0,64,117],"idle-left":[130,0,72,112],"idle-right":[204,0,71,112],"move-up":[277,0,62,112],"move-down":[341,0,65,119],"move-left":[408,0,79,111],"move-right":[489,0,79,111],"shot-up":[570,0,83,91],"shot-down":[655,0,93,94],"shot-left":[750,0,106,91],"shot-right":[858,0,98,90],"hit-up":[958,0,66,90],"hit-down":[1026,0,74,93],"hit-left":[1102,0,69,88],"hit-right":[1173,0,67,89],"dead-up":[1242,0,63,72],"dead-down":[1307,0,70,55],"dead-left":[1379,0,73,65],"dead-right":[1454,0,74,66]}, side: { idle: "idle-left", move: "move-right", shot: "shot-left", hit: "hit-left", dead: "dead-right" }, alias: { "shot-up": "idle-up", "dead-up": "dead-down" }, shot: "blade" },
-      girl: { name: "여검객", src: "img/hero-girl.png", F: {"idle-up":[0,0,66,120],"idle-down":[68,0,75,117],"idle-left":[145,0,75,119],"idle-right":[222,0,74,118],"move-up":[298,0,65,120],"move-down":[365,0,73,118],"move-left":[440,0,95,116],"move-right":[537,0,100,117],"shot-up":[639,0,93,95],"shot-down":[734,0,134,104],"shot-left":[870,0,119,95],"shot-right":[991,0,119,95],"hit-up":[1112,0,68,91],"hit-down":[1182,0,79,96],"hit-left":[1263,0,70,91],"hit-right":[1335,0,70,91],"dead-up":[1407,0,82,80],"dead-down":[1491,0,92,58],"dead-left":[1585,0,82,70],"dead-right":[1669,0,84,68]}, side: { idle: "idle-left", move: "move-right", shot: "shot-left", hit: "hit-left", dead: "dead-right" }, alias: {}, shot: "talisman" },
+    /* 캐릭터 5명 — "기존 게임캐릭터는 다 지우고, 이걸로 바꿔라" (2026-10-26). 무사 강혁 · 도사 혜린 · 수호자 대성 · 사수 지은 · 자객 무진
+       (부장님 일러스트, img/heroes5.png · 시험/캐릭터5-자르기.cjs). 능력은 같고 그림 · 평타 모양만 다르다. 고른 것은 이 기기에 기억(bmc-game-hero).
+       그림마다 있는 동작이 달라 칸을 골라 쓴다 — 옆모습은 오른쪽 보는 칸을 뒤집어 왼쪽으로, 쓰러진 그림이 없으면 서 있는 그림을 눕힌다 */
+    const H5 = new Image(), H5F = {"kh":{"front":[0,0,63,117],"down":[65,0,65,114],"left":[132,0,72,116],"right":[206,0,59,116],"atkUp":[267,0,91,88],"atkDown":[360,0,128,102],"atkLeft":[490,0,100,91],"atkRight":[592,0,105,92],"hitUp":[699,0,106,119],"hitDown":[807,0,108,125],"hitLeft":[917,0,80,117],"hitRight":[999,0,102,116],"deadUp":[1103,0,90,90],"deadDown":[1195,0,105,83],"deadLeft":[1302,0,121,65],"deadRight":[1425,0,124,63]},"hr":{"front":[1551,0,72,117],"front2":[1625,0,69,118],"mvUp":[1696,0,78,94],"mvDown":[1776,0,103,98],"mvLeft":[1881,0,73,94],"mvRight":[0,127,75,93],"deadUp":[77,127,77,84],"deadDown":[156,127,80,57],"deadLeft":[238,127,83,68],"deadRight":[323,127,82,68],"atkU1":[407,127,86,117],"atkU2":[495,127,101,125],"atkU3":[598,127,121,133],"atkU4":[721,127,144,140],"atkD1":[867,127,86,117],"atkD2":[955,127,136,117],"atkD3":[1093,127,149,121],"atkD4":[1244,127,142,129],"atkS1":[1388,127,129,114],"atkS2":[1519,127,176,113],"atkS3":[1697,127,165,114]},"ds":{"front":[1864,127,91,117],"atk":[0,269,125,129],"mv1":[127,269,83,87],"mv2":[212,269,84,87],"mv3":[298,269,84,86],"mv4":[384,269,86,85],"hit1":[472,269,86,60],"hit2":[560,269,82,60],"dead":[644,269,72,51],"hitUp":[718,269,115,131],"hitDown":[835,269,106,119],"hitLeft":[943,269,91,117],"hitRight":[1036,269,115,121],"deadUp":[1153,269,105,118],"deadDown":[1260,269,84,115],"deadLeft":[1346,269,109,80],"deadRight":[1457,269,109,67]},"je":{"front":[1568,269,75,117],"down":[1645,269,74,117],"left":[1721,269,77,114],"right":[1800,269,82,115],"atkUp":[0,402,126,97],"atkDown":[128,402,114,99],"atkLeft":[244,402,102,95],"atkRight":[348,402,101,94],"hitUp":[451,402,56,84],"hitDown":[509,402,74,89]},"mj":{"front":[585,402,74,117],"down":[661,402,65,117],"left":[728,402,66,110],"right":[796,402,81,112],"back":[879,402,68,80],"deadDown":[949,402,82,59],"deadLeft":[1033,402,77,69],"deadRight":[1112,402,79,65],"hit1":[1193,402,62,89],"hit2":[1257,402,62,89]}};
+    const ROSTER = {
+      kh: { name: "무사 강혁", shot: "blade", F: { down: "front", up: "down", side: "right", shotDown: "atkDown", shotUp: "atkUp", shotSide: "atkLeft", hitDown: "hitDown", hitUp: "hitUp", hitSide: "hitRight", deadDown: "deadDown", deadUp: "deadUp", deadSide: "deadRight" } },
+      hr: { name: "도사 혜린", shot: "talisman", F: { down: "front", up: "front2", side: "mvLeft", mvDown: "mvDown", mvUp: "mvUp", mvSide: "mvLeft", shotDown: ["atkD1", "atkD2", "atkD3", "atkD4"], shotUp: ["atkU1", "atkU2", "atkU3", "atkU4"], shotSide: ["atkS1", "atkS2", "atkS3"], hit: "front2", deadDown: "deadDown", deadUp: "deadUp", deadSide: "deadRight" } },
+      ds: { name: "수호자 대성", shot: "shock", F: { down: "front", up: "front", side: "mv2", mvSide: "mv2", shotDown: "atk", shotUp: "atk", shotSide: "atk", hitDown: "hitDown", hitUp: "hitUp", hitSide: "hitRight", deadDown: "deadDown", deadUp: "deadUp", deadSide: "deadRight" } },
+      je: { name: "사수 지은", shot: "arrow", F: { down: "front", up: "down", side: "right", shotDown: "atkDown", shotUp: "atkDown", shotSide: "atkUp", hit: "hitDown", dead: null } },
+      mj: { name: "자객 무진", shot: "dagger", F: { down: "front", up: "back", side: "right", shotDown: "down", shotUp: "back", shotSide: "right", hit: "hit1", dead: "deadRight" } },
     };
-    let heroKey = "gun";
+    const HEROES = {};
+    Object.keys(ROSTER).forEach((k) => { HEROES[k] = Object.assign({}, ROSTER[k], { img: H5, F: H5F[k], K: ROSTER[k].F }); }); // F = 그림 칸 자리, K = 동작 → 칸 이름
+    H5.onload = () => { Object.keys(HEROES).forEach((k) => { HEROES[k].ok = true; }); draw(); drawPick(); };
+    H5.src = "img/heroes5.png";
+    let heroKey = "kh";
     try { const k = localStorage.getItem("bmc-game-hero"); if (HEROES[k]) heroKey = k; } catch (e) {}
-    Object.keys(HEROES).forEach((k) => { const C = HEROES[k]; C.img = k === "gun" ? HERO : new Image(); C.img.onload = () => { C.ok = true; draw(); drawPick(); }; C.img.src = C.src; });
+    function h5key(C, act, view) {
+      const F = C.K, side = view === "side";
+      const dir = side ? "Side" : view === "front" ? "Down" : "Up";
+      if (act === "dead") return F["dead" + dir] || F.dead || null;
+      if (act === "hit") return F["hit" + dir] || F.hit;
+      if (act === "shot") return side ? F.shotSide : view === "front" ? F.shotDown : F.shotUp;
+      if (act === "move") return side ? F.mvSide || F.side : view === "front" ? F.mvDown || F.down : F.mvUp || F.up;
+      return side ? F.side : view === "front" ? F.down : F.up;
+    }
     function heroImg(cx, cy, view, flip, act) {
-      const C = HEROES[heroKey], k0 = view === "side" ? C.side[act] : act + "-" + (view === "front" ? "down" : "up"), key = C.alias[k0] || k0, f = C.F[key];
-      const w = f[2] * 0.6, h = f[3] * 0.6, ax = key === "shot-left" ? 0.38 : 0.5;
+      const C = HEROES[heroKey], k0 = h5key(C, act, view), lying = act === "dead" && !k0;
+      /* 여러 장이면(혜린 공격) 쏜 뒤 지난 시간에 맞춰 넘긴다 */
+      const key = Array.isArray(k0) ? k0[Math.min(k0.length - 1, Math.floor((1 - (s ? s.shotT : 0) / 0.5) * k0.length))] : k0, f = C.F[key || C.K.down];
+      const w = f[2] * 0.6, h = f[3] * 0.6;
       g.save(); g.translate(cx, cy + 19); if (flip < 0) g.scale(-1, 1);
-      g.drawImage(C.img, f[0], f[1], f[2], f[3], -w * ax, -h, w, h); g.restore();
+      if (lying) { g.rotate(-Math.PI / 2); g.translate(h * 0.5, -w * 0.15); g.filter = "brightness(.7)"; }
+      g.drawImage(C.img, f[0], f[1], f[2], f[3], -w * 0.5, -h, w, h); g.restore();
     }
     /* 시작 안내의 캐릭터 고르기 칸 */
     function pickRow() {
@@ -3996,7 +4022,7 @@ body.game-full { overflow: hidden; }
         b.setAttribute("aria-pressed", String(b.dataset.k === heroKey));
         x.clearRect(0, 0, c.width, c.height);
         if (!C.ok) return;
-        const f = C.F["idle-down"], k = Math.min(110 / f[2], 130 / f[3]);
+        const f = C.F[C.K.down], k = Math.min(110 / f[2], 130 / f[3]);
         x.drawImage(C.img, f[0], f[1], f[2], f[3], (c.width - f[2] * k) / 2, c.height - f[3] * k - 4, f[2] * k, f[3] * k);
       });
     }
@@ -4012,8 +4038,8 @@ body.game-full { overflow: hidden; }
     /* 몬스터 동작 그림 — 부장님이 주신 「몬스터 동작」(img/mon2.png · 시험/몬스터-동작-자르기.cjs, 2026-10-26).
        걸을 때 이동 그림을 번갈아, 주인공 가까이 오면 공격, 맞으면 피격, 쓰러지면 사망 그림. 못 읽으면 예전 한 장 그림(mon.png).
        쏘는 잡귀(해골 궁수 자리)는 데몬 로드, 붉은 마왕은 거대 데몬 골렘(보라 기운 그림으로 걸음) */
-    const MON2 = new Image(), MF2 = {"slime":{"move":[[0,0,104,81],[106,0,101,89]],"attack":[[209,0,108,68]],"hit":[[319,0,127,62]],"dead":[[448,0,128,82]]},"bat":{"move":[[578,0,104,51],[684,0,64,65]],"attack":[[750,0,103,51]],"hit":[[855,0,73,61]],"dead":[[930,0,72,78]]},"wolf":{"move":[[0,91,104,60],[106,91,98,65]],"attack":[[206,91,100,64]],"hit":[[308,91,95,59]],"dead":[[405,91,98,43]]},"stone_golem":{"move":[[505,91,104,91],[611,91,110,102]],"attack":[[723,91,106,87]],"hit":[[831,91,104,85]],"dead":[[0,195,113,74]]},"plant":{"move":[[115,195,85,104],[202,195,85,104]],"attack":[[289,195,81,103]],"hit":[[372,195,86,86]],"dead":[[460,195,102,58]]},"demon":{"move":[[564,195,73,104]],"attack":[[639,195,112,87]],"hit":[[753,195,75,99]],"dead":[[830,195,87,108]]},"goblin":{"move":[[919,195,104,102]],"attack":[[0,305,106,101]],"hit":[[108,305,104,102]],"dead":[[214,305,130,69]]},"skeleton":{"move":[[346,305,78,104]],"attack":[[426,305,105,104]],"hit":[[533,305,105,104]],"dead":[[640,305,109,96]]},"boss_golem":{"move":[[751,305,104,97],[857,305,117,126]],"attack":[[0,433,106,100]],"hit":[[108,433,100,107]],"dead":[[210,433,88,111]]}};
-    const SKIN2 = { slime: "slime", goblin: "goblin", skeleton_warrior: "skeleton", skeleton_archer: "demon", bat: "bat", wolf: "wolf", stone_golem: "stone_golem", carnivorous_plant: "plant", red_demon: "boss_golem" };
+    const MON2 = new Image(), MF2 = {"slime":{"move":[[0,0,104,81],[106,0,101,89]],"attack":[[209,0,108,68]],"hit":[[319,0,127,62]],"dead":[[448,0,128,82]]},"bat":{"move":[[578,0,104,51],[684,0,64,65]],"attack":[[750,0,103,51]],"hit":[[855,0,73,61]],"dead":[[930,0,72,78]]},"wolf":{"move":[[0,91,104,60],[106,91,98,65]],"attack":[[206,91,100,64]],"hit":[[308,91,95,59]],"dead":[[405,91,98,43]]},"stone_golem":{"move":[[505,91,104,91],[611,91,110,102]],"attack":[[723,91,106,87]],"hit":[[831,91,104,85]],"dead":[[0,195,113,74]]},"plant":{"move":[[115,195,85,104],[202,195,85,104]],"attack":[[289,195,81,103]],"hit":[[372,195,86,86]],"dead":[[460,195,102,58]]},"demon":{"move":[[564,195,73,104]],"attack":[[639,195,112,87]],"hit":[[753,195,75,99]],"dead":[[830,195,87,108]]},"goblin":{"move":[[919,195,104,102]],"attack":[[0,305,106,101]],"hit":[[108,305,104,102]],"dead":[[214,305,130,69]]},"skeleton":{"move":[[346,305,78,104]],"attack":[[426,305,105,104]],"hit":[[533,305,105,104]],"dead":[[640,305,109,96]]},"boss_golem":{"move":[[751,305,104,97],[857,305,117,126]],"attack":[[0,433,106,100]],"hit":[[108,433,100,107]],"dead":[[210,433,88,111]]},"boss2":{"move":[[300,433,101,104],[403,433,97,105],[502,433,103,105],[607,433,98,105],[707,433,98,104],[807,433,102,105],[911,433,101,104],[0,546,101,105]],"attack":[[103,546,123,101],[228,546,108,116],[338,546,112,108],[452,546,135,111],[589,546,126,115],[717,546,123,115],[842,546,122,112],[0,664,125,110]],"hit":[[127,664,87,104],[216,664,102,119],[320,664,104,132],[426,664,107,132]],"dead":[[535,664,164,163],[701,664,140,100],[843,664,138,97],[0,829,147,151],[149,829,134,159]]}};
+    const SKIN2 = { slime: "slime", goblin: "goblin", skeleton_warrior: "skeleton", skeleton_archer: "demon", bat: "bat", wolf: "wolf", stone_golem: "stone_golem", carnivorous_plant: "plant", red_demon: "boss2" /* 거대 데몬 골렘 — 대장 동작 그림 (2026-10-26) */ };
     const FACE2 = { wolf: 1, plant: 1, goblin: 1, demon: 1 };
     let mon2Ok = false;
     MON2.onload = () => { mon2Ok = true; };
@@ -4022,8 +4048,7 @@ body.game-full { overflow: hidden; }
       const A = MF2[SKIN2[f.skin]];
       if (!mon2Ok || !A) return null;
       let list = f.hit ? A.hit : f.near ? A.attack : A.move;
-      if (SKIN2[f.skin] === "boss_golem" && list === A.move) list = [A.move[1]];
-      return list.length > 1 ? list[Math.floor((s.t + f.ph) * 5) % list.length] : list[0];
+      return list.length > 1 ? list[Math.floor((s.t + f.ph) * (list.length > 4 ? 8 : 5)) % list.length] : list[0];
     }
     function motion(f) {
       const t = s.t + f.ph, sp = f.k === "boss" ? 0.7 : 1;
@@ -4170,7 +4195,7 @@ body.game-full { overflow: hidden; }
           if (x.corpse) {
             const A2 = mon2Ok && MF2[SKIN2[x.skin]];
             if (A2) {
-              const fr = A2.dead[0], b0 = A2.move[0], k = x.r * 2.8 / Math.max(b0[2], b0[3]), w = fr[2] * k, h = fr[3] * k, p = 1 - x.life / x.dur;
+              const p = 1 - x.life / x.dur, fr = A2.dead[Math.min(A2.dead.length - 1, Math.floor(p * A2.dead.length))], b0 = A2.move[0], k = x.r * 2.8 / Math.max(b0[2], b0[3]), w = fr[2] * k, h = fr[3] * k;
               g.save(); g.translate(x.x + ox, x.y + oy); g.scale(x.flip, 1); g.globalAlpha = p < 0.6 ? 1 : (1 - p) / 0.4;
               g.drawImage(MON2, fr[0], fr[1], fr[2], fr[3], -w / 2, -h / 2, w, h); g.restore(); g.globalAlpha = 1; return;
             }
