@@ -13,6 +13,13 @@
 <meta property="og:url" content="https://kwon-bj.github.io/hyunjang-dist/byeongmu/">
 <meta name="theme-color" content="#0a0806">
 <link rel="icon" href="img/emblem.webp">
+<!-- 앱으로 설치 (2026-10-26) -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="img/apple-touch-180.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="병무청">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap">
@@ -366,6 +373,15 @@ footer .tagline::before, footer .tagline::after { width: clamp(30px, 6vw, 60px);
 .pw-in { background: #0b0907; border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; min-width: 0; flex: 1 1 180px; max-width: 240px; }
 .admin-link { position: relative; margin-top: 14px; background: none; border: 0; color: var(--muted); font-size: 12px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 .admin-link:hover { color: var(--gold-hi); }
+#appBtn[hidden] { display: none; }
+#appBtn + .admin-link { margin-left: 14px; }
+/* 앱으로 설치 안내 (2026-10-26) */
+.app-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; margin-bottom: 14px; padding: 12px 14px; border: 1px solid var(--gold); border-radius: 6px; background: linear-gradient(180deg, #2a2010, #140f08); }
+.app-bar[hidden] { display: none; }
+.app-bar img { width: 40px; height: 40px; border-radius: 10px; flex: none; }
+.app-bar p { flex: 1 1 200px; margin: 0; font-size: 14px; line-height: 1.5; }
+.app-bar .app-btns { display: flex; gap: 8px; margin-left: auto; }
+.app-bar .btn { padding: 7px 14px; }
 #adminForm { max-width: 420px; }
 
 /* 회원 (2026-10-19) — 가입 신청 → 문주 승인 */
@@ -658,6 +674,10 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
 .rank-list .sc { grid-area: sc; font-weight: 800; color: var(--gold-hi); font-variant-numeric: tabular-nums; }
 .rank-list .det { grid-area: det; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .rank-list li.empty, .rank-list li.gap { display: block; text-align: center; color: var(--muted); background: none; }
+.rank-tabs .chip { padding: 5px 14px; font-size: 13px; }
+.rank-when { margin: -4px 0 0; color: var(--muted); font-size: 12px; }
+.rank-past { margin: 0; padding: 8px 10px; border: 1px dashed var(--gold-lo); border-radius: 6px; color: var(--gold-hi); font-size: 13px; }
+.rank-past[hidden] { display: none; }
 .rank-recent { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; font-size: 13px; }
 .game-card .new { margin-top: 2px; padding: 2px 12px; border-radius: 999px; background: var(--red); color: #fff; font-size: 13px; font-weight: 700; }
 </style>
@@ -742,6 +762,12 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
 </header>
 
 <main class="wrap">
+  <!-- 앱으로 설치 안내 — 로그인 전에도 보인다 (2026-10-26) -->
+  <div class="app-bar" id="appBar" hidden>
+    <img src="img/app-192.png" alt="" width="40" height="40">
+    <p id="appText"></p>
+    <div class="app-btns"><button class="btn" type="button" id="appGo" hidden></button><button class="btn ghost" type="button" id="appClose">닫기</button></div>
+  </div>
   <div class="frame">
     <section id="rosterView" hidden>
       <h2 class="section-label"><svg aria-hidden="true"><use href="#i-knot"/></svg>문파원</h2>
@@ -984,7 +1010,10 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       <!-- 순위표 — 판이 끝날 때마다 창구에 올라간다 (2026-10-26) -->
       <div class="game-rank">
         <div class="head"><h3>순위표</h3><span>판이 끝날 때마다 바뀌어요 · 한 사람 최고 점수만</span><button class="tiny" type="button" id="rankReload">새로고침</button></div>
+        <div class="chips rank-tabs" id="rankTabs" role="group" aria-label="순위표 기간"></div>
+        <p class="rank-when" id="rankWhen"></p>
         <ol class="rank-list" id="rankList"><li class="empty">불러오는 중…</li></ol>
+        <p class="rank-past" id="rankPast" hidden></p>
         <div id="rankRecentBox" hidden><h4>최근 판</h4><ul class="rank-recent" id="rankRecent"></ul></div>
       </div>
     </section>
@@ -1082,6 +1111,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
 <footer>
   <div class="mountains" aria-hidden="true"><svg viewBox="0 0 1600 160" preserveAspectRatio="none"><path fill="currentColor" d="M0 160V70l80-40 70 50 90-60 80 70 60-30 90 50 70-60 90 70 80-40 90 50 70-30 80 40 90-60 70 50 90-40 80 50 90-60 70 40 80-30 70 40V160z"/><path fill="#0f0c08" d="M0 160V110l120-30 100 40 140-40 120 50 160-40 120 40 140-30 120 40 160-50 120 40 160-20 120 30V160z"/></svg></div>
   <div class="tagline">병무청 문파 · 도깨비의 세계</div>
+  <button class="admin-link" id="appBtn" type="button">앱으로 설치</button>
   <button class="admin-link" id="adminBtn" type="button">관리자</button>
 </footer>
 <script>
@@ -1092,7 +1122,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610260330";
+  const BUILD = "202610260351";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -3327,7 +3357,8 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
      "난이도는 자동으로 순차적으로 높게, 몬스터도 순차적으로 많이, 보스도, 스킬 넣고 업그레이드" (2026-10-26) —
      30초마다 단계가 올라 잡귀가 세지고 · 많아지고 · 한 무리가 둘러싼다. 1분마다 대장. 스킬 3가지는 강화에서 얻고 올린다.
      "게임 시간은 무제한, 죽을 때까지 · 순위표도 만들어라 할 때마다 갱신하게" (2026-10-26) — 판이 끝나면 창구(saveGameScore)에 올리고
-     순위표를 새로 받는다. 처음엔 이 기기에만 두던 최고 점수(bmc-game-best)는 이제 안 쓴다 */
+     순위표를 새로 받는다. 처음엔 이 기기에만 두던 최고 점수(bmc-game-best)는 이제 안 쓴다.
+     "순위표는 매주 매월 단위로 초기화" (2026-10-26) — 이번 주(월요일 0시) · 이번 달(1일 0시) · 전체 칸. 나누기는 창구가 한다 */
   const game = (() => {
     const cv = $("gameCv"), g = cv.getContext("2d");
     const STAGE = 30, WD = "일월화수목금토";
@@ -3392,8 +3423,9 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     }
     function gBtn(text, fn, cls) { const b = el("button", "btn" + (cls ? " " + cls : ""), text); b.type = "button"; b.onclick = fn; return b; }
     function bestLine() {
-      const i = ranks && me ? ranks.top.findIndex((x) => x.id === me.id) : -1, b = i >= 0 ? ranks.top[i] : null;
-      const p = el("p", "best", b ? "내 최고 " + b.score.toLocaleString() + "점 · 문파 " + (i + 1) + "위" : me ? "아직 순위표 기록이 없어요" : "관리자 암호로 들어와 순위표에는 안 올라가요");
+      const at = (k) => (ranks && me ? ranks[k].findIndex((x) => x.id === me.id) : -1), a = at("all"), w = at("week");
+      const p = el("p", "best", a >= 0 ? "내 최고 " + ranks.all[a].score.toLocaleString() + "점 · 전체 " + (a + 1) + "위" + (w >= 0 ? " · 이번 주 " + (w + 1) + "위" : " · 이번 주 기록 없음")
+        : me ? "아직 순위표 기록이 없어요" : "관리자 암호로 들어와 순위표에는 안 올라가요");
       p.id = "gBestLine"; return p;
     }
     function intro() {
@@ -3464,25 +3496,33 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       call("saveGameScore", token, { sec: sec, stage: s.stage, kills: s.kills, bosses: s.bossKills, lv: s.lv }).then((r) => {
         takeRanks(r);
         const line = $("gRankLine"); if (!line || run !== s) return;
-        line.textContent = "문파 순위 " + r.rank + "위 / " + r.top.length + "명";
-        if (r.best) line.parentNode.appendChild(el("span", "new", "내 최고 기록!"));
+        const rk = r.ranks || {}, bs = r.bests || {};
+        line.textContent = rk.week ? "이번 주 " + rk.week + "위 · 전체 " + rk.all + "위" : "문파 순위 " + r.rank + "위 / " + r.top.length + "명";
+        const tag = bs.all ? "내 최고 기록!" : bs.week ? "이번 주 내 최고!" : "";
+        if (tag) line.parentNode.appendChild(el("span", "new", tag));
       }).catch((e) => { const line = $("gRankLine"); if (line && run === s) line.textContent = "순위표에 못 올렸어요 — " + errMsg(e); });
     }
     /* ── 순위표 ── 한 사람 최고 점수만, 20위까지(내가 그 밖이면 내 줄을 더) */
-    let ranks = null, ranksAt = 0;
+    let ranks = null, ranksAt = 0, rankTab = "week";
+    const TABS = { week: "이번 주", month: "이번 달", all: "전체" };
     function loadRanks() {
       ranksAt = Date.now();
       call("getGameBoard", token || adminPw).then(takeRanks)
         .catch((e) => { if (!ranks) $("rankList").replaceChildren(el("li", "empty", "순위표를 못 불러왔어요 — " + errMsg(e))); });
     }
     function takeRanks(r) {
-      ranks = { top: Array.isArray(r && r.top) ? r.top : [], recent: Array.isArray(r && r.recent) ? r.recent : [] }; ranksAt = Date.now();
+      const arr = (x) => (Array.isArray(x) ? x : []);
+      r = r || {};
+      ranks = { all: arr(r.top), week: arr(r.week && r.week.top), month: arr(r.month && r.month.top), weekKey: (r.week && r.week.key) || "", monthKey: (r.month && r.month.key) || "", past: r.past || {}, recent: arr(r.recent) };
+      ranksAt = Date.now();
       drawRanks();
       const bl = $("gBestLine"); if (bl) bl.replaceWith(bestLine());
     }
     function drawRanks() {
+      document.querySelectorAll("#rankTabs .chip").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.k === rankTab)));
       if (!ranks) return;
-      const top = ranks.top, myId = me ? me.id : "";
+      const top = ranks[rankTab], myId = me ? me.id : "";
+      $("rankWhen").textContent = rankTab === "week" ? weekSpan(ranks.weekKey) + " · 월요일 0시에 새로 시작" : rankTab === "month" ? monthName(ranks.monthKey) + " · 1일 0시에 새로 시작" : "처음부터 모든 판";
       const row = (p, i) => {
         const li = el("li", p.id === myId ? "me" : null);
         li.append(el("span", "no" + (i < 3 ? " m" + (i + 1) : ""), String(i + 1)), el("b", null, p.nick), el("span", "sc", Number(p.score).toLocaleString() + "점"),
@@ -3491,11 +3531,18 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       };
       const rows = top.slice(0, 20).map(row), mi = top.findIndex((p) => p.id === myId);
       if (mi >= 20) rows.push(el("li", "gap", "⋯"), row(top[mi], mi));
-      $("rankList").replaceChildren(...(rows.length ? rows : [el("li", "empty", "아직 기록이 없어요. 첫 기록을 남겨 보세요!")]));
+      $("rankList").replaceChildren(...(rows.length ? rows : [el("li", "empty", (rankTab === "all" ? "아직" : TABS[rankTab] + "은") + " 기록이 없어요. 첫 기록을 남겨 보세요!")]));
+      /* 지난 주 · 달 1~3위 — 새로 시작해도 누가 이겼는지 남게 */
+      const ps = ranks.past[rankTab];
+      $("rankPast").hidden = !(ps && ps.top && ps.top.length);
+      if (ps && ps.top) $("rankPast").textContent = (rankTab === "week" ? weekSpan(ps.key) : monthName(ps.key)) + " 우승 — " + ps.top.map((p, i) => (i + 1) + "위 " + p.nick + " " + Number(p.score).toLocaleString() + "점").join(" · ");
       $("rankRecent").replaceChildren(...ranks.recent.slice(0, 5).map((p) => el("li", null, p.nick + " " + Number(p.score).toLocaleString() + "점 · " + mmss(p.sec) + " 버팀 · " + fmtTime(p.at))));
       $("rankRecentBox").hidden = !ranks.recent.length;
     }
     $("rankReload").onclick = loadRanks;
+    function weekSpan(k) { const d = new Date(k + "T00:00:00Z"); if (isNaN(d)) return "이번 주"; const e = new Date(d.getTime() + 6 * 864e5); return (d.getUTCMonth() + 1) + "." + d.getUTCDate() + " ~ " + (e.getUTCMonth() + 1) + "." + e.getUTCDate() + " 주"; }
+    function monthName(k) { return /^\d{4}-\d{2}$/.test(k || "") ? Number(k.slice(5)) + "월" : "이번 달"; }
+    $("rankTabs").replaceChildren(...Object.keys(TABS).map((k) => { const b = el("button", "chip", TABS[k]); b.type = "button"; b.dataset.k = k; b.onclick = () => { rankTab = k; drawRanks(); }; return b; }));
     function loop(ts) {
       raf = 0;
       if (!running) return;
@@ -3782,6 +3829,43 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     game.render();
     writeHash();
   }
+
+  /* ── 앱으로 설치 ── "홈페이지 앱으로 다운받을 수 있게" (2026-10-26).
+     안드로이드 · PC 크롬 · 엣지는 [앱 설치] 단추(beforeinstallprompt), 아이폰은 사파리 [공유] → 「홈 화면에 추가」 안내,
+     카톡 같은 앱 안 브라우저는 설치가 안 돼 바깥 브라우저로 연다. [닫기] 하면 이 기기에서는 다시 안 띄우고, 맨 아래 [앱으로 설치] 로 다시 연다 */
+  let installEv = null;
+  const UA = navigator.userAgent;
+  const inApp = /KAKAOTALK|NAVER\(|Instagram|FBAN|FBAV|Line\//i.test(UA);
+  const iOS = /iPhone|iPad|iPod/.test(UA) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  function installed() { return (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true; }
+  function appBar(force) {
+    const bar = $("appBar");
+    let hide = false;
+    try { hide = localStorage.getItem("bmc-app-hide") === "1"; } catch (e) {}
+    $("appBtn").hidden = installed();
+    if (installed() || (hide && !force)) { bar.hidden = true; return; }
+    let text, act = null;
+    if (inApp) {
+      text = "카톡 같은 앱 안에서는 설치가 안 돼요. 크롬(아이폰은 사파리)으로 열어서 설치해 주세요.";
+      if (/KAKAOTALK/i.test(UA)) act = ["크롬 · 사파리로 열기", () => { location.href = "kakaotalk://web/openExternal?url=" + encodeURIComponent(location.href); }];
+    } else if (installEv) {
+      text = "병무청 홈페이지를 앱으로 설치하면 바탕화면 아이콘으로 바로 열려요.";
+      act = ["앱 설치", async () => { const ev = installEv; installEv = null; ev.prompt(); try { await ev.userChoice; } catch (e) {} appBar(); }];
+    } else if (iOS) text = "아이폰 · 아이패드는 사파리 아래쪽 [공유] 단추 → 「홈 화면에 추가」 를 누르면 앱처럼 쓸 수 있어요.";
+    else if (force) text = "브라우저 메뉴(⋮ 또는 주소창 오른쪽 아이콘)에서 「앱 설치」 또는 「홈 화면에 추가」 를 눌러 주세요.";
+    else { bar.hidden = true; return; }
+    $("appText").textContent = text;
+    $("appGo").hidden = !act;
+    if (act) { $("appGo").textContent = act[0]; $("appGo").onclick = act[1]; }
+    bar.hidden = false;
+  }
+  window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); installEv = e; appBar(); });
+  window.addEventListener("appinstalled", () => { installEv = null; appBar(); setStatus("앱으로 설치했어요. 바탕화면 아이콘으로 여세요."); });
+  $("appClose").onclick = () => { try { localStorage.setItem("bmc-app-hide", "1"); } catch (e) {} $("appBar").hidden = true; };
+  $("appBtn").onclick = () => { try { localStorage.removeItem("bmc-app-hide"); } catch (e) {} appBar(true); $("appBar").scrollIntoView({ block: "center", behavior: "smooth" }); };
+  /* 설치하려면 sw.js 가 있어야 한다. 화면은 늘 새로 받고 인터넷이 끊길 때만 마지막 화면을 보여 준다 (sw.js) */
+  if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
+  appBar();
 
   /* ── 처음 열 때 ── */
   /* 지난번에 본 것을 먼저 보여 주고 뒤에서 새로 받는다. */
