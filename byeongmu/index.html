@@ -642,6 +642,23 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
 .game-card .sc small { font-size: .4em; }
 .game-card .day { font-size: clamp(16px, 4.6vw, 20px); font-weight: 700; color: var(--gold-hi); font-variant-numeric: tabular-nums; }
 .game-card .det { font-size: 13px; color: var(--muted); }
+.game-card .rank { margin-top: 2px; font-size: clamp(16px, 4.6vw, 20px); font-weight: 800; color: var(--ink); }
+/* 순위표 (2026-10-26) */
+.game-rank { border: 1px solid var(--line); border-radius: 6px; background: var(--panel-hi); padding: 14px clamp(12px, 3vw, 18px); display: grid; gap: 10px; }
+.game-rank .head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.game-rank h3 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 18px; color: var(--gold-hi); }
+.game-rank .head span { flex: 1 1 auto; color: var(--muted); font-size: 12px; }
+.game-rank h4 { margin: 2px 0 4px; font-size: 13px; color: var(--muted); }
+.rank-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.rank-list li { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; grid-template-areas: "no nick sc" "no det det"; align-items: center; gap: 0 10px; padding: 8px 10px; border: 1px solid transparent; border-radius: 6px; background: #0b0907; }
+.rank-list li.me { border-color: var(--gold); background: linear-gradient(180deg, #2a2010, #140f08); }
+.rank-list .no { grid-area: no; text-align: center; font-family: var(--font-display); font-weight: 800; font-size: 18px; color: var(--muted); }
+.rank-list .no.m1 { color: #f6d36b; } .rank-list .no.m2 { color: #d8d8e0; } .rank-list .no.m3 { color: #d29a62; }
+.rank-list b { grid-area: nick; min-width: 0; overflow-wrap: anywhere; }
+.rank-list .sc { grid-area: sc; font-weight: 800; color: var(--gold-hi); font-variant-numeric: tabular-nums; }
+.rank-list .det { grid-area: det; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.rank-list li.empty, .rank-list li.gap { display: block; text-align: center; color: var(--muted); background: none; }
+.rank-recent { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; font-size: 13px; }
 .game-card .new { margin-top: 2px; padding: 2px 12px; border-radius: 999px; background: var(--red); color: #fff; font-size: 13px; font-weight: 700; }
 </style>
 </head>
@@ -951,7 +968,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     <!-- 연병장 — 점검 시간 미니게임. 점수는 이 기기에만 저장(창구 안 씀) (2026-10-26) -->
     <section id="gameView" hidden>
       <h2 class="section-label"><svg aria-hidden="true"><use href="#i-war"/></svg>연병장</h2>
-      <p class="game-hint">화면을 누른 채 끌면 움직이고(PC 는 방향키 · WASD), 부적은 저절로 날아가요. 30초마다 단계가 올라 잡귀가 늘고, 1분마다 대장이 나와요. 레벨이 오르면 강화나 <b>스킬</b>을 고르고, 스킬은 오른쪽 아래 단추(PC 는 1 · 2 · 3)로 써요. <b>4분</b>을 버티면 승리!</p>
+      <p class="game-hint">화면을 누른 채 끌면 움직이고(PC 는 방향키 · WASD), 부적은 저절로 날아가요. 30초마다 단계가 올라 잡귀가 늘고, 1분마다 대장이 나와요. 레벨이 오르면 강화나 <b>스킬</b>을 고르고, 스킬은 오른쪽 아래 단추(PC 는 1 · 2 · 3)로 써요. <b>죽을 때까지</b> 버틴 만큼 점수 — 끝나면 순위표에 올라가요!</p>
       <div class="game-box" id="gameBox">
         <canvas id="gameCv" aria-label="연병장 게임 화면"></canvas>
         <div class="game-hud" id="gameHud" hidden>
@@ -963,6 +980,12 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
           <div class="skills" id="gSkills"></div>
         </div>
         <div class="game-over" id="gameOver"><div id="gameOverIn"></div></div>
+      </div>
+      <!-- 순위표 — 판이 끝날 때마다 창구에 올라간다 (2026-10-26) -->
+      <div class="game-rank">
+        <div class="head"><h3>순위표</h3><span>판이 끝날 때마다 바뀌어요 · 한 사람 최고 점수만</span><button class="tiny" type="button" id="rankReload">새로고침</button></div>
+        <ol class="rank-list" id="rankList"><li class="empty">불러오는 중…</li></ol>
+        <div id="rankRecentBox" hidden><h4>최근 판</h4><ul class="rank-recent" id="rankRecent"></ul></div>
       </div>
     </section>
 
@@ -1069,7 +1092,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610260317";
+  const BUILD = "202610260330";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -3300,24 +3323,25 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
   }
 
   /* ── 연병장 ── 수요일 점검 시간에 문파원끼리 한 판 (2026-10-26). 「유니티 3D 서바이벌」 영상을 보고 웹으로 —
-     끌어서 움직이면 부적은 저절로, 잡귀를 잡아 강해지고 4분 버티기. 창구는 안 쓴다.
-     최고 점수는 이 기기에만(bmc-game-best, 닉네임별). 그림은 모두 직접 그린 도형 — 게임 공식 그림 · 캐릭터는 안 쓴다.
+     끌어서 움직이면 부적은 저절로, 잡귀를 잡아 강해진다. 그림은 모두 직접 그린 도형 — 게임 공식 그림 · 캐릭터는 안 쓴다.
      "난이도는 자동으로 순차적으로 높게, 몬스터도 순차적으로 많이, 보스도, 스킬 넣고 업그레이드" (2026-10-26) —
-     30초마다 단계(1~8)가 올라 잡귀가 세지고 · 많아지고 · 한 무리가 둘러싼다. 1분마다 대장. 스킬 3가지는 강화에서 얻고 올린다 */
+     30초마다 단계가 올라 잡귀가 세지고 · 많아지고 · 한 무리가 둘러싼다. 1분마다 대장. 스킬 3가지는 강화에서 얻고 올린다.
+     "게임 시간은 무제한, 죽을 때까지 · 순위표도 만들어라 할 때마다 갱신하게" (2026-10-26) — 판이 끝나면 창구(saveGameScore)에 올리고
+     순위표를 새로 받는다. 처음엔 이 기기에만 두던 최고 점수(bmc-game-best)는 이제 안 쓴다 */
   const game = (() => {
     const cv = $("gameCv"), g = cv.getContext("2d");
-    const ROUND = 240, STAGE = 30, WD = "일월화수목금토";
+    const STAGE = 30, WD = "일월화수목금토";
     const FOES = {
       imp: { r: 11, hp: 9, spd: 58, dps: 10, c: "#c4282c", xp: 1 },
       fast: { r: 9, hp: 8, spd: 108, dps: 8, c: "#8e3bd1", xp: 1 },
       rock: { r: 18, hp: 55, spd: 40, dps: 18, c: "#2f5bd0", xp: 3 },
       spit: { r: 10, hp: 16, spd: 62, dps: 8, c: "#2aa36b", xp: 2 },
     };
-    /* 대장 — 1분마다 하나씩, 뒤로 갈수록 세다. dash 돌진 · call 졸개 부르기 · ring 사방으로 불덩이 */
+    /* 대장 — 1분마다 하나씩 차례로, 세 대장을 한 바퀴 돌 때마다 더 세다. dash 돌진 · call 졸개 부르기 · ring 사방으로 불덩이 */
     const BOSSES = [
-      { at: 60, name: "바위 대장", r: 30, hp: 600, spd: 46, dps: 28, c: "#3c6ee0", xp: 15, act: "dash" },
-      { at: 120, name: "날쌘 대장", r: 28, hp: 1000, spd: 70, dps: 26, c: "#a04be0", xp: 20, act: "call" },
-      { at: 180, name: "잡귀 왕", r: 38, hp: 2400, spd: 48, dps: 38, c: "#e0662a", xp: 30, act: "ring" },
+      { name: "바위 대장", r: 30, hp: 600, spd: 46, dps: 28, c: "#3c6ee0", xp: 15, act: "dash" },
+      { name: "날쌘 대장", r: 28, hp: 1000, spd: 70, dps: 26, c: "#a04be0", xp: 20, act: "call" },
+      { name: "잡귀 왕", r: 38, hp: 2400, spd: 48, dps: 38, c: "#e0662a", xp: 30, act: "ring" },
     ];
     /* 스킬 — 단추(PC 는 1 · 2 · 3)로 쓴다. l 은 스킬 레벨 */
     const SK = {
@@ -3347,7 +3371,6 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     const SKEY = { Digit1: 0, Digit2: 1, Digit3: 2, Numpad1: 0, Numpad2: 1, Numpad3: 2 };
 
     function nick() { return me ? me.gameId : canWrite ? "관리자" : "손님"; }
-    function bests() { try { return JSON.parse(localStorage.getItem("bmc-game-best") || "{}") || {}; } catch (e) { return {}; } }
     function mmss(t) { t = Math.max(0, Math.ceil(t)); return Math.floor(t / 60) + ":" + pad(t % 60); }
     function day(iso) { const d = new Date(iso); return fmt(iso) + " (" + WD[d.getDay()] + ") " + pad(d.getHours()) + ":" + pad(d.getMinutes()); }
 
@@ -3368,17 +3391,21 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       const b = $("gameOverIn").querySelector("button"); if (b) b.focus({ preventScroll: true });
     }
     function gBtn(text, fn, cls) { const b = el("button", "btn" + (cls ? " " + cls : ""), text); b.type = "button"; b.onclick = fn; return b; }
-    function bestLine() { const b = bests()[nick()]; return el("p", "best", b ? "내 최고 " + b.score.toLocaleString() + "점 · " + day(b.at) : "아직 기록이 없어요"); }
+    function bestLine() {
+      const i = ranks && me ? ranks.top.findIndex((x) => x.id === me.id) : -1, b = i >= 0 ? ranks.top[i] : null;
+      const p = el("p", "best", b ? "내 최고 " + b.score.toLocaleString() + "점 · 문파 " + (i + 1) + "위" : me ? "아직 순위표 기록이 없어요" : "관리자 암호로 들어와 순위표에는 안 올라가요");
+      p.id = "gBestLine"; return p;
+    }
     function intro() {
       $("gameHud").hidden = true;
-      panel([el("h3", null, "연병장"), el("p", null, nick() + " 님, 4분 버텨 보세요."),
-        el("p", "best", "30초마다 단계가 올라 잡귀가 세지고 많아져요. 1분마다 대장이 나와요."), bestLine(), gBtn("시작", begin)]);
+      panel([el("h3", null, "연병장"), el("p", null, nick() + " 님, 죽을 때까지 버텨 보세요."),
+        el("p", "best", "30초마다 단계가 올라 잡귀가 세지고 많아져요. 1분마다 대장이 나와요. 끝나면 순위표에 올라가요."), bestLine(), gBtn("시작", begin)]);
     }
     function mine() { return UPS.filter((u) => s.up[u.k]).map((u) => u.n + " " + s.up[u.k]).join(" · ") || "아직 강화 없음"; }
     function showPause() {
       const row = el("div", "actions"); row.style.justifyContent = "center";
-      row.append(gBtn("계속", resume), gBtn("그만하기", () => end(false), "ghost"));
-      panel([el("h3", null, "멈춤"), el("p", null, mmss(ROUND - s.t) + " 남음 · " + s.stage + "단계 · 잡은 수 " + s.kills), el("p", "best", mine()), row]);
+      row.append(gBtn("계속", resume), gBtn("그만하기", end, "ghost"));
+      panel([el("h3", null, "멈춤"), el("p", null, mmss(s.t) + " 버팀 · " + s.stage + "단계 · 잡은 수 " + s.kills), el("p", "best", mine()), row]);
     }
     function showPicks() {
       const pool = UPS.filter((u) => (s.up[u.k] || 0) < u.max && (!u.ok || u.ok())), picks = [];
@@ -3402,14 +3429,15 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       if (u.skill && s.up[u.k] === 1) { s.skills.push(u.k); s.cd[u.k] = 0; }
       renderSkills(); resume();
     }
-    function showResult(win, score, isBest, when) {
+    function showResult(score, when) {
       const card = el("div", "game-card");
       const sc = el("div", "sc gold-text", score.toLocaleString()); sc.appendChild(el("small", null, "점"));
       card.append(el("div", "k", "병무청 연병장"), el("div", "who", nick()), sc, el("div", "day", day(when)),
-        el("div", "det", (win ? "4분 버티기 성공!" : mmss(s.t) + " 버팀") + " · " + s.stage + "단계 · 잡은 잡귀 " + s.kills + (s.bossKills ? " · 대장 " + s.bossKills : "") + " · Lv " + s.lv));
-      if (isBest) card.appendChild(el("span", "new", "내 최고 기록!"));
+        el("div", "det", mmss(s.t) + " 버팀 · " + s.stage + "단계 · 잡은 잡귀 " + s.kills + (s.bossKills ? " · 대장 " + s.bossKills : "") + " · Lv " + s.lv));
+      const rank = el("div", "rank", me ? "순위표에 올리는 중…" : "관리자 암호로는 순위표에 안 올라가요"); rank.id = "gRankLine";
+      card.appendChild(rank);
       $("gameHud").hidden = true;
-      panel([card, bestLine(), el("p", "best", "이 화면을 캡처해서 카톡에 올려 주세요"), gBtn("다시 하기", begin)]);
+      panel([card, el("p", "best", "이 화면을 캡처해서 카톡에 올려 주세요"), gBtn("다시 하기", begin)]);
     }
     function msg(t) { $("gMsg").textContent = t; $("gMsg").classList.add("on"); s.msgT = 2.4; }
 
@@ -3418,8 +3446,8 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       $("gameBox").scrollIntoView({ block: "center", behavior: "smooth" });
       s = { t: 0, hp: 100, max: 100, x: 0, y: 0, spd: 150, lv: 1, xp: 0, need: 6, kills: 0, foes: [], shots: [], ebs: [], gems: [], fx: [],
         spawn: 0, fire: 0, rate: 0.7, dmg: 10, multi: 1, pierce: 0, orbs: 0, orbA: 0, aura: 0, magnet: 60, regen: 0, hurt: 0,
-        stage: 1, bossDone: [], bossNow: null, bossKills: 0, up: {}, skills: [], cd: {}, cool: 1, ward: 0, msgT: 0, over: false };
-      renderSkills(); resume(); msg("1단계 — 4분 버텨라!");
+        stage: 1, bossN: 0, bossNow: null, bossKills: 0, up: {}, skills: [], cd: {}, cool: 1, ward: 0, msgT: 0, over: false };
+      renderSkills(); resume(); msg("1단계 — 죽을 때까지 버텨라!");
     }
     function resume() {
       $("gameOver").hidden = true; $("gameHud").hidden = false;
@@ -3427,13 +3455,47 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       if (!raf) raf = requestAnimationFrame(loop);
     }
     function pause() { if (!running) return; running = false; stick = null; showPause(); }
-    function end(win) {
+    /* 끝 — 점수는 창구가 같은 셈으로 다시 센다(잡은 수×10 + 버틴 초×2 + 대장×300) */
+    function end() {
       running = false; s.over = true; stick = null;
-      const score = Math.round(s.kills * 10 + Math.floor(Math.min(s.t, ROUND)) * 2 + (win ? 500 : 0) + s.bossKills * 300);
-      const when = new Date().toISOString(), all = bests(), prev = all[nick()], isBest = !prev || score > prev.score;
-      if (isBest) { all[nick()] = { score: score, at: when }; try { localStorage.setItem("bmc-game-best", JSON.stringify(all)); } catch (e) {} }
-      draw(); showResult(win, score, isBest, when);
+      const sec = Math.floor(s.t), run = s;
+      draw(); showResult(s.kills * 10 + sec * 2 + s.bossKills * 300, new Date().toISOString());
+      if (!me || !token) return;
+      call("saveGameScore", token, { sec: sec, stage: s.stage, kills: s.kills, bosses: s.bossKills, lv: s.lv }).then((r) => {
+        takeRanks(r);
+        const line = $("gRankLine"); if (!line || run !== s) return;
+        line.textContent = "문파 순위 " + r.rank + "위 / " + r.top.length + "명";
+        if (r.best) line.parentNode.appendChild(el("span", "new", "내 최고 기록!"));
+      }).catch((e) => { const line = $("gRankLine"); if (line && run === s) line.textContent = "순위표에 못 올렸어요 — " + errMsg(e); });
     }
+    /* ── 순위표 ── 한 사람 최고 점수만, 20위까지(내가 그 밖이면 내 줄을 더) */
+    let ranks = null, ranksAt = 0;
+    function loadRanks() {
+      ranksAt = Date.now();
+      call("getGameBoard", token || adminPw).then(takeRanks)
+        .catch((e) => { if (!ranks) $("rankList").replaceChildren(el("li", "empty", "순위표를 못 불러왔어요 — " + errMsg(e))); });
+    }
+    function takeRanks(r) {
+      ranks = { top: Array.isArray(r && r.top) ? r.top : [], recent: Array.isArray(r && r.recent) ? r.recent : [] }; ranksAt = Date.now();
+      drawRanks();
+      const bl = $("gBestLine"); if (bl) bl.replaceWith(bestLine());
+    }
+    function drawRanks() {
+      if (!ranks) return;
+      const top = ranks.top, myId = me ? me.id : "";
+      const row = (p, i) => {
+        const li = el("li", p.id === myId ? "me" : null);
+        li.append(el("span", "no" + (i < 3 ? " m" + (i + 1) : ""), String(i + 1)), el("b", null, p.nick), el("span", "sc", Number(p.score).toLocaleString() + "점"),
+          el("span", "det", mmss(p.sec) + " · " + p.stage + "단계" + (p.bosses ? " · 대장 " + p.bosses : "") + " · " + fmt(p.at)));
+        return li;
+      };
+      const rows = top.slice(0, 20).map(row), mi = top.findIndex((p) => p.id === myId);
+      if (mi >= 20) rows.push(el("li", "gap", "⋯"), row(top[mi], mi));
+      $("rankList").replaceChildren(...(rows.length ? rows : [el("li", "empty", "아직 기록이 없어요. 첫 기록을 남겨 보세요!")]));
+      $("rankRecent").replaceChildren(...ranks.recent.slice(0, 5).map((p) => el("li", null, p.nick + " " + Number(p.score).toLocaleString() + "점 · " + mmss(p.sec) + " 버팀 · " + fmtTime(p.at))));
+      $("rankRecentBox").hidden = !ranks.recent.length;
+    }
+    $("rankReload").onclick = loadRanks;
     function loop(ts) {
       raf = 0;
       if (!running) return;
@@ -3455,17 +3517,19 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       if (!kind) { const q = Math.random(); kind = s.stage >= 5 && q < 0.1 ? "spit" : s.stage >= 3 && q < 0.22 ? "rock" : s.stage >= 2 && q < 0.45 ? "fast" : "imp"; }
       if (x == null) { const a = Math.random() * Math.PI * 2, d = Math.max(260, Math.hypot(W, H) / 2 + 40); x = s.x + Math.cos(a) * d; y = s.y + Math.sin(a) * d; }
       const F = FOES[kind], hp = F.hp * (1 + (s.stage - 1) * 0.45);
-      s.foes.push({ k: kind, x: x, y: y, r: F.r, hp: hp, full: hp, spd: F.spd * (1 + (s.stage - 1) * 0.05), dps: F.dps, c: F.c, xp: F.xp, hit: 0, oc: 0, cd: 1 + Math.random() * 2, dash: 0 });
+      s.foes.push({ k: kind, x: x, y: y, r: F.r, hp: hp, full: hp, spd: F.spd * Math.min(1.6, 1 + (s.stage - 1) * 0.05), dps: F.dps, c: F.c, xp: F.xp, hit: 0, oc: 0, cd: 1 + Math.random() * 2, dash: 0 });
     }
     /* 단계가 오를 때 한 무리가 빙 둘러싸며 나온다 */
     function horde() {
       const n = 6 + s.stage * 3, d = Math.max(240, Math.min(W, H) / 2 + 30);
       for (let i = 0; i < n && s.foes.length < 300; i++) { const a = i * Math.PI * 2 / n; spawn(null, s.x + Math.cos(a) * d, s.y + Math.sin(a) * d); }
     }
-    function spawnBoss(B) {
+    function spawnBoss(i) {
+      const B = BOSSES[i % BOSSES.length], lap = Math.floor(i / BOSSES.length), k = 1 + lap * 1.5, name = B.name + (lap ? " " + (lap + 1) : "");
       const a = Math.random() * Math.PI * 2, d = Math.max(260, Math.hypot(W, H) / 2 + 40);
-      const f = { k: "boss", name: B.name, act: B.act, x: s.x + Math.cos(a) * d, y: s.y + Math.sin(a) * d, r: B.r, hp: B.hp, full: B.hp, spd: B.spd, dps: B.dps, c: B.c, xp: B.xp, hit: 0, oc: 0, cd: 2.5, dash: 0, n: 0 };
-      s.foes.push(f); s.bossNow = f; msg(B.name + " 나타남!");
+      const f = { k: "boss", name: name, act: B.act, x: s.x + Math.cos(a) * d, y: s.y + Math.sin(a) * d, r: B.r, hp: B.hp * k, full: B.hp * k,
+        spd: B.spd * (1 + lap * 0.1), dps: B.dps * (1 + lap * 0.5), c: B.c, xp: B.xp * (1 + lap), hit: 0, oc: 0, cd: 2.5, dash: 0, n: 0 };
+      s.foes.push(f); s.bossNow = f; msg(name + " 나타남!");
     }
     function bullet(x, y, a, v, dmg) { s.ebs.push({ x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 4, dmg: dmg }); }
     /* 쏘는 잡귀 · 대장의 재주 */
@@ -3506,19 +3570,19 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     }
     function step(dt) {
       s.t += dt;
-      if (s.t >= ROUND) return end(true);
       const [mx, my] = dir();
       s.x += mx * s.spd * dt; s.y += my * s.spd * dt;
       if (s.regen) s.hp = Math.min(s.max, s.hp + s.regen * dt);
       s.hurt = Math.max(0, s.hurt - dt); s.ward = Math.max(0, s.ward - dt);
       s.skills.forEach((k) => { s.cd[k] = Math.max(0, s.cd[k] - dt); });
       if (s.msgT > 0 && (s.msgT -= dt) <= 0) $("gMsg").classList.remove("on");
-      /* 단계 — 30초마다 1 → 8 */
-      const st = Math.min(8, 1 + Math.floor(s.t / STAGE));
+      /* 단계 — 30초마다 하나씩, 끝없이 */
+      const st = 1 + Math.floor(s.t / STAGE);
       if (st !== s.stage) { s.stage = st; horde(); msg(st + "단계 — 잡귀가 더 몰려온다!"); }
-      BOSSES.forEach((B, i) => { if (s.t >= B.at && !s.bossDone[i]) { s.bossDone[i] = true; spawnBoss(B); } });
-      /* 1단계 초당 1마리 → 8단계 초당 10마리 */
-      s.spawn += dt * (s.stage * 1.25 - 0.2);
+      const bi = Math.floor(s.t / 60) - 1;
+      if (bi >= s.bossN) { s.bossN = bi + 1; spawnBoss(bi); }
+      /* 1단계 초당 1마리 → 8단계 10마리 → 많아야 14마리 (그 뒤로는 잡귀가 단단해지기만) */
+      s.spawn += dt * Math.min(14, s.stage * 1.25 - 0.2);
       while (s.spawn >= 1) { s.spawn--; if (s.foes.length < 300) spawn(); }
       s.fire -= dt;
       if (s.fire <= 0 && s.foes.length) { s.fire = s.rate; shoot(); }
@@ -3570,7 +3634,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
         return true;
       });
       s.fx.forEach((x) => { x.life -= dt; }); s.fx = s.fx.filter((x) => x.life > 0);
-      if (s.hp <= 0) { s.hp = 0; return end(false); }
+      if (s.hp <= 0) { s.hp = 0; return end(); }
       if (s.xp >= s.need) { s.xp -= s.need; s.lv++; s.need = Math.round(s.need * 1.22 + 2); running = false; stick = null; hud(); showPicks(); }
     }
 
@@ -3638,7 +3702,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       }
     }
     function hud() {
-      $("gTime").textContent = mmss(ROUND - s.t);
+      $("gTime").textContent = mmss(s.t);
       $("gHp").style.width = (100 * s.hp / s.max) + "%";
       $("gStage").textContent = s.stage + "단계";
       $("gLv").textContent = "Lv " + s.lv;
@@ -3692,7 +3756,8 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       /* 다른 메뉴로 가면 멈춘다. 처음 들어오면(또는 다른 사람이 들어오면) 시작 안내 */
       render() {
         if (view !== "game") { pause(); return; }
-        if (shown !== nick()) { shown = nick(); s = null; running = false; stick = null; intro(); }
+        if (shown !== nick()) { shown = nick(); s = null; running = false; stick = null; intro(); drawRanks(); }
+        if (Date.now() - ranksAt > 30000) loadRanks();
         size();
       },
     };
