@@ -695,6 +695,10 @@ body.game-full { overflow: hidden; }
 .rank-list .sc { grid-area: sc; font-weight: 800; color: var(--gold-hi); font-variant-numeric: tabular-nums; }
 .rank-list .det { grid-area: det; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .rank-list li.empty, .rank-list li.gap { display: block; text-align: center; color: var(--muted); background: none; }
+.rank-reset { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px 10px; border: 1px dashed var(--red); border-radius: 6px; }
+.rank-reset[hidden] { display: none; }
+.rank-reset span { flex: 1 1 100%; font-size: 12px; color: var(--muted); }
+.rank-reset .btn { padding: 5px 10px; font-size: 13px; }
 .rank-tabs .chip { padding: 5px 14px; font-size: 13px; }
 .rank-when { margin: -4px 0 0; color: var(--muted); font-size: 12px; }
 .rank-past { margin: 0; padding: 8px 10px; border: 1px dashed var(--gold-lo); border-radius: 6px; color: var(--gold-hi); font-size: 13px; }
@@ -1031,7 +1035,9 @@ body.game-full { overflow: hidden; }
       </div>
       <!-- 순위표 — 판이 끝날 때마다 창구에 올라간다 (2026-10-26) -->
       <div class="game-rank">
-        <div class="head"><h3>순위표</h3><span>판이 끝날 때마다 바뀌어요 · 한 사람 최고 점수만</span><button class="tiny" type="button" id="rankReload">새로고침</button></div>
+        <div class="head"><h3>순위표</h3><span>판이 끝날 때마다 바뀌어요 · 한 사람 최고 점수만</span><button class="tiny" type="button" id="rankReload">새로고침</button><button class="tiny" type="button" id="rankAdmin" hidden>초기화</button></div>
+        <!-- 순위표 지우기 — 문주 · 관리자만 (2026-10-26) -->
+        <div class="rank-reset" id="rankReset" hidden><span>문주 · 관리자만 보여요. 이번 주 · 이번 달은 지금 1~3위를 「지난 우승」 으로 남기고 지워요. 매주 월요일 · 매달 1일에 저절로 새로 시작하는 것은 그대로예요.</span><button class="btn ghost" type="button" data-w="week">이번 주 지우기</button><button class="btn ghost" type="button" data-w="month">이번 달 지우기</button><button class="btn ghost" type="button" data-w="all">전체 지우기</button></div>
         <div class="chips rank-tabs" id="rankTabs" role="group" aria-label="순위표 기간"></div>
         <p class="rank-when" id="rankWhen"></p>
         <ol class="rank-list" id="rankList"><li class="empty">불러오는 중…</li></ol>
@@ -1144,7 +1150,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610260701";
+  const BUILD = "202610260717";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -3602,6 +3608,19 @@ body.game-full { overflow: hidden; }
       $("rankRecentBox").hidden = !ranks.recent.length;
     }
     $("rankReload").onclick = loadRanks;
+    /* 순위표 지우기 — "순위표 초기화 기준량 문주한테 권한 줘라" (2026-10-26). 문주 · 관리자만 보이고, 한 번 더 눌러야 지운다 */
+    function drawResetTools() { $("rankAdmin").hidden = !canWrite; if (!canWrite) $("rankReset").hidden = true; }
+    $("rankAdmin").onclick = () => { $("rankReset").hidden = !$("rankReset").hidden; };
+    document.querySelectorAll("#rankReset button").forEach((b) => {
+      const name = { week: "이번 주", month: "이번 달", all: "전체" }[b.dataset.w];
+      b.onclick = async () => {
+        if (b.dataset.sure !== "1") { b.dataset.sure = "1"; b.textContent = "정말 " + name + " 지울까요?"; setTimeout(() => { b.dataset.sure = ""; b.textContent = name + " 지우기"; }, 4000); return; }
+        b.disabled = true;
+        try { takeRanks(await call("resetGameBoard", adminPw || token, b.dataset.w)); setStatus(name + " 순위표를 지웠어요."); $("rankReset").hidden = true; }
+        catch (e) { setStatus("순위표를 못 지웠어요 — " + errMsg(e), true); }
+        b.disabled = false; b.dataset.sure = ""; b.textContent = name + " 지우기";
+      };
+    });
     function weekSpan(k) { const d = new Date(k + "T00:00:00Z"); if (isNaN(d)) return "이번 주"; const e = new Date(d.getTime() + 6 * 864e5); return (d.getUTCMonth() + 1) + "." + d.getUTCDate() + " ~ " + (e.getUTCMonth() + 1) + "." + e.getUTCDate() + " 주"; }
     function monthName(k) { return /^\d{4}-\d{2}$/.test(k || "") ? Number(k.slice(5)) + "월" : "이번 달"; }
     $("rankTabs").replaceChildren(...Object.keys(TABS).map((k) => { const b = el("button", "chip", TABS[k]); b.type = "button"; b.dataset.k = k; b.onclick = () => { rankTab = k; drawRanks(); }; return b; }));
@@ -4250,6 +4269,7 @@ body.game-full { overflow: hidden; }
       render() {
         if (view !== "game") { pause(); if (isFull()) toggleFull(); return; } // 다른 메뉴로 가면 전체화면도 끈다
         if (shown !== nick()) { shown = nick(); s = null; running = false; stick = null; intro(); drawRanks(); }
+        drawResetTools();
         if (Date.now() - ranksAt > 30000) loadRanks();
         size();
       },
