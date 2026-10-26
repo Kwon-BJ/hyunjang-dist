@@ -1124,7 +1124,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610260511";
+  const BUILD = "202610260526";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -3566,9 +3566,11 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     /* 맵 — 부장님이 주신 「게임 맵 예시」에서 전체 맵만 오린 것(img/map.jpg · 시험/맵-자르기.cjs, 2026-10-26 "마지막이다 맵추가해라").
        2배로 깔고 가운데 파란 제단(그림의 588, 338)에서 시작한다. 맵 밖으로는 못 나가고 몬스터도 맵 안에서 나온다.
        물 · 절벽은 그림일 뿐 막지 않는다. 그림을 못 읽으면 예전처럼 끝없는 격자 */
-    const MAP = new Image(), MAP_K = 2, MAP_O = [588, 338], MAP_PAD = 50;
-    let mapOk = false;
-    MAP.onload = () => { mapOk = true; draw(); };
+    /* "맵이 너무 해상도가 안좋다" (2026-10-26) — Carat(Topaz)로 4배 키운 것을 3배(3198px)로 줄여 쓴다(보관/그림/맵-4배.png · 시험/맵-줄이기.cjs).
+       세계 크기는 그대로(원본 1066px 의 2배) — 그림 크기가 바뀌어도 MAP_K · MAP_O 를 그림 폭으로 맞춘다 */
+    const MAP = new Image(), MAP_PAD = 50;
+    let mapOk = false, MAP_K = 2, MAP_O = [588, 338];
+    MAP.onload = () => { const r = MAP.width / 1066; MAP_K = 2 / r; MAP_O = [588 * r, 338 * r]; mapOk = true; draw(); };
     MAP.src = "img/map.jpg";
     function bounds() { return [-MAP_O[0] * MAP_K + MAP_PAD, (MAP.width - MAP_O[0]) * MAP_K - MAP_PAD, -MAP_O[1] * MAP_K + MAP_PAD, (MAP.height - MAP_O[1]) * MAP_K - MAP_PAD]; }
     function inside(x, y) { const b = bounds(); return x >= b[0] && x <= b[1] && y >= b[2] && y <= b[3]; }
@@ -3853,7 +3855,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       if (mapOk) {
         const mx = ox - MAP_O[0] * MAP_K, my = oy - MAP_O[1] * MAP_K;
         const sx = Math.max(0, -mx / MAP_K), sy = Math.max(0, -my / MAP_K), sw = Math.min(MAP.width - sx, W / MAP_K + 2), sh = Math.min(MAP.height - sy, H / MAP_K + 2);
-        if (sw > 0 && sh > 0) { g.imageSmoothingEnabled = false; g.drawImage(MAP, sx, sy, sw, sh, mx + sx * MAP_K, my + sy * MAP_K, sw * MAP_K, sh * MAP_K); g.imageSmoothingEnabled = true; }
+        if (sw > 0 && sh > 0) { g.imageSmoothingQuality = "high"; g.drawImage(MAP, sx, sy, sw, sh, mx + sx * MAP_K, my + sy * MAP_K, sw * MAP_K, sh * MAP_K); }
         g.fillStyle = "rgba(0,0,0,.28)"; g.fillRect(0, 0, W, H); // 몬스터 · 총알이 잘 보이게 조금 어둡게
       } else {
         g.strokeStyle = "rgba(214,176,98,.08)"; g.lineWidth = 1; g.beginPath();
