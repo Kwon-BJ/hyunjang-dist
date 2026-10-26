@@ -1039,7 +1039,7 @@ body.game-full { overflow: hidden; }
           <div class="boss" id="gBoss" hidden><b id="gBossName"></b><div class="bar"><i id="gBossHp"></i></div></div>
           <div class="msg" id="gMsg" aria-live="polite"></div>
           <div class="skills" id="gSkills"></div>
-          <button class="gskill dashbtn ready" type="button" id="gDash" aria-label="대쉬 (스페이스)"><span>대쉬</span><small>Space</small></button>
+          <button class="gskill dashbtn ready" type="button" id="gDash" aria-label="대쉬 (스페이스)"><span>대쉬</span><small id="gDashN">Space</small></button>
         </div>
         <div class="game-over" id="gameOver"><div id="gameOverIn"></div></div>
       </div>
@@ -1160,7 +1160,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610261036";
+  const BUILD = "202610261044";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -3452,6 +3452,7 @@ body.game-full { overflow: hidden; }
       { k: "crit", n: "평타 치명타", max: 4, d: "[평타] 15% 확률로 2.5배 피해(레벨마다 +15%)", f: () => { s.crit += 0.15; } },
       { k: "boom", n: "평타 폭발", max: 3, d: "[평타] 맞은 자리 둘레 몬스터도 절반 피해", f: () => { s.boom++; } },
       { k: "bounce", n: "평타 튕김", max: 3, d: "[평타] 맞히면 가까운 다른 몬스터로 튕겨 가요(레벨마다 +1번)", f: () => { s.bounce++; } },
+      { k: "dashx", n: "대쉬 충전", max: 3, d: "대쉬를 한 번 더 모아 둘 수 있어요(5초마다 하나씩 참)", f: () => { s.dashN = (s.dashN == null ? 1 : s.dashN) + 1; } },
       { k: "orbs", n: "수호 구슬", max: 6, d: "몸 둘레를 도는 구슬 +1", f: () => { s.orbs++; } },
       { k: "aura", n: "기운 영역", max: 5, d: "가까이 온 잡귀가 계속 다쳐요", f: () => { s.aura++; } },
       { k: "spd", n: "날랜 발", max: 5, d: "이동 속도 +12%", f: () => { s.spd *= 1.12; } },
@@ -3526,7 +3527,7 @@ body.game-full { overflow: hidden; }
     function intro() {
       $("gameHud").hidden = true;
       panel([el("h3", null, "연병장"), el("p", null, nick() + " 님, 죽을 때까지 버텨 보세요."),
-        el("p", "best", "움직이기 — 휴대폰은 화면을 누른 채 끌기 · PC 는 방향키(또는 WASD). 둘레 3m 동그라미 안은 자동 조준, 없으면 바라보는 쪽. 대쉬는 스페이스(휴대폰은 오른쪽 아래 단추) 5초마다. 스킬은 배우면 저절로 나가요(1 ~ 6 으로도)"),
+        el("p", "best", "상자를 열면 자석 · 폭탄 · 회복, 가끔 함정(독 · 메테오 · 몬스터). 움직이기 — 휴대폰은 화면을 누른 채 끌기 · PC 는 방향키(또는 WASD). 둘레 3m 동그라미 안은 자동 조준, 없으면 바라보는 쪽. 대쉬는 스페이스(휴대폰은 오른쪽 아래 단추) 5초마다. 스킬은 배우면 저절로 나가요(1 ~ 6 으로도)"),
         el("p", "best", "30초마다 단계가 올라 잡귀가 세지고 많아져요. 2 · 4 · 6 …단계 끝에 대장이 나오고, 대장을 잡아야 다음 단계로 가요. 끝나면 순위표에 올라가요."), pickRow(), (() => { const r = el("div", "chips gspeed-pick"); [1, 2, 3].forEach((v) => { const b = el("button", "chip", v + "배속"); b.type = "button"; b.dataset.v = v; b.setAttribute("aria-pressed", String(v === speed)); b.onclick = () => setSpeed(v); r.appendChild(b); }); return r; })(), ...(canTest() ? [testRow()] : []), bestLine(), (() => { const r = el("div", "game-start"); r.append(gBtn("시작", begin), gBtn(isFull() ? "전체화면 끄기" : "⛶ 전체화면", toggleFull, "ghost gfull")); return r; })()]);
       drawPick();
     }
@@ -3583,7 +3584,7 @@ body.game-full { overflow: hidden; }
       $("gameBox").scrollIntoView({ block: "center", behavior: "smooth" });
       s = { t: 0, hp: 100, max: 100, x: 0, y: 0, spd: 150, lv: 1, xp: 0, need: 6, kills: 0, foes: [], shots: [], ebs: [], gems: [], fx: [],
         spawn: 0, fire: 0, rate: 0.7, dmg: 10, multi: 1, pierce: 0, fan: 0, crit: 0, boom: 0, bounce: 0, bossPick: false, orbs: 0, orbA: 0, aura: 0, magnet: 60, regen: 0, hurt: 0,
-        stage: 1, stageT: 0, advance: "", bossN: 0, bossNow: null, aim: Math.PI / 2, mvA: Math.PI / 2, dashT: 0, dashCd: 0, dashX: 0, dashY: 1, trail: [], lock: null, hitFx: 0, fields: [], homs: [], hz: [], walk: 0, moving: false, items: [], flash: 0, shotT: 0, bossKills: 0, up: {}, skills: [], cd: {}, cool: 1, ward: 0, msgT: 0, over: false };
+        stage: 1, stageT: 0, boxes: [], boxT: 12, pools: [], advance: "", bossN: 0, bossNow: null, aim: Math.PI / 2, mvA: Math.PI / 2, dashT: 0, dashCd: 0, dashX: 0, dashY: 1, trail: [], lock: null, hitFx: 0, fields: [], homs: [], hz: [], walk: 0, moving: false, items: [], flash: 0, shotT: 0, bossKills: 0, up: {}, skills: [], cd: {}, cool: 1, ward: 0, msgT: 0, over: false };
       s.test = testOn(); $("gTest").hidden = !s.test;
       renderSkills(); resume(); msg("1단계 — 죽을 때까지 버텨라!");
     }
@@ -3731,6 +3732,24 @@ body.game-full { overflow: hidden; }
         if (!mapOk || inside(x, y)) spawn(null, x, y); else spawn();
       }
     }
+    function openBox(b) {
+      const q = Math.random(), sc = 1 + (s.stage - 1) * 0.15;
+      if (q < 0.3) { // 함정
+        const k = Math.floor(Math.random() * 3);
+        if (k === 0) { s.pools.push({ x: b.x, y: b.y, r: 110, life: 6, dps: 8 * sc }); msg("함정! 독 웅덩이 — 초록 바닥에서 나와!"); }
+        else if (k === 1) { for (let i = 0; i < 5; i++) { const a = Math.random() * Math.PI * 2, d = i ? 60 + Math.random() * 120 : 0; hazard(s.x + Math.cos(a) * d, s.y + Math.sin(a) * d, 70, 1 + i * 0.25, 25 * sc, "255,120,0"); } msg("함정! 메테오가 떨어진다 — 피해!"); }
+        else { for (let i = 0; i < 10; i++) spawn(null, b.x + Math.cos(i * 0.63) * 60, b.y + Math.sin(i * 0.63) * 60); msg("함정! 몬스터가 튀어나왔다!"); }
+        s.fx.push({ boom: true, spr: "smoke", x: b.x, y: b.y, r: 20, c: "#7a3", size: 70, life: 0.4, dur: 0.4 });
+        return;
+      }
+      const k = Math.floor(Math.random() * 3);
+      if (k === 0) { s.gems.forEach((m) => { m.pull = true; }); msg("자석 — 경험치를 다 끌어온다!"); }
+      else if (k === 1) {
+        s.foes.forEach((f) => { if (Math.abs(f.x - s.x) < W / 2 + 40 && Math.abs(f.y - s.y) < H / 2 + 40) { if (f.k === "boss") f.hp -= f.full * 0.15; else f.hp = 0; } });
+        s.fx.push({ x: s.x, y: s.y, r: 140, c: "#ffd36b", life: 0.3 }, { x: s.x, y: s.y, r: 80, c: "#fff", life: 0.3 }); msg("폭탄 — 화면 안 잡귀를 모두 처치!");
+      } else { const heal = Math.round(s.max * 0.5); s.hp = Math.min(s.max, s.hp + heal); s.fx.push({ num: "+" + heal, heal: true, x: s.x, y: s.y - 30, life: 0.6 }); msg("회복 — 체력 " + heal + "!"); }
+      s.fx.push({ x: b.x, y: b.y, r: 30, c: "#ffe08a", life: 0.3 });
+    }
     function nextStage(pre) { s.stage++; s.stageT = 0; horde(); msg(pre + s.stage + "단계 — 잡귀가 사방에서 몰려온다!"); }
     function spawnBoss(i) {
       const B = BOSSES[i % BOSSES.length], lap = Math.floor(i / BOSSES.length), k = 1 + lap * 1.0, name = B.name + (lap ? " " + (lap + 1) : "");
@@ -3740,7 +3759,7 @@ body.game-full { overflow: hidden; }
         spd: B.spd * (1 + lap * 0.1) * Math.min(1.8, 1 + (s.stage - 1) * 0.04), dps: B.dps * (1 + lap * 0.5) * (1 + (s.stage - 1) * 0.1), bd: 1 + (s.stage - 1) * 0.12, c: B.c, xp: B.xp * (1 + lap), hit: 0, oc: 0, cd: 2.5, dash: 0, n: 0, ph: Math.random() * 10, age: 0 };
       inMap(f); s.foes.push(f); s.bossNow = f; msg(name + " 나타남!");
     }
-    function bullet(x, y, a, v, dmg, r, c) { s.ebs.push({ x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 4, dmg: dmg, r: r || 5, c: c || "#ff9a3c" }); }
+    function bullet(x, y, a, v, dmg, r, c) { s.ebs.push({ x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 4, dmg: dmg, r: r || 5, c: c || "#ff3b8d" }); } // 몬스터 탄은 분홍 — 경험치 구슬(금 · 주황)과 헷갈려서 (2026-10-26)
     /* 땅에 미리 표시되고 t 초 뒤 터지는 공격 — 붉은(또는 보라) 동그라미가 차오르면 피하라 */
     function hazard(x, y, r, t, dmg, c) { s.hz.push({ x: x, y: y, r: r, t: t, full: t, dmg: dmg, c: c || "255,70,50" }); }
     /* 쏘는 잡귀 · 대장의 재주 */
@@ -3770,11 +3789,15 @@ body.game-full { overflow: hidden; }
        가는 쪽은 움직이는 쪽, 서 있으면 마지막으로 움직인 쪽 */
     const DASH_CD = 5;
     function dash() {
-      if (!running || s.dashCd > 0) return;
+      /* 대쉬 충전 — 강화 「대쉬 충전」 으로 +3 번까지 모아 둘 수 있다(5초마다 하나씩 참). "돌진 특성으로 +3회까지" (2026-10-26) */
+      if (!running || s.dashT > 0) return;
+      if (s.dashN == null) s.dashN = s.dashCd > 0 ? 0 : 1;
+      if (s.dashN <= 0) return;
       let [mx, my] = dir();
       if (!mx && !my) { mx = Math.cos(s.mvA); my = Math.sin(s.mvA); }
       const L = Math.hypot(mx, my) || 1;
-      s.dashX = mx / L; s.dashY = my / L; s.dashT = 0.2; s.dashCd = DASH_CD;
+      s.dashX = mx / L; s.dashY = my / L; s.dashT = 0.2; s.dashN--;
+      if (s.dashCd <= 0) s.dashCd = DASH_CD;
     }
     function wantCast(k) {
       const near = (R) => s.foes.some((f) => (f.x - s.x) ** 2 + (f.y - s.y) ** 2 < (R + f.r) ** 2);
@@ -3862,7 +3885,9 @@ body.game-full { overflow: hidden; }
       s.x += mx * s.spd * dt; s.y += my * s.spd * dt;
       s.moving = !!(mx || my); if (s.moving) { s.walk += dt * 12; s.mvA = Math.atan2(my, mx); }
       s.flash = Math.max(0, s.flash - dt); s.shotT = Math.max(0, s.shotT - dt);
-      s.dashCd = Math.max(0, s.dashCd - dt);
+      const dashMax = 1 + (s.up.dashx || 0);
+      if (s.dashN == null) s.dashN = 1;
+      if (s.dashN < dashMax) { s.dashCd -= dt; if (s.dashCd <= 0) { s.dashN++; s.dashCd = s.dashN < dashMax ? DASH_CD : 0; } } else s.dashCd = 0;
       if (s.dashT > 0) { s.dashT -= dt; s.x += s.dashX * 900 * dt; s.y += s.dashY * 900 * dt; s.trail.push({ x: s.x, y: s.y, life: 0.3 }); }
       s.trail.forEach((p) => { p.life -= dt; }); s.trail = s.trail.filter((p) => p.life > 0);
       inMap(s);
@@ -3956,6 +3981,15 @@ body.game-full { overflow: hidden; }
         return false;
       });
       if (s.gems.length > 400) s.gems.splice(0, s.gems.length - 400);
+      /* 상자 — "맵에서 상자 같은 거 랜덤으로, 필요한 아이템 드랍, 함정도" (2026-10-26). 18~28초마다 맵 안 아무 데나(주인공과 떨어진 곳) 하나, 많아야 3개.
+         닿으면 열린다: 자석(경험치 다 끌어옴) · 폭탄(화면 안 잡귀 다 처치, 대장은 체력 15%) · 회복(최대 체력 50%) · 함정 30%(독 웅덩이 · 메테오 · 몬스터 무리) */
+      s.boxT -= dt;
+      if (s.boxT <= 0) {
+        s.boxT = 18 + Math.random() * 10;
+        if (s.boxes.length < 3) for (let k = 0; k < 15; k++) { const a = Math.random() * Math.PI * 2, d = 220 + Math.random() * 380, x = s.x + Math.cos(a) * d, y = s.y + Math.sin(a) * d; if (!mapOk || inside(x, y)) { s.boxes.push({ x, y, t: 0 }); break; } }
+      }
+      s.boxes = s.boxes.filter((b) => { b.t += dt; if ((b.x - s.x) ** 2 + (b.y - s.y) ** 2 < 30 * 30) { openBox(b); return false; } return true; });
+      s.pools = s.pools.filter((z) => { z.life -= dt; if ((z.x - s.x) ** 2 + (z.y - s.y) ** 2 < z.r * z.r && !s.ward && !(s.dashT > 0)) { s.hp -= z.dps * dt; s.hurt = 0.15; s.hitFx = 0.35; s.calm = 2; } return z.life > 0; });
       /* HP 포션 — 주우면 최대 체력의 40% 회복. 구슬 끌기 범위 + 40 안이면 끌려온다 */
       s.items = s.items.filter((m) => {
         const dx = s.x - m.x, dy = s.y - m.y, L = Math.hypot(dx, dy) || 1;
@@ -3966,7 +4000,7 @@ body.game-full { overflow: hidden; }
       s.gems = s.gems.filter((m) => {
         const dx = s.x - m.x, dy = s.y - m.y, L = Math.hypot(dx, dy) || 1;
         if (L < 18) { s.xp += m.v; return false; }
-        if (L < s.magnet) { m.x += dx / L * 360 * dt; m.y += dy / L * 360 * dt; }
+        if (L < s.magnet || m.pull) { const v = m.pull ? 900 : 360; m.x += dx / L * v * dt; m.y += dy / L * v * dt; }
         return true;
       });
       s.fields.forEach((z) => { z.life -= dt; s.foes.forEach((f) => { if ((f.x - z.x) ** 2 + (f.y - z.y) ** 2 < (z.r + f.r) ** 2) hurt(f, z.dps * dt); }); });
@@ -4317,13 +4351,27 @@ body.game-full { overflow: hidden; }
             g.fillStyle = "rgba(0,0,0,.6)"; g.fillRect(x - 30, y + f.r + 8, 60, 5); g.fillStyle = "#ff6a4a"; g.fillRect(x - 30, y + f.r + 8, 60 * Math.max(0, f.hp) / f.full, 5);
           }
         });
+        s.pools.forEach((z) => { // 독 웅덩이
+          const x = z.x + ox, y = z.y + oy, a = Math.min(1, z.life / 0.6), gr = g.createRadialGradient(x, y, 0, x, y, z.r);
+          gr.addColorStop(0, "rgba(120,220,60," + (0.5 * a).toFixed(2) + ")"); gr.addColorStop(1, "rgba(60,140,20," + (0.15 * a).toFixed(2) + ")");
+          g.fillStyle = gr; g.beginPath(); g.arc(x, y, z.r, 0, Math.PI * 2); g.fill();
+          g.fillStyle = "rgba(200,255,120," + (0.6 * a).toFixed(2) + ")"; for (let i = 0; i < 4; i++) { const q = s.t * 2 + i * 1.6; g.beginPath(); g.arc(x + Math.cos(q) * z.r * 0.5, y + Math.sin(q * 1.3) * z.r * 0.4, 4, 0, Math.PI * 2); g.fill(); }
+        });
+        s.boxes.forEach((b) => { // 상자 — 나무 상자 · 금테 · 반짝임
+          const x0 = b.x + ox, y0 = b.y + oy + Math.sin(b.t * 3) * 2;
+          if (x0 < -40 || y0 < -40 || x0 > W + 40 || y0 > H + 40) return;
+          g.save(); g.translate(x0, y0); g.scale(1.5, 1.5); const x = 0, y = 0;
+          g.fillStyle = "rgba(255,220,120," + (0.25 + 0.15 * Math.sin(b.t * 4)).toFixed(2) + ")"; g.beginPath(); g.arc(x, y, 26, 0, Math.PI * 2); g.fill();
+          g.fillStyle = "#6b3f1d"; g.fillRect(x - 15, y - 9, 30, 20); g.fillStyle = "#8a5328"; g.fillRect(x - 16, y - 15, 32, 9);
+          g.fillStyle = "#e8c15a"; g.fillRect(x - 16, y - 7, 32, 3); g.fillRect(x - 2, y - 15, 4, 26); g.fillStyle = "#fff6c8"; g.fillRect(x - 1.5, y - 4, 3, 4); g.restore();
+        });
         s.hz.forEach((z) => { // 땅 표시 — 바깥 테두리 + 차오르는 안쪽
           const x = z.x + ox, y = z.y + oy, p = 1 - z.t / z.full;
           g.fillStyle = "rgba(" + z.c + ",.12)"; g.strokeStyle = "rgba(" + z.c + ",.85)"; g.lineWidth = 2;
           g.beginPath(); g.arc(x, y, z.r, 0, Math.PI * 2); g.fill(); g.stroke();
           g.fillStyle = "rgba(" + z.c + ",.35)"; g.beginPath(); g.arc(x, y, z.r * p, 0, Math.PI * 2); g.fill(); g.lineWidth = 1;
         });
-        s.ebs.forEach((b) => { const x = b.x + ox, y = b.y + oy, r = b.r || 5; g.fillStyle = b.c || "#ff9a3c"; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); if (r > 8) { g.strokeStyle = "#3b332c"; g.lineWidth = 2; g.stroke(); g.lineWidth = 1; } });
+        s.ebs.forEach((b) => { const x = b.x + ox, y = b.y + oy, r = b.r || 5; if (r <= 8) { g.fillStyle = "rgba(255,59,141,.3)"; g.beginPath(); g.arc(x, y, r + 4, 0, Math.PI * 2); g.fill(); } g.fillStyle = b.c || "#ff3b8d"; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); if (r > 8) { g.strokeStyle = "#3b332c"; g.lineWidth = 2; g.stroke(); g.lineWidth = 1; } });
         /* 총알 — 꼬리가 흐려지는 빛줄기(예광탄). 노랑 → 꿰뚫기 1 파랑 → 3 보라 */
         g.lineCap = "round";
         const shotLook = HEROES[heroKey].shot;
@@ -4393,7 +4441,8 @@ body.game-full { overflow: hidden; }
       $("gBoss").hidden = !B;
       if (B) { $("gBossName").textContent = B.name; $("gBossHp").style.width = Math.max(0, 100 * B.hp / B.full) + "%"; }
       $("gDash").style.setProperty("--cd", s.dashCd > 0 ? s.dashCd / DASH_CD : 0);
-      $("gDash").classList.toggle("ready", s.dashCd <= 0);
+      $("gDash").classList.toggle("ready", (s.dashN == null ? 1 : s.dashN) > 0);
+      $("gDashN").textContent = (s.up.dashx ? (s.dashN == null ? 1 : s.dashN) + "/" + (1 + s.up.dashx) : "Space");
       $("gSkills").querySelectorAll(".gskill").forEach((b) => {
         const k = b.dataset.k, left = s.cd[k];
         b.style.setProperty("--cd", left > 0 ? left / (SK[k].cd(s.up[k]) * s.cool) : 0);
@@ -4467,7 +4516,7 @@ body.game-full { overflow: hidden; }
       renderSkills(); resume(); msg("업데이트 적용 — 이어서!");
       return true;
     }
-    if (/[?&]bmctest=1/.test(location.search)) window.__bmcGame = { get s() { return s; }, cast: cast, W: () => W, H: () => H, UPS: UPS, SK: SK, TEST_MUL: TEST_MUL };
+    if (/[?&]bmctest=1/.test(location.search)) window.__bmcGame = { get s() { return s; }, cast: cast, W: () => W, H: () => H, UPS: UPS, SK: SK, TEST_MUL: TEST_MUL, openBox: openBox, dash: dash };
     return {
       /* 다른 메뉴로 가면 멈춘다. 처음 들어오면(또는 다른 사람이 들어오면) 시작 안내 */
       render() {
