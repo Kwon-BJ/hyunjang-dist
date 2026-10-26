@@ -1122,7 +1122,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610260433";
+  const BUILD = "202610260448";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -3699,6 +3699,19 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     const SKIN = "#f3cba5", HAIR = "#161a22", HAIR_HI = "#2c3a55", SUIT = "#1c2230", VEST = "#11151d", BLUE = "#2f7bff", GUN = "#2a2e35", DARK = "#0c0e13";
     function box(x, y, w, h, col, r) { g.beginPath(); if (g.roundRect) g.roundRect(x, y, w, h, r == null ? 1.5 : r); else g.rect(x, y, w, h); g.fillStyle = col; g.fill(); }
     function dot(x, y, r, col) { g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fillStyle = col; g.fill(); }
+    /* 주인공 그림 — 부장님이 주신 일러스트를 잘라 배경을 지운 것(img/hero.png · 시험/주인공-그림-자르기.cjs, 2026-10-26).
+       못 읽으면 아래 도형 그림으로. 옆모습은 오른쪽 보는 그림을 뒤집어 왼쪽으로 쓴다(원본의 왼 · 오 표시가 칸마다 달라서) */
+    const HERO = new Image(), HF = {"idle-up":[0,0,68,117],"idle-down":[70,0,68,111],"idle-left":[140,0,67,114],"idle-right":[209,0,68,117],"move-up":[279,0,67,116],"move-down":[348,0,67,112],"move-left":[417,0,71,113],"move-right":[490,0,67,116],"shot-up":[559,0,59,100],"shot-down":[620,0,56,93],"shot-left":[678,0,96,90],"shot-right":[776,0,86,90],"hit-up":[864,0,61,87],"hit-down":[927,0,66,91],"hit-left":[995,0,64,90],"hit-right":[1061,0,63,90],"dead-up":[1126,0,64,76],"dead-down":[1192,0,73,57],"dead-left":[1267,0,70,74],"dead-right":[1339,0,74,68]};
+    const HSIDE = { idle: "idle-right", move: "move-right", shot: "shot-left", hit: "hit-right", dead: "dead-right" };
+    let heroOk = false;
+    HERO.onload = () => { heroOk = true; draw(); };
+    HERO.src = "img/hero.png";
+    function heroImg(cx, cy, view, flip, act) {
+      const key = view === "side" ? HSIDE[act] : act + "-" + (view === "front" ? "down" : "up"), f = HF[key];
+      const w = f[2] * 0.6, h = f[3] * 0.6, ax = key === "shot-left" ? 0.38 : 0.5;
+      g.save(); g.translate(cx, cy + 19); if (flip < 0) g.scale(-1, 1);
+      g.drawImage(HERO, f[0], f[1], f[2], f[3], -w * ax, -h, w, h); g.restore();
+    }
     function hero(cx, cy) {
       const dead = !!(s && s.over && s.hp <= 0), mv = !!(s && s.moving && !dead && running);
       const a = !s ? Math.PI / 2 : s.shotT > 0 || !mv ? s.aim : s.mvA, c = Math.cos(a), sn = Math.sin(a);
@@ -3707,6 +3720,12 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       g.save(); g.translate(cx, cy); g.scale(1.35, 1.35); // 보는 크기만 (맞는 범위는 그대로)
       g.beginPath(); g.ellipse(0, 15, 19, 7, 0, 0, Math.PI * 2);
       g.fillStyle = "rgba(47,123,255,.16)"; g.fill(); g.lineWidth = 2; g.strokeStyle = s && s.ward ? "#9fbcff" : BLUE; g.stroke(); g.lineWidth = 1;
+      if (heroOk) {
+        g.restore();
+        const act = dead ? "dead" : s && s.hurt > 0.05 ? "hit" : s && s.shotT > 0.25 ? "shot" : mv && Math.sin(s.walk) > 0 ? "move" : "idle";
+        heroImg(cx, cy, view, side ? flip : 1, act);
+        return;
+      }
       if (dead) { g.translate(0, 9); g.rotate(-Math.PI / 2 * flip); }
       g.translate(0, bob);
       if (side) g.scale(flip, 1);
