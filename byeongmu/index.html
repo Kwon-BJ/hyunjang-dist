@@ -1124,7 +1124,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610260503";
+  const BUILD = "202610260511";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -3563,6 +3563,16 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       Object.keys(keys).forEach((k) => { if (keys[k] && MOVE[k]) { dx += MOVE[k][0]; dy += MOVE[k][1]; } });
       const L = Math.hypot(dx, dy); return L ? [dx / L, dy / L] : [0, 0];
     }
+    /* 맵 — 부장님이 주신 「게임 맵 예시」에서 전체 맵만 오린 것(img/map.jpg · 시험/맵-자르기.cjs, 2026-10-26 "마지막이다 맵추가해라").
+       2배로 깔고 가운데 파란 제단(그림의 588, 338)에서 시작한다. 맵 밖으로는 못 나가고 몬스터도 맵 안에서 나온다.
+       물 · 절벽은 그림일 뿐 막지 않는다. 그림을 못 읽으면 예전처럼 끝없는 격자 */
+    const MAP = new Image(), MAP_K = 2, MAP_O = [588, 338], MAP_PAD = 50;
+    let mapOk = false;
+    MAP.onload = () => { mapOk = true; draw(); };
+    MAP.src = "img/map.jpg";
+    function bounds() { return [-MAP_O[0] * MAP_K + MAP_PAD, (MAP.width - MAP_O[0]) * MAP_K - MAP_PAD, -MAP_O[1] * MAP_K + MAP_PAD, (MAP.height - MAP_O[1]) * MAP_K - MAP_PAD]; }
+    function inside(x, y) { const b = bounds(); return x >= b[0] && x <= b[1] && y >= b[2] && y <= b[3]; }
+    function inMap(p) { if (!mapOk) return p; const b = bounds(); p.x = Math.min(b[1], Math.max(b[0], p.x)); p.y = Math.min(b[3], Math.max(b[2], p.y)); return p; }
     /* 몬스터 그림 — 부장님이 주신 9장 (2026-10-26). 기본 잡귀는 단계가 오를수록 슬라임 → 고블린 → 해골 전사가 섞인다 */
     function skinOf(kind) {
       const pick = (a) => a[Math.floor(Math.random() * a.length)];
@@ -3573,7 +3583,8 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     }
     function spawn(kind, x, y) {
       if (!kind) { const q = Math.random(); kind = s.stage >= 5 && q < 0.1 ? "spit" : s.stage >= 3 && q < 0.22 ? "rock" : s.stage >= 2 && q < 0.45 ? "fast" : "imp"; }
-      if (x == null) { const a = Math.random() * Math.PI * 2, d = Math.max(260, Math.hypot(W, H) / 2 + 40); x = s.x + Math.cos(a) * d; y = s.y + Math.sin(a) * d; }
+      if (x == null) for (let k = 0; k < 8; k++) { const a = Math.random() * Math.PI * 2, d = Math.max(260, Math.hypot(W, H) / 2 + 40); x = s.x + Math.cos(a) * d; y = s.y + Math.sin(a) * d; if (!mapOk || inside(x, y)) break; }
+      const P = inMap({ x: x, y: y }); x = P.x; y = P.y;
       const F = FOES[kind], hp = F.hp * (1 + (s.stage - 1) * 0.45);
       s.foes.push({ k: kind, skin: skinOf(kind), x: x, y: y, r: F.r, hp: hp, full: hp, spd: F.spd * Math.min(1.6, 1 + (s.stage - 1) * 0.05), dps: F.dps, c: F.c, xp: F.xp, hit: 0, oc: 0, cd: 1 + Math.random() * 2, dash: 0 });
     }
@@ -3587,7 +3598,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       const a = Math.random() * Math.PI * 2, d = Math.max(260, Math.hypot(W, H) / 2 + 40);
       const f = { k: "boss", skin: B.skin, name: name, act: B.act, x: s.x + Math.cos(a) * d, y: s.y + Math.sin(a) * d, r: B.r, hp: B.hp * k, full: B.hp * k,
         spd: B.spd * (1 + lap * 0.1), dps: B.dps * (1 + lap * 0.5), c: B.c, xp: B.xp * (1 + lap), hit: 0, oc: 0, cd: 2.5, dash: 0, n: 0 };
-      s.foes.push(f); s.bossNow = f; msg(name + " 나타남!");
+      inMap(f); s.foes.push(f); s.bossNow = f; msg(name + " 나타남!");
     }
     function bullet(x, y, a, v, dmg) { s.ebs.push({ x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 4, dmg: dmg }); }
     /* 쏘는 잡귀 · 대장의 재주 */
@@ -3660,6 +3671,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       s.dashCd = Math.max(0, s.dashCd - dt);
       if (s.dashT > 0) { s.dashT -= dt; s.x += s.dashX * 900 * dt; s.y += s.dashY * 900 * dt; s.trail.push({ x: s.x, y: s.y, life: 0.3 }); }
       s.trail.forEach((p) => { p.life -= dt; }); s.trail = s.trail.filter((p) => p.life > 0);
+      inMap(s);
       if (s.regen) s.hp = Math.min(s.max, s.hp + s.regen * dt);
       s.hurt = Math.max(0, s.hurt - dt); s.ward = Math.max(0, s.ward - dt);
       s.skills.forEach((k) => { s.cd[k] = Math.max(0, s.cd[k] - dt); });
@@ -3838,10 +3850,17 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       g.setTransform(DPR, 0, 0, DPR, 0, 0);
       g.fillStyle = "#0d0b09"; g.fillRect(0, 0, W, H);
       const px = s ? s.x : 0, py = s ? s.y : 0, ox = W / 2 - px, oy = H / 2 - py;
-      g.strokeStyle = "rgba(214,176,98,.08)"; g.lineWidth = 1; g.beginPath();
-      for (let x = ((ox % 48) + 48) % 48; x < W; x += 48) { g.moveTo(x, 0); g.lineTo(x, H); }
-      for (let y = ((oy % 48) + 48) % 48; y < H; y += 48) { g.moveTo(0, y); g.lineTo(W, y); }
-      g.stroke();
+      if (mapOk) {
+        const mx = ox - MAP_O[0] * MAP_K, my = oy - MAP_O[1] * MAP_K;
+        const sx = Math.max(0, -mx / MAP_K), sy = Math.max(0, -my / MAP_K), sw = Math.min(MAP.width - sx, W / MAP_K + 2), sh = Math.min(MAP.height - sy, H / MAP_K + 2);
+        if (sw > 0 && sh > 0) { g.imageSmoothingEnabled = false; g.drawImage(MAP, sx, sy, sw, sh, mx + sx * MAP_K, my + sy * MAP_K, sw * MAP_K, sh * MAP_K); g.imageSmoothingEnabled = true; }
+        g.fillStyle = "rgba(0,0,0,.28)"; g.fillRect(0, 0, W, H); // 몬스터 · 총알이 잘 보이게 조금 어둡게
+      } else {
+        g.strokeStyle = "rgba(214,176,98,.08)"; g.lineWidth = 1; g.beginPath();
+        for (let x = ((ox % 48) + 48) % 48; x < W; x += 48) { g.moveTo(x, 0); g.lineTo(x, H); }
+        for (let y = ((oy % 48) + 48) % 48; y < H; y += 48) { g.moveTo(0, y); g.lineTo(W, y); }
+        g.stroke();
+      }
       if (s) {
         if (s.aura) { g.beginPath(); g.arc(W / 2, H / 2, 55 + s.aura * 12, 0, Math.PI * 2); g.fillStyle = "rgba(214,176,98,.07)"; g.fill(); g.strokeStyle = "rgba(214,176,98,.35)"; g.stroke(); }
         g.fillStyle = "#f6e2a4"; g.beginPath();
@@ -3908,7 +3927,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       });
       /* 조준 범위(바라보는 쪽 3m 부채꼴) · 겨눈 잡귀 표시 */
       if (s && !s.over) {
-        g.fillStyle = "rgba(246,226,164,.05)"; g.strokeStyle = "rgba(246,226,164,.2)";
+        g.fillStyle = "rgba(246,226,164,.09)"; g.strokeStyle = "rgba(246,226,164,.45)";
         g.beginPath(); g.moveTo(W / 2, H / 2); g.arc(W / 2, H / 2, AIM_R, s.mvA - AIM_HALF, s.mvA + AIM_HALF); g.closePath(); g.fill(); g.stroke();
         const L = s.lock;
         if (L && L.hp > 0 && s.foes.includes(L)) {
