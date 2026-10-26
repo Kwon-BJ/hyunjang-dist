@@ -1007,7 +1007,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     <!-- 연병장 — 점검 시간 미니게임. 점수는 이 기기에만 저장(창구 안 씀) (2026-10-26) -->
     <section id="gameView" hidden>
       <h2 class="section-label"><svg aria-hidden="true"><use href="#i-war"/></svg>연병장</h2>
-      <p class="game-hint">화면을 누른 채 끌면 움직이고(PC 는 방향키 · WASD), 총은 <b>바라보는 쪽</b>으로 쏘고, 그쪽 둘레 3m(밝은 동그라미) 안 몬스터는 어느 쪽이든 자동 조준돼요. 30초마다 단계가 올라 잡귀가 늘고, 1분마다 대장이 나와요. 레벨이 오르면 강화나 <b>스킬</b>을 고르고, 스킬(6가지)은 오른쪽 아래 단추(PC 는 1 ~ 6), <b>대쉬</b>는 오른쪽 아래 단추(PC 는 스페이스) — 5초마다, 대쉬하는 동안은 안 맞아요. <b>죽을 때까지</b> 버틴 만큼 점수 — 끝나면 순위표에 올라가요!</p>
+      <p class="game-hint">화면을 누른 채 끌면 움직이고(PC 는 방향키 · WASD), 총은 <b>바라보는 쪽</b>으로 쏘고, 그쪽 둘레 3m(밝은 동그라미) 안 몬스터는 어느 쪽이든 자동 조준돼요. 30초마다 단계가 올라 잡귀가 늘고, 1분마다 대장이 나와요. 레벨이 오르면 강화나 <b>스킬</b>을 고르고, 스킬(6가지)은 배우면 <b>저절로</b> 나가요(오른쪽 아래 단추 · PC 1 ~ 6 으로도), <b>대쉬</b>는 오른쪽 아래 단추(PC 는 스페이스) — 5초마다, 대쉬하는 동안은 안 맞아요. <b>죽을 때까지</b> 버틴 만큼 점수 — 끝나면 순위표에 올라가요!</p>
       <div class="game-box" id="gameBox">
         <canvas id="gameCv" aria-label="연병장 게임 화면"></canvas>
         <div class="game-hud" id="gameHud" hidden>
@@ -1136,7 +1136,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610260635";
+  const BUILD = "202610260638";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -3462,7 +3462,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     function intro() {
       $("gameHud").hidden = true;
       panel([el("h3", null, "연병장"), el("p", null, nick() + " 님, 죽을 때까지 버텨 보세요."),
-        el("p", "best", "움직이기 — 휴대폰은 화면을 누른 채 끌기 · PC 는 방향키(또는 WASD). 둘레 3m 동그라미 안은 자동 조준, 없으면 바라보는 쪽. 대쉬는 스페이스(휴대폰은 오른쪽 아래 단추) 5초마다. 스킬 6가지는 1 ~ 6"),
+        el("p", "best", "움직이기 — 휴대폰은 화면을 누른 채 끌기 · PC 는 방향키(또는 WASD). 둘레 3m 동그라미 안은 자동 조준, 없으면 바라보는 쪽. 대쉬는 스페이스(휴대폰은 오른쪽 아래 단추) 5초마다. 스킬은 배우면 저절로 나가요(1 ~ 6 으로도)"),
         el("p", "best", "30초마다 단계가 올라 잡귀가 세지고 많아져요. 1분마다 대장이 나와요. 끝나면 순위표에 올라가요."), pickRow(), bestLine(), gBtn("시작", begin)]);
       drawPick();
     }
@@ -3662,6 +3662,12 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       const L = Math.hypot(mx, my) || 1;
       s.dashX = mx / L; s.dashY = my / L; s.dashT = 0.2; s.dashCd = DASH_CD;
     }
+    function wantCast(k) {
+      const near = (R) => s.foes.some((f) => (f.x - s.x) ** 2 + (f.y - s.y) ** 2 < (R + f.r) ** 2);
+      if (k === "thunder" || k === "homing") return s.foes.some((f) => Math.abs(f.x - s.x) < W / 2 && Math.abs(f.y - s.y) < H / 2);
+      if (k === "ward") return s.hitFx > 0 || near(40);
+      return near(160); // 회오리 · 얼음 폭발 · 불바다
+    }
     function cast(k) {
       if (!running || !k || !s.up[k] || s.cd[k] > 0) return;
       const l = s.up[k];
@@ -3734,6 +3740,8 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       /* 피격 효과 (2026-10-26 "주인공이 데미지 받으면 피격 효과") — 화면 가장자리 붉게 · 살짝 흔들림 · 붉은 불꽃 */
       if (s.hitFx > 0) { s.hitFx = Math.max(0, s.hitFx - dt); if (Math.random() < 0.35 && s.fx.length < 160) s.fx.push({ spark: true, x: s.x + (Math.random() - 0.5) * 24, y: s.y - 8 + (Math.random() - 0.5) * 24, c: 3, life: 0.15 }); }
       s.skills.forEach((k) => { s.cd[k] = Math.max(0, s.cd[k] - dt); });
+      /* 스킬은 배우면 저절로 — "스킬 배우면 자동으로 나가게 해라" (2026-10-26). 준비되고 쓸 만할 때(아래 wantCast) 나간다. 단추로도 쓸 수 있다 */
+      s.skills.forEach((k) => { if (s.cd[k] <= 0 && wantCast(k)) cast(k); });
       if (s.msgT > 0 && (s.msgT -= dt) <= 0) $("gMsg").classList.remove("on");
       /* 단계 — 30초마다 하나씩, 끝없이 */
       const st = 1 + Math.floor(s.t / STAGE);
