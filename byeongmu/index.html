@@ -1136,7 +1136,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610260616";
+  const BUILD = "202610260623";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -3669,7 +3669,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       if (k === "thunder") {
         s.foes.filter((f) => Math.abs(f.x - s.x) < W / 2 + 20 && Math.abs(f.y - s.y) < H / 2 + 20)
           .sort((p, q) => ((p.x - s.x) ** 2 + (p.y - s.y) ** 2) - ((q.x - s.x) ** 2 + (q.y - s.y) ** 2)).slice(0, 3 + l)
-          .forEach((f) => { hurt(f, 35 + 25 * l, true); s.fx.push({ bolt: true, x: f.x, y: f.y, life: 0.3 }); });
+          .forEach((f) => { hurt(f, 35 + 25 * l, true); s.fx.push({ bolt: true, spr: "thunder", x: f.x, y: f.y + f.r, size: 96, base: true, add: true, life: 0.3, dur: 0.3 }); });
       } else if (k === "whirl") {
         const R = 100 + 20 * l;
         s.foes.forEach((f) => {
@@ -3677,7 +3677,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
           if (L < R + f.r) { hurt(f, 25 + 20 * l, true); if (f.k !== "boss") { f.x += dx / L * 140; f.y += dy / L * 140; } }
         });
         s.ebs = s.ebs.filter((b) => (b.x - s.x) ** 2 + (b.y - s.y) ** 2 > R * R);
-        s.fx.push({ x: s.x, y: s.y, r: R / 2.2, c: "#f6e2a4", life: 0.3 });
+        s.fx.push({ x: s.x, y: s.y, r: R / 2.2, c: "#f6e2a4", life: 0.3 }, { spr: "whirl", x: s.x, y: s.y + 30, size: Math.min(150, R), base: true, life: 0.5, dur: 0.5 });
       } else if (k === "fire") {
         s.fields.push({ x: s.x, y: s.y + 8, r: 80 + 15 * l, dps: 22 + 12 * l, life: 4, full: 4 });
       } else if (k === "homing") {
@@ -3685,7 +3685,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       } else if (k === "frost") {
         const R = 150 + 15 * l;
         s.foes.forEach((f) => { if ((f.x - s.x) ** 2 + (f.y - s.y) ** 2 < (R + f.r) ** 2) { hurt(f, 15 + 10 * l, true); f.slow = (2 + 0.3 * l) * (f.k === "boss" ? 0.5 : 1); } });
-        s.fx.push({ x: s.x, y: s.y, r: R / 2.2, c: "#a5f3fc", life: 0.3 }, { frost: true, x: s.x, y: s.y, r: R, life: 0.45 });
+        s.fx.push({ x: s.x, y: s.y, r: R / 2.2, c: "#a5f3fc", life: 0.3 }, { frost: true, spr: "frost", x: s.x, y: s.y, r: R, size: R * 1.5, life: 0.45, dur: 0.45 });
       } else s.ward = 1.5 + 0.5 * l;
     }
     function hurt(f, n, flash) {
@@ -3783,7 +3783,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
         s.kills++;
         if (f.k === "boss") { s.bossKills++; if (s.bossNow === f) s.bossNow = null; msg(f.name + " 쓰러뜨림!"); }
         s.gems.push({ x: f.x, y: f.y, v: f.xp });
-        s.fx.push({ boom: true, x: f.x, y: f.y, r: f.r, c: f.c, life: 0.3 });
+        s.fx.push({ boom: true, spr: "smoke", x: f.x, y: f.y, r: f.r, c: f.c, size: f.r * 3.4, life: 0.4, dur: 0.4 });
         return false;
       });
       if (s.gems.length > 400) s.gems.splice(0, s.gems.length - 400);
@@ -3804,10 +3804,25 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       s.homs = s.homs.filter((m) => m.life > 0);
       s.fx.forEach((x) => { x.life -= dt; }); s.fx = s.fx.filter((x) => x.life > 0);
       if (s.hp <= 0) { s.hp = 0; return end(); }
-      if (s.xp >= s.need) { s.fx.push({ x: s.x, y: s.y, r: 30, c: "#ffe08a", life: 0.3 }, { x: s.x, y: s.y, r: 18, c: "#fff6d0", life: 0.3 }); s.xp -= s.need; s.lv++; s.need = Math.round(s.need * 1.22 + 2); running = false; stick = null; hud(); showPicks(); }
+      if (s.xp >= s.need) { s.fx.push({ x: s.x, y: s.y, r: 30, c: "#ffe08a", life: 0.3 }, { spr: "levelup", x: s.x, y: s.y + 22, size: 120, base: true, add: true, life: 0.8, dur: 0.8 }); s.xp -= s.need; s.lv++; s.need = Math.round(s.need * 1.22 + 2); running = false; stick = null; hud(); showPicks(); }
     }
 
     /* ── 그리기 — 모두 도형 ── */
+    /* 스킬 효과 그림 — 부장님이 구해 주신 8종 × 4단계(img/fx.png · 시험/효과-그림-자르기.cjs, 2026-10-26).
+       효과(fx)에 spr 이 있으면 dur 동안 4장을 차례로 넘긴다. 그림을 못 읽으면 예전 도형 효과 */
+    const FXI = new Image(), FXF = {"thunder":[[0,0,108,128],[110,0,107,128],[219,0,116,128],[337,0,121,128]],"whirl":[[0,130,121,128],[123,130,120,128],[245,130,124,128],[371,130,123,128]],"ward":[[0,274,128,114],[130,265,128,123],[260,269,128,119],[390,269,128,119]],"fire":[[0,441,128,77],[130,432,128,86],[260,416,128,102],[390,398,128,120]],"homing":[[0,590,128,58],[130,557,128,91],[260,544,128,104],[390,577,128,71]],"frost":[[0,650,95,128],[97,650,121,128],[220,650,127,128],[349,655,128,123]],"levelup":[[0,780,113,128],[115,780,113,128],[230,780,113,128],[345,780,113,128]],"smoke":[[0,935,128,103],[130,942,128,96],[260,945,128,93],[390,914,128,124]]};
+    let fxOk = false;
+    FXI.onload = () => { fxOk = true; };
+    FXI.src = "img/fx.png";
+    function fxDraw(name, fi, x, y, size, o) {
+      o = o || {};
+      const fr = FXF[name][Math.max(0, Math.min(3, fi))], k = size / Math.max(fr[2], fr[3]), w = fr[2] * k, h = fr[3] * k;
+      g.save(); g.translate(x, y); if (o.rot != null) g.rotate(o.rot);
+      if (o.add) g.globalCompositeOperation = "lighter";
+      if (o.alpha != null) g.globalAlpha *= o.alpha;
+      g.drawImage(FXI, fr[0], fr[1], fr[2], fr[3], -w / 2, o.base ? -h : -h / 2, w, h);
+      g.restore();
+    }
     const TRACER = [["255,176,46", "#fff4c8"], ["96,165,250", "#e3f1ff"], ["192,132,252", "#f6ecff"]];
     /* 주인공 — 부장님이 주신 「게임 캐릭터 & 총알 디자인」 그림을 보고 코드로 그림 (2026-10-26):
        검은 머리 · 검은 전술복에 파란 줄 · 소총, 발밑 파란 원(예전 원형 아이콘 자리). 겨누는 쪽으로 몸을 돌린다 —
@@ -3979,12 +3994,19 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
           const x = z.x + ox, y = z.y + oy, a = Math.min(1, z.life / 0.5) * (0.85 + Math.random() * 0.15), gr = g.createRadialGradient(x, y, 0, x, y, z.r);
           gr.addColorStop(0, "rgba(255,210,90," + (0.55 * a).toFixed(2) + ")"); gr.addColorStop(0.6, "rgba(255,90,20," + (0.4 * a).toFixed(2) + ")"); gr.addColorStop(1, "rgba(180,20,10,0)");
           g.fillStyle = gr; g.beginPath(); g.arc(x, y, z.r, 0, Math.PI * 2); g.fill();
+          if (fxOk) { const age = z.full - z.life; fxDraw("fire", age < 0.45 ? Math.floor(age / 0.15) : 2 + (Math.floor(age * 8) % 2), x, y + z.r * 0.35, z.r * 2.1, { base: true, alpha: Math.min(1, z.life / 0.5) }); }
         });
         if (s.aura) { g.beginPath(); g.arc(W / 2, H / 2, 55 + s.aura * 12, 0, Math.PI * 2); g.fillStyle = "rgba(214,176,98,.07)"; g.fill(); g.strokeStyle = "rgba(214,176,98,.35)"; g.stroke(); }
         g.fillStyle = "#f6e2a4"; g.beginPath();
         s.gems.forEach((m) => { const x = m.x + ox, y = m.y + oy, r = m.v > 1 ? 8.5 : 6; if (x < -6 || y < -6 || x > W + 6 || y > H + 6) return; g.moveTo(x, y - r); g.lineTo(x + r, y); g.lineTo(x, y + r); g.lineTo(x - r, y); g.closePath(); });
         g.fill(); g.strokeStyle = "#ff9a1f"; g.lineWidth = 1.6; g.stroke(); g.lineWidth = 1; // 경험치 구슬 — 크게 · 주황 테두리 (2026-10-26)
         s.fx.forEach((x) => {
+          if (x.spr && fxOk) {
+            const fi = Math.floor((1 - x.life / x.dur) * 4);
+            g.globalAlpha = Math.min(1, x.life / (x.dur * 0.35));
+            fxDraw(x.spr, fi, x.x + ox, x.y + oy, x.size, { base: x.base, add: x.add });
+            g.globalAlpha = 1; return;
+          }
           g.globalAlpha = Math.min(1, x.life / (x.spark ? 0.15 : x.num ? 0.3 : x.frost ? 0.45 : 0.3));
           if (x.num) {
             const nx = x.x + ox, ny = x.y + oy - (0.6 - x.life) * 50;
@@ -4041,7 +4063,8 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
         s.homs.forEach((m) => {
           const x = m.x + ox, y = m.y + oy;
           g.strokeStyle = "rgba(192,132,252,.7)"; g.lineWidth = 3; g.beginPath(); g.moveTo(m.px + ox - Math.cos(m.a) * 14, m.py + oy - Math.sin(m.a) * 14); g.lineTo(x, y); g.stroke();
-          g.fillStyle = "#f3e8ff"; g.beginPath(); g.arc(x, y, 3, 0, Math.PI * 2); g.fill();
+          if (fxOk) fxDraw("homing", 0, x, y, 40, { rot: m.a + 0.4 });
+          else { g.fillStyle = "#f3e8ff"; g.beginPath(); g.arc(x, y, 3, 0, Math.PI * 2); g.fill(); }
         });
         g.lineCap = "butt"; g.lineWidth = 1;
         for (let i = 0; i < s.orbs; i++) {
@@ -4050,7 +4073,8 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
           g.fillStyle = "rgba(111,155,255,.25)"; g.beginPath(); g.arc(x, y, 13, 0, Math.PI * 2); g.fill();
           g.fillStyle = "#6f9bff"; g.beginPath(); g.arc(x, y, 8, 0, Math.PI * 2); g.fill();
         }
-        if (s.ward) { g.beginPath(); g.arc(W / 2, H / 2, 26, 0, Math.PI * 2); g.fillStyle = "rgba(111,155,255,.18)"; g.fill(); g.strokeStyle = "#9fbcff"; g.lineWidth = 2; g.stroke(); g.lineWidth = 1; }
+        if (s.ward && fxOk) fxDraw("ward", 2 + (Math.floor(s.t * 6) % 2), W / 2, H / 2 + 26, 78, { base: true, alpha: 0.75 });
+        else if (s.ward) { g.beginPath(); g.arc(W / 2, H / 2, 26, 0, Math.PI * 2); g.fillStyle = "rgba(111,155,255,.18)"; g.fill(); g.strokeStyle = "#9fbcff"; g.lineWidth = 2; g.stroke(); g.lineWidth = 1; }
       }
       /* 대쉬 잔상 — 파란 빛줄기 */
       if (s && s.trail.length) s.trail.forEach((p) => {
