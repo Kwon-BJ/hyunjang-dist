@@ -1160,7 +1160,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610261004";
+  const BUILD = "202610261015";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -3585,7 +3585,7 @@ body.game-full { overflow: hidden; }
         spawn: 0, fire: 0, rate: 0.7, dmg: 10, multi: 1, pierce: 0, fan: 0, crit: 0, boom: 0, bounce: 0, bossPick: false, orbs: 0, orbA: 0, aura: 0, magnet: 60, regen: 0, hurt: 0,
         stage: 1, stageT: 0, advance: "", bossN: 0, bossNow: null, aim: Math.PI / 2, mvA: Math.PI / 2, dashT: 0, dashCd: 0, dashX: 0, dashY: 1, trail: [], lock: null, hitFx: 0, fields: [], homs: [], hz: [], walk: 0, moving: false, items: [], flash: 0, shotT: 0, bossKills: 0, up: {}, skills: [], cd: {}, cool: 1, ward: 0, msgT: 0, over: false };
       s.test = testOn(); $("gTest").hidden = !s.test;
-      renderSkills(); resume(); msg("1단계 — " + sideText() + "에서 몰려온다!");
+      renderSkills(); resume(); msg("1단계 — 죽을 때까지 버텨라!");
     }
     function resume() {
       $("gameOver").hidden = true; $("gameHud").hidden = false;
@@ -3707,12 +3707,13 @@ body.game-full { overflow: hidden; }
     function spawn(kind, x, y) {
       if (!kind) { const q = Math.random(); kind = s.stage >= 5 && q < 0.1 ? "spit" : s.stage >= 3 && q < 0.22 ? "rock" : s.stage >= 2 && q < 0.45 ? "fast" : "imp"; }
       /* 정해진 쪽을 지킨다 — 맵 밖이면 같은 쪽 맵 가장자리로(아래 inMap). 예전엔 다른 쪽으로 다시 뽑아, 세로가 짧은 맵에서는 위 · 아래로 하나도 안 나왔다 */
-      if (x == null) { const a = sideAngle(), d = Math.max(260, Math.hypot(W, H) / 2 + 40); x = s.x + Math.cos(a) * d; y = s.y + Math.sin(a) * d; }
+      /* 사방 랜덤으로, 맵 안 · 주인공과 떨어진 곳 — "한쪽 구석에서만 나오니 구석에 있으면 몹이 안 나온다" (2026-10-26) */
+      if (x == null) { const d = Math.max(260, Math.hypot(W, H) / 2 + 40); for (let k = 0; k < 12; k++) { const a = Math.random() * Math.PI * 2, dd = d * (k < 6 ? 1 : 0.6 + Math.random() * 0.4); x = s.x + Math.cos(a) * dd; y = s.y + Math.sin(a) * dd; if (!mapOk || inside(x, y)) break; } }
       const P = inMap({ x: x, y: y }); x = P.x; y = P.y;
       /* 단계가 오를수록 체력 · 공격력 · 빠르기 — "레벨 오르면 오를수록 체력, 공격력 강하게, 속도도 점점 빠르게" (2026-10-26).
          단계마다 체력 +50% · 공격력 +15% · 빠르기 +6%(많아야 2.2배) */
-      const F = FOES[kind], st = s.stage - 1, hp = F.hp * (1 + st * 0.5);
-      s.foes.push({ k: kind, skin: skinOf(kind), x: x, y: y, r: F.r, hp: hp, full: hp, spd: F.spd * Math.min(2.2, 1 + st * 0.06), dps: F.dps * (1 + st * 0.15), c: F.c, xp: F.xp, hit: 0, oc: 0, cd: 1 + Math.random() * 2, dash: 0, ph: Math.random() * 10, age: 0 });
+      const F = FOES[kind], st = s.stage - 1, hp = F.hp * 1.15 * (1 + st * 0.6); // 2026-10-26 조금 더 세게: 체력 +15% · 단계마다 +60%
+      s.foes.push({ k: kind, skin: skinOf(kind), x: x, y: y, r: F.r, hp: hp, full: hp, spd: F.spd * 1.08 * Math.min(2.4, 1 + st * 0.07), dps: F.dps * 1.15 * (1 + st * 0.2), c: F.c, xp: F.xp, hit: 0, oc: 0, cd: 1 + Math.random() * 2, dash: 0, ph: Math.random() * 10, age: 0 });
     }
     /* 단계가 오를 때 한 무리가 빙 둘러싸며 나온다 */
     /* 몬스터 나오는 쪽 — "1단계 좌측 2단계 우측 3단계 윗쪽 4단계 아랫쪽 5단계 4방향 등등, 너무 다방면에서 나오니 정신을 못 차린다" (2026-10-26).
@@ -3723,16 +3724,18 @@ body.game-full { overflow: hidden; }
     function sideText() { const w = sides(); return w.length === 4 ? "사방" : w.map((d) => SIDE_N[d]).join(" · "); }
     function sideAngle() { const w = sides(); return SIDES[w[Math.floor(Math.random() * w.length)]] + (Math.random() - 0.5) * 0.7; }
     function horde() {
-      const w = sides(), n = 6 + s.stage * 3, per = Math.ceil(n / w.length), d = Math.max(240, Math.min(W, H) / 2 + 30);
-      for (let i = 0; i < n && s.foes.length < 300; i++) {
-        const k = Math.floor(i / w.length), a = SIDES[w[i % w.length]] + (per > 1 ? k / (per - 1) - 0.5 : 0) * 1.1;
-        spawn(null, s.x + Math.cos(a) * d, s.y + Math.sin(a) * d);
+      /* 단계 시작 무리 — 빙 둘러싸되, 맵 밖 자리는 맵 안 다른 곳에서 (2026-10-26 사방 랜덤) */
+      const n = 8 + s.stage * 4, d = Math.max(240, Math.min(W, H) / 2 + 30), a0 = Math.random() * Math.PI * 2;
+      for (let i = 0; i < n && s.foes.length < 360; i++) {
+        const a = a0 + i * Math.PI * 2 / n, x = s.x + Math.cos(a) * d, y = s.y + Math.sin(a) * d;
+        if (!mapOk || inside(x, y)) spawn(null, x, y); else spawn();
       }
     }
-    function nextStage(pre) { s.stage++; s.stageT = 0; horde(); msg(pre + s.stage + "단계 — " + sideText() + "에서 몰려온다!"); }
+    function nextStage(pre) { s.stage++; s.stageT = 0; horde(); msg(pre + s.stage + "단계 — 잡귀가 사방에서 몰려온다!"); }
     function spawnBoss(i) {
       const B = BOSSES[i % BOSSES.length], lap = Math.floor(i / BOSSES.length), k = 1 + lap * 1.0, name = B.name + (lap ? " " + (lap + 1) : "");
-      const a = sideAngle(), d = Math.max(260, Math.hypot(W, H) / 2 + 40);
+      let a = Math.random() * Math.PI * 2; const d = Math.max(260, Math.hypot(W, H) / 2 + 40);
+      for (let k = 0; k < 12 && mapOk && !inside(s.x + Math.cos(a) * d, s.y + Math.sin(a) * d); k++) a = Math.random() * Math.PI * 2; // 대장도 맵 안 랜덤 쪽
       const f = { k: "boss", skin: B.skin, name: name, act: B.act, x: s.x + Math.cos(a) * d, y: s.y + Math.sin(a) * d, r: B.r, hp: B.hp * k * (1 + (s.stage - 1) * 0.2), full: B.hp * k * (1 + (s.stage - 1) * 0.2),
         spd: B.spd * (1 + lap * 0.1) * Math.min(1.8, 1 + (s.stage - 1) * 0.04), dps: B.dps * (1 + lap * 0.5) * (1 + (s.stage - 1) * 0.1), bd: 1 + (s.stage - 1) * 0.12, c: B.c, xp: B.xp * (1 + lap), hit: 0, oc: 0, cd: 2.5, dash: 0, n: 0, ph: Math.random() * 10, age: 0 };
       inMap(f); s.foes.push(f); s.bossNow = f; msg(name + " 나타남!");
@@ -3881,8 +3884,8 @@ body.game-full { overflow: hidden; }
         if (s.stageT >= STAGE) { if (s.stage % 2 === 0) { s.stageT = STAGE; spawnBoss(s.bossN++); } else nextStage(""); }
       }
       /* 1단계 초당 1마리 → 8단계 10마리 → 많아야 14마리 (그 뒤로는 잡귀가 단단해지기만) */
-      s.spawn += dt * Math.min(14, s.stage * 1.25 - 0.2) * (bossOn && s.bossNow.age < 45 ? 0.35 : 1);
-      while (s.spawn >= 1) { s.spawn--; if (s.foes.length < 300) spawn(); }
+      s.spawn += dt * Math.min(20, s.stage * 1.6 + 0.4) * /* 2026-10-26 더 많이 */ (bossOn && s.bossNow.age < 45 ? 0.35 : 1);
+      while (s.spawn >= 1) { s.spawn--; if (s.foes.length < 360) spawn(); }
       s.fire -= dt;
       if (s.fire <= 0 && s.foes.length) { s.fire = s.rate; shoot(); }
       s.shots.forEach((b) => {
