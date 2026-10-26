@@ -1124,7 +1124,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610260534";
+  const BUILD = "202610260550";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -3481,7 +3481,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       $("gameBox").scrollIntoView({ block: "center", behavior: "smooth" });
       s = { t: 0, hp: 100, max: 100, x: 0, y: 0, spd: 150, lv: 1, xp: 0, need: 6, kills: 0, foes: [], shots: [], ebs: [], gems: [], fx: [],
         spawn: 0, fire: 0, rate: 0.7, dmg: 10, multi: 1, pierce: 0, orbs: 0, orbA: 0, aura: 0, magnet: 60, regen: 0, hurt: 0,
-        stage: 1, bossN: 0, bossNow: null, aim: Math.PI / 2, mvA: Math.PI / 2, dashT: 0, dashCd: 0, dashX: 0, dashY: 1, trail: [], lock: null, walk: 0, moving: false, flash: 0, shotT: 0, bossKills: 0, up: {}, skills: [], cd: {}, cool: 1, ward: 0, msgT: 0, over: false };
+        stage: 1, bossN: 0, bossNow: null, aim: Math.PI / 2, mvA: Math.PI / 2, dashT: 0, dashCd: 0, dashX: 0, dashY: 1, trail: [], lock: null, hitFx: 0, walk: 0, moving: false, flash: 0, shotT: 0, bossKills: 0, up: {}, skills: [], cd: {}, cool: 1, ward: 0, msgT: 0, over: false };
       renderSkills(); resume(); msg("1단계 — 죽을 때까지 버텨라!");
     }
     function resume() {
@@ -3678,6 +3678,8 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       inMap(s);
       if (s.regen) s.hp = Math.min(s.max, s.hp + s.regen * dt);
       s.hurt = Math.max(0, s.hurt - dt); s.ward = Math.max(0, s.ward - dt);
+      /* 피격 효과 (2026-10-26 "주인공이 데미지 받으면 피격 효과") — 화면 가장자리 붉게 · 살짝 흔들림 · 붉은 불꽃 */
+      if (s.hitFx > 0) { s.hitFx = Math.max(0, s.hitFx - dt); if (Math.random() < 0.35 && s.fx.length < 160) s.fx.push({ spark: true, x: s.x + (Math.random() - 0.5) * 24, y: s.y - 8 + (Math.random() - 0.5) * 24, c: 3, life: 0.15 }); }
       s.skills.forEach((k) => { s.cd[k] = Math.max(0, s.cd[k] - dt); });
       if (s.msgT > 0 && (s.msgT -= dt) <= 0) $("gMsg").classList.remove("on");
       /* 단계 — 30초마다 하나씩, 끝없이 */
@@ -3703,7 +3705,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       s.shots = s.shots.filter((b) => b.life > 0);
       s.ebs.forEach((b) => {
         b.x += b.vx * dt; b.y += b.vy * dt; b.life -= dt;
-        if ((b.x - s.x) ** 2 + (b.y - s.y) ** 2 < 400) { b.life = 0; if (!s.ward && !(s.dashT > 0)) { s.hp -= b.dmg; s.hurt = 0.15; } }
+        if ((b.x - s.x) ** 2 + (b.y - s.y) ** 2 < 400) { b.life = 0; if (!s.ward && !(s.dashT > 0)) { s.hp -= b.dmg; s.hurt = 0.15; s.hitFx = 0.35; } }
       });
       s.ebs = s.ebs.filter((b) => b.life > 0);
       s.orbA += dt * 3;
@@ -3716,7 +3718,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
         f.x += dx / L * sp * dt; f.y += dy / L * sp * dt;
         f.hit = Math.max(0, f.hit - dt); f.oc -= dt;
         if ((f.k === "spit" || f.k === "boss") && (f.cd -= dt) <= 0) act(f, dx / L, dy / L);
-        if (L < f.r + 15 && !s.ward && !(s.dashT > 0)) { s.hp -= f.dps * dt; s.hurt = 0.15; }
+        if (L < f.r + 15 && !s.ward && !(s.dashT > 0)) { s.hp -= f.dps * dt; s.hurt = 0.15; s.hitFx = 0.35; }
         if (s.aura && L < auraR + f.r) hurt(f, (6 + s.aura * 6) * dt);
         for (let i = 0; i < s.orbs && f.oc <= 0; i++) {
           const a = s.orbA + i * Math.PI * 2 / s.orbs, ox = s.x + Math.cos(a) * 70, oy = s.y + Math.sin(a) * 70;
@@ -3851,8 +3853,9 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     }
     function draw() {
       if (!W) return;
-      g.setTransform(DPR, 0, 0, DPR, 0, 0);
-      g.fillStyle = "#0d0b09"; g.fillRect(0, 0, W, H);
+      const shake = s && s.hitFx > 0.15 ? 3 : 0;
+      g.setTransform(DPR, 0, 0, DPR, (Math.random() - 0.5) * shake * DPR, (Math.random() - 0.5) * shake * DPR);
+      g.fillStyle = "#0d0b09"; g.fillRect(-8, -8, W + 16, H + 16);
       const px = s ? s.x : 0, py = s ? s.y : 0, ox = W / 2 - px, oy = H / 2 - py;
       if (mapOk) {
         const mx = ox - MAP_O[0] * MAP_K, my = oy - MAP_O[1] * MAP_K;
@@ -3868,8 +3871,8 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       if (s) {
         if (s.aura) { g.beginPath(); g.arc(W / 2, H / 2, 55 + s.aura * 12, 0, Math.PI * 2); g.fillStyle = "rgba(214,176,98,.07)"; g.fill(); g.strokeStyle = "rgba(214,176,98,.35)"; g.stroke(); }
         g.fillStyle = "#f6e2a4"; g.beginPath();
-        s.gems.forEach((m) => { const x = m.x + ox, y = m.y + oy, r = m.v > 1 ? 5 : 3.5; if (x < -6 || y < -6 || x > W + 6 || y > H + 6) return; g.moveTo(x, y - r); g.lineTo(x + r, y); g.lineTo(x, y + r); g.lineTo(x - r, y); g.closePath(); });
-        g.fill();
+        s.gems.forEach((m) => { const x = m.x + ox, y = m.y + oy, r = m.v > 1 ? 8.5 : 6; if (x < -6 || y < -6 || x > W + 6 || y > H + 6) return; g.moveTo(x, y - r); g.lineTo(x + r, y); g.lineTo(x, y + r); g.lineTo(x - r, y); g.closePath(); });
+        g.fill(); g.strokeStyle = "#ff9a1f"; g.lineWidth = 1.6; g.stroke(); g.lineWidth = 1; // 경험치 구슬 — 크게 · 주황 테두리 (2026-10-26)
         s.fx.forEach((x) => {
           g.globalAlpha = Math.min(1, x.life / (x.spark ? 0.15 : 0.3));
           if (x.bolt) {
@@ -3879,7 +3882,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
             g.stroke(); g.lineWidth = 1;
           } else if (x.spark) {
             const bx = x.x + ox, by = x.y + oy, k = 5 + (0.15 - x.life) * 70;
-            g.strokeStyle = x.c === 1 ? "#9cc8ff" : x.c === 2 ? "#d8b4fe" : "#ffd36b"; g.lineWidth = 2; g.beginPath();
+            g.strokeStyle = x.c === 1 ? "#9cc8ff" : x.c === 2 ? "#d8b4fe" : x.c === 3 ? "#ff4a3a" : "#ffd36b"; g.lineWidth = 2; g.beginPath();
             for (let i = 0; i < 6; i++) { const r = i * Math.PI / 3 + 0.3; g.moveTo(bx + Math.cos(r) * k * 0.35, by + Math.sin(r) * k * 0.35); g.lineTo(bx + Math.cos(r) * k, by + Math.sin(r) * k); }
             g.stroke(); g.lineWidth = 1;
           } else if (x.boom) {
@@ -3942,6 +3945,11 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
         }
       }
       hero(W / 2, H / 2);
+      if (s && s.hitFx > 0) {
+        const v = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.3, W / 2, H / 2, Math.hypot(W, H) / 2);
+        v.addColorStop(0, "rgba(200,20,20,0)"); v.addColorStop(1, "rgba(220,20,20," + Math.min(0.55, s.hitFx * 1.6).toFixed(2) + ")");
+        g.fillStyle = v; g.fillRect(0, 0, W, H);
+      }
       if (stick) {
         g.strokeStyle = "rgba(246,226,164,.45)"; g.beginPath(); g.arc(stick.ox, stick.oy, 50, 0, Math.PI * 2); g.stroke();
         const [dx, dy] = dir(); g.fillStyle = "rgba(246,226,164,.35)"; g.beginPath(); g.arc(stick.ox + dx * 50, stick.oy + dy * 50, 18, 0, Math.PI * 2); g.fill();
