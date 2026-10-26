@@ -1144,7 +1144,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610260642";
+  const BUILD = "202610260701";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -3739,7 +3739,10 @@ body.game-full { overflow: hidden; }
       const near = targets();
       s.lock = near[0] || null;
       for (let i = 0; i < s.multi; i++) {
-        const a = near.length ? Math.atan2(near[i % near.length].y - s.y, near[i % near.length].x - s.x) + (i >= near.length ? (i - near.length + 1) * 0.15 : 0)
+        /* 겨눌 몬스터보다 부적이 많으면 남는 부적은 그 몬스터를 가운데 두고 양쪽으로 고르게 — 예전엔 한쪽으로만 벌어져 빗나갔다
+           ("관통 부적이 추가 탄환에는 적용이 안 되는 것 같다" 2026-10-26 — 관통은 다 받았지만 빗나가서 안 보였다) */
+        const j = Math.floor(i / Math.max(1, near.length)), spread = j ? (j % 2 ? 1 : -1) * Math.ceil(j / 2) * 0.12 : 0;
+        const a = near.length ? Math.atan2(near[i % near.length].y - s.y, near[i % near.length].x - s.x) + spread
           : s.mvA + (i - (s.multi - 1) / 2) * 0.15;
         s.shots.push({ x: s.x + Math.cos(a) * 20, y: s.y - 2 + Math.sin(a) * 20, vx: Math.cos(a) * 430, vy: Math.sin(a) * 430, a: a, life: 1.1, p: s.pierce, hit: [], c: s.pierce >= 3 ? 2 : s.pierce >= 1 ? 1 : 0 });
         if (!i) s.aim = a;
@@ -3778,7 +3781,8 @@ body.game-full { overflow: hidden; }
         b.x += b.vx * dt; b.y += b.vy * dt; b.life -= dt;
         for (const f of s.foes) {
           if (b.life <= 0) break;
-          if (f.hp <= 0 || b.hit.includes(f) || (f.x - b.x) ** 2 + (f.y - b.y) ** 2 > (f.r + 5) ** 2) continue;
+          // 맞는 범위 = 그림 크기에 맞춰(그림은 몸의 2.8배) — 예전엔 몸 동그라미만이라 그림 가장자리를 지나가도 안 맞았다
+          if (f.hp <= 0 || b.hit.includes(f) || (f.x - b.x) ** 2 + (f.y - b.y) ** 2 > (f.r * 1.25 + 5) ** 2) continue;
           hurt(f, s.dmg, true); b.hit.push(f);
           if (s.fx.length < 160) s.fx.push({ spark: true, x: b.x, y: b.y, c: b.c, life: 0.15 });
           if (b.p-- <= 0) b.life = 0;
