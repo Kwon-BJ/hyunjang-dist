@@ -1154,7 +1154,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610260859";
+  const BUILD = "202610260908";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -3555,7 +3555,7 @@ body.game-full { overflow: hidden; }
       $("gameBox").scrollIntoView({ block: "center", behavior: "smooth" });
       s = { t: 0, hp: 100, max: 100, x: 0, y: 0, spd: 150, lv: 1, xp: 0, need: 6, kills: 0, foes: [], shots: [], ebs: [], gems: [], fx: [],
         spawn: 0, fire: 0, rate: 0.7, dmg: 10, multi: 1, pierce: 0, fan: 0, crit: 0, boom: 0, bounce: 0, bossPick: false, orbs: 0, orbA: 0, aura: 0, magnet: 60, regen: 0, hurt: 0,
-        stage: 1, stageT: 0, advance: "", bossN: 0, bossNow: null, aim: Math.PI / 2, mvA: Math.PI / 2, dashT: 0, dashCd: 0, dashX: 0, dashY: 1, trail: [], lock: null, hitFx: 0, fields: [], homs: [], walk: 0, moving: false, items: [], flash: 0, shotT: 0, bossKills: 0, up: {}, skills: [], cd: {}, cool: 1, ward: 0, msgT: 0, over: false };
+        stage: 1, stageT: 0, advance: "", bossN: 0, bossNow: null, aim: Math.PI / 2, mvA: Math.PI / 2, dashT: 0, dashCd: 0, dashX: 0, dashY: 1, trail: [], lock: null, hitFx: 0, fields: [], homs: [], hz: [], walk: 0, moving: false, items: [], flash: 0, shotT: 0, bossKills: 0, up: {}, skills: [], cd: {}, cool: 1, ward: 0, msgT: 0, over: false };
       s.test = testOn(); $("gTest").hidden = !s.test;
       renderSkills(); resume(); msg("1단계 — " + sideText() + "에서 몰려온다!");
     }
@@ -3678,8 +3678,10 @@ body.game-full { overflow: hidden; }
       /* 정해진 쪽을 지킨다 — 맵 밖이면 같은 쪽 맵 가장자리로(아래 inMap). 예전엔 다른 쪽으로 다시 뽑아, 세로가 짧은 맵에서는 위 · 아래로 하나도 안 나왔다 */
       if (x == null) { const a = sideAngle(), d = Math.max(260, Math.hypot(W, H) / 2 + 40); x = s.x + Math.cos(a) * d; y = s.y + Math.sin(a) * d; }
       const P = inMap({ x: x, y: y }); x = P.x; y = P.y;
-      const F = FOES[kind], hp = F.hp * (1 + (s.stage - 1) * 0.45);
-      s.foes.push({ k: kind, skin: skinOf(kind), x: x, y: y, r: F.r, hp: hp, full: hp, spd: F.spd * Math.min(1.6, 1 + (s.stage - 1) * 0.05), dps: F.dps, c: F.c, xp: F.xp, hit: 0, oc: 0, cd: 1 + Math.random() * 2, dash: 0, ph: Math.random() * 10, age: 0 });
+      /* 단계가 오를수록 체력 · 공격력 · 빠르기 — "레벨 오르면 오를수록 체력, 공격력 강하게, 속도도 점점 빠르게" (2026-10-26).
+         단계마다 체력 +50% · 공격력 +15% · 빠르기 +6%(많아야 2.2배) */
+      const F = FOES[kind], st = s.stage - 1, hp = F.hp * (1 + st * 0.5);
+      s.foes.push({ k: kind, skin: skinOf(kind), x: x, y: y, r: F.r, hp: hp, full: hp, spd: F.spd * Math.min(2.2, 1 + st * 0.06), dps: F.dps * (1 + st * 0.15), c: F.c, xp: F.xp, hit: 0, oc: 0, cd: 1 + Math.random() * 2, dash: 0, ph: Math.random() * 10, age: 0 });
     }
     /* 단계가 오를 때 한 무리가 빙 둘러싸며 나온다 */
     /* 몬스터 나오는 쪽 — "1단계 좌측 2단계 우측 3단계 윗쪽 4단계 아랫쪽 5단계 4방향 등등, 너무 다방면에서 나오니 정신을 못 차린다" (2026-10-26).
@@ -3700,20 +3702,35 @@ body.game-full { overflow: hidden; }
     function spawnBoss(i) {
       const B = BOSSES[i % BOSSES.length], lap = Math.floor(i / BOSSES.length), k = 1 + lap * 1.0, name = B.name + (lap ? " " + (lap + 1) : "");
       const a = sideAngle(), d = Math.max(260, Math.hypot(W, H) / 2 + 40);
-      const f = { k: "boss", skin: B.skin, name: name, act: B.act, x: s.x + Math.cos(a) * d, y: s.y + Math.sin(a) * d, r: B.r, hp: B.hp * k, full: B.hp * k,
-        spd: B.spd * (1 + lap * 0.1), dps: B.dps * (1 + lap * 0.5), c: B.c, xp: B.xp * (1 + lap), hit: 0, oc: 0, cd: 2.5, dash: 0, n: 0, ph: Math.random() * 10, age: 0 };
+      const f = { k: "boss", skin: B.skin, name: name, act: B.act, x: s.x + Math.cos(a) * d, y: s.y + Math.sin(a) * d, r: B.r, hp: B.hp * k * (1 + (s.stage - 1) * 0.2), full: B.hp * k * (1 + (s.stage - 1) * 0.2),
+        spd: B.spd * (1 + lap * 0.1) * Math.min(1.8, 1 + (s.stage - 1) * 0.04), dps: B.dps * (1 + lap * 0.5) * (1 + (s.stage - 1) * 0.1), bd: 1 + (s.stage - 1) * 0.12, c: B.c, xp: B.xp * (1 + lap), hit: 0, oc: 0, cd: 2.5, dash: 0, n: 0, ph: Math.random() * 10, age: 0 };
       inMap(f); s.foes.push(f); s.bossNow = f; msg(name + " 나타남!");
     }
-    function bullet(x, y, a, v, dmg) { s.ebs.push({ x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 4, dmg: dmg }); }
+    function bullet(x, y, a, v, dmg, r, c) { s.ebs.push({ x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 4, dmg: dmg, r: r || 5, c: c || "#ff9a3c" }); }
+    /* 땅에 미리 표시되고 t 초 뒤 터지는 공격 — 붉은(또는 보라) 동그라미가 차오르면 피하라 */
+    function hazard(x, y, r, t, dmg, c) { s.hz.push({ x: x, y: y, r: r, t: t, full: t, dmg: dmg, c: c || "255,70,50" }); }
     /* 쏘는 잡귀 · 대장의 재주 */
     function act(f, ux, uy) {
       const a = Math.atan2(uy, ux);
       if (f.k === "spit") { f.cd = 2.6; bullet(f.x, f.y, a, 160, 8); return; }
-      if (f.act === "dash") { f.cd = 4; f.dash = 0.6; return; }
-      if (f.act === "call") { f.cd = 5; for (let i = 0; i < 6; i++) spawn("fast", f.x + Math.cos(i) * 40, f.y + Math.sin(i) * 40); return; }
-      f.cd = 3; f.n++;
-      for (let i = 0; i < 12; i++) bullet(f.x, f.y, a + i * Math.PI / 6, 150, 12);
-      if (f.n % 2 === 0) for (let i = 0; i < 6; i++) spawn("imp", f.x + Math.cos(i) * 50, f.y + Math.sin(i) * 50);
+      /* 대장마다 재주 셋을 차례로 — "보스들마다 개성있게 공격스킬 조금 더" (2026-10-26). 피해는 단계에 따라 세진다(f.bd) */
+      const bd = f.bd || 1, n = f.n = (f.n || 0) + 1;
+      if (f.act === "dash") { // 바위 거인 — 돌진 · 바위 던지기 · 땅 울림
+        if (n % 3 === 1) { f.cd = 3.2; f.dash = 0.6; msg(f.name + " — 돌진!"); }
+        else if (n % 3 === 2) { f.cd = 3.4; for (let i = -1; i <= 1; i++) bullet(f.x, f.y, a + i * 0.28, 120, 22 * bd, 13, "#8a7f74"); msg(f.name + " — 바위 던지기!"); }
+        else { f.cd = 3.6; hazard(f.x, f.y, 170, 1.1, 30 * bd); msg(f.name + " — 땅 울림! 멀리 피해!"); }
+        return;
+      }
+      if (f.act === "call") { // 늑대 왕 — 졸개 부르기 · 연속 덮치기 · 울부짖음
+        if (n % 3 === 1) { f.cd = 4.5; for (let i = 0; i < 6; i++) spawn("fast", f.x + Math.cos(i) * 40, f.y + Math.sin(i) * 40); msg(f.name + " — 무리를 부른다!"); }
+        else if (n % 3 === 2) { f.cd = 3.5; f.dash = 0.35; f.combo = 2; msg(f.name + " — 연속 덮치기!"); }
+        else { f.cd = 4; s.foes.forEach((o) => { if (o !== f && (o.x - f.x) ** 2 + (o.y - f.y) ** 2 < 400 * 400) o.rage = 4; }); s.fx.push({ x: f.x, y: f.y, r: 90, c: "#ff5a4a", life: 0.3 }); msg(f.name + " — 울부짖음! 잡귀가 빨라진다"); }
+        return;
+      }
+      // 붉은 마왕(거대 데몬 골렘) — 불덩이 고리 · 마법 소환(발밑 폭발) · 강공격(앞쪽 충격파)
+      if (n % 3 === 1) { f.cd = 3; for (let i = 0; i < 12; i++) bullet(f.x, f.y, a + i * Math.PI / 6, 150, 12 * bd); if (n % 2) for (let i = 0; i < 4; i++) spawn("imp", f.x + Math.cos(i) * 50, f.y + Math.sin(i) * 50); }
+      else if (n % 3 === 2) { f.cd = 3.4; hazard(s.x, s.y, 75, 1.2, 28 * bd, "170,70,255"); for (let i = 0; i < 2; i++) { const q = Math.random() * Math.PI * 2; hazard(s.x + Math.cos(q) * 120, s.y + Math.sin(q) * 120, 75, 1.4, 28 * bd, "170,70,255"); } msg(f.name + " — 마법 소환! 보라 원을 피해!"); }
+      else { f.cd = 3.8; for (let i = 1; i <= 4; i++) hazard(f.x + ux * 70 * i, f.y + uy * 70 * i, 60, 0.6 + i * 0.15, 34 * bd); msg(f.name + " — 강공격!"); }
     }
     /* 대쉬 — "pc는 스페이스 눌리면 대쉬, 5초에 1번, 휴대폰도 쓸 수 있게" (2026-10-26). 0.2초 동안 180px 미끄러지고 그동안은 안 맞는다.
        가는 쪽은 움직이는 쪽, 서 있으면 마지막으로 움직인 쪽 */
@@ -3860,16 +3877,23 @@ body.game-full { overflow: hidden; }
       s.shots = s.shots.filter((b) => b.life > 0);
       s.ebs.forEach((b) => {
         b.x += b.vx * dt; b.y += b.vy * dt; b.life -= dt;
-        if ((b.x - s.x) ** 2 + (b.y - s.y) ** 2 < 400) { b.life = 0; if (!s.ward && !(s.dashT > 0)) { s.hp -= b.dmg; s.hurt = 0.15; s.hitFx = 0.35; } }
+        if ((b.x - s.x) ** 2 + (b.y - s.y) ** 2 < (15 + (b.r || 5)) ** 2) { b.life = 0; if (!s.ward && !(s.dashT > 0)) { s.hp -= b.dmg; s.hurt = 0.15; s.hitFx = 0.35; } }
       });
       s.ebs = s.ebs.filter((b) => b.life > 0);
+      s.hz.forEach((z) => {
+        z.t -= dt; if (z.t > 0 || z.done) return; z.done = true;
+        if ((z.x - s.x) ** 2 + (z.y - s.y) ** 2 < z.r * z.r && !s.ward && !(s.dashT > 0)) { s.hp -= z.dmg; s.hurt = 0.15; s.hitFx = 0.5; }
+        s.fx.push({ x: z.x, y: z.y, r: z.r / 2.2, c: "rgb(" + z.c + ")", life: 0.3 });
+      });
+      s.hz = s.hz.filter((z) => !z.done);
       s.orbA += dt * 3;
       const auraR = 55 + s.aura * 12;
       s.foes.forEach((f) => {
         const dx = s.x - f.x, dy = s.y - f.y, L = Math.hypot(dx, dy) || 1;
         let sp = f.spd;
         if (f.slow > 0) { f.slow -= dt; sp *= 0.3; }
-        if (f.dash > 0) { f.dash -= dt; sp *= 3.5; }
+        if (f.dash > 0) { f.dash -= dt; sp *= 3.5; if (f.dash <= 0 && f.combo > 0) { f.combo--; f.dash = 0.35; } }
+        if (f.rage > 0) { f.rage -= dt; sp *= 1.6; }
         if (f.k === "spit" && L < 170) sp = L < 140 ? -f.spd * 0.6 : 0;
         f.x += dx / L * sp * dt; f.y += dy / L * sp * dt;
         f.hit = Math.max(0, f.hit - dt); f.oc -= dt; f.age = (f.age || 0) + dt; f.near = L < f.r + 45;
@@ -4251,8 +4275,13 @@ body.game-full { overflow: hidden; }
             g.fillStyle = "rgba(0,0,0,.6)"; g.fillRect(x - 30, y + f.r + 8, 60, 5); g.fillStyle = "#ff6a4a"; g.fillRect(x - 30, y + f.r + 8, 60 * Math.max(0, f.hp) / f.full, 5);
           }
         });
-        g.fillStyle = "#ff9a3c";
-        g.beginPath(); s.ebs.forEach((b) => { const x = b.x + ox, y = b.y + oy; g.moveTo(x + 5, y); g.arc(x, y, 5, 0, Math.PI * 2); }); g.fill();
+        s.hz.forEach((z) => { // 땅 표시 — 바깥 테두리 + 차오르는 안쪽
+          const x = z.x + ox, y = z.y + oy, p = 1 - z.t / z.full;
+          g.fillStyle = "rgba(" + z.c + ",.12)"; g.strokeStyle = "rgba(" + z.c + ",.85)"; g.lineWidth = 2;
+          g.beginPath(); g.arc(x, y, z.r, 0, Math.PI * 2); g.fill(); g.stroke();
+          g.fillStyle = "rgba(" + z.c + ",.35)"; g.beginPath(); g.arc(x, y, z.r * p, 0, Math.PI * 2); g.fill(); g.lineWidth = 1;
+        });
+        s.ebs.forEach((b) => { const x = b.x + ox, y = b.y + oy, r = b.r || 5; g.fillStyle = b.c || "#ff9a3c"; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); if (r > 8) { g.strokeStyle = "#3b332c"; g.lineWidth = 2; g.stroke(); g.lineWidth = 1; } });
         /* 총알 — 꼬리가 흐려지는 빛줄기(예광탄). 노랑 → 꿰뚫기 1 파랑 → 3 보라 */
         g.lineCap = "round";
         const shotLook = HEROES[heroKey].shot;
