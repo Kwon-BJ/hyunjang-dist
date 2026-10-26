@@ -1122,7 +1122,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610260351";
+  const BUILD = "202610260433";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -3431,6 +3431,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     function intro() {
       $("gameHud").hidden = true;
       panel([el("h3", null, "연병장"), el("p", null, nick() + " 님, 죽을 때까지 버텨 보세요."),
+        el("p", "best", "움직이기 — 휴대폰은 화면을 누른 채 끌기 · PC 는 방향키(또는 WASD). 스킬은 1 · 2 · 3"),
         el("p", "best", "30초마다 단계가 올라 잡귀가 세지고 많아져요. 1분마다 대장이 나와요. 끝나면 순위표에 올라가요."), bestLine(), gBtn("시작", begin)]);
     }
     function mine() { return UPS.filter((u) => s.up[u.k]).map((u) => u.n + " " + s.up[u.k]).join(" · ") || "아직 강화 없음"; }
@@ -3478,7 +3479,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       $("gameBox").scrollIntoView({ block: "center", behavior: "smooth" });
       s = { t: 0, hp: 100, max: 100, x: 0, y: 0, spd: 150, lv: 1, xp: 0, need: 6, kills: 0, foes: [], shots: [], ebs: [], gems: [], fx: [],
         spawn: 0, fire: 0, rate: 0.7, dmg: 10, multi: 1, pierce: 0, orbs: 0, orbA: 0, aura: 0, magnet: 60, regen: 0, hurt: 0,
-        stage: 1, bossN: 0, bossNow: null, bossKills: 0, up: {}, skills: [], cd: {}, cool: 1, ward: 0, msgT: 0, over: false };
+        stage: 1, bossN: 0, bossNow: null, aim: Math.PI / 2, mvA: Math.PI / 2, walk: 0, moving: false, flash: 0, shotT: 0, bossKills: 0, up: {}, skills: [], cd: {}, cool: 1, ward: 0, msgT: 0, over: false };
       renderSkills(); resume(); msg("1단계 — 죽을 때까지 버텨라!");
     }
     function resume() {
@@ -3612,13 +3613,17 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       const near = s.foes.map((f) => [(f.x - s.x) ** 2 + (f.y - s.y) ** 2, f]).sort((a, b) => a[0] - b[0]);
       for (let i = 0; i < s.multi; i++) {
         const f = near[i % near.length][1], a = Math.atan2(f.y - s.y, f.x - s.x) + (i >= near.length ? (i - near.length + 1) * 0.15 : 0);
-        s.shots.push({ x: s.x, y: s.y, vx: Math.cos(a) * 430, vy: Math.sin(a) * 430, a: a, life: 1.1, p: s.pierce, hit: [] });
+        s.shots.push({ x: s.x + Math.cos(a) * 20, y: s.y - 2 + Math.sin(a) * 20, vx: Math.cos(a) * 430, vy: Math.sin(a) * 430, a: a, life: 1.1, p: s.pierce, hit: [], c: s.pierce >= 3 ? 2 : s.pierce >= 1 ? 1 : 0 });
+        if (!i) s.aim = a;
       }
+      s.flash = 0.07; s.shotT = 0.5;
     }
     function step(dt) {
       s.t += dt;
       const [mx, my] = dir();
       s.x += mx * s.spd * dt; s.y += my * s.spd * dt;
+      s.moving = !!(mx || my); if (s.moving) { s.walk += dt * 12; s.mvA = Math.atan2(my, mx); }
+      s.flash = Math.max(0, s.flash - dt); s.shotT = Math.max(0, s.shotT - dt);
       if (s.regen) s.hp = Math.min(s.max, s.hp + s.regen * dt);
       s.hurt = Math.max(0, s.hurt - dt); s.ward = Math.max(0, s.ward - dt);
       s.skills.forEach((k) => { s.cd[k] = Math.max(0, s.cd[k] - dt); });
@@ -3639,6 +3644,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
           if (b.life <= 0) break;
           if (f.hp <= 0 || b.hit.includes(f) || (f.x - b.x) ** 2 + (f.y - b.y) ** 2 > (f.r + 5) ** 2) continue;
           hurt(f, s.dmg, true); b.hit.push(f);
+          if (s.fx.length < 160) s.fx.push({ spark: true, x: b.x, y: b.y, c: b.c, life: 0.15 });
           if (b.p-- <= 0) b.life = 0;
         }
       });
@@ -3670,7 +3676,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
         s.kills++;
         if (f.k === "boss") { s.bossKills++; if (s.bossNow === f) s.bossNow = null; msg(f.name + " 쓰러뜨림!"); }
         s.gems.push({ x: f.x, y: f.y, v: f.xp });
-        s.fx.push({ x: f.x, y: f.y, r: f.r, c: f.c, life: 0.3 });
+        s.fx.push({ boom: true, x: f.x, y: f.y, r: f.r, c: f.c, life: 0.3 });
         return false;
       });
       if (s.gems.length > 400) s.gems.splice(0, s.gems.length - 400);
@@ -3686,6 +3692,74 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     }
 
     /* ── 그리기 — 모두 도형 ── */
+    const TRACER = [["255,176,46", "#fff4c8"], ["96,165,250", "#e3f1ff"], ["192,132,252", "#f6ecff"]];
+    /* 주인공 — 부장님이 주신 「게임 캐릭터 & 총알 디자인」 그림을 보고 코드로 그림 (2026-10-26):
+       검은 머리 · 검은 전술복에 파란 줄 · 소총, 발밑 파란 원(예전 원형 아이콘 자리). 겨누는 쪽으로 몸을 돌린다 —
+       위 = 뒷모습 · 아래 = 앞모습 · 좌우 = 옆모습. 걸으면 다리, 쏘면 총구 불꽃, 맞으면 붉게, 죽으면 눕는다 */
+    const SKIN = "#f3cba5", HAIR = "#161a22", HAIR_HI = "#2c3a55", SUIT = "#1c2230", VEST = "#11151d", BLUE = "#2f7bff", GUN = "#2a2e35", DARK = "#0c0e13";
+    function box(x, y, w, h, col, r) { g.beginPath(); if (g.roundRect) g.roundRect(x, y, w, h, r == null ? 1.5 : r); else g.rect(x, y, w, h); g.fillStyle = col; g.fill(); }
+    function dot(x, y, r, col) { g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fillStyle = col; g.fill(); }
+    function hero(cx, cy) {
+      const dead = !!(s && s.over && s.hp <= 0), mv = !!(s && s.moving && !dead && running);
+      const a = !s ? Math.PI / 2 : s.shotT > 0 || !mv ? s.aim : s.mvA, c = Math.cos(a), sn = Math.sin(a);
+      const side = Math.abs(c) > 0.55, view = side ? "side" : sn > 0 ? "front" : "back", flip = side && c < 0 ? -1 : 1;
+      const stepL = mv ? Math.sin(s.walk) * 2.2 : 0, bob = mv ? -Math.abs(Math.cos(s.walk)) : 0;
+      g.save(); g.translate(cx, cy); g.scale(1.35, 1.35); // 보는 크기만 (맞는 범위는 그대로)
+      g.beginPath(); g.ellipse(0, 15, 19, 7, 0, 0, Math.PI * 2);
+      g.fillStyle = "rgba(47,123,255,.16)"; g.fill(); g.lineWidth = 2; g.strokeStyle = s && s.ward ? "#9fbcff" : BLUE; g.stroke(); g.lineWidth = 1;
+      if (dead) { g.translate(0, 9); g.rotate(-Math.PI / 2 * flip); }
+      g.translate(0, bob);
+      if (side) g.scale(flip, 1);
+      const la = side && flip < 0 ? Math.PI - a : a; // 뒤집은 판에서의 겨눔 각
+      const gun = () => {
+        g.save(); g.translate(0, 1); g.rotate(la); if (Math.cos(la) < 0) g.scale(1, -1);
+        box(-10, -2, 6, 4, GUN, 1); box(-5, -2.6, 17, 5.2, GUN, 1.5); g.fillStyle = "#3d444f"; g.fillRect(-3, -3.6, 10, 1.3);
+        box(12, -1.2, 9, 2.4, "#1b1e24", 0.8); box(1, 2.2, 3.6, 5, "#1b1e24", 0.8); g.fillStyle = BLUE; g.fillRect(8, -1.2, 1.6, 1.6);
+        dot(-2, 2.6, 2.4, DARK); dot(7.5, 2.2, 2.4, DARK);
+        if (s && s.flash > 0) {
+          g.fillStyle = "rgba(255,214,110,.95)"; g.beginPath();
+          for (let i = 0; i < 10; i++) { const r = i * Math.PI / 5, k = i % 2 ? 3 : 9; g.lineTo(23 + Math.cos(r) * k, Math.sin(r) * k * 0.7); }
+          g.fill(); dot(23, 0, 2.6, "#fff6d6");
+        }
+        g.restore();
+      };
+      if (view === "back") gun();
+      box(-6, 5 + stepL, 5, 9, SUIT); box(1, 5 - stepL, 5, 9, SUIT);
+      box(-6.5, 12 + stepL, 6, 3, DARK); box(0.5, 12 - stepL, 6, 3, DARK);
+      box(-7.5, -4, 15, 11, SUIT, 3); box(-6, -3, 12, 8, VEST, 2);
+      g.fillStyle = BLUE; g.fillRect(-7.5, -4, 15, 1.6);
+      if (view === "front") g.fillRect(-4.5, 0, 3, 1.8);
+      g.fillStyle = "#3b404b"; g.fillRect(-7, 5, 14, 2); g.fillStyle = "#c9a24a"; g.fillRect(-1, 5, 2, 2);
+      // 머리
+      dot(0, -13, 10, view === "back" ? HAIR : SKIN);
+      g.fillStyle = HAIR; g.beginPath();
+      if (view === "front") {
+        g.moveTo(-11, -11); g.bezierCurveTo(-12, -27, 12, -27, 11, -11);
+        [[8, -10], [6.5, -15.5], [3, -9.5], [0, -15.5], [-3, -9.5], [-6.5, -15.5], [-8, -10]].forEach((p) => g.lineTo(p[0], p[1]));
+      } else if (view === "side") {
+        g.moveTo(-10, -7); g.bezierCurveTo(-14, -26, 10, -28, 11, -13);
+        [[7.5, -14.5], [8, -10.5], [4.5, -15], [2, -12], [-1, -15], [-2, -8]].forEach((p) => g.lineTo(p[0], p[1]));
+      } else {
+        g.moveTo(-11, -9); g.bezierCurveTo(-12, -27, 12, -27, 11, -9);
+        [[8, -5], [5, -8], [2.5, -4], [0, -8], [-2.5, -4], [-5, -8], [-8, -5]].forEach((p) => g.lineTo(p[0], p[1]));
+      }
+      g.closePath(); g.fill();
+      g.strokeStyle = HAIR_HI; g.lineWidth = 1.4; g.beginPath(); g.arc(-1, -17, 7, Math.PI * 1.15, Math.PI * 1.6); g.stroke();
+      if (view !== "back") {
+        const eyes = view === "front" ? [-4, 4] : [5];
+        eyes.forEach((ex) => {
+          if (dead) { g.strokeStyle = "#1d2433"; g.beginPath(); g.moveTo(ex - 1.8, -11); g.lineTo(ex + 1.8, -11); g.stroke(); return; }
+          g.fillStyle = "#1d2433"; g.beginPath(); g.ellipse(ex, -11, 1.8, 2.4, 0, 0, Math.PI * 2); g.fill(); dot(ex + 0.6, -11.8, 0.7, "#fff");
+          g.strokeStyle = HAIR; g.beginPath(); g.moveTo(ex - (view === "front" ? Math.sign(ex) * -2.5 : 2.5), -14.6); g.lineTo(ex + (view === "front" ? Math.sign(ex) * 2.5 : 2.5), -13.6); g.stroke();
+        });
+        if (view === "side") dot(-2, -11, 2.2, SKIN);
+        g.strokeStyle = "#8a5a44"; g.beginPath(); g.moveTo(view === "front" ? -1.5 : 4, -6.5); g.lineTo(view === "front" ? 1.5 : 6.5, -6.5); g.stroke();
+      }
+      g.lineWidth = 1;
+      if (view !== "back") gun();
+      g.restore();
+      if (s && s.hurt && !dead) dot(cx, cy - 5, 25, "rgba(255,60,60,.25)");
+    }
     function draw() {
       if (!W) return;
       g.setTransform(DPR, 0, 0, DPR, 0, 0);
@@ -3701,12 +3775,21 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
         s.gems.forEach((m) => { const x = m.x + ox, y = m.y + oy, r = m.v > 1 ? 5 : 3.5; if (x < -6 || y < -6 || x > W + 6 || y > H + 6) return; g.moveTo(x, y - r); g.lineTo(x + r, y); g.lineTo(x, y + r); g.lineTo(x - r, y); g.closePath(); });
         g.fill();
         s.fx.forEach((x) => {
-          g.globalAlpha = Math.min(1, x.life / 0.3);
+          g.globalAlpha = Math.min(1, x.life / (x.spark ? 0.15 : 0.3));
           if (x.bolt) {
             const bx = x.x + ox, by = x.y + oy;
             g.strokeStyle = "#cfe0ff"; g.lineWidth = 3; g.beginPath(); g.moveTo(bx + 10, by - 160);
             for (let i = 1; i <= 5; i++) g.lineTo(bx + (i % 2 ? -10 : 10) * (1 - i / 5), by - 160 + i * 32);
             g.stroke(); g.lineWidth = 1;
+          } else if (x.spark) {
+            const bx = x.x + ox, by = x.y + oy, k = 5 + (0.15 - x.life) * 70;
+            g.strokeStyle = x.c === 1 ? "#9cc8ff" : x.c === 2 ? "#d8b4fe" : "#ffd36b"; g.lineWidth = 2; g.beginPath();
+            for (let i = 0; i < 6; i++) { const r = i * Math.PI / 3 + 0.3; g.moveTo(bx + Math.cos(r) * k * 0.35, by + Math.sin(r) * k * 0.35); g.lineTo(bx + Math.cos(r) * k, by + Math.sin(r) * k); }
+            g.stroke(); g.lineWidth = 1;
+          } else if (x.boom) {
+            const bx = x.x + ox, by = x.y + oy, r = x.r * (1 + (0.3 - x.life) * 3), gr = g.createRadialGradient(bx, by, 0, bx, by, r);
+            gr.addColorStop(0, "rgba(255,243,196,.95)"); gr.addColorStop(0.45, "rgba(255,138,42,.8)"); gr.addColorStop(1, "rgba(196,40,44,0)");
+            g.fillStyle = gr; g.beginPath(); g.arc(bx, by, r, 0, Math.PI * 2); g.fill();
           } else { g.beginPath(); g.arc(x.x + ox, x.y + oy, x.r * (1 + (0.3 - x.life) * 4), 0, Math.PI * 2); g.strokeStyle = x.c; g.stroke(); }
           g.globalAlpha = 1;
         });
@@ -3726,10 +3809,16 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
         });
         g.fillStyle = "#ff9a3c";
         g.beginPath(); s.ebs.forEach((b) => { const x = b.x + ox, y = b.y + oy; g.moveTo(x + 5, y); g.arc(x, y, 5, 0, Math.PI * 2); }); g.fill();
+        /* 총알 — 꼬리가 흐려지는 빛줄기(예광탄). 노랑 → 꿰뚫기 1 파랑 → 3 보라 */
+        g.lineCap = "round";
         s.shots.forEach((b) => {
-          g.save(); g.translate(b.x + ox, b.y + oy); g.rotate(b.a + Math.PI / 2);
-          g.fillStyle = "#f3d36b"; g.fillRect(-4, -7, 8, 14); g.fillStyle = "#c4282c"; g.fillRect(-1, -5, 2, 10); g.restore();
+          const x = b.x + ox, y = b.y + oy, c = TRACER[b.c || 0], tx = x - Math.cos(b.a) * 26, ty = y - Math.sin(b.a) * 26;
+          const gr = g.createLinearGradient(tx, ty, x, y); gr.addColorStop(0, "rgba(" + c[0] + ",0)"); gr.addColorStop(1, "rgba(" + c[0] + ",1)");
+          g.strokeStyle = gr; g.lineWidth = 3.2; g.beginPath(); g.moveTo(tx, ty); g.lineTo(x, y); g.stroke();
+          g.fillStyle = "rgba(" + c[0] + ",.35)"; g.beginPath(); g.arc(x, y, 5, 0, Math.PI * 2); g.fill();
+          g.fillStyle = c[1]; g.beginPath(); g.arc(x, y, 2.2, 0, Math.PI * 2); g.fill();
         });
+        g.lineCap = "butt"; g.lineWidth = 1;
         for (let i = 0; i < s.orbs; i++) {
           const a = s.orbA + i * Math.PI * 2 / s.orbs;
           const x = W / 2 + Math.cos(a) * 70, y = H / 2 + Math.sin(a) * 70;
@@ -3738,11 +3827,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
         }
         if (s.ward) { g.beginPath(); g.arc(W / 2, H / 2, 26, 0, Math.PI * 2); g.fillStyle = "rgba(111,155,255,.18)"; g.fill(); g.strokeStyle = "#9fbcff"; g.lineWidth = 2; g.stroke(); g.lineWidth = 1; }
       }
-      g.beginPath(); g.arc(W / 2, H / 2, 15, 0, Math.PI * 2);
-      g.fillStyle = s && s.hurt ? "#ff8a80" : "#d6b062"; g.fill();
-      g.lineWidth = 2; g.strokeStyle = "#000"; g.stroke(); g.lineWidth = 1;
-      g.fillStyle = "#1a1208"; g.font = '800 17px "Nanum Myeongjo", serif'; g.textAlign = "center"; g.textBaseline = "middle";
-      g.fillText("兵", W / 2, H / 2 + 1);
+      hero(W / 2, H / 2);
       if (stick) {
         g.strokeStyle = "rgba(246,226,164,.45)"; g.beginPath(); g.arc(stick.ox, stick.oy, 50, 0, Math.PI * 2); g.stroke();
         const [dx, dy] = dir(); g.fillStyle = "rgba(246,226,164,.35)"; g.beginPath(); g.arc(stick.ox + dx * 50, stick.oy + dy * 50, 18, 0, Math.PI * 2); g.fill();
