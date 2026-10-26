@@ -1136,7 +1136,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610260630";
+  const BUILD = "202610260635";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -3784,7 +3784,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
         s.kills++;
         if (f.k === "boss") { s.bossKills++; if (s.bossNow === f) s.bossNow = null; msg(f.name + " 쓰러뜨림!"); }
         s.gems.push({ x: f.x, y: f.y, v: f.xp });
-        if (f.skin) s.fx.push({ corpse: true, skin: f.skin, x: f.x, y: f.y, r: f.r, flip: FACE_R[f.skin] && (s.x < f.x ? -1 : 1) !== FACE_R[f.skin] ? -1 : 1, life: 0.35 });
+        if (f.skin) { const face = mon2Ok && MF2[SKIN2[f.skin]] ? FACE2[SKIN2[f.skin]] : FACE_R[f.skin], d2 = mon2Ok && MF2[SKIN2[f.skin]] ? 0.7 : 0.35; s.fx.push({ corpse: true, skin: f.skin, x: f.x, y: f.y, r: f.r, flip: face && (s.x < f.x ? -1 : 1) !== face ? -1 : 1, life: d2, dur: d2 }); }
         s.fx.push({ boom: true, spr: "smoke", x: f.x, y: f.y, r: f.r, c: f.c, size: f.r * 3.4, life: 0.4, dur: 0.4 });
         return false;
       });
@@ -3898,6 +3898,22 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     /* 몬스터 움직임 — "몬스터도 좀 임팩트 있게, 현실감있게" (2026-10-26). 그림은 한 장이라 코드로 흔든다:
        슬라임 통통 튀며 찌그러짐 · 박쥐 날갯짓 · 늑대 기울이며 달려듦 · 골렘 무겁게 쿵쿵 · 나머지 뒤뚱 걸음 · 식충 식물 제자리 흔들림.
        나올 때 땅에서 솟듯 커지고, 맞으면 찌그러지며 밀리고, 가까우면 앞으로 숙여 달려든다 */
+    /* 몬스터 동작 그림 — 부장님이 주신 「몬스터 동작」(img/mon2.png · 시험/몬스터-동작-자르기.cjs, 2026-10-26).
+       걸을 때 이동 그림을 번갈아, 주인공 가까이 오면 공격, 맞으면 피격, 쓰러지면 사망 그림. 못 읽으면 예전 한 장 그림(mon.png).
+       쏘는 잡귀(해골 궁수 자리)는 데몬 로드, 붉은 마왕은 거대 데몬 골렘(보라 기운 그림으로 걸음) */
+    const MON2 = new Image(), MF2 = {"slime":{"move":[[0,0,104,81],[106,0,101,89]],"attack":[[209,0,108,68]],"hit":[[319,0,127,62]],"dead":[[448,0,128,82]]},"bat":{"move":[[578,0,104,51],[684,0,64,65]],"attack":[[750,0,103,51]],"hit":[[855,0,73,61]],"dead":[[930,0,72,78]]},"wolf":{"move":[[0,91,104,60],[106,91,98,65]],"attack":[[206,91,100,64]],"hit":[[308,91,95,59]],"dead":[[405,91,98,43]]},"stone_golem":{"move":[[505,91,104,91],[611,91,110,102]],"attack":[[723,91,106,87]],"hit":[[831,91,104,85]],"dead":[[0,195,113,74]]},"plant":{"move":[[115,195,85,104],[202,195,85,104]],"attack":[[289,195,81,103]],"hit":[[372,195,86,86]],"dead":[[460,195,102,58]]},"demon":{"move":[[564,195,73,104]],"attack":[[639,195,112,87]],"hit":[[753,195,75,99]],"dead":[[830,195,87,108]]},"goblin":{"move":[[919,195,104,102]],"attack":[[0,305,106,101]],"hit":[[108,305,104,102]],"dead":[[214,305,130,69]]},"skeleton":{"move":[[346,305,78,104]],"attack":[[426,305,105,104]],"hit":[[533,305,105,104]],"dead":[[640,305,109,96]]},"boss_golem":{"move":[[751,305,104,97],[857,305,117,126]],"attack":[[0,433,106,100]],"hit":[[108,433,100,107]],"dead":[[210,433,88,111]]}};
+    const SKIN2 = { slime: "slime", goblin: "goblin", skeleton_warrior: "skeleton", skeleton_archer: "demon", bat: "bat", wolf: "wolf", stone_golem: "stone_golem", carnivorous_plant: "plant", red_demon: "boss_golem" };
+    const FACE2 = { wolf: 1, plant: 1, goblin: 1, demon: 1 };
+    let mon2Ok = false;
+    MON2.onload = () => { mon2Ok = true; };
+    MON2.src = "img/mon2.png";
+    function frame2(f) {
+      const A = MF2[SKIN2[f.skin]];
+      if (!mon2Ok || !A) return null;
+      let list = f.hit ? A.hit : f.near ? A.attack : A.move;
+      if (SKIN2[f.skin] === "boss_golem" && list === A.move) list = [A.move[1]];
+      return list.length > 1 ? list[Math.floor((s.t + f.ph) * 5) % list.length] : list[0];
+    }
     function motion(f) {
       const t = s.t + f.ph, sp = f.k === "boss" ? 0.7 : 1;
       let y = 0, rot = 0, sx = 1, sy = 1;
@@ -3915,12 +3931,13 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       return { y: y * grow, rot: rot, sx: sx * (0.4 + grow * 0.6), sy: sy * (0.2 + grow * 0.8), a: 0.3 + grow * 0.7, lean: f.near ? 0.22 : 0 };
     }
     function monster(f, x, y) {
-      const fr = MF[f.skin], k = f.r * 2.8 / Math.max(fr[2], fr[3]), w = fr[2] * k, h = fr[3] * k, m = motion(f), dir = s.x < f.x ? -1 : 1;
+      const f2 = frame2(f), IMG = f2 ? MON2 : MON, fr = f2 || MF[f.skin], base = f2 ? MF2[SKIN2[f.skin]].move[0] : fr;
+      const k = f.r * 2.8 / Math.max(base[2], base[3]), w = fr[2] * k, h = fr[3] * k, m = motion(f), dir = s.x < f.x ? -1 : 1, face = f2 ? FACE2[SKIN2[f.skin]] : FACE_R[f.skin];
       g.fillStyle = "rgba(0,0,0,.35)"; g.beginPath(); g.ellipse(x, y + h * 0.42, w * 0.32 * (1 + m.y / 40), h * 0.1, 0, 0, Math.PI * 2); g.fill();
       g.save(); g.translate(x, y + h * 0.42 + m.y); g.rotate(m.rot + m.lean * dir); g.scale(m.sx, m.sy); g.translate(0, -h * 0.42); g.globalAlpha = m.a;
-      if (FACE_R[f.skin] && dir !== FACE_R[f.skin]) g.scale(-1, 1);
-      g.drawImage(MON, fr[0], fr[1], fr[2], fr[3], -w / 2, -h / 2, w, h);
-      if (f.hit) { g.globalCompositeOperation = "lighter"; g.globalAlpha = 0.55; g.drawImage(MON, fr[0], fr[1], fr[2], fr[3], -w / 2, -h / 2, w, h); g.globalCompositeOperation = "source-over"; }
+      if (face && dir !== face) g.scale(-1, 1);
+      g.drawImage(IMG, fr[0], fr[1], fr[2], fr[3], -w / 2, -h / 2, w, h);
+      if (f.hit) { g.globalCompositeOperation = "lighter"; g.globalAlpha = 0.45; g.drawImage(IMG, fr[0], fr[1], fr[2], fr[3], -w / 2, -h / 2, w, h); g.globalCompositeOperation = "source-over"; }
       g.restore(); g.globalAlpha = 1;
       if (f.k === "boss") {
         g.fillStyle = "rgba(0,0,0,.6)"; g.fillRect(x - 30, y + h / 2 + 4, 60, 5); g.fillStyle = "#ff6a4a"; g.fillRect(x - 30, y + h / 2 + 4, 60 * Math.max(0, f.hp) / f.full, 5);
@@ -4023,8 +4040,14 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
         g.fill(); g.strokeStyle = "#ff9a1f"; g.lineWidth = 1.6; g.stroke(); g.lineWidth = 1; // 경험치 구슬 — 크게 · 주황 테두리 (2026-10-26)
         s.fx.forEach((x) => {
           if (x.corpse) {
+            const A2 = mon2Ok && MF2[SKIN2[x.skin]];
+            if (A2) {
+              const fr = A2.dead[0], b0 = A2.move[0], k = x.r * 2.8 / Math.max(b0[2], b0[3]), w = fr[2] * k, h = fr[3] * k, p = 1 - x.life / x.dur;
+              g.save(); g.translate(x.x + ox, x.y + oy); g.scale(x.flip, 1); g.globalAlpha = p < 0.6 ? 1 : (1 - p) / 0.4;
+              g.drawImage(MON2, fr[0], fr[1], fr[2], fr[3], -w / 2, -h / 2, w, h); g.restore(); g.globalAlpha = 1; return;
+            }
             if (!monOk || !MF[x.skin]) return;
-            const p = 1 - x.life / 0.35, fr = MF[x.skin], k = x.r * 2.8 / Math.max(fr[2], fr[3]) * (1 - p * 0.45), w = fr[2] * k, h = fr[3] * k;
+            const p = 1 - x.life / x.dur, fr = MF[x.skin], k = x.r * 2.8 / Math.max(fr[2], fr[3]) * (1 - p * 0.45), w = fr[2] * k, h = fr[3] * k;
             g.save(); g.translate(x.x + ox, x.y + oy - p * 10); g.rotate(p * 1.1 * x.flip); g.scale(x.flip, 1); g.globalAlpha = 1 - p;
             g.drawImage(MON, fr[0], fr[1], fr[2], fr[3], -w / 2, -h / 2, w, h); g.restore(); g.globalAlpha = 1; return;
           }
