@@ -1160,7 +1160,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610261023";
+  const BUILD = "202610261036";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -3593,12 +3593,12 @@ body.game-full { overflow: hidden; }
       if (!raf) raf = requestAnimationFrame(loop);
     }
     function pause() { if (!running) return; running = false; stick = null; showPause(); }
-    /* 끝 — 점수는 창구가 같은 셈으로 다시 센다(잡은 수×10 + 버틴 초×2 + 대장×300) */
+    /* 끝 — 점수는 창구가 같은 셈으로 다시 센다(단계 × 10000 + 잡은 수 + 대장 × 100) */
     function end() {
       running = false; s.over = true; stick = null;
       const sec = Math.floor(s.t), run = s;
       if (window.__bmcNewBuildIdle) setTimeout(window.__bmcNewBuildIdle, 20000); // 결과를 캡처할 틈을 두고 새 판으로
-      draw(); showResult(s.kills * 10 + sec * 2 + s.bossKills * 300, new Date().toISOString());
+      draw(); showResult(s.stage * 10000 + Math.min(9999, s.kills + s.bossKills * 100), new Date().toISOString()); // 단계가 먼저 (창구 gameScore 와 같은 셈, 2026-10-26)
       if (!me || !token || s.test) return; // 테스트 모드는 순위표에 안 올림
       call("saveGameScore", token, { sec: sec, stage: s.stage, kills: s.kills, bosses: s.bossKills, lv: s.lv }).then((r) => {
         takeRanks(r);
@@ -3667,7 +3667,7 @@ body.game-full { overflow: hidden; }
       raf = 0;
       if (!running) return;
       const dt = Math.min(0.05, Math.max(0, (ts - last) / 1000)); last = ts;
-      for (let i = 0; i < speed && running; i++) step(dt); // 빠르기 1 · 2 · 3배 — 게임 시간을 그만큼 더 돌린다(점수는 게임 시간이라 그대로 공정)
+      for (let i = 0; i < speed && running; i++) step(dt); // 빠르기 1 · 2 · 3배 — 게임 시간을 그만큼 더 돌린다(점수는 단계 · 잡은 수라 그대로 공정)
       draw(); hud();
       if (running) raf = requestAnimationFrame(loop);
     }
@@ -4369,6 +4369,9 @@ body.game-full { overflow: hidden; }
         }
       }
       hero(hx, hy);
+      /* 주인공 머리 위 체력 막대 — "캐릭터 위에 체력바 보이게, 주인공에만" (2026-10-26) */
+      if (s && !s.over) { const p = Math.max(0, Math.min(1, s.hp / s.max)), bw = 46, bx = hx - bw / 2, by = hy - 62;
+        g.fillStyle = "rgba(0,0,0,.7)"; g.fillRect(bx - 1, by - 1, bw + 2, 7); g.fillStyle = p > 0.5 ? "#3ccf6a" : p > 0.25 ? "#f2c94c" : "#e5484d"; g.fillRect(bx, by, bw * p, 5); }
       if (s && s.hitFx > 0) {
         const v = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.3, W / 2, H / 2, Math.hypot(W, H) / 2);
         v.addColorStop(0, "rgba(200,20,20,0)"); v.addColorStop(1, "rgba(220,20,20," + Math.min(0.55, s.hitFx * 1.6).toFixed(2) + ")");
