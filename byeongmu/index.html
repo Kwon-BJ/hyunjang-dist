@@ -1136,7 +1136,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610260623";
+  const BUILD = "202610260626";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -3627,7 +3627,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       if (x == null) for (let k = 0; k < 8; k++) { const a = Math.random() * Math.PI * 2, d = Math.max(260, Math.hypot(W, H) / 2 + 40); x = s.x + Math.cos(a) * d; y = s.y + Math.sin(a) * d; if (!mapOk || inside(x, y)) break; }
       const P = inMap({ x: x, y: y }); x = P.x; y = P.y;
       const F = FOES[kind], hp = F.hp * (1 + (s.stage - 1) * 0.45);
-      s.foes.push({ k: kind, skin: skinOf(kind), x: x, y: y, r: F.r, hp: hp, full: hp, spd: F.spd * Math.min(1.6, 1 + (s.stage - 1) * 0.05), dps: F.dps, c: F.c, xp: F.xp, hit: 0, oc: 0, cd: 1 + Math.random() * 2, dash: 0 });
+      s.foes.push({ k: kind, skin: skinOf(kind), x: x, y: y, r: F.r, hp: hp, full: hp, spd: F.spd * Math.min(1.6, 1 + (s.stage - 1) * 0.05), dps: F.dps, c: F.c, xp: F.xp, hit: 0, oc: 0, cd: 1 + Math.random() * 2, dash: 0, ph: Math.random() * 10, age: 0 });
     }
     /* 단계가 오를 때 한 무리가 빙 둘러싸며 나온다 */
     function horde() {
@@ -3638,7 +3638,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       const B = BOSSES[i % BOSSES.length], lap = Math.floor(i / BOSSES.length), k = 1 + lap * 1.5, name = B.name + (lap ? " " + (lap + 1) : "");
       const a = Math.random() * Math.PI * 2, d = Math.max(260, Math.hypot(W, H) / 2 + 40);
       const f = { k: "boss", skin: B.skin, name: name, act: B.act, x: s.x + Math.cos(a) * d, y: s.y + Math.sin(a) * d, r: B.r, hp: B.hp * k, full: B.hp * k,
-        spd: B.spd * (1 + lap * 0.1), dps: B.dps * (1 + lap * 0.5), c: B.c, xp: B.xp * (1 + lap), hit: 0, oc: 0, cd: 2.5, dash: 0, n: 0 };
+        spd: B.spd * (1 + lap * 0.1), dps: B.dps * (1 + lap * 0.5), c: B.c, xp: B.xp * (1 + lap), hit: 0, oc: 0, cd: 2.5, dash: 0, n: 0, ph: Math.random() * 10, age: 0 };
       inMap(f); s.foes.push(f); s.bossNow = f; msg(name + " 나타남!");
     }
     function bullet(x, y, a, v, dmg) { s.ebs.push({ x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 4, dmg: dmg }); }
@@ -3692,6 +3692,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       f.hp -= n;
       if (!flash) return;
       f.hit = 0.08;
+      { const dx = f.x - s.x, dy = f.y - s.y, L = Math.hypot(dx, dy) || 1, kb = f.k === "boss" ? 1.5 : 6; f.x += dx / L * kb; f.y += dy / L * kb; }
       // 피해 숫자 — 맞힐 때 떠오른다 (계속 다치는 것은 숫자 없이)
       if (s.fx.length < 220) s.fx.push({ num: Math.round(n), x: f.x + (Math.random() - 0.5) * 12, y: f.y - f.r, life: 0.6 });
     }
@@ -3769,7 +3770,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
         if (f.dash > 0) { f.dash -= dt; sp *= 3.5; }
         if (f.k === "spit" && L < 170) sp = L < 140 ? -f.spd * 0.6 : 0;
         f.x += dx / L * sp * dt; f.y += dy / L * sp * dt;
-        f.hit = Math.max(0, f.hit - dt); f.oc -= dt;
+        f.hit = Math.max(0, f.hit - dt); f.oc -= dt; f.age = (f.age || 0) + dt; f.near = L < f.r + 45;
         if ((f.k === "spit" || f.k === "boss") && (f.cd -= dt) <= 0) act(f, dx / L, dy / L);
         if (L < f.r + 15 && !s.ward && !(s.dashT > 0)) { s.hp -= f.dps * dt; s.hurt = 0.15; s.hitFx = 0.35; }
         if (s.aura && L < auraR + f.r) hurt(f, (6 + s.aura * 6) * dt);
@@ -3783,6 +3784,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
         s.kills++;
         if (f.k === "boss") { s.bossKills++; if (s.bossNow === f) s.bossNow = null; msg(f.name + " 쓰러뜨림!"); }
         s.gems.push({ x: f.x, y: f.y, v: f.xp });
+        if (f.skin) s.fx.push({ corpse: true, skin: f.skin, x: f.x, y: f.y, r: f.r, flip: FACE_R[f.skin] && (s.x < f.x ? -1 : 1) !== FACE_R[f.skin] ? -1 : 1, life: 0.35 });
         s.fx.push({ boom: true, spr: "smoke", x: f.x, y: f.y, r: f.r, c: f.c, size: f.r * 3.4, life: 0.4, dur: 0.4 });
         return false;
       });
@@ -3893,14 +3895,33 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     let monOk = false;
     MON.onload = () => { monOk = true; draw(); };
     MON.src = "img/mon.png";
+    /* 몬스터 움직임 — "몬스터도 좀 임팩트 있게, 현실감있게" (2026-10-26). 그림은 한 장이라 코드로 흔든다:
+       슬라임 통통 튀며 찌그러짐 · 박쥐 날갯짓 · 늑대 기울이며 달려듦 · 골렘 무겁게 쿵쿵 · 나머지 뒤뚱 걸음 · 식충 식물 제자리 흔들림.
+       나올 때 땅에서 솟듯 커지고, 맞으면 찌그러지며 밀리고, 가까우면 앞으로 숙여 달려든다 */
+    function motion(f) {
+      const t = s.t + f.ph, sp = f.k === "boss" ? 0.7 : 1;
+      let y = 0, rot = 0, sx = 1, sy = 1;
+      switch (f.skin) {
+        case "slime": { const p = (t * 2.6) % 1, up = Math.sin(p * Math.PI); y = -up * f.r * 0.7; sy = 0.82 + up * 0.28; sx = 1.14 - up * 0.2; break; }
+        case "bat": y = Math.sin(t * 9) * 4 - 6; sx = 1 + Math.sin(t * 22) * 0.12; rot = Math.sin(t * 4) * 0.12; break;
+        case "wolf": rot = Math.sin(t * 11 * sp) * 0.14; y = -Math.abs(Math.sin(t * 11 * sp)) * 4; sx = 1 + Math.sin(t * 22 * sp) * 0.05; break;
+        case "stone_golem": y = -Math.abs(Math.sin(t * 3.4 * sp)) * 3; rot = Math.sin(t * 3.4 * sp) * 0.06; sy = 1 - Math.abs(Math.cos(t * 3.4 * sp)) * 0.04; break;
+        case "carnivorous_plant": rot = Math.sin(t * 2.2) * 0.1; sy = 1 + Math.sin(t * 4.4) * 0.05; break;
+        case "red_demon": y = Math.sin(t * 2.5) * 5 - 4; sx = sy = 1 + Math.sin(t * 5) * 0.03; break;
+        default: rot = Math.sin(t * 8 * sp) * 0.09; y = -Math.abs(Math.sin(t * 8 * sp)) * 3;
+      }
+      const grow = Math.min(1, (f.age || 0) / 0.3); // 나올 때
+      if (f.hit) { sx *= 1.12; sy *= 0.88; }       // 맞을 때 찌그러짐
+      return { y: y * grow, rot: rot, sx: sx * (0.4 + grow * 0.6), sy: sy * (0.2 + grow * 0.8), a: 0.3 + grow * 0.7, lean: f.near ? 0.22 : 0 };
+    }
     function monster(f, x, y) {
-      const fr = MF[f.skin], k = f.r * 2.8 / Math.max(fr[2], fr[3]), w = fr[2] * k, h = fr[3] * k;
-      g.fillStyle = "rgba(0,0,0,.35)"; g.beginPath(); g.ellipse(x, y + h * 0.42, w * 0.32, h * 0.1, 0, 0, Math.PI * 2); g.fill();
-      g.save(); g.translate(x, y);
-      if (FACE_R[f.skin] && (s.x < f.x ? -1 : 1) !== FACE_R[f.skin]) g.scale(-1, 1);
+      const fr = MF[f.skin], k = f.r * 2.8 / Math.max(fr[2], fr[3]), w = fr[2] * k, h = fr[3] * k, m = motion(f), dir = s.x < f.x ? -1 : 1;
+      g.fillStyle = "rgba(0,0,0,.35)"; g.beginPath(); g.ellipse(x, y + h * 0.42, w * 0.32 * (1 + m.y / 40), h * 0.1, 0, 0, Math.PI * 2); g.fill();
+      g.save(); g.translate(x, y + h * 0.42 + m.y); g.rotate(m.rot + m.lean * dir); g.scale(m.sx, m.sy); g.translate(0, -h * 0.42); g.globalAlpha = m.a;
+      if (FACE_R[f.skin] && dir !== FACE_R[f.skin]) g.scale(-1, 1);
       g.drawImage(MON, fr[0], fr[1], fr[2], fr[3], -w / 2, -h / 2, w, h);
-      if (f.hit) { g.globalCompositeOperation = "lighter"; g.globalAlpha = 0.55; g.drawImage(MON, fr[0], fr[1], fr[2], fr[3], -w / 2, -h / 2, w, h); g.globalAlpha = 1; g.globalCompositeOperation = "source-over"; }
-      g.restore();
+      if (f.hit) { g.globalCompositeOperation = "lighter"; g.globalAlpha = 0.55; g.drawImage(MON, fr[0], fr[1], fr[2], fr[3], -w / 2, -h / 2, w, h); g.globalCompositeOperation = "source-over"; }
+      g.restore(); g.globalAlpha = 1;
       if (f.k === "boss") {
         g.fillStyle = "rgba(0,0,0,.6)"; g.fillRect(x - 30, y + h / 2 + 4, 60, 5); g.fillStyle = "#ff6a4a"; g.fillRect(x - 30, y + h / 2 + 4, 60 * Math.max(0, f.hp) / f.full, 5);
       }
@@ -4001,6 +4022,12 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
         s.gems.forEach((m) => { const x = m.x + ox, y = m.y + oy, r = m.v > 1 ? 8.5 : 6; if (x < -6 || y < -6 || x > W + 6 || y > H + 6) return; g.moveTo(x, y - r); g.lineTo(x + r, y); g.lineTo(x, y + r); g.lineTo(x - r, y); g.closePath(); });
         g.fill(); g.strokeStyle = "#ff9a1f"; g.lineWidth = 1.6; g.stroke(); g.lineWidth = 1; // 경험치 구슬 — 크게 · 주황 테두리 (2026-10-26)
         s.fx.forEach((x) => {
+          if (x.corpse) {
+            if (!monOk || !MF[x.skin]) return;
+            const p = 1 - x.life / 0.35, fr = MF[x.skin], k = x.r * 2.8 / Math.max(fr[2], fr[3]) * (1 - p * 0.45), w = fr[2] * k, h = fr[3] * k;
+            g.save(); g.translate(x.x + ox, x.y + oy - p * 10); g.rotate(p * 1.1 * x.flip); g.scale(x.flip, 1); g.globalAlpha = 1 - p;
+            g.drawImage(MON, fr[0], fr[1], fr[2], fr[3], -w / 2, -h / 2, w, h); g.restore(); g.globalAlpha = 1; return;
+          }
           if (x.spr && fxOk) {
             const fi = Math.floor((1 - x.life / x.dur) * 4);
             g.globalAlpha = Math.min(1, x.life / (x.dur * 0.35));
