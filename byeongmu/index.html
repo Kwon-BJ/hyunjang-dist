@@ -376,6 +376,8 @@ footer .tagline::before, footer .tagline::after { width: clamp(30px, 6vw, 60px);
 #appBtn[hidden] { display: none; }
 #appBtn + .admin-link { margin-left: 14px; }
 /* 앱으로 설치 안내 (2026-10-26) */
+.new-build { position: sticky; top: 0; z-index: 70; display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: center; margin-bottom: 12px; padding: 10px 14px; border: 1px solid var(--gold); border-radius: 6px; background: #2a1f0e; color: var(--gold-hi); font-size: 14px; }
+.new-build[hidden] { display: none; }
 .app-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; margin-bottom: 14px; padding: 12px 14px; border: 1px solid var(--gold); border-radius: 6px; background: linear-gradient(180deg, #2a2010, #140f08); }
 .app-bar[hidden] { display: none; }
 .app-bar img { width: 40px; height: 40px; border-radius: 10px; flex: none; }
@@ -626,12 +628,14 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
 .game-hud .xp i { display: block; height: 100%; width: 0; background: var(--gold); }
 .game-hud .pause { pointer-events: auto; margin-left: auto; }
 /* 전체화면 (2026-10-26) — 브라우저 전체화면(게임판만), 안 되는 곳(아이폰)은 게임판이 화면을 덮는다(.full) */
-.game-hud .gfull { pointer-events: auto; }
+.game-hud .gfull, .game-hud .gspeed { pointer-events: auto; }
 .game-box:fullscreen { border: 0; border-radius: 0; width: 100vw; height: 100vh; }
 .game-box:fullscreen canvas { height: 100vh; min-height: 0; }
 .game-box.full { position: fixed; inset: 0; z-index: 60; border: 0; border-radius: 0; }
 .game-box.full canvas { height: 100vh; height: 100dvh; min-height: 0; }
 body.game-full { overflow: hidden; }
+.gspeed-pick { justify-content: center; flex: none; }
+.gspeed-pick .chip { padding: 5px 14px; font-size: 13px; }
 .game-test { display: flex; gap: 8px; align-items: center; justify-content: center; font-size: 13px; color: #b6f5c2; cursor: pointer; }
 .game-test input { width: 18px; height: 18px; accent-color: #3ccf6a; }
 .game-hud .gtest { padding: 0 6px; border-radius: 4px; background: #1e6b34; color: #d8ffe2; font-size: 11px; }
@@ -791,6 +795,8 @@ body.game-full { overflow: hidden; }
 </header>
 
 <main class="wrap">
+  <!-- 새 판 알림 — 글 쓰는 중 · 게임 중에만 (2026-10-26) -->
+  <div class="new-build" id="newBuildBar" hidden><span>홈페이지 새 판이 나왔어요. 쓰던 글 · 게임을 마치고 눌러 주세요.</span><button class="btn" type="button" onclick="sessionStorage.removeItem('bmc-reloaded');location.reload()">새로고침</button></div>
   <!-- 앱으로 설치 안내 — 로그인 전에도 보인다 (2026-10-26) -->
   <div class="app-bar" id="appBar" hidden>
     <img src="img/app-192.png" alt="" width="40" height="40">
@@ -1029,7 +1035,7 @@ body.game-full { overflow: hidden; }
         <div class="game-hud" id="gameHud" hidden>
           <div class="xp"><i id="gXp"></i></div>
           <div class="row"><span id="gTime">4:00</span><div class="hpbar"><i id="gHp"></i></div><span class="gtest" id="gTest" hidden>🧪 TEST</span><span id="gStage">1단계</span><span id="gLv">Lv 1</span><span id="gKill">0</span>
-          <button class="tiny pause" type="button" id="gPause">멈춤</button><button class="tiny gfull" type="button" id="gFull">⛶ 전체화면</button></div>
+          <button class="tiny pause" type="button" id="gPause">멈춤</button><button class="tiny gspeed" type="button" id="gSpeed">▶ 1배속</button><button class="tiny gfull" type="button" id="gFull">⛶ 전체화면</button></div>
           <div class="boss" id="gBoss" hidden><b id="gBossName"></b><div class="bar"><i id="gBossHp"></i></div></div>
           <div class="msg" id="gMsg" aria-live="polite"></div>
           <div class="skills" id="gSkills"></div>
@@ -1154,17 +1160,37 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610260927";
-  (async () => {
+  const BUILD = "202610261004";
+  /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
+     1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
+  let newBuild = "";
+  function goNew() { if (newBuild && sessionStorage.getItem("bmc-reloaded") !== newBuild) { sessionStorage.setItem("bmc-reloaded", newBuild); location.replace(location.pathname + "?v=" + newBuild + location.hash); } }
+  /* 잠수함 패치 — 게임 중이면 판을 저장하고 바로 새 판으로, 새로 열리면 이어서 (2026-10-26 "게임하는 사람도 배포하면 바로 적용") */
+  function tryGo() {
+    if (!newBuild) return;
+    if (busy()) { const bar = document.getElementById("newBuildBar"); if (bar) bar.hidden = false; return; }
+    if (window.__bmcPlaying && window.__bmcPlaying() && !(window.__bmcSaveGame && window.__bmcSaveGame())) return;
+    goNew();
+  }
+  function busy() { // 글 쓰는 중
+    const typed = [...document.querySelectorAll("textarea, input[type=text], input:not([type])")].some((e) => e.value && e.offsetParent !== null);
+    const editing = [...document.querySelectorAll(".editor")].some((e) => !e.hidden && e.offsetParent !== null);
+    return typed || editing;
+  }
+  async function checkBuild() {
+    if (BUILD === "dev") return;
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
       const m = t.match(/const BUILD = "([^"]+)"/);
-      if (m && m[1] !== BUILD && BUILD !== "dev" && sessionStorage.getItem("bmc-reloaded") !== m[1]) {
-        sessionStorage.setItem("bmc-reloaded", m[1]);
-        location.replace(location.pathname + "?v=" + m[1] + location.hash);
-      }
+      if (!m || m[1] === BUILD) return;
+      newBuild = m[1];
+      tryGo();
     } catch (e) { /* 못 보면 그냥 지금 화면으로 */ }
-  })();
+  }
+  checkBuild();
+  setInterval(() => { if (newBuild) tryGo(); else checkBuild(); }, 60000);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) { if (newBuild) tryGo(); else checkBuild(); } });
+  window.__bmcNewBuildIdle = tryGo; // 게임이 끝나면 부른다
   /* 창구 — 클라우드플레어 워커 (워커/src/index.js). 2026-10-23 까지는 구글 Apps Script(창구/Code.js) 였다 — "구글서버 말고 다른걸로" */
   const API = "https://byeongmu.byeongmu-munpa.workers.dev";
   window.__EMBLEM__ = "img/emblem.webp";
@@ -3431,7 +3457,7 @@ body.game-full { overflow: hidden; }
       { k: "spd", n: "날랜 발", max: 5, d: "이동 속도 +12%", f: () => { s.spd *= 1.12; } },
       { k: "max", n: "튼튼한 몸", max: 6, d: "최대 체력 +25, 그만큼 회복", f: () => { s.max += 25; s.hp += 25; } },
       { k: "magnet", n: "구슬 끌기", max: 4, d: "경험 구슬을 더 멀리서 끌어와요", f: () => { s.magnet *= 1.5; } },
-      { k: "regen", n: "숨 고르기", max: 4, d: "1초마다 체력 1 회복", f: () => { s.regen++; } },
+      { k: "regen", n: "숨 고르기", max: 4, d: "1초마다 체력 1 회복(맞은 뒤 2초는 안 참)", f: () => { s.regen++; } },
       { k: "thunder", n: "낙뢰 부적", max: 5, skill: true, d: "[스킬] 가까운 잡귀 여럿에게 벼락", up: "벼락이 더 세고 · 더 많이 · 더 자주" },
       { k: "whirl", n: "회오리", max: 5, skill: true, d: "[스킬] 둘레 잡귀를 밀쳐내며 다치게 하고 불덩이를 지움", up: "더 넓게 · 더 세게 · 더 자주" },
       { k: "ward", n: "결계", max: 5, skill: true, d: "[스킬] 잠깐 아무 피해도 안 받아요", up: "더 오래 · 더 자주" },
@@ -3440,6 +3466,8 @@ body.game-full { overflow: hidden; }
       { k: "frost", n: "얼음 폭발", max: 5, skill: true, d: "[스킬] 둘레 몬스터를 얼려 느리게 하고 다치게 해요", up: "더 넓게 · 더 오래 얼림 · 더 자주" },
       { k: "cool", n: "기 모으기", max: 4, d: "스킬 기다리는 시간 −10%", f: () => { s.cool *= 0.9; }, ok: () => s.skills.length > 0 },
     ];
+    let speed = 1;
+    try { speed = Math.min(3, Math.max(1, +localStorage.getItem("bmc-game-speed") || 1)); } catch (e) {}
     let W = 0, H = 0, DPR = 1, s = null, raf = 0, last = 0, running = false, shown = "", stick = null;
     const keys = {};
     const MOVE = { ArrowUp: [0, -1], KeyW: [0, -1], ArrowDown: [0, 1], KeyS: [0, 1], ArrowLeft: [-1, 0], KeyA: [-1, 0], ArrowRight: [1, 0], KeyD: [1, 0] };
@@ -3499,7 +3527,7 @@ body.game-full { overflow: hidden; }
       $("gameHud").hidden = true;
       panel([el("h3", null, "연병장"), el("p", null, nick() + " 님, 죽을 때까지 버텨 보세요."),
         el("p", "best", "움직이기 — 휴대폰은 화면을 누른 채 끌기 · PC 는 방향키(또는 WASD). 둘레 3m 동그라미 안은 자동 조준, 없으면 바라보는 쪽. 대쉬는 스페이스(휴대폰은 오른쪽 아래 단추) 5초마다. 스킬은 배우면 저절로 나가요(1 ~ 6 으로도)"),
-        el("p", "best", "30초마다 단계가 올라 잡귀가 세지고 많아져요. 2 · 4 · 6 …단계 끝에 대장이 나오고, 대장을 잡아야 다음 단계로 가요. 끝나면 순위표에 올라가요."), pickRow(), ...(canTest() ? [testRow()] : []), bestLine(), (() => { const r = el("div", "game-start"); r.append(gBtn("시작", begin), gBtn(isFull() ? "전체화면 끄기" : "⛶ 전체화면", toggleFull, "ghost gfull")); return r; })()]);
+        el("p", "best", "30초마다 단계가 올라 잡귀가 세지고 많아져요. 2 · 4 · 6 …단계 끝에 대장이 나오고, 대장을 잡아야 다음 단계로 가요. 끝나면 순위표에 올라가요."), pickRow(), (() => { const r = el("div", "chips gspeed-pick"); [1, 2, 3].forEach((v) => { const b = el("button", "chip", v + "배속"); b.type = "button"; b.dataset.v = v; b.setAttribute("aria-pressed", String(v === speed)); b.onclick = () => setSpeed(v); r.appendChild(b); }); return r; })(), ...(canTest() ? [testRow()] : []), bestLine(), (() => { const r = el("div", "game-start"); r.append(gBtn("시작", begin), gBtn(isFull() ? "전체화면 끄기" : "⛶ 전체화면", toggleFull, "ghost gfull")); return r; })()]);
       drawPick();
     }
     function mine() { return UPS.filter((u) => s.up[u.k]).map((u) => u.n + " " + s.up[u.k]).join(" · ") || "아직 강화 없음"; }
@@ -3569,6 +3597,7 @@ body.game-full { overflow: hidden; }
     function end() {
       running = false; s.over = true; stick = null;
       const sec = Math.floor(s.t), run = s;
+      if (window.__bmcNewBuildIdle) setTimeout(window.__bmcNewBuildIdle, 20000); // 결과를 캡처할 틈을 두고 새 판으로
       draw(); showResult(s.kills * 10 + sec * 2 + s.bossKills * 300, new Date().toISOString());
       if (!me || !token || s.test) return; // 테스트 모드는 순위표에 안 올림
       call("saveGameScore", token, { sec: sec, stage: s.stage, kills: s.kills, bosses: s.bossKills, lv: s.lv }).then((r) => {
@@ -3638,7 +3667,8 @@ body.game-full { overflow: hidden; }
       raf = 0;
       if (!running) return;
       const dt = Math.min(0.05, Math.max(0, (ts - last) / 1000)); last = ts;
-      step(dt); draw(); hud();
+      for (let i = 0; i < speed && running; i++) step(dt); // 빠르기 1 · 2 · 3배 — 게임 시간을 그만큼 더 돌린다(점수는 게임 시간이라 그대로 공정)
+      draw(); hud();
       if (running) raf = requestAnimationFrame(loop);
     }
     function dir() {
@@ -3715,7 +3745,7 @@ body.game-full { overflow: hidden; }
       const a = Math.atan2(uy, ux);
       if (f.k === "spit") { f.cd = 2.6; bullet(f.x, f.y, a, 160, 8); return; }
       /* 대장마다 재주 셋을 차례로 — "보스들마다 개성있게 공격스킬 조금 더" (2026-10-26). 피해는 단계에 따라 세진다(f.bd) */
-      const bd = f.bd || 1, n = f.n = (f.n || 0) + 1;
+      const bd = (f.bd || 1) * (1 + Math.max(0, f.age - 45) / 30), n = f.n = (f.n || 0) + 1;
       if (f.act === "dash") { // 바위 거인 — 돌진 · 바위 던지기 · 땅 울림
         if (n % 3 === 1) { f.cd = 3.2; f.dash = 0.6; msg(f.name + " — 돌진!"); }
         else if (n % 3 === 2) { f.cd = 3.4; for (let i = -1; i <= 1; i++) bullet(f.x, f.y, a + i * 0.28, 120, 22 * bd, 13, "#8a7f74"); msg(f.name + " — 바위 던지기!"); }
@@ -3832,7 +3862,9 @@ body.game-full { overflow: hidden; }
       if (s.dashT > 0) { s.dashT -= dt; s.x += s.dashX * 900 * dt; s.y += s.dashY * 900 * dt; s.trail.push({ x: s.x, y: s.y, life: 0.3 }); }
       s.trail.forEach((p) => { p.life -= dt; }); s.trail = s.trail.filter((p) => p.life > 0);
       inMap(s);
-      if (s.regen) s.hp = Math.min(s.max, s.hp + s.regen * dt);
+      /* 숨 고르기 — 맞은 뒤 2초 동안은 안 찬다. 예전엔 맞는 중에도 초당 4까지 차서 안 죽었다 (2026-10-26) */
+      s.calm = Math.max(0, (s.calm || 0) - dt);
+      if (s.regen && !s.calm) s.hp = Math.min(s.max, s.hp + s.regen * dt);
       s.hurt = Math.max(0, s.hurt - dt); s.ward = Math.max(0, s.ward - dt);
       /* 피격 효과 (2026-10-26 "주인공이 데미지 받으면 피격 효과") — 화면 가장자리 붉게 · 살짝 흔들림 · 붉은 불꽃 */
       if (s.hitFx > 0) { s.hitFx = Math.max(0, s.hitFx - dt); if (Math.random() < 0.35 && s.fx.length < 160) s.fx.push({ spark: true, x: s.x + (Math.random() - 0.5) * 24, y: s.y - 8 + (Math.random() - 0.5) * 24, c: 3, life: 0.15 }); }
@@ -3849,7 +3881,7 @@ body.game-full { overflow: hidden; }
         if (s.stageT >= STAGE) { if (s.stage % 2 === 0) { s.stageT = STAGE; spawnBoss(s.bossN++); } else nextStage(""); }
       }
       /* 1단계 초당 1마리 → 8단계 10마리 → 많아야 14마리 (그 뒤로는 잡귀가 단단해지기만) */
-      s.spawn += dt * Math.min(14, s.stage * 1.25 - 0.2) * (bossOn ? 0.35 : 1);
+      s.spawn += dt * Math.min(14, s.stage * 1.25 - 0.2) * (bossOn && s.bossNow.age < 45 ? 0.35 : 1);
       while (s.spawn >= 1) { s.spawn--; if (s.foes.length < 300) spawn(); }
       s.fire -= dt;
       if (s.fire <= 0 && s.foes.length) { s.fire = s.rate; shoot(); }
@@ -3878,12 +3910,12 @@ body.game-full { overflow: hidden; }
       s.shots = s.shots.filter((b) => b.life > 0);
       s.ebs.forEach((b) => {
         b.x += b.vx * dt; b.y += b.vy * dt; b.life -= dt;
-        if ((b.x - s.x) ** 2 + (b.y - s.y) ** 2 < (15 + (b.r || 5)) ** 2) { b.life = 0; if (!s.ward && !(s.dashT > 0)) { s.hp -= b.dmg; s.hurt = 0.15; s.hitFx = 0.35; } }
+        if ((b.x - s.x) ** 2 + (b.y - s.y) ** 2 < (15 + (b.r || 5)) ** 2) { b.life = 0; if (!s.ward && !(s.dashT > 0)) { s.hp -= b.dmg; s.hurt = 0.15; s.hitFx = 0.35; s.calm = 2; } }
       });
       s.ebs = s.ebs.filter((b) => b.life > 0);
       s.hz.forEach((z) => {
         z.t -= dt; if (z.t > 0 || z.done) return; z.done = true;
-        if ((z.x - s.x) ** 2 + (z.y - s.y) ** 2 < z.r * z.r && !s.ward && !(s.dashT > 0)) { s.hp -= z.dmg; s.hurt = 0.15; s.hitFx = 0.5; }
+        if ((z.x - s.x) ** 2 + (z.y - s.y) ** 2 < z.r * z.r && !s.ward && !(s.dashT > 0)) { s.hp -= z.dmg; s.hurt = 0.15; s.hitFx = 0.5; s.calm = 2; }
         s.fx.push({ x: z.x, y: z.y, r: z.r / 2.2, c: "rgb(" + z.c + ")", life: 0.3 });
       });
       s.hz = s.hz.filter((z) => !z.done);
@@ -3895,11 +3927,14 @@ body.game-full { overflow: hidden; }
         if (f.slow > 0) { f.slow -= dt; sp *= 0.3; }
         if (f.dash > 0) { f.dash -= dt; sp *= 3.5; if (f.dash <= 0 && f.combo > 0) { f.combo--; f.dash = 0.35; } }
         if (f.rage > 0) { f.rage -= dt; sp *= 1.6; }
+        /* 대장 분노 — 45초 안에 못 잡으면 점점 빠르고 세진다(잡귀도 다시 다 나옴). 피해 다니며 숨 고르기로만 버텨 안 죽던 것 (2026-10-26) */
+        const enr = f.k === "boss" ? Math.max(0, f.age - 45) : 0;
+        if (enr) { sp *= 1 + enr / 60; if (!f.enraged) { f.enraged = 1; msg(f.name + " — 분노! 점점 강해진다"); } }
         if (f.k === "spit" && L < 170) sp = L < 140 ? -f.spd * 0.6 : 0;
         f.x += dx / L * sp * dt; f.y += dy / L * sp * dt;
         f.hit = Math.max(0, f.hit - dt); f.oc -= dt; f.age = (f.age || 0) + dt; f.near = L < f.r + 45;
         if ((f.k === "spit" || f.k === "boss") && (f.cd -= dt) <= 0) act(f, dx / L, dy / L);
-        if (L < f.r + 15 && !s.ward && !(s.dashT > 0)) { s.hp -= f.dps * dt; s.hurt = 0.15; s.hitFx = 0.35; }
+        if (L < f.r + 15 && !s.ward && !(s.dashT > 0)) { s.hp -= f.dps * (1 + enr / 30) * dt; s.hurt = 0.15; s.hitFx = 0.35; s.calm = 2; }
         if (s.aura && L < auraR + f.r) hurt(f, (6 + s.aura * 6) * dt);
         for (let i = 0; i < s.orbs && f.oc <= 0; i++) {
           const a = s.orbA + i * Math.PI * 2 / s.orbs, ox = s.x + Math.cos(a) * 70, oy = s.y + Math.sin(a) * 70;
@@ -4395,16 +4430,42 @@ body.game-full { overflow: hidden; }
     window.addEventListener("blur", () => { Object.keys(keys).forEach((k) => delete keys[k]); pause(); });
     document.addEventListener("visibilitychange", () => { if (document.hidden) pause(); });
     $("gPause").onclick = pause;
+    /* 게임 빠르기 — "속도 2배속 3배속까지 선택해서 할 수 있게" (2026-10-26). 누를 때마다 1 → 2 → 3 → 1, 이 기기에 기억 */
+    function speedLabel() { $("gSpeed").textContent = "▶".repeat(speed) + " " + speed + "배속"; document.querySelectorAll(".gspeed-pick button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.v === speed))); }
+    function setSpeed(v) { speed = v; try { localStorage.setItem("bmc-game-speed", String(v)); } catch (e) {} speedLabel(); }
+    $("gSpeed").onclick = () => setSpeed(speed % 3 + 1);
+    speedLabel();
     $("gFull").onclick = toggleFull;
     $("gDash").addEventListener("pointerdown", (e) => { e.preventDefault(); e.stopPropagation(); dash(); });
 
     /* 점검용 — 주소에 ?bmctest=1 이 있을 때만 시험(시험/전체점검-시험.cjs)이 게임 상태를 보고 바꿀 수 있게 (2026-10-26 "오류 · 버그 전체 확인"). 보통 때는 없다 */
-    if (/[?&]bmctest=1/.test(location.search)) window.__bmcGame = { get s() { return s; }, cast: cast, W: () => W, H: () => H };
+    window.__bmcPlaying = () => !!(s && !s.over); // 멈춰 둔 판도 하는 중
+    /* 잠수함 패치 — 하던 판을 세션에 저장(2분 안에 새로 열리면 이어서). 몬스터를 가리키는 것(대장 · 조준 · 화살 목표 · 맞힌 목록)은 번호로 바꾸거나 비운다 */
+    window.__bmcSaveGame = () => {
+      if (!s || s.over) return false;
+      try {
+        const data = JSON.stringify(s, (k, v) => (k === "bossNow" || k === "lock" || k === "tg") ? undefined : (k === "hit" && Array.isArray(v)) ? [] : v);
+        sessionStorage.setItem("bmc-game-save", JSON.stringify({ at: Date.now(), boss: s.foes.indexOf(s.bossNow), hero: heroKey, s: data }));
+        return true;
+      } catch (e) { return false; }
+    };
+    function restoreGame() {
+      let sv = null;
+      try { sv = JSON.parse(sessionStorage.getItem("bmc-game-save") || "null"); sessionStorage.removeItem("bmc-game-save"); } catch (e) {}
+      if (!sv || Date.now() - sv.at > 120000) return false;
+      try { s = JSON.parse(sv.s); } catch (e) { return false; }
+      s.bossNow = sv.boss >= 0 ? s.foes[sv.boss] || null : null; s.lock = null;
+      if (HEROES[sv.hero]) heroKey = sv.hero;
+      s.ward = Math.max(s.ward || 0, 2); $("gTest").hidden = !s.test;
+      renderSkills(); resume(); msg("업데이트 적용 — 이어서!");
+      return true;
+    }
+    if (/[?&]bmctest=1/.test(location.search)) window.__bmcGame = { get s() { return s; }, cast: cast, W: () => W, H: () => H, UPS: UPS, SK: SK, TEST_MUL: TEST_MUL };
     return {
       /* 다른 메뉴로 가면 멈춘다. 처음 들어오면(또는 다른 사람이 들어오면) 시작 안내 */
       render() {
         if (view !== "game") { pause(); if (isFull()) toggleFull(); return; } // 다른 메뉴로 가면 전체화면도 끈다
-        if (shown !== nick()) { shown = nick(); s = null; running = false; stick = null; intro(); drawRanks(); }
+        if (shown !== nick()) { shown = nick(); s = null; running = false; stick = null; if (!restoreGame()) intro(); drawRanks(); }
         drawResetTools();
         if (Date.now() - ranksAt > 30000) loadRanks();
         size();
