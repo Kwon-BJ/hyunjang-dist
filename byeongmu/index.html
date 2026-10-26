@@ -995,7 +995,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     <!-- 연병장 — 점검 시간 미니게임. 점수는 이 기기에만 저장(창구 안 씀) (2026-10-26) -->
     <section id="gameView" hidden>
       <h2 class="section-label"><svg aria-hidden="true"><use href="#i-war"/></svg>연병장</h2>
-      <p class="game-hint">화면을 누른 채 끌면 움직이고(PC 는 방향키 · WASD), 총은 <b>바라보는 쪽</b>으로 쏘고, 그쪽 3m(밝은 부채꼴) 안 몬스터는 자동 조준돼요. 30초마다 단계가 올라 잡귀가 늘고, 1분마다 대장이 나와요. 레벨이 오르면 강화나 <b>스킬</b>을 고르고, 스킬은 오른쪽 아래 단추(PC 는 1 · 2 · 3), <b>대쉬</b>는 왼쪽 아래 단추(PC 는 스페이스) — 5초마다, 대쉬하는 동안은 안 맞아요. <b>죽을 때까지</b> 버틴 만큼 점수 — 끝나면 순위표에 올라가요!</p>
+      <p class="game-hint">화면을 누른 채 끌면 움직이고(PC 는 방향키 · WASD), 총은 <b>바라보는 쪽</b>으로 쏘고, 그쪽 둘레 3m(밝은 동그라미) 안 몬스터는 어느 쪽이든 자동 조준돼요. 30초마다 단계가 올라 잡귀가 늘고, 1분마다 대장이 나와요. 레벨이 오르면 강화나 <b>스킬</b>을 고르고, 스킬은 오른쪽 아래 단추(PC 는 1 · 2 · 3), <b>대쉬</b>는 왼쪽 아래 단추(PC 는 스페이스) — 5초마다, 대쉬하는 동안은 안 맞아요. <b>죽을 때까지</b> 버틴 만큼 점수 — 끝나면 순위표에 올라가요!</p>
       <div class="game-box" id="gameBox">
         <canvas id="gameCv" aria-label="연병장 게임 화면"></canvas>
         <div class="game-hud" id="gameHud" hidden>
@@ -1124,7 +1124,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610260526";
+  const BUILD = "202610260530";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -3433,7 +3433,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     function intro() {
       $("gameHud").hidden = true;
       panel([el("h3", null, "연병장"), el("p", null, nick() + " 님, 죽을 때까지 버텨 보세요."),
-        el("p", "best", "움직이기 — 휴대폰은 화면을 누른 채 끌기 · PC 는 방향키(또는 WASD). 총은 바라보는 쪽, 3m 안은 자동 조준. 대쉬는 스페이스(휴대폰은 왼쪽 아래 단추) 5초마다. 스킬은 1 · 2 · 3"),
+        el("p", "best", "움직이기 — 휴대폰은 화면을 누른 채 끌기 · PC 는 방향키(또는 WASD). 둘레 3m 동그라미 안은 자동 조준, 없으면 바라보는 쪽. 대쉬는 스페이스(휴대폰은 왼쪽 아래 단추) 5초마다. 스킬은 1 · 2 · 3"),
         el("p", "best", "30초마다 단계가 올라 잡귀가 세지고 많아져요. 1분마다 대장이 나와요. 끝나면 순위표에 올라가요."), bestLine(), gBtn("시작", begin)]);
     }
     function mine() { return UPS.filter((u) => s.up[u.k]).map((u) => u.n + " " + s.up[u.k]).join(" · ") || "아직 강화 없음"; }
@@ -3644,8 +3644,9 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     function hurt(f, n, flash) { f.hp -= n; if (flash) f.hit = 0.08; }
     /* 쏘기 — "바라보는 방향에 따라 공격, 바라보는 방향 3m 내에는 자동으로 타겟팅" (2026-10-26).
        바라보는 쪽 = 마지막으로 움직인 쪽(s.mvA). 그 쪽 부채꼴(좌우 60°) 3m(= 240px) 안 잡귀를 가까운 순으로 겨누고,
-       없으면 바라보는 쪽으로 곧게 쏜다(여러 장이면 부채처럼 벌려서) */
-    const AIM_R = 240, AIM_HALF = Math.PI / 3;
+       없으면 바라보는 쪽으로 곧게 쏜다(여러 장이면 부채처럼 벌려서).
+       "공격방향이 1쪽이라 힘드네, 4방향 다 동그라미로 표시해서 자동으로" (2026-10-26) — 부채꼴 대신 둘레 동그라미 3m 안은 어느 쪽이든 */
+    const AIM_R = 240, AIM_HALF = Math.PI;
     function targets() {
       return s.foes.map((f) => {
         const dx = f.x - s.x, dy = f.y - s.y;
@@ -3930,7 +3931,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       /* 조준 범위(바라보는 쪽 3m 부채꼴) · 겨눈 잡귀 표시 */
       if (s && !s.over) {
         g.fillStyle = "rgba(246,226,164,.09)"; g.strokeStyle = "rgba(246,226,164,.45)";
-        g.beginPath(); g.moveTo(W / 2, H / 2); g.arc(W / 2, H / 2, AIM_R, s.mvA - AIM_HALF, s.mvA + AIM_HALF); g.closePath(); g.fill(); g.stroke();
+        g.beginPath(); g.arc(W / 2, H / 2, AIM_R, 0, Math.PI * 2); g.fill(); g.stroke();
         const L = s.lock;
         if (L && L.hp > 0 && s.foes.includes(L)) {
           const lx = L.x - s.x + W / 2, ly = L.y - s.y + H / 2, r = L.r * 1.5 + 4;
