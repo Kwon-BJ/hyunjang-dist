@@ -654,6 +654,9 @@ body.game-full { overflow: hidden; }
 .gskill .ic { display: block; width: 20px; height: 20px; margin: 0 auto 1px; filter: drop-shadow(0 0 4px currentColor); }
 .gskill canvas.ic { width: 26px; height: 26px; margin-bottom: 0; filter: none; }
 .game-box canvas.gico { min-height: 0; } /* 게임판 canvas 규칙(min-height 360px)을 받지 않게 */
+/* 전체화면의 게임판 canvas 규칙(height 100vh)도 받지 않게 — "전체화면에서 레벨업하니 화면이 깨진다" (2026-10-26) */
+.game-box .game-picks canvas.gico { width: 46px; height: 46px; }
+.game-box .gskill canvas.gico { width: 26px; height: 26px; }
 .gskill .ic svg { width: 100%; height: 100%; display: block; }
 .gskill span:not(.ic) { display: block; font-size: 11px; white-space: nowrap; }
 .game-picks .ic { grid-row: 1 / 3; align-self: center; width: 46px; height: 46px; }
@@ -715,6 +718,8 @@ body.game-full { overflow: hidden; }
 .rank-list .no.m1 { color: #f6d36b; } .rank-list .no.m2 { color: #d8d8e0; } .rank-list .no.m3 { color: #d29a62; }
 .rank-list b { grid-area: nick; min-width: 0; overflow-wrap: anywhere; }
 .rank-list .sc { grid-area: sc; font-weight: 800; color: var(--gold-hi); font-variant-numeric: tabular-nums; }
+.rank-list li.edit { grid-template-areas: "no nick sc" "no det del"; }
+.rank-list .del { grid-area: del; justify-self: end; }
 .rank-list .det { grid-area: det; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .rank-list li.empty, .rank-list li.gap { display: block; text-align: center; color: var(--muted); background: none; }
 .rank-reset { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px 10px; border: 1px dashed var(--red); border-radius: 6px; }
@@ -1063,7 +1068,7 @@ body.game-full { overflow: hidden; }
       <div class="game-rank">
         <div class="head"><h3>순위표</h3><span>판이 끝날 때마다 바뀌어요 · 한 사람 최고 점수만</span><button class="tiny" type="button" id="rankReload">새로고침</button><button class="tiny" type="button" id="rankAdmin" hidden>초기화</button></div>
         <!-- 순위표 지우기 — 문주 · 관리자만 (2026-10-26) -->
-        <div class="rank-reset" id="rankReset" hidden><span>문주 · 관리자만 보여요. 이번 주 · 이번 달은 지금 1~3위를 「지난 우승」 으로 남기고 지워요. 매주 월요일 · 매달 1일에 저절로 새로 시작하는 것은 그대로예요.</span><button class="btn ghost" type="button" data-w="week">이번 주 지우기</button><button class="btn ghost" type="button" data-w="month">이번 달 지우기</button><button class="btn ghost" type="button" data-w="all">전체 지우기</button></div>
+        <div class="rank-reset" id="rankReset" hidden><span>문주 · 관리자만 보여요. 이번 주 · 이번 달은 지금 1~3위를 「지난 우승」 으로 남기고 지워요. 매주 월요일 · 매달 1일에 저절로 새로 시작하는 것은 그대로예요. 이 칸이 열려 있으면 순위표 줄마다 「지우기」 로 한 사람씩 지울 수도 있어요(지금 보는 탭에서만).</span><button class="btn ghost" type="button" data-w="week">이번 주 지우기</button><button class="btn ghost" type="button" data-w="month">이번 달 지우기</button><button class="btn ghost" type="button" data-w="all">전체 지우기</button></div>
         <div class="chips rank-tabs" id="rankTabs" role="group" aria-label="순위표 기간"></div>
         <p class="rank-when" id="rankWhen"></p>
         <ol class="rank-list" id="rankList"><li class="empty">불러오는 중…</li></ol>
@@ -1176,7 +1181,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610261253";
+  const BUILD = "202610261259";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -3666,6 +3671,7 @@ body.game-full { overflow: hidden; }
         const li = el("li", p.id === myId ? "me" : null);
         li.append(el("span", "no" + (i < 3 ? " m" + (i + 1) : ""), String(i + 1)), el("b", null, p.nick), el("span", "sc", Number(p.score).toLocaleString() + "점"),
           el("span", "det", mmss(p.sec) + " · " + p.stage + "단계" + (p.bosses ? " · 대장 " + p.bosses : "") + " · " + fmt(p.at)));
+        if (rankEdit()) { li.classList.add("edit"); li.appendChild(delBtn(p)); }
         return li;
       };
       const rows = top.slice(0, 20).map(row), mi = top.findIndex((p) => p.id === myId);
@@ -3701,13 +3707,25 @@ body.game-full { overflow: hidden; }
     setInterval(() => { if (s && !s.over && me && Date.now() - pingAt > 10000) { pingAt = Date.now(); ping(); } if (view === "game" && Date.now() - liveAt > 15000) loadLive(); else if (view === "game") drawLive(); }, 1000 * 5);
     /* 순위표 지우기 — "순위표 초기화 기준량 문주한테 권한 줘라" (2026-10-26). 문주 · 관리자만 보이고, 한 번 더 눌러야 지운다 */
     function drawResetTools() { $("rankAdmin").hidden = !canWrite; if (!canWrite) $("rankReset").hidden = true; }
-    $("rankAdmin").onclick = () => { $("rankReset").hidden = !$("rankReset").hidden; };
+    $("rankAdmin").onclick = () => { $("rankReset").hidden = !$("rankReset").hidden; drawRanks(); };
+    /* 순위표 한 줄 지우기 — "순위표 1개씩 삭제할 수 있게 해라" (2026-10-26). 초기화 칸을 연 문주 · 관리자에게만, 지금 보는 탭에서 그 사람만. 한 번 더 눌러야 지운다 */
+    function rankEdit() { return canWrite && !$("rankReset").hidden; }
+    function delBtn(p) {
+      const b = el("button", "tiny del", "지우기"); b.type = "button";
+      b.onclick = async () => {
+        if (b.dataset.sure !== "1") { b.dataset.sure = "1"; b.textContent = "정말 지울까요?"; setTimeout(() => { if (b.isConnected) { b.dataset.sure = ""; b.textContent = "지우기"; } }, 4000); return; }
+        b.disabled = true; const tab = rankTab;
+        try { takeRanks(await call("deleteGameScore", adminPw || token, tab, p.id)); setStatus(TABS[tab] + " 순위표에서 " + p.nick + " 님 기록을 지웠어요."); }
+        catch (e) { setStatus("기록을 못 지웠어요 — " + errMsg(e), true); b.disabled = false; b.dataset.sure = ""; b.textContent = "지우기"; }
+      };
+      return b;
+    }
     document.querySelectorAll("#rankReset button").forEach((b) => {
       const name = { week: "이번 주", month: "이번 달", all: "전체" }[b.dataset.w];
       b.onclick = async () => {
         if (b.dataset.sure !== "1") { b.dataset.sure = "1"; b.textContent = "정말 " + name + " 지울까요?"; setTimeout(() => { b.dataset.sure = ""; b.textContent = name + " 지우기"; }, 4000); return; }
         b.disabled = true;
-        try { takeRanks(await call("resetGameBoard", adminPw || token, b.dataset.w)); setStatus(name + " 순위표를 지웠어요."); $("rankReset").hidden = true; }
+        try { const r = await call("resetGameBoard", adminPw || token, b.dataset.w); $("rankReset").hidden = true; takeRanks(r); setStatus(name + " 순위표를 지웠어요."); } // 칸을 먼저 닫아야 줄마다 「지우기」 도 사라진다
         catch (e) { setStatus("순위표를 못 지웠어요 — " + errMsg(e), true); }
         b.disabled = false; b.dataset.sure = ""; b.textContent = name + " 지우기";
       };
