@@ -602,12 +602,26 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
 .game-hint { margin: 0; color: var(--muted); font-size: 13px; }
 .game-box { position: relative; border: 1px solid var(--gold-lo); border-radius: 6px; overflow: hidden; background: #07060a; }
 .game-box canvas { display: block; width: 100%; height: min(68vh, 620px); min-height: 360px; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
-.game-hud { position: absolute; left: 8px; right: 8px; top: 8px; display: flex; gap: 6px 10px; flex-wrap: wrap; align-items: center; pointer-events: none; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--gold-hi); text-shadow: 0 1px 2px #000; }
+.game-hud { position: absolute; inset: 0; pointer-events: none; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--gold-hi); text-shadow: 0 1px 2px #000; }
 .game-hud .hpbar { flex: 1 1 120px; max-width: 220px; height: 10px; border: 1px solid var(--gold-lo); border-radius: 999px; background: rgba(0,0,0,.6); overflow: hidden; }
 .game-hud .hpbar i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, var(--red), #ff6a4a); }
-.game-hud .xp { position: absolute; left: -8px; right: -8px; top: -8px; height: 4px; background: rgba(0,0,0,.6); }
+.game-hud .row { position: absolute; left: 8px; right: 8px; top: 8px; display: flex; gap: 6px 10px; flex-wrap: wrap; align-items: center; }
+.game-hud .xp { position: absolute; left: 0; right: 0; top: 0; height: 4px; background: rgba(0,0,0,.6); }
 .game-hud .xp i { display: block; height: 100%; width: 0; background: var(--gold); }
 .game-hud .pause { pointer-events: auto; margin-left: auto; }
+/* 대장 체력 · 단계 알림 · 스킬 단추 (2026-10-26) */
+.game-hud .boss { position: absolute; left: 50%; top: 62px; transform: translateX(-50%); width: min(80%, 360px); display: grid; gap: 3px; justify-items: center; color: #ffb3a8; font-size: 13px; }
+.game-hud .boss[hidden] { display: none; }
+.game-hud .boss .bar { width: 100%; height: 8px; border: 1px solid #7a2a1a; border-radius: 999px; background: rgba(0,0,0,.6); overflow: hidden; }
+.game-hud .boss .bar i { display: block; height: 100%; background: linear-gradient(90deg, #c4282c, #ff6a4a); }
+.game-hud .msg { position: absolute; left: 8px; right: 8px; top: 30%; text-align: center; font-family: var(--font-display); font-weight: 800; font-size: clamp(20px, 6vw, 30px); color: var(--gold-hi); text-shadow: 0 2px 6px #000; opacity: 0; transition: opacity .3s; }
+.game-hud .msg.on { opacity: 1; }
+.game-hud .skills { position: absolute; right: 10px; bottom: 10px; display: flex; gap: 8px; pointer-events: auto; }
+.gskill { width: 62px; height: 62px; padding: 0; border-radius: 50%; border: 2px solid var(--gold-lo); color: var(--gold-hi); font: inherit; font-size: 13px; font-weight: 800; line-height: 1.15; cursor: pointer; touch-action: none; -webkit-tap-highlight-color: transparent;
+  background: conic-gradient(rgba(0,0,0,.75) calc(var(--cd, 0) * 1turn), rgba(74,56,24,.92) 0); display: grid; place-content: center; }
+.gskill small { display: block; font-size: 10px; font-weight: 700; color: var(--muted); }
+.gskill.ready { border-color: var(--gold); box-shadow: 0 0 12px rgba(214,176,98,.6); }
+@media (max-width: 480px) { .gskill { width: 56px; height: 56px; } }
 .game-over { position: absolute; inset: 0; display: flex; padding: 16px; background: rgba(5,4,3,.82); overflow-y: auto; }
 .game-over[hidden] { display: none; }
 .game-over > div { margin: auto; width: min(100%, 440px); display: grid; gap: 12px; justify-items: center; text-align: center; }
@@ -937,13 +951,16 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     <!-- 연병장 — 점검 시간 미니게임. 점수는 이 기기에만 저장(창구 안 씀) (2026-10-26) -->
     <section id="gameView" hidden>
       <h2 class="section-label"><svg aria-hidden="true"><use href="#i-war"/></svg>연병장</h2>
-      <p class="game-hint">화면을 누른 채 끌면 움직이고(PC 는 방향키 · WASD), 부적은 저절로 날아가요. 몰려오는 잡귀를 잡아 강해지고 <b>4분</b>을 버티면 승리!</p>
+      <p class="game-hint">화면을 누른 채 끌면 움직이고(PC 는 방향키 · WASD), 부적은 저절로 날아가요. 30초마다 단계가 올라 잡귀가 늘고, 1분마다 대장이 나와요. 레벨이 오르면 강화나 <b>스킬</b>을 고르고, 스킬은 오른쪽 아래 단추(PC 는 1 · 2 · 3)로 써요. <b>4분</b>을 버티면 승리!</p>
       <div class="game-box" id="gameBox">
         <canvas id="gameCv" aria-label="연병장 게임 화면"></canvas>
         <div class="game-hud" id="gameHud" hidden>
           <div class="xp"><i id="gXp"></i></div>
-          <span id="gTime">4:00</span><div class="hpbar"><i id="gHp"></i></div><span id="gLv">Lv 1</span><span id="gKill">0</span>
-          <button class="tiny pause" type="button" id="gPause">멈춤</button>
+          <div class="row"><span id="gTime">4:00</span><div class="hpbar"><i id="gHp"></i></div><span id="gStage">1단계</span><span id="gLv">Lv 1</span><span id="gKill">0</span>
+          <button class="tiny pause" type="button" id="gPause">멈춤</button></div>
+          <div class="boss" id="gBoss" hidden><b id="gBossName"></b><div class="bar"><i id="gBossHp"></i></div></div>
+          <div class="msg" id="gMsg" aria-live="polite"></div>
+          <div class="skills" id="gSkills"></div>
         </div>
         <div class="game-over" id="gameOver"><div id="gameOverIn"></div></div>
       </div>
@@ -1052,7 +1069,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610260302";
+  const BUILD = "202610260317";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -3284,31 +3301,50 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
 
   /* ── 연병장 ── 수요일 점검 시간에 문파원끼리 한 판 (2026-10-26). 「유니티 3D 서바이벌」 영상을 보고 웹으로 —
      끌어서 움직이면 부적은 저절로, 잡귀를 잡아 강해지고 4분 버티기. 창구는 안 쓴다.
-     최고 점수는 이 기기에만(bmc-game-best, 닉네임별). 그림은 모두 직접 그린 도형 — 게임 공식 그림 · 캐릭터는 안 쓴다 */
+     최고 점수는 이 기기에만(bmc-game-best, 닉네임별). 그림은 모두 직접 그린 도형 — 게임 공식 그림 · 캐릭터는 안 쓴다.
+     "난이도는 자동으로 순차적으로 높게, 몬스터도 순차적으로 많이, 보스도, 스킬 넣고 업그레이드" (2026-10-26) —
+     30초마다 단계(1~8)가 올라 잡귀가 세지고 · 많아지고 · 한 무리가 둘러싼다. 1분마다 대장. 스킬 3가지는 강화에서 얻고 올린다 */
   const game = (() => {
     const cv = $("gameCv"), g = cv.getContext("2d");
-    const ROUND = 240, WD = "일월화수목금토";
+    const ROUND = 240, STAGE = 30, WD = "일월화수목금토";
     const FOES = {
-      imp: { r: 11, hp: 12, spd: 58, dps: 10, c: "#c4282c", xp: 1 },
+      imp: { r: 11, hp: 9, spd: 58, dps: 10, c: "#c4282c", xp: 1 },
       fast: { r: 9, hp: 8, spd: 108, dps: 8, c: "#8e3bd1", xp: 1 },
       rock: { r: 18, hp: 55, spd: 40, dps: 18, c: "#2f5bd0", xp: 3 },
-      boss: { r: 34, hp: 900, spd: 52, dps: 35, c: "#e0662a", xp: 20 },
+      spit: { r: 10, hp: 16, spd: 62, dps: 8, c: "#2aa36b", xp: 2 },
+    };
+    /* 대장 — 1분마다 하나씩, 뒤로 갈수록 세다. dash 돌진 · call 졸개 부르기 · ring 사방으로 불덩이 */
+    const BOSSES = [
+      { at: 60, name: "바위 대장", r: 30, hp: 600, spd: 46, dps: 28, c: "#3c6ee0", xp: 15, act: "dash" },
+      { at: 120, name: "날쌘 대장", r: 28, hp: 1000, spd: 70, dps: 26, c: "#a04be0", xp: 20, act: "call" },
+      { at: 180, name: "잡귀 왕", r: 38, hp: 2400, spd: 48, dps: 38, c: "#e0662a", xp: 30, act: "ring" },
+    ];
+    /* 스킬 — 단추(PC 는 1 · 2 · 3)로 쓴다. l 은 스킬 레벨 */
+    const SK = {
+      thunder: { n: "낙뢰", cd: (l) => 9 - l * 0.8 },
+      whirl: { n: "회오리", cd: (l) => 13 - l },
+      ward: { n: "결계", cd: (l) => 22 - l * 2 },
     };
     const UPS = [
-      { n: "부적 위력", d: "부적 피해 +30%", f: () => { s.dmg *= 1.3; } },
-      { n: "부적 빠르게", d: "던지는 간격 −18%", f: () => { s.rate *= 0.82; }, ok: () => s.rate > 0.2 },
-      { n: "부적 한 장 더", d: "한 번에 한 장 더 던져요", f: () => { s.multi++; }, ok: () => s.multi < 6 },
-      { n: "꿰뚫기", d: "부적이 잡귀를 하나 더 뚫고 가요", f: () => { s.pierce++; }, ok: () => s.pierce < 4 },
-      { n: "수호 구슬", d: "몸 둘레를 도는 구슬 +1", f: () => { s.orbs++; }, ok: () => s.orbs < 6 },
-      { n: "기운 영역", d: "가까이 온 잡귀가 계속 다쳐요", f: () => { s.aura++; }, ok: () => s.aura < 5 },
-      { n: "날랜 발", d: "이동 속도 +12%", f: () => { s.spd *= 1.12; }, ok: () => s.spd < 260 },
-      { n: "튼튼한 몸", d: "최대 체력 +25, 그만큼 회복", f: () => { s.max += 25; s.hp += 25; } },
-      { n: "구슬 끌기", d: "경험 구슬을 더 멀리서 끌어와요", f: () => { s.magnet *= 1.5; }, ok: () => s.magnet < 300 },
-      { n: "숨 고르기", d: "1초마다 체력 1 회복", f: () => { s.regen++; }, ok: () => s.regen < 4 },
+      { k: "dmg", n: "부적 위력", max: 8, d: "부적 피해 +30%", f: () => { s.dmg *= 1.3; } },
+      { k: "rate", n: "부적 빠르게", max: 6, d: "던지는 간격 −15%", f: () => { s.rate *= 0.85; } },
+      { k: "multi", n: "부적 한 장 더", max: 5, d: "한 번에 한 장 더 던져요", f: () => { s.multi++; } },
+      { k: "pierce", n: "꿰뚫기", max: 4, d: "부적이 잡귀를 하나 더 뚫고 가요", f: () => { s.pierce++; } },
+      { k: "orbs", n: "수호 구슬", max: 6, d: "몸 둘레를 도는 구슬 +1", f: () => { s.orbs++; } },
+      { k: "aura", n: "기운 영역", max: 5, d: "가까이 온 잡귀가 계속 다쳐요", f: () => { s.aura++; } },
+      { k: "spd", n: "날랜 발", max: 5, d: "이동 속도 +12%", f: () => { s.spd *= 1.12; } },
+      { k: "max", n: "튼튼한 몸", max: 6, d: "최대 체력 +25, 그만큼 회복", f: () => { s.max += 25; s.hp += 25; } },
+      { k: "magnet", n: "구슬 끌기", max: 4, d: "경험 구슬을 더 멀리서 끌어와요", f: () => { s.magnet *= 1.5; } },
+      { k: "regen", n: "숨 고르기", max: 4, d: "1초마다 체력 1 회복", f: () => { s.regen++; } },
+      { k: "thunder", n: "낙뢰 부적", max: 5, skill: true, d: "[스킬] 가까운 잡귀 여럿에게 벼락", up: "벼락이 더 세고 · 더 많이 · 더 자주" },
+      { k: "whirl", n: "회오리", max: 5, skill: true, d: "[스킬] 둘레 잡귀를 밀쳐내며 다치게 하고 불덩이를 지움", up: "더 넓게 · 더 세게 · 더 자주" },
+      { k: "ward", n: "결계", max: 5, skill: true, d: "[스킬] 잠깐 아무 피해도 안 받아요", up: "더 오래 · 더 자주" },
+      { k: "cool", n: "기 모으기", max: 4, d: "스킬 기다리는 시간 −10%", f: () => { s.cool *= 0.9; }, ok: () => s.skills.length > 0 },
     ];
     let W = 0, H = 0, DPR = 1, s = null, raf = 0, last = 0, running = false, shown = "", stick = null;
     const keys = {};
     const MOVE = { ArrowUp: [0, -1], KeyW: [0, -1], ArrowDown: [0, 1], KeyS: [0, 1], ArrowLeft: [-1, 0], KeyA: [-1, 0], ArrowRight: [1, 0], KeyD: [1, 0] };
+    const SKEY = { Digit1: 0, Digit2: 1, Digit3: 2, Numpad1: 0, Numpad2: 1, Numpad3: 2 };
 
     function nick() { return me ? me.gameId : canWrite ? "관리자" : "손님"; }
     function bests() { try { return JSON.parse(localStorage.getItem("bmc-game-best") || "{}") || {}; } catch (e) { return {}; } }
@@ -3327,6 +3363,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     /* ── 화면 위 안내판 (처음 · 강화 고르기 · 멈춤 · 결과) ── */
     function panel(nodes) {
       $("gameOverIn").replaceChildren(...nodes);
+      $("gMsg").classList.remove("on");
       $("gameOver").hidden = false;
       const b = $("gameOverIn").querySelector("button"); if (b) b.focus({ preventScroll: true });
     }
@@ -3334,36 +3371,55 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     function bestLine() { const b = bests()[nick()]; return el("p", "best", b ? "내 최고 " + b.score.toLocaleString() + "점 · " + day(b.at) : "아직 기록이 없어요"); }
     function intro() {
       $("gameHud").hidden = true;
-      panel([el("h3", null, "연병장"), el("p", null, nick() + " 님, 4분 버텨 보세요."), bestLine(), gBtn("시작", begin)]);
+      panel([el("h3", null, "연병장"), el("p", null, nick() + " 님, 4분 버텨 보세요."),
+        el("p", "best", "30초마다 단계가 올라 잡귀가 세지고 많아져요. 1분마다 대장이 나와요."), bestLine(), gBtn("시작", begin)]);
     }
+    function mine() { return UPS.filter((u) => s.up[u.k]).map((u) => u.n + " " + s.up[u.k]).join(" · ") || "아직 강화 없음"; }
     function showPause() {
       const row = el("div", "actions"); row.style.justifyContent = "center";
       row.append(gBtn("계속", resume), gBtn("그만하기", () => end(false), "ghost"));
-      panel([el("h3", null, "멈춤"), el("p", null, mmss(ROUND - s.t) + " 남음 · 잡은 수 " + s.kills), row]);
+      panel([el("h3", null, "멈춤"), el("p", null, mmss(ROUND - s.t) + " 남음 · " + s.stage + "단계 · 잡은 수 " + s.kills), el("p", "best", mine()), row]);
     }
     function showPicks() {
-      const pool = UPS.filter((u) => !u.ok || u.ok()), picks = [];
+      const pool = UPS.filter((u) => (s.up[u.k] || 0) < u.max && (!u.ok || u.ok())), picks = [];
       while (picks.length < 3 && pool.length) picks.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
+      /* Lv 2 · 4 · 7 에는 아직 없는 스킬을 하나 꼭 보여 준다 — 스킬을 못 만나고 끝나지 않게 */
+      if ([2, 4, 7].includes(s.lv) && !picks.some((u) => u.skill && !s.up[u.k])) {
+        const fresh = pool.filter((u) => u.skill && !s.up[u.k]);
+        if (fresh.length) picks[Math.min(2, picks.length)] = fresh[Math.floor(Math.random() * fresh.length)];
+      }
       const box = el("div", "game-picks");
-      picks.forEach((u) => { const b = el("button"); b.type = "button"; b.append(el("b", null, u.n), el("span", null, u.d)); b.onclick = () => { u.f(); resume(); }; box.appendChild(b); });
+      picks.forEach((u) => {
+        const have = s.up[u.k] || 0, b = el("button"); b.type = "button";
+        b.append(el("b", null, u.n + (have ? " Lv " + have + " → " + (have + 1) : u.skill ? " · 새 스킬" : "")), el("span", null, have && u.up ? u.up : u.d));
+        b.onclick = () => take(u); box.appendChild(b);
+      });
       panel([el("h3", null, "Lv " + s.lv + " — 하나 고르세요"), box]);
+    }
+    function take(u) {
+      s.up[u.k] = (s.up[u.k] || 0) + 1;
+      if (u.f) u.f();
+      if (u.skill && s.up[u.k] === 1) { s.skills.push(u.k); s.cd[u.k] = 0; }
+      renderSkills(); resume();
     }
     function showResult(win, score, isBest, when) {
       const card = el("div", "game-card");
       const sc = el("div", "sc gold-text", score.toLocaleString()); sc.appendChild(el("small", null, "점"));
       card.append(el("div", "k", "병무청 연병장"), el("div", "who", nick()), sc, el("div", "day", day(when)),
-        el("div", "det", (win ? "4분 버티기 성공!" : mmss(s.t) + " 버팀") + " · 잡은 잡귀 " + s.kills + " · Lv " + s.lv));
+        el("div", "det", (win ? "4분 버티기 성공!" : mmss(s.t) + " 버팀") + " · " + s.stage + "단계 · 잡은 잡귀 " + s.kills + (s.bossKills ? " · 대장 " + s.bossKills : "") + " · Lv " + s.lv));
       if (isBest) card.appendChild(el("span", "new", "내 최고 기록!"));
       $("gameHud").hidden = true;
       panel([card, bestLine(), el("p", "best", "이 화면을 캡처해서 카톡에 올려 주세요"), gBtn("다시 하기", begin)]);
     }
+    function msg(t) { $("gMsg").textContent = t; $("gMsg").classList.add("on"); s.msgT = 2.4; }
 
     /* ── 한 판 ── */
     function begin() {
       $("gameBox").scrollIntoView({ block: "center", behavior: "smooth" });
-      s = { t: 0, hp: 100, max: 100, x: 0, y: 0, spd: 150, lv: 1, xp: 0, need: 6, kills: 0, foes: [], shots: [], gems: [], fx: [],
-        spawn: 0, fire: 0, rate: 0.7, dmg: 10, multi: 1, pierce: 0, orbs: 0, orbA: 0, aura: 0, magnet: 60, regen: 0, hurt: 0, boss: false, bossKill: false, over: false };
-      resume();
+      s = { t: 0, hp: 100, max: 100, x: 0, y: 0, spd: 150, lv: 1, xp: 0, need: 6, kills: 0, foes: [], shots: [], ebs: [], gems: [], fx: [],
+        spawn: 0, fire: 0, rate: 0.7, dmg: 10, multi: 1, pierce: 0, orbs: 0, orbA: 0, aura: 0, magnet: 60, regen: 0, hurt: 0,
+        stage: 1, bossDone: [], bossNow: null, bossKills: 0, up: {}, skills: [], cd: {}, cool: 1, ward: 0, msgT: 0, over: false };
+      renderSkills(); resume(); msg("1단계 — 4분 버텨라!");
     }
     function resume() {
       $("gameOver").hidden = true; $("gameHud").hidden = false;
@@ -3373,7 +3429,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     function pause() { if (!running) return; running = false; stick = null; showPause(); }
     function end(win) {
       running = false; s.over = true; stick = null;
-      const score = Math.round(s.kills * 10 + Math.floor(Math.min(s.t, ROUND)) * 2 + (win ? 500 : 0) + (s.bossKill ? 300 : 0));
+      const score = Math.round(s.kills * 10 + Math.floor(Math.min(s.t, ROUND)) * 2 + (win ? 500 : 0) + s.bossKills * 300);
       const when = new Date().toISOString(), all = bests(), prev = all[nick()], isBest = !prev || score > prev.score;
       if (isBest) { all[nick()] = { score: score, at: when }; try { localStorage.setItem("bmc-game-best", JSON.stringify(all)); } catch (e) {} }
       draw(); showResult(win, score, isBest, when);
@@ -3395,11 +3451,50 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       Object.keys(keys).forEach((k) => { if (keys[k] && MOVE[k]) { dx += MOVE[k][0]; dy += MOVE[k][1]; } });
       const L = Math.hypot(dx, dy); return L ? [dx / L, dy / L] : [0, 0];
     }
-    function spawn(kind) {
-      if (!kind) { const q = Math.random(); kind = s.t > 90 && q < 0.12 ? "rock" : s.t > 40 && q < 0.38 ? "fast" : "imp"; }
-      const F = FOES[kind], a = Math.random() * Math.PI * 2, d = Math.max(260, Math.hypot(W, H) / 2 + 40);
-      s.foes.push({ k: kind, x: s.x + Math.cos(a) * d, y: s.y + Math.sin(a) * d, r: F.r, hp: F.hp * (kind === "boss" ? 1 : 1 + s.t / 80),
-        spd: F.spd * (1 + s.t / 600), dps: F.dps, c: F.c, xp: F.xp, hit: 0, oc: 0 });
+    function spawn(kind, x, y) {
+      if (!kind) { const q = Math.random(); kind = s.stage >= 5 && q < 0.1 ? "spit" : s.stage >= 3 && q < 0.22 ? "rock" : s.stage >= 2 && q < 0.45 ? "fast" : "imp"; }
+      if (x == null) { const a = Math.random() * Math.PI * 2, d = Math.max(260, Math.hypot(W, H) / 2 + 40); x = s.x + Math.cos(a) * d; y = s.y + Math.sin(a) * d; }
+      const F = FOES[kind], hp = F.hp * (1 + (s.stage - 1) * 0.45);
+      s.foes.push({ k: kind, x: x, y: y, r: F.r, hp: hp, full: hp, spd: F.spd * (1 + (s.stage - 1) * 0.05), dps: F.dps, c: F.c, xp: F.xp, hit: 0, oc: 0, cd: 1 + Math.random() * 2, dash: 0 });
+    }
+    /* 단계가 오를 때 한 무리가 빙 둘러싸며 나온다 */
+    function horde() {
+      const n = 6 + s.stage * 3, d = Math.max(240, Math.min(W, H) / 2 + 30);
+      for (let i = 0; i < n && s.foes.length < 300; i++) { const a = i * Math.PI * 2 / n; spawn(null, s.x + Math.cos(a) * d, s.y + Math.sin(a) * d); }
+    }
+    function spawnBoss(B) {
+      const a = Math.random() * Math.PI * 2, d = Math.max(260, Math.hypot(W, H) / 2 + 40);
+      const f = { k: "boss", name: B.name, act: B.act, x: s.x + Math.cos(a) * d, y: s.y + Math.sin(a) * d, r: B.r, hp: B.hp, full: B.hp, spd: B.spd, dps: B.dps, c: B.c, xp: B.xp, hit: 0, oc: 0, cd: 2.5, dash: 0, n: 0 };
+      s.foes.push(f); s.bossNow = f; msg(B.name + " 나타남!");
+    }
+    function bullet(x, y, a, v, dmg) { s.ebs.push({ x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 4, dmg: dmg }); }
+    /* 쏘는 잡귀 · 대장의 재주 */
+    function act(f, ux, uy) {
+      const a = Math.atan2(uy, ux);
+      if (f.k === "spit") { f.cd = 2.6; bullet(f.x, f.y, a, 160, 8); return; }
+      if (f.act === "dash") { f.cd = 4; f.dash = 0.6; return; }
+      if (f.act === "call") { f.cd = 5; for (let i = 0; i < 6; i++) spawn("fast", f.x + Math.cos(i) * 40, f.y + Math.sin(i) * 40); return; }
+      f.cd = 3; f.n++;
+      for (let i = 0; i < 12; i++) bullet(f.x, f.y, a + i * Math.PI / 6, 150, 12);
+      if (f.n % 2 === 0) for (let i = 0; i < 6; i++) spawn("imp", f.x + Math.cos(i) * 50, f.y + Math.sin(i) * 50);
+    }
+    function cast(k) {
+      if (!running || !k || !s.up[k] || s.cd[k] > 0) return;
+      const l = s.up[k];
+      s.cd[k] = SK[k].cd(l) * s.cool;
+      if (k === "thunder") {
+        s.foes.filter((f) => Math.abs(f.x - s.x) < W / 2 + 20 && Math.abs(f.y - s.y) < H / 2 + 20)
+          .sort((p, q) => ((p.x - s.x) ** 2 + (p.y - s.y) ** 2) - ((q.x - s.x) ** 2 + (q.y - s.y) ** 2)).slice(0, 3 + l)
+          .forEach((f) => { hurt(f, 35 + 25 * l, true); s.fx.push({ bolt: true, x: f.x, y: f.y, life: 0.3 }); });
+      } else if (k === "whirl") {
+        const R = 100 + 20 * l;
+        s.foes.forEach((f) => {
+          const dx = f.x - s.x, dy = f.y - s.y, L = Math.hypot(dx, dy) || 1;
+          if (L < R + f.r) { hurt(f, 25 + 20 * l, true); if (f.k !== "boss") { f.x += dx / L * 140; f.y += dy / L * 140; } }
+        });
+        s.ebs = s.ebs.filter((b) => (b.x - s.x) ** 2 + (b.y - s.y) ** 2 > R * R);
+        s.fx.push({ x: s.x, y: s.y, r: R / 2.2, c: "#f6e2a4", life: 0.3 });
+      } else s.ward = 1.5 + 0.5 * l;
     }
     function hurt(f, n, flash) { f.hp -= n; if (flash) f.hit = 0.08; }
     function shoot() {
@@ -3415,10 +3510,16 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       const [mx, my] = dir();
       s.x += mx * s.spd * dt; s.y += my * s.spd * dt;
       if (s.regen) s.hp = Math.min(s.max, s.hp + s.regen * dt);
-      s.hurt = Math.max(0, s.hurt - dt);
-      s.spawn += dt * (0.8 + s.t / 20);
-      while (s.spawn >= 1) { s.spawn--; if (s.foes.length < 260) spawn(); }
-      if (!s.boss && s.t >= 180) { s.boss = true; spawn("boss"); }
+      s.hurt = Math.max(0, s.hurt - dt); s.ward = Math.max(0, s.ward - dt);
+      s.skills.forEach((k) => { s.cd[k] = Math.max(0, s.cd[k] - dt); });
+      if (s.msgT > 0 && (s.msgT -= dt) <= 0) $("gMsg").classList.remove("on");
+      /* 단계 — 30초마다 1 → 8 */
+      const st = Math.min(8, 1 + Math.floor(s.t / STAGE));
+      if (st !== s.stage) { s.stage = st; horde(); msg(st + "단계 — 잡귀가 더 몰려온다!"); }
+      BOSSES.forEach((B, i) => { if (s.t >= B.at && !s.bossDone[i]) { s.bossDone[i] = true; spawnBoss(B); } });
+      /* 1단계 초당 1마리 → 8단계 초당 10마리 */
+      s.spawn += dt * (s.stage * 1.25 - 0.2);
+      while (s.spawn >= 1) { s.spawn--; if (s.foes.length < 300) spawn(); }
       s.fire -= dt;
       if (s.fire <= 0 && s.foes.length) { s.fire = s.rate; shoot(); }
       s.shots.forEach((b) => {
@@ -3431,13 +3532,22 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
         }
       });
       s.shots = s.shots.filter((b) => b.life > 0);
+      s.ebs.forEach((b) => {
+        b.x += b.vx * dt; b.y += b.vy * dt; b.life -= dt;
+        if ((b.x - s.x) ** 2 + (b.y - s.y) ** 2 < 400) { b.life = 0; if (!s.ward) { s.hp -= b.dmg; s.hurt = 0.15; } }
+      });
+      s.ebs = s.ebs.filter((b) => b.life > 0);
       s.orbA += dt * 3;
       const auraR = 55 + s.aura * 12;
       s.foes.forEach((f) => {
         const dx = s.x - f.x, dy = s.y - f.y, L = Math.hypot(dx, dy) || 1;
-        f.x += dx / L * f.spd * dt; f.y += dy / L * f.spd * dt;
+        let sp = f.spd;
+        if (f.dash > 0) { f.dash -= dt; sp *= 3.5; }
+        if (f.k === "spit" && L < 170) sp = L < 140 ? -f.spd * 0.6 : 0;
+        f.x += dx / L * sp * dt; f.y += dy / L * sp * dt;
         f.hit = Math.max(0, f.hit - dt); f.oc -= dt;
-        if (L < f.r + 15) { s.hp -= f.dps * dt; s.hurt = 0.15; }
+        if ((f.k === "spit" || f.k === "boss") && (f.cd -= dt) <= 0) act(f, dx / L, dy / L);
+        if (L < f.r + 15 && !s.ward) { s.hp -= f.dps * dt; s.hurt = 0.15; }
         if (s.aura && L < auraR + f.r) hurt(f, (6 + s.aura * 6) * dt);
         for (let i = 0; i < s.orbs && f.oc <= 0; i++) {
           const a = s.orbA + i * Math.PI * 2 / s.orbs, ox = s.x + Math.cos(a) * 70, oy = s.y + Math.sin(a) * 70;
@@ -3446,7 +3556,8 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       });
       s.foes = s.foes.filter((f) => {
         if (f.hp > 0) return true;
-        s.kills++; if (f.k === "boss") s.bossKill = true;
+        s.kills++;
+        if (f.k === "boss") { s.bossKills++; if (s.bossNow === f) s.bossNow = null; msg(f.name + " 쓰러뜨림!"); }
         s.gems.push({ x: f.x, y: f.y, v: f.xp });
         s.fx.push({ x: f.x, y: f.y, r: f.r, c: f.c, life: 0.3 });
         return false;
@@ -3475,22 +3586,35 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       g.stroke();
       if (s) {
         if (s.aura) { g.beginPath(); g.arc(W / 2, H / 2, 55 + s.aura * 12, 0, Math.PI * 2); g.fillStyle = "rgba(214,176,98,.07)"; g.fill(); g.strokeStyle = "rgba(214,176,98,.35)"; g.stroke(); }
-        g.fillStyle = "#f6e2a4";
-        g.beginPath();
+        g.fillStyle = "#f6e2a4"; g.beginPath();
         s.gems.forEach((m) => { const x = m.x + ox, y = m.y + oy, r = m.v > 1 ? 5 : 3.5; if (x < -6 || y < -6 || x > W + 6 || y > H + 6) return; g.moveTo(x, y - r); g.lineTo(x + r, y); g.lineTo(x, y + r); g.lineTo(x - r, y); g.closePath(); });
         g.fill();
-        s.fx.forEach((x) => { g.beginPath(); g.arc(x.x + ox, x.y + oy, x.r * (1 + (0.3 - x.life) * 4), 0, Math.PI * 2); g.strokeStyle = x.c; g.globalAlpha = x.life / 0.3; g.stroke(); g.globalAlpha = 1; });
+        s.fx.forEach((x) => {
+          g.globalAlpha = Math.min(1, x.life / 0.3);
+          if (x.bolt) {
+            const bx = x.x + ox, by = x.y + oy;
+            g.strokeStyle = "#cfe0ff"; g.lineWidth = 3; g.beginPath(); g.moveTo(bx + 10, by - 160);
+            for (let i = 1; i <= 5; i++) g.lineTo(bx + (i % 2 ? -10 : 10) * (1 - i / 5), by - 160 + i * 32);
+            g.stroke(); g.lineWidth = 1;
+          } else { g.beginPath(); g.arc(x.x + ox, x.y + oy, x.r * (1 + (0.3 - x.life) * 4), 0, Math.PI * 2); g.strokeStyle = x.c; g.stroke(); }
+          g.globalAlpha = 1;
+        });
         s.foes.forEach((f) => {
           const x = f.x + ox, y = f.y + oy;
-          if (x < -50 || y < -50 || x > W + 50 || y > H + 50) return;
+          if (x < -60 || y < -60 || x > W + 60 || y > H + 60) return;
           g.fillStyle = f.hit ? "#fff" : f.c;
           g.beginPath(); g.moveTo(x - f.r * 0.7, y - f.r * 0.5); g.lineTo(x - f.r * 0.45, y - f.r * 1.35); g.lineTo(x - f.r * 0.1, y - f.r * 0.8);
           g.moveTo(x + f.r * 0.7, y - f.r * 0.5); g.lineTo(x + f.r * 0.45, y - f.r * 1.35); g.lineTo(x + f.r * 0.1, y - f.r * 0.8); g.fill();
           g.beginPath(); g.arc(x, y, f.r, 0, Math.PI * 2); g.fill();
           g.fillStyle = "#fff"; const e = Math.max(1.6, f.r * 0.18);
           g.beginPath(); g.arc(x - f.r * 0.35, y - f.r * 0.1, e, 0, Math.PI * 2); g.arc(x + f.r * 0.35, y - f.r * 0.1, e, 0, Math.PI * 2); g.fill();
-          if (f.k === "boss") { g.fillStyle = "rgba(0,0,0,.6)"; g.fillRect(x - 30, y + f.r + 6, 60, 5); g.fillStyle = "#ff6a4a"; g.fillRect(x - 30, y + f.r + 6, 60 * Math.max(0, f.hp) / FOES.boss.hp, 5); }
+          if (f.k === "boss") {
+            g.strokeStyle = "#f6e2a4"; g.lineWidth = 2; g.beginPath(); g.arc(x, y, f.r + 4, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1;
+            g.fillStyle = "rgba(0,0,0,.6)"; g.fillRect(x - 30, y + f.r + 8, 60, 5); g.fillStyle = "#ff6a4a"; g.fillRect(x - 30, y + f.r + 8, 60 * Math.max(0, f.hp) / f.full, 5);
+          }
         });
+        g.fillStyle = "#ff9a3c";
+        g.beginPath(); s.ebs.forEach((b) => { const x = b.x + ox, y = b.y + oy; g.moveTo(x + 5, y); g.arc(x, y, 5, 0, Math.PI * 2); }); g.fill();
         s.shots.forEach((b) => {
           g.save(); g.translate(b.x + ox, b.y + oy); g.rotate(b.a + Math.PI / 2);
           g.fillStyle = "#f3d36b"; g.fillRect(-4, -7, 8, 14); g.fillStyle = "#c4282c"; g.fillRect(-1, -5, 2, 10); g.restore();
@@ -3501,6 +3625,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
           g.fillStyle = "rgba(111,155,255,.25)"; g.beginPath(); g.arc(x, y, 13, 0, Math.PI * 2); g.fill();
           g.fillStyle = "#6f9bff"; g.beginPath(); g.arc(x, y, 8, 0, Math.PI * 2); g.fill();
         }
+        if (s.ward) { g.beginPath(); g.arc(W / 2, H / 2, 26, 0, Math.PI * 2); g.fillStyle = "rgba(111,155,255,.18)"; g.fill(); g.strokeStyle = "#9fbcff"; g.lineWidth = 2; g.stroke(); g.lineWidth = 1; }
       }
       g.beginPath(); g.arc(W / 2, H / 2, 15, 0, Math.PI * 2);
       g.fillStyle = s && s.hurt ? "#ff8a80" : "#d6b062"; g.fill();
@@ -3515,9 +3640,28 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     function hud() {
       $("gTime").textContent = mmss(ROUND - s.t);
       $("gHp").style.width = (100 * s.hp / s.max) + "%";
+      $("gStage").textContent = s.stage + "단계";
       $("gLv").textContent = "Lv " + s.lv;
       $("gKill").textContent = "잡은 수 " + s.kills;
       $("gXp").style.width = Math.min(100, 100 * s.xp / s.need) + "%";
+      const B = s.bossNow;
+      $("gBoss").hidden = !B;
+      if (B) { $("gBossName").textContent = B.name; $("gBossHp").style.width = Math.max(0, 100 * B.hp / B.full) + "%"; }
+      $("gSkills").querySelectorAll(".gskill").forEach((b) => {
+        const k = b.dataset.k, left = s.cd[k];
+        b.style.setProperty("--cd", left > 0 ? left / (SK[k].cd(s.up[k]) * s.cool) : 0);
+        b.classList.toggle("ready", left <= 0);
+      });
+    }
+    /* 스킬 단추 — 끄는 손가락과 따로 누를 수 있게 pointerdown 으로 */
+    function renderSkills() {
+      $("gSkills").replaceChildren(...s.skills.map((k, i) => {
+        const b = el("button", "gskill"); b.type = "button"; b.dataset.k = k;
+        b.setAttribute("aria-label", SK[k].n + " 스킬 (" + (i + 1) + ")");
+        b.append(el("span", null, SK[k].n), el("small", null, "Lv " + s.up[k]));
+        b.addEventListener("pointerdown", (e) => { e.preventDefault(); e.stopPropagation(); cast(k); });
+        return b;
+      }));
     }
 
     /* ── 손 · 자판 ── 누른 자리가 손잡이 가운데가 된다 */
@@ -3536,6 +3680,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       if (view !== "game" || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
       if (MOVE[e.code]) { keys[e.code] = true; if (running) e.preventDefault(); }
       if (running && e.code === "Space") e.preventDefault();
+      if (running && SKEY[e.code] != null) { e.preventDefault(); cast(s.skills[SKEY[e.code]]); }
       if (e.code === "Escape" || e.code === "KeyP") pause();
     });
     window.addEventListener("keyup", (e) => { delete keys[e.code]; });
@@ -3544,7 +3689,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     $("gPause").onclick = pause;
 
     return {
-      /* 다른 메뉴로 가면 멈춘다. 처음 들어오면 시작 안내 */
+      /* 다른 메뉴로 가면 멈춘다. 처음 들어오면(또는 다른 사람이 들어오면) 시작 안내 */
       render() {
         if (view !== "game") { pause(); return; }
         if (shown !== nick()) { shown = nick(); s = null; running = false; stick = null; intro(); }
