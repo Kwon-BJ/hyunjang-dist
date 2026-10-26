@@ -1124,7 +1124,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610260530";
+  const BUILD = "202610260534";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -3571,7 +3571,8 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     const MAP = new Image(), MAP_PAD = 50;
     let mapOk = false, MAP_K = 2, MAP_O = [588, 338];
     MAP.onload = () => { const r = MAP.width / 1066; MAP_K = 2 / r; MAP_O = [588 * r, 338 * r]; mapOk = true; draw(); };
-    MAP.src = "img/map.jpg";
+    /* "좀더 어두운 용암맵으로 바꿔라 몹이 잘안보인다" (2026-10-26) — 숲 맵 색만 바꾼 용암 맵(무료, 시험/용암맵-만들기.cjs). 숲 맵(map.jpg)은 남겨 둠 */
+    MAP.src = "img/map-lava.jpg";
     function bounds() { return [-MAP_O[0] * MAP_K + MAP_PAD, (MAP.width - MAP_O[0]) * MAP_K - MAP_PAD, -MAP_O[1] * MAP_K + MAP_PAD, (MAP.height - MAP_O[1]) * MAP_K - MAP_PAD]; }
     function inside(x, y) { const b = bounds(); return x >= b[0] && x <= b[1] && y >= b[2] && y <= b[3]; }
     function inMap(p) { if (!mapOk) return p; const b = bounds(); p.x = Math.min(b[1], Math.max(b[0], p.x)); p.y = Math.min(b[3], Math.max(b[2], p.y)); return p; }
@@ -3857,7 +3858,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
         const mx = ox - MAP_O[0] * MAP_K, my = oy - MAP_O[1] * MAP_K;
         const sx = Math.max(0, -mx / MAP_K), sy = Math.max(0, -my / MAP_K), sw = Math.min(MAP.width - sx, W / MAP_K + 2), sh = Math.min(MAP.height - sy, H / MAP_K + 2);
         if (sw > 0 && sh > 0) { g.imageSmoothingQuality = "high"; g.drawImage(MAP, sx, sy, sw, sh, mx + sx * MAP_K, my + sy * MAP_K, sw * MAP_K, sh * MAP_K); }
-        g.fillStyle = "rgba(0,0,0,.28)"; g.fillRect(0, 0, W, H); // 몬스터 · 총알이 잘 보이게 조금 어둡게
+        g.fillStyle = "rgba(0,0,0,.12)"; g.fillRect(0, 0, W, H); // 용암 맵이 이미 어두워 조금만
       } else {
         g.strokeStyle = "rgba(214,176,98,.08)"; g.lineWidth = 1; g.beginPath();
         for (let x = ((ox % 48) + 48) % 48; x < W; x += 48) { g.moveTo(x, 0); g.lineTo(x, H); }
