@@ -632,6 +632,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
 .game-hud .boss .bar i { display: block; height: 100%; background: linear-gradient(90deg, #c4282c, #ff6a4a); }
 .game-hud .msg { position: absolute; left: 8px; right: 8px; top: 30%; text-align: center; font-family: var(--font-display); font-weight: 800; font-size: clamp(20px, 6vw, 30px); color: var(--gold-hi); text-shadow: 0 2px 6px #000; opacity: 0; transition: opacity .3s; }
 .game-hud .msg.on { opacity: 1; }
+.game-hud .dashbtn { position: absolute; left: 10px; bottom: 10px; pointer-events: auto; }
 .game-hud .skills { position: absolute; right: 10px; bottom: 10px; display: flex; gap: 8px; pointer-events: auto; }
 .gskill { width: 62px; height: 62px; padding: 0; border-radius: 50%; border: 2px solid var(--gold-lo); color: var(--gold-hi); font: inherit; font-size: 13px; font-weight: 800; line-height: 1.15; cursor: pointer; touch-action: none; -webkit-tap-highlight-color: transparent;
   background: conic-gradient(rgba(0,0,0,.75) calc(var(--cd, 0) * 1turn), rgba(74,56,24,.92) 0); display: grid; place-content: center; }
@@ -994,7 +995,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     <!-- 연병장 — 점검 시간 미니게임. 점수는 이 기기에만 저장(창구 안 씀) (2026-10-26) -->
     <section id="gameView" hidden>
       <h2 class="section-label"><svg aria-hidden="true"><use href="#i-war"/></svg>연병장</h2>
-      <p class="game-hint">화면을 누른 채 끌면 움직이고(PC 는 방향키 · WASD), 부적은 저절로 날아가요. 30초마다 단계가 올라 잡귀가 늘고, 1분마다 대장이 나와요. 레벨이 오르면 강화나 <b>스킬</b>을 고르고, 스킬은 오른쪽 아래 단추(PC 는 1 · 2 · 3)로 써요. <b>죽을 때까지</b> 버틴 만큼 점수 — 끝나면 순위표에 올라가요!</p>
+      <p class="game-hint">화면을 누른 채 끌면 움직이고(PC 는 방향키 · WASD), 부적은 저절로 날아가요. 30초마다 단계가 올라 잡귀가 늘고, 1분마다 대장이 나와요. 레벨이 오르면 강화나 <b>스킬</b>을 고르고, 스킬은 오른쪽 아래 단추(PC 는 1 · 2 · 3), <b>대쉬</b>는 왼쪽 아래 단추(PC 는 스페이스) — 5초마다, 대쉬하는 동안은 안 맞아요. <b>죽을 때까지</b> 버틴 만큼 점수 — 끝나면 순위표에 올라가요!</p>
       <div class="game-box" id="gameBox">
         <canvas id="gameCv" aria-label="연병장 게임 화면"></canvas>
         <div class="game-hud" id="gameHud" hidden>
@@ -1004,6 +1005,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
           <div class="boss" id="gBoss" hidden><b id="gBossName"></b><div class="bar"><i id="gBossHp"></i></div></div>
           <div class="msg" id="gMsg" aria-live="polite"></div>
           <div class="skills" id="gSkills"></div>
+          <button class="gskill dashbtn ready" type="button" id="gDash" aria-label="대쉬 (스페이스)"><span>대쉬</span><small>Space</small></button>
         </div>
         <div class="game-over" id="gameOver"><div id="gameOverIn"></div></div>
       </div>
@@ -1122,7 +1124,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610260448";
+  const BUILD = "202610260459";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -3370,9 +3372,9 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     };
     /* 대장 — 1분마다 하나씩 차례로, 세 대장을 한 바퀴 돌 때마다 더 세다. dash 돌진 · call 졸개 부르기 · ring 사방으로 불덩이 */
     const BOSSES = [
-      { name: "바위 대장", r: 30, hp: 600, spd: 46, dps: 28, c: "#3c6ee0", xp: 15, act: "dash" },
-      { name: "날쌘 대장", r: 28, hp: 1000, spd: 70, dps: 26, c: "#a04be0", xp: 20, act: "call" },
-      { name: "잡귀 왕", r: 38, hp: 2400, spd: 48, dps: 38, c: "#e0662a", xp: 30, act: "ring" },
+      { name: "바위 거인", skin: "stone_golem", r: 30, hp: 600, spd: 46, dps: 28, c: "#3c6ee0", xp: 15, act: "dash" },
+      { name: "늑대 왕", skin: "wolf", r: 28, hp: 1000, spd: 70, dps: 26, c: "#a04be0", xp: 20, act: "call" },
+      { name: "붉은 마왕", skin: "red_demon", r: 38, hp: 2400, spd: 48, dps: 38, c: "#e0662a", xp: 30, act: "ring" },
     ];
     /* 스킬 — 단추(PC 는 1 · 2 · 3)로 쓴다. l 은 스킬 레벨 */
     const SK = {
@@ -3431,7 +3433,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     function intro() {
       $("gameHud").hidden = true;
       panel([el("h3", null, "연병장"), el("p", null, nick() + " 님, 죽을 때까지 버텨 보세요."),
-        el("p", "best", "움직이기 — 휴대폰은 화면을 누른 채 끌기 · PC 는 방향키(또는 WASD). 스킬은 1 · 2 · 3"),
+        el("p", "best", "움직이기 — 휴대폰은 화면을 누른 채 끌기 · PC 는 방향키(또는 WASD). 대쉬는 스페이스(휴대폰은 왼쪽 아래 단추) 5초마다. 스킬은 1 · 2 · 3"),
         el("p", "best", "30초마다 단계가 올라 잡귀가 세지고 많아져요. 1분마다 대장이 나와요. 끝나면 순위표에 올라가요."), bestLine(), gBtn("시작", begin)]);
     }
     function mine() { return UPS.filter((u) => s.up[u.k]).map((u) => u.n + " " + s.up[u.k]).join(" · ") || "아직 강화 없음"; }
@@ -3479,7 +3481,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       $("gameBox").scrollIntoView({ block: "center", behavior: "smooth" });
       s = { t: 0, hp: 100, max: 100, x: 0, y: 0, spd: 150, lv: 1, xp: 0, need: 6, kills: 0, foes: [], shots: [], ebs: [], gems: [], fx: [],
         spawn: 0, fire: 0, rate: 0.7, dmg: 10, multi: 1, pierce: 0, orbs: 0, orbA: 0, aura: 0, magnet: 60, regen: 0, hurt: 0,
-        stage: 1, bossN: 0, bossNow: null, aim: Math.PI / 2, mvA: Math.PI / 2, walk: 0, moving: false, flash: 0, shotT: 0, bossKills: 0, up: {}, skills: [], cd: {}, cool: 1, ward: 0, msgT: 0, over: false };
+        stage: 1, bossN: 0, bossNow: null, aim: Math.PI / 2, mvA: Math.PI / 2, dashT: 0, dashCd: 0, dashX: 0, dashY: 1, trail: [], walk: 0, moving: false, flash: 0, shotT: 0, bossKills: 0, up: {}, skills: [], cd: {}, cool: 1, ward: 0, msgT: 0, over: false };
       renderSkills(); resume(); msg("1단계 — 죽을 때까지 버텨라!");
     }
     function resume() {
@@ -3561,11 +3563,19 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       Object.keys(keys).forEach((k) => { if (keys[k] && MOVE[k]) { dx += MOVE[k][0]; dy += MOVE[k][1]; } });
       const L = Math.hypot(dx, dy); return L ? [dx / L, dy / L] : [0, 0];
     }
+    /* 몬스터 그림 — 부장님이 주신 9장 (2026-10-26). 기본 잡귀는 단계가 오를수록 슬라임 → 고블린 → 해골 전사가 섞인다 */
+    function skinOf(kind) {
+      const pick = (a) => a[Math.floor(Math.random() * a.length)];
+      if (kind === "fast") return pick(["bat", "wolf"]);
+      if (kind === "rock") return "stone_golem";
+      if (kind === "spit") return pick(["skeleton_archer", "carnivorous_plant"]);
+      return pick(s.stage >= 4 ? ["slime", "goblin", "skeleton_warrior"] : s.stage >= 2 ? ["slime", "goblin"] : ["slime"]);
+    }
     function spawn(kind, x, y) {
       if (!kind) { const q = Math.random(); kind = s.stage >= 5 && q < 0.1 ? "spit" : s.stage >= 3 && q < 0.22 ? "rock" : s.stage >= 2 && q < 0.45 ? "fast" : "imp"; }
       if (x == null) { const a = Math.random() * Math.PI * 2, d = Math.max(260, Math.hypot(W, H) / 2 + 40); x = s.x + Math.cos(a) * d; y = s.y + Math.sin(a) * d; }
       const F = FOES[kind], hp = F.hp * (1 + (s.stage - 1) * 0.45);
-      s.foes.push({ k: kind, x: x, y: y, r: F.r, hp: hp, full: hp, spd: F.spd * Math.min(1.6, 1 + (s.stage - 1) * 0.05), dps: F.dps, c: F.c, xp: F.xp, hit: 0, oc: 0, cd: 1 + Math.random() * 2, dash: 0 });
+      s.foes.push({ k: kind, skin: skinOf(kind), x: x, y: y, r: F.r, hp: hp, full: hp, spd: F.spd * Math.min(1.6, 1 + (s.stage - 1) * 0.05), dps: F.dps, c: F.c, xp: F.xp, hit: 0, oc: 0, cd: 1 + Math.random() * 2, dash: 0 });
     }
     /* 단계가 오를 때 한 무리가 빙 둘러싸며 나온다 */
     function horde() {
@@ -3575,7 +3585,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     function spawnBoss(i) {
       const B = BOSSES[i % BOSSES.length], lap = Math.floor(i / BOSSES.length), k = 1 + lap * 1.5, name = B.name + (lap ? " " + (lap + 1) : "");
       const a = Math.random() * Math.PI * 2, d = Math.max(260, Math.hypot(W, H) / 2 + 40);
-      const f = { k: "boss", name: name, act: B.act, x: s.x + Math.cos(a) * d, y: s.y + Math.sin(a) * d, r: B.r, hp: B.hp * k, full: B.hp * k,
+      const f = { k: "boss", skin: B.skin, name: name, act: B.act, x: s.x + Math.cos(a) * d, y: s.y + Math.sin(a) * d, r: B.r, hp: B.hp * k, full: B.hp * k,
         spd: B.spd * (1 + lap * 0.1), dps: B.dps * (1 + lap * 0.5), c: B.c, xp: B.xp * (1 + lap), hit: 0, oc: 0, cd: 2.5, dash: 0, n: 0 };
       s.foes.push(f); s.bossNow = f; msg(name + " 나타남!");
     }
@@ -3589,6 +3599,16 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       f.cd = 3; f.n++;
       for (let i = 0; i < 12; i++) bullet(f.x, f.y, a + i * Math.PI / 6, 150, 12);
       if (f.n % 2 === 0) for (let i = 0; i < 6; i++) spawn("imp", f.x + Math.cos(i) * 50, f.y + Math.sin(i) * 50);
+    }
+    /* 대쉬 — "pc는 스페이스 눌리면 대쉬, 5초에 1번, 휴대폰도 쓸 수 있게" (2026-10-26). 0.2초 동안 180px 미끄러지고 그동안은 안 맞는다.
+       가는 쪽은 움직이는 쪽, 서 있으면 마지막으로 움직인 쪽 */
+    const DASH_CD = 5;
+    function dash() {
+      if (!running || s.dashCd > 0) return;
+      let [mx, my] = dir();
+      if (!mx && !my) { mx = Math.cos(s.mvA); my = Math.sin(s.mvA); }
+      const L = Math.hypot(mx, my) || 1;
+      s.dashX = mx / L; s.dashY = my / L; s.dashT = 0.2; s.dashCd = DASH_CD;
     }
     function cast(k) {
       if (!running || !k || !s.up[k] || s.cd[k] > 0) return;
@@ -3624,6 +3644,9 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       s.x += mx * s.spd * dt; s.y += my * s.spd * dt;
       s.moving = !!(mx || my); if (s.moving) { s.walk += dt * 12; s.mvA = Math.atan2(my, mx); }
       s.flash = Math.max(0, s.flash - dt); s.shotT = Math.max(0, s.shotT - dt);
+      s.dashCd = Math.max(0, s.dashCd - dt);
+      if (s.dashT > 0) { s.dashT -= dt; s.x += s.dashX * 900 * dt; s.y += s.dashY * 900 * dt; s.trail.push({ x: s.x, y: s.y, life: 0.3 }); }
+      s.trail.forEach((p) => { p.life -= dt; }); s.trail = s.trail.filter((p) => p.life > 0);
       if (s.regen) s.hp = Math.min(s.max, s.hp + s.regen * dt);
       s.hurt = Math.max(0, s.hurt - dt); s.ward = Math.max(0, s.ward - dt);
       s.skills.forEach((k) => { s.cd[k] = Math.max(0, s.cd[k] - dt); });
@@ -3651,7 +3674,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       s.shots = s.shots.filter((b) => b.life > 0);
       s.ebs.forEach((b) => {
         b.x += b.vx * dt; b.y += b.vy * dt; b.life -= dt;
-        if ((b.x - s.x) ** 2 + (b.y - s.y) ** 2 < 400) { b.life = 0; if (!s.ward) { s.hp -= b.dmg; s.hurt = 0.15; } }
+        if ((b.x - s.x) ** 2 + (b.y - s.y) ** 2 < 400) { b.life = 0; if (!s.ward && !(s.dashT > 0)) { s.hp -= b.dmg; s.hurt = 0.15; } }
       });
       s.ebs = s.ebs.filter((b) => b.life > 0);
       s.orbA += dt * 3;
@@ -3664,7 +3687,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
         f.x += dx / L * sp * dt; f.y += dy / L * sp * dt;
         f.hit = Math.max(0, f.hit - dt); f.oc -= dt;
         if ((f.k === "spit" || f.k === "boss") && (f.cd -= dt) <= 0) act(f, dx / L, dy / L);
-        if (L < f.r + 15 && !s.ward) { s.hp -= f.dps * dt; s.hurt = 0.15; }
+        if (L < f.r + 15 && !s.ward && !(s.dashT > 0)) { s.hp -= f.dps * dt; s.hurt = 0.15; }
         if (s.aura && L < auraR + f.r) hurt(f, (6 + s.aura * 6) * dt);
         for (let i = 0; i < s.orbs && f.oc <= 0; i++) {
           const a = s.orbA + i * Math.PI * 2 / s.orbs, ox = s.x + Math.cos(a) * 70, oy = s.y + Math.sin(a) * 70;
@@ -3711,6 +3734,24 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       const w = f[2] * 0.6, h = f[3] * 0.6, ax = key === "shot-left" ? 0.38 : 0.5;
       g.save(); g.translate(cx, cy + 19); if (flip < 0) g.scale(-1, 1);
       g.drawImage(HERO, f[0], f[1], f[2], f[3], -w * ax, -h, w, h); g.restore();
+    }
+    /* 몬스터 그림 (img/mon.png · 시험/몬스터-그림-합치기.cjs). 긴 쪽 = 몸 크기의 2.8배, 주인공 쪽을 보게 뒤집고, 맞으면 밝게 */
+    const MON = new Image(), MF = {"bat":[0,51,104,53],"carnivorous_plant":[106,8,104,96],"goblin":[212,0,101,104],"red_demon":[315,16,104,88],"skeleton_archer":[421,0,104,104],"skeleton_warrior":[527,0,88,104],"slime":[617,15,104,89],"stone_golem":[723,5,104,99],"wolf":[829,2,104,102]};
+    const FACE_R = { wolf: 1, skeleton_archer: 1, skeleton_warrior: 1, goblin: -1 }; // 그림이 보는 쪽 (1 오른쪽 · -1 왼쪽 · 없으면 앞)
+    let monOk = false;
+    MON.onload = () => { monOk = true; draw(); };
+    MON.src = "img/mon.png";
+    function monster(f, x, y) {
+      const fr = MF[f.skin], k = f.r * 2.8 / Math.max(fr[2], fr[3]), w = fr[2] * k, h = fr[3] * k;
+      g.fillStyle = "rgba(0,0,0,.35)"; g.beginPath(); g.ellipse(x, y + h * 0.42, w * 0.32, h * 0.1, 0, 0, Math.PI * 2); g.fill();
+      g.save(); g.translate(x, y);
+      if (FACE_R[f.skin] && (s.x < f.x ? -1 : 1) !== FACE_R[f.skin]) g.scale(-1, 1);
+      g.drawImage(MON, fr[0], fr[1], fr[2], fr[3], -w / 2, -h / 2, w, h);
+      if (f.hit) { g.globalCompositeOperation = "lighter"; g.globalAlpha = 0.55; g.drawImage(MON, fr[0], fr[1], fr[2], fr[3], -w / 2, -h / 2, w, h); g.globalAlpha = 1; g.globalCompositeOperation = "source-over"; }
+      g.restore();
+      if (f.k === "boss") {
+        g.fillStyle = "rgba(0,0,0,.6)"; g.fillRect(x - 30, y + h / 2 + 4, 60, 5); g.fillStyle = "#ff6a4a"; g.fillRect(x - 30, y + h / 2 + 4, 60 * Math.max(0, f.hp) / f.full, 5);
+      }
     }
     function hero(cx, cy) {
       const dead = !!(s && s.over && s.hp <= 0), mv = !!(s && s.moving && !dead && running);
@@ -3814,7 +3855,8 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
         });
         s.foes.forEach((f) => {
           const x = f.x + ox, y = f.y + oy;
-          if (x < -60 || y < -60 || x > W + 60 || y > H + 60) return;
+          if (x < -70 || y < -70 || x > W + 70 || y > H + 70) return;
+          if (monOk && MF[f.skin]) { monster(f, x, y); return; }
           g.fillStyle = f.hit ? "#fff" : f.c;
           g.beginPath(); g.moveTo(x - f.r * 0.7, y - f.r * 0.5); g.lineTo(x - f.r * 0.45, y - f.r * 1.35); g.lineTo(x - f.r * 0.1, y - f.r * 0.8);
           g.moveTo(x + f.r * 0.7, y - f.r * 0.5); g.lineTo(x + f.r * 0.45, y - f.r * 1.35); g.lineTo(x + f.r * 0.1, y - f.r * 0.8); g.fill();
@@ -3846,6 +3888,11 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
         }
         if (s.ward) { g.beginPath(); g.arc(W / 2, H / 2, 26, 0, Math.PI * 2); g.fillStyle = "rgba(111,155,255,.18)"; g.fill(); g.strokeStyle = "#9fbcff"; g.lineWidth = 2; g.stroke(); g.lineWidth = 1; }
       }
+      /* 대쉬 잔상 — 파란 빛줄기 */
+      if (s && s.trail.length) s.trail.forEach((p) => {
+        const x = p.x - s.x + W / 2, y = p.y - s.y + H / 2;
+        g.fillStyle = "rgba(80,160,255," + (p.life * 1.6).toFixed(2) + ")"; g.beginPath(); g.ellipse(x, y, 16, 22, 0, 0, Math.PI * 2); g.fill();
+      });
       hero(W / 2, H / 2);
       if (stick) {
         g.strokeStyle = "rgba(246,226,164,.45)"; g.beginPath(); g.arc(stick.ox, stick.oy, 50, 0, Math.PI * 2); g.stroke();
@@ -3862,6 +3909,8 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
       const B = s.bossNow;
       $("gBoss").hidden = !B;
       if (B) { $("gBossName").textContent = B.name; $("gBossHp").style.width = Math.max(0, 100 * B.hp / B.full) + "%"; }
+      $("gDash").style.setProperty("--cd", s.dashCd > 0 ? s.dashCd / DASH_CD : 0);
+      $("gDash").classList.toggle("ready", s.dashCd <= 0);
       $("gSkills").querySelectorAll(".gskill").forEach((b) => {
         const k = b.dataset.k, left = s.cd[k];
         b.style.setProperty("--cd", left > 0 ? left / (SK[k].cd(s.up[k]) * s.cool) : 0);
@@ -3894,7 +3943,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     window.addEventListener("keydown", (e) => {
       if (view !== "game" || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
       if (MOVE[e.code]) { keys[e.code] = true; if (running) e.preventDefault(); }
-      if (running && e.code === "Space") e.preventDefault();
+      if (running && e.code === "Space") { e.preventDefault(); if (!e.repeat) dash(); }
       if (running && SKEY[e.code] != null) { e.preventDefault(); cast(s.skills[SKEY[e.code]]); }
       if (e.code === "Escape" || e.code === "KeyP") pause();
     });
@@ -3902,6 +3951,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     window.addEventListener("blur", () => { Object.keys(keys).forEach((k) => delete keys[k]); pause(); });
     document.addEventListener("visibilitychange", () => { if (document.hidden) pause(); });
     $("gPause").onclick = pause;
+    $("gDash").addEventListener("pointerdown", (e) => { e.preventDefault(); e.stopPropagation(); dash(); });
 
     return {
       /* 다른 메뉴로 가면 멈춘다. 처음 들어오면(또는 다른 사람이 들어오면) 시작 안내 */
