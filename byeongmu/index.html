@@ -625,6 +625,14 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
 .game-hud .xp { position: absolute; left: 0; right: 0; top: 0; height: 4px; background: rgba(0,0,0,.6); }
 .game-hud .xp i { display: block; height: 100%; width: 0; background: var(--gold); }
 .game-hud .pause { pointer-events: auto; margin-left: auto; }
+/* 전체화면 (2026-10-26) — 브라우저 전체화면(게임판만), 안 되는 곳(아이폰)은 게임판이 화면을 덮는다(.full) */
+.game-hud .gfull { pointer-events: auto; }
+.game-box:fullscreen { border: 0; border-radius: 0; width: 100vw; height: 100vh; }
+.game-box:fullscreen canvas { height: 100vh; min-height: 0; }
+.game-box.full { position: fixed; inset: 0; z-index: 60; border: 0; border-radius: 0; }
+.game-box.full canvas { height: 100vh; height: 100dvh; min-height: 0; }
+body.game-full { overflow: hidden; }
+.game-start { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
 /* 대장 체력 · 단계 알림 · 스킬 단추 (2026-10-26) */
 .game-hud .boss { position: absolute; left: 50%; top: 62px; transform: translateX(-50%); width: min(80%, 360px); display: grid; gap: 3px; justify-items: center; color: #ffb3a8; font-size: 13px; }
 .game-hud .boss[hidden] { display: none; }
@@ -1013,7 +1021,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
         <div class="game-hud" id="gameHud" hidden>
           <div class="xp"><i id="gXp"></i></div>
           <div class="row"><span id="gTime">4:00</span><div class="hpbar"><i id="gHp"></i></div><span id="gStage">1단계</span><span id="gLv">Lv 1</span><span id="gKill">0</span>
-          <button class="tiny pause" type="button" id="gPause">멈춤</button></div>
+          <button class="tiny pause" type="button" id="gPause">멈춤</button><button class="tiny gfull" type="button" id="gFull">⛶ 전체화면</button></div>
           <div class="boss" id="gBoss" hidden><b id="gBossName"></b><div class="bar"><i id="gBossHp"></i></div></div>
           <div class="msg" id="gMsg" aria-live="polite"></div>
           <div class="skills" id="gSkills"></div>
@@ -1136,7 +1144,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610260638";
+  const BUILD = "202610260642";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -3459,11 +3467,24 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
         : me ? "아직 순위표 기록이 없어요" : "관리자 암호로 들어와 순위표에는 안 올라가요");
       p.id = "gBestLine"; return p;
     }
+    /* 전체화면 — "PC형, 모바일형 전체화면으로 볼 수 있는 버튼, 시작 전에 클릭해서 편하게" (2026-10-26) */
+    const gbox = $("gameBox");
+    function isFull() { return !!(document.fullscreenElement || document.webkitFullscreenElement) || gbox.classList.contains("full"); }
+    function coverFull(on) { gbox.classList.toggle("full", on); document.body.classList.toggle("game-full", on); fullLabel(); }
+    function toggleFull() {
+      if (gbox.classList.contains("full")) return coverFull(false);
+      if (document.fullscreenElement || document.webkitFullscreenElement) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); return; }
+      const req = gbox.requestFullscreen || gbox.webkitRequestFullscreen;
+      if (!req) return coverFull(true);
+      try { Promise.resolve(req.call(gbox)).catch(() => coverFull(true)); } catch (e) { coverFull(true); }
+    }
+    function fullLabel() { document.querySelectorAll(".gfull").forEach((b) => { b.textContent = isFull() ? "전체화면 끄기" : "⛶ 전체화면"; }); }
+    document.addEventListener("fullscreenchange", fullLabel); document.addEventListener("webkitfullscreenchange", fullLabel);
     function intro() {
       $("gameHud").hidden = true;
       panel([el("h3", null, "연병장"), el("p", null, nick() + " 님, 죽을 때까지 버텨 보세요."),
         el("p", "best", "움직이기 — 휴대폰은 화면을 누른 채 끌기 · PC 는 방향키(또는 WASD). 둘레 3m 동그라미 안은 자동 조준, 없으면 바라보는 쪽. 대쉬는 스페이스(휴대폰은 오른쪽 아래 단추) 5초마다. 스킬은 배우면 저절로 나가요(1 ~ 6 으로도)"),
-        el("p", "best", "30초마다 단계가 올라 잡귀가 세지고 많아져요. 1분마다 대장이 나와요. 끝나면 순위표에 올라가요."), pickRow(), bestLine(), gBtn("시작", begin)]);
+        el("p", "best", "30초마다 단계가 올라 잡귀가 세지고 많아져요. 1분마다 대장이 나와요. 끝나면 순위표에 올라가요."), pickRow(), bestLine(), (() => { const r = el("div", "game-start"); r.append(gBtn("시작", begin), gBtn(isFull() ? "전체화면 끄기" : "⛶ 전체화면", toggleFull, "ghost gfull")); return r; })()]);
       drawPick();
     }
     function mine() { return UPS.filter((u) => s.up[u.k]).map((u) => u.n + " " + s.up[u.k]).join(" · ") || "아직 강화 없음"; }
@@ -4217,12 +4238,13 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     window.addEventListener("blur", () => { Object.keys(keys).forEach((k) => delete keys[k]); pause(); });
     document.addEventListener("visibilitychange", () => { if (document.hidden) pause(); });
     $("gPause").onclick = pause;
+    $("gFull").onclick = toggleFull;
     $("gDash").addEventListener("pointerdown", (e) => { e.preventDefault(); e.stopPropagation(); dash(); });
 
     return {
       /* 다른 메뉴로 가면 멈춘다. 처음 들어오면(또는 다른 사람이 들어오면) 시작 안내 */
       render() {
-        if (view !== "game") { pause(); return; }
+        if (view !== "game") { pause(); if (isFull()) toggleFull(); return; } // 다른 메뉴로 가면 전체화면도 끈다
         if (shown !== nick()) { shown = nick(); s = null; running = false; stick = null; intro(); drawRanks(); }
         if (Date.now() - ranksAt > 30000) loadRanks();
         size();
