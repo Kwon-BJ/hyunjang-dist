@@ -1154,7 +1154,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610260914";
+  const BUILD = "202610260927";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -3658,10 +3658,11 @@ body.game-full { overflow: hidden; }
        세계 크기는 그대로(원본 1066px 의 2배) — 그림 크기가 바뀌어도 MAP_K · MAP_O 를 그림 폭으로 맞춘다 */
     const MAP = new Image(), MAP_PAD = 50;
     let mapOk = false, MAP_K = 2, MAP_O = [588, 338];
-    MAP.onload = () => { const r = MAP.width / 1066; MAP_K = 2 / r; MAP_O = /map2/.test(MAP.src) ? [MAP.width / 2, MAP.height * 0.49] : [588 * r, 338 * r]; mapOk = true; draw(); };
+    MAP.onload = () => { const r = MAP.width / 1066; MAP_K = 2 / r; MAP_O = /map2./.test(MAP.src) ? [MAP.width / 2, MAP.height * 0.49] : [588 * r, 338 * r]; mapOk = true; draw(); };
     /* "좀더 어두운 용암맵으로 바꿔라 몹이 잘안보인다" (2026-10-26) — 숲 맵 색만 바꾼 용암 맵(무료, 시험/용암맵-만들기.cjs). 숲 맵(map.jpg)은 남겨 둠 */
     /* 맵 바꿈 — 부장님이 주신 어두운 돌바닥 법진 맵 (2026-10-26, img/map2.jpg · 시험/맵2-만들기.cjs). 크기 · 시작 자리는 MAP.onload 에서 그림에 맞춘다 */
-    MAP.src = "img/map2.jpg";
+    /* 게임 그림 주소에 판 번호(BUILD)를 붙인다 — 깃허브가 그림을 10분 동안 브라우저에 남겨 두어, 새 판 홈페이지에 예전 그림이 섞여 캐릭터가 안 보였다 (2026-10-26) */
+    MAP.src = "img/map2.jpg?v=" + BUILD;
     function bounds() { return [-MAP_O[0] * MAP_K + MAP_PAD, (MAP.width - MAP_O[0]) * MAP_K - MAP_PAD, -MAP_O[1] * MAP_K + MAP_PAD, (MAP.height - MAP_O[1]) * MAP_K - MAP_PAD]; }
     function inside(x, y) { const b = bounds(); return x >= b[0] && x <= b[1] && y >= b[2] && y <= b[3]; }
     function inMap(p) { if (!mapOk) return p; const b = bounds(); p.x = Math.min(b[1], Math.max(b[0], p.x)); p.y = Math.min(b[3], Math.max(b[2], p.y)); return p; }
@@ -3952,7 +3953,7 @@ body.game-full { overflow: hidden; }
     const FXI = new Image(), FXF = {"thunder":[[0,0,108,128],[110,0,107,128],[219,0,116,128],[337,0,121,128]],"whirl":[[0,130,121,128],[123,130,120,128],[245,130,124,128],[371,130,123,128]],"ward":[[0,274,128,114],[130,265,128,123],[260,269,128,119],[390,269,128,119]],"fire":[[0,441,128,77],[130,432,128,86],[260,416,128,102],[390,398,128,120]],"homing":[[0,590,128,58],[130,557,128,91],[260,544,128,104],[390,577,128,71]],"frost":[[0,650,95,128],[97,650,121,128],[220,650,127,128],[349,655,128,123]],"levelup":[[0,780,113,128],[115,780,113,128],[230,780,113,128],[345,780,113,128]],"smoke":[[0,935,128,103],[130,942,128,96],[260,945,128,93],[390,914,128,124]]};
     let fxOk = false;
     FXI.onload = () => { fxOk = true; };
-    FXI.src = "img/fx.png";
+    FXI.src = "img/fx.png?v=" + BUILD;
     function fxDraw(name, fi, x, y, size, o) {
       o = o || {};
       const fr = FXF[name][Math.max(0, Math.min(3, fi))], k = size / Math.max(fr[2], fr[3]), w = fr[2] * k, h = fr[3] * k;
@@ -4009,7 +4010,7 @@ body.game-full { overflow: hidden; }
     const HEROES = {};
     Object.keys(ROSTER).forEach((k) => { HEROES[k] = Object.assign({}, ROSTER[k], { img: H5, F: H5F[k], K: ROSTER[k].F }); }); // F = 그림 칸 자리, K = 동작 → 칸 이름
     H5.onload = () => { Object.keys(HEROES).forEach((k) => { HEROES[k].ok = true; }); draw(); drawPick(); };
-    H5.src = "img/heroes5.png";
+    H5.src = "img/heroes5.png?v=" + BUILD;
     let heroKey = "kh";
     try { const k = localStorage.getItem("bmc-game-hero"); if (HEROES[k]) heroKey = k; } catch (e) {}
     function h5key(C, act, view) {
@@ -4057,7 +4058,7 @@ body.game-full { overflow: hidden; }
     const FACE_R = { wolf: 1, skeleton_archer: 1, skeleton_warrior: 1, goblin: -1 }; // 그림이 보는 쪽 (1 오른쪽 · -1 왼쪽 · 없으면 앞)
     let monOk = false;
     MON.onload = () => { monOk = true; draw(); };
-    MON.src = "img/mon.png";
+    MON.src = "img/mon.png?v=" + BUILD;
     /* 몬스터 움직임 — "몬스터도 좀 임팩트 있게, 현실감있게" (2026-10-26). 그림은 한 장이라 코드로 흔든다:
        슬라임 통통 튀며 찌그러짐 · 박쥐 날갯짓 · 늑대 기울이며 달려듦 · 골렘 무겁게 쿵쿵 · 나머지 뒤뚱 걸음 · 식충 식물 제자리 흔들림.
        나올 때 땅에서 솟듯 커지고, 맞으면 찌그러지며 밀리고, 가까우면 앞으로 숙여 달려든다 */
@@ -4069,7 +4070,7 @@ body.game-full { overflow: hidden; }
     const FACE2 = { wolf: 1, plant: 1, goblin: 1, demon: 1 };
     let mon2Ok = false;
     MON2.onload = () => { mon2Ok = true; };
-    MON2.src = "img/mon2.png";
+    MON2.src = "img/mon2.png?v=" + BUILD;
     function frame2(f) {
       const A = MF2[SKIN2[f.skin]];
       if (!mon2Ok || !A) return null;
