@@ -1173,7 +1173,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610261057";
+  const BUILD = "202610261101";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -4551,7 +4551,7 @@ body.game-full { overflow: hidden; }
       if (!s || s.over) return false;
       try {
         const data = JSON.stringify(s, (k, v) => (k === "bossNow" || k === "lock" || k === "tg") ? undefined : (k === "hit" && Array.isArray(v)) ? [] : v);
-        sessionStorage.setItem("bmc-game-save", JSON.stringify({ at: Date.now(), boss: s.foes.indexOf(s.bossNow), hero: heroKey, s: data }));
+        sessionStorage.setItem("bmc-game-save", JSON.stringify({ at: Date.now(), b: BUILD, boss: s.foes.indexOf(s.bossNow), hero: heroKey, s: data }));
         return true;
       } catch (e) { return false; }
     };
@@ -4563,6 +4563,10 @@ body.game-full { overflow: hidden; }
       s.bossNow = sv.boss >= 0 ? s.foes[sv.boss] || null : null; s.lock = null;
       if (HEROES[sv.hero]) heroKey = sv.hero;
       s.ward = Math.max(s.ward || 0, 2); $("gTest").hidden = !s.test;
+      /* 전체 게임 종료 — "지금 홈페이지 로그인한 사람들 전체 게임 종료 한번 시켜라" (2026-10-26). 이 판(FORCE_END) 전 판에서 저장된 게임은 이어하지 않고
+         끝낸다(점수는 순위표에). 앞으로의 업데이트는 다시 이어서 */
+      const FORCE_END = "202610261101";
+      if (!/^\d{12}$/.test(sv.b || "") || sv.b < FORCE_END) { renderSkills(); end(); const k = $("gameOverIn").querySelector(".game-card"); if (k) k.prepend(el("div", "rank", "관리자가 게임을 종료했어요")); return true; }
       renderSkills(); resume(); msg("업데이트 적용 — 이어서!");
       return true;
     }
