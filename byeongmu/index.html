@@ -632,6 +632,10 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
 .game-box.full { position: fixed; inset: 0; z-index: 60; border: 0; border-radius: 0; }
 .game-box.full canvas { height: 100vh; height: 100dvh; min-height: 0; }
 body.game-full { overflow: hidden; }
+.game-test { display: flex; gap: 8px; align-items: center; justify-content: center; font-size: 13px; color: #b6f5c2; cursor: pointer; }
+.game-test input { width: 18px; height: 18px; accent-color: #3ccf6a; }
+.game-hud .gtest { padding: 0 6px; border-radius: 4px; background: #1e6b34; color: #d8ffe2; font-size: 11px; }
+.game-hud .gtest[hidden] { display: none; }
 .game-start { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
 /* 대장 체력 · 단계 알림 · 스킬 단추 (2026-10-26) */
 .game-hud .boss { position: absolute; left: 50%; top: 62px; transform: translateX(-50%); width: min(80%, 360px); display: grid; gap: 3px; justify-items: center; color: #ffb3a8; font-size: 13px; }
@@ -1024,7 +1028,7 @@ body.game-full { overflow: hidden; }
         <canvas id="gameCv" aria-label="연병장 게임 화면"></canvas>
         <div class="game-hud" id="gameHud" hidden>
           <div class="xp"><i id="gXp"></i></div>
-          <div class="row"><span id="gTime">4:00</span><div class="hpbar"><i id="gHp"></i></div><span id="gStage">1단계</span><span id="gLv">Lv 1</span><span id="gKill">0</span>
+          <div class="row"><span id="gTime">4:00</span><div class="hpbar"><i id="gHp"></i></div><span class="gtest" id="gTest" hidden>🧪 TEST</span><span id="gStage">1단계</span><span id="gLv">Lv 1</span><span id="gKill">0</span>
           <button class="tiny pause" type="button" id="gPause">멈춤</button><button class="tiny gfull" type="button" id="gFull">⛶ 전체화면</button></div>
           <div class="boss" id="gBoss" hidden><b id="gBossName"></b><div class="bar"><i id="gBossHp"></i></div></div>
           <div class="msg" id="gMsg" aria-live="polite"></div>
@@ -1150,7 +1154,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610260737";
+  const BUILD = "202610260759";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -3490,7 +3494,7 @@ body.game-full { overflow: hidden; }
       $("gameHud").hidden = true;
       panel([el("h3", null, "연병장"), el("p", null, nick() + " 님, 죽을 때까지 버텨 보세요."),
         el("p", "best", "움직이기 — 휴대폰은 화면을 누른 채 끌기 · PC 는 방향키(또는 WASD). 둘레 3m 동그라미 안은 자동 조준, 없으면 바라보는 쪽. 대쉬는 스페이스(휴대폰은 오른쪽 아래 단추) 5초마다. 스킬은 배우면 저절로 나가요(1 ~ 6 으로도)"),
-        el("p", "best", "30초마다 단계가 올라 잡귀가 세지고 많아져요. 1분마다 대장이 나와요. 끝나면 순위표에 올라가요."), pickRow(), bestLine(), (() => { const r = el("div", "game-start"); r.append(gBtn("시작", begin), gBtn(isFull() ? "전체화면 끄기" : "⛶ 전체화면", toggleFull, "ghost gfull")); return r; })()]);
+        el("p", "best", "30초마다 단계가 올라 잡귀가 세지고 많아져요. 1분마다 대장이 나와요. 끝나면 순위표에 올라가요."), pickRow(), ...(canTest() ? [testRow()] : []), bestLine(), (() => { const r = el("div", "game-start"); r.append(gBtn("시작", begin), gBtn(isFull() ? "전체화면 끄기" : "⛶ 전체화면", toggleFull, "ghost gfull")); return r; })()]);
       drawPick();
     }
     function mine() { return UPS.filter((u) => s.up[u.k]).map((u) => u.n + " " + s.up[u.k]).join(" · ") || "아직 강화 없음"; }
@@ -3534,7 +3538,7 @@ body.game-full { overflow: hidden; }
       const sc = el("div", "sc gold-text", score.toLocaleString()); sc.appendChild(el("small", null, "점"));
       card.append(el("div", "k", "병무청 연병장"), el("div", "who", nick()), sc, el("div", "day", day(when)),
         el("div", "det", mmss(s.t) + " 버팀 · " + s.stage + "단계 · 잡은 잡귀 " + s.kills + (s.bossKills ? " · 대장 " + s.bossKills : "") + " · Lv " + s.lv));
-      const rank = el("div", "rank", me ? "순위표에 올리는 중…" : "관리자 암호로는 순위표에 안 올라가요"); rank.id = "gRankLine";
+      const rank = el("div", "rank", s.test ? "🧪 테스트 모드 — 순위표에 안 올라가요" : me ? "순위표에 올리는 중…" : "관리자 암호로는 순위표에 안 올라가요"); rank.id = "gRankLine";
       card.appendChild(rank);
       $("gameHud").hidden = true;
       panel([card, el("p", "best", "이 화면을 캡처해서 카톡에 올려 주세요"), gBtn("다시 하기", begin)]);
@@ -3547,6 +3551,7 @@ body.game-full { overflow: hidden; }
       s = { t: 0, hp: 100, max: 100, x: 0, y: 0, spd: 150, lv: 1, xp: 0, need: 6, kills: 0, foes: [], shots: [], ebs: [], gems: [], fx: [],
         spawn: 0, fire: 0, rate: 0.7, dmg: 10, multi: 1, pierce: 0, orbs: 0, orbA: 0, aura: 0, magnet: 60, regen: 0, hurt: 0,
         stage: 1, bossN: 0, bossNow: null, aim: Math.PI / 2, mvA: Math.PI / 2, dashT: 0, dashCd: 0, dashX: 0, dashY: 1, trail: [], lock: null, hitFx: 0, fields: [], homs: [], walk: 0, moving: false, items: [], flash: 0, shotT: 0, bossKills: 0, up: {}, skills: [], cd: {}, cool: 1, ward: 0, msgT: 0, over: false };
+      s.test = testOn(); $("gTest").hidden = !s.test;
       renderSkills(); resume(); msg("1단계 — " + sideText() + "에서 몰려온다!");
     }
     function resume() {
@@ -3560,7 +3565,7 @@ body.game-full { overflow: hidden; }
       running = false; s.over = true; stick = null;
       const sec = Math.floor(s.t), run = s;
       draw(); showResult(s.kills * 10 + sec * 2 + s.bossKills * 300, new Date().toISOString());
-      if (!me || !token) return;
+      if (!me || !token || s.test) return; // 테스트 모드는 순위표에 안 올림
       call("saveGameScore", token, { sec: sec, stage: s.stage, kills: s.kills, bosses: s.bossKills, lv: s.lv }).then((r) => {
         takeRanks(r);
         const line = $("gRankLine"); if (!line || run !== s) return;
@@ -3744,7 +3749,19 @@ body.game-full { overflow: hidden; }
         s.fx.push({ x: s.x, y: s.y, r: R / 2.2, c: "#a5f3fc", life: 0.3 }, { frost: true, spr: "frost", x: s.x, y: s.y, r: R, size: R * 1.5, life: 0.45, dur: 0.45 });
       } else s.ward = 1.5 + 0.5 * l;
     }
+    /* 테스트 모드 — "너랑 나는(기준량)은 플레이할 때 테스트용으로 공격력 쌔지게, 단계별로 테스트할 수 있게" (2026-10-26).
+       기준량 · 관리자 계정(문주 빼고) · 관리자 암호로 들어온 사람에게만 시작 안내에 보인다. 켜면 모든 공격 10배, 순위표에는 안 올린다 */
+    const TEST_MUL = 10;
+    function canTest() { return !!((me && (me.gameId === "기준량" || (me.admin && !me.leader))) || (!me && canWrite)); }
+    function testOn() { if (!canTest()) return false; try { return localStorage.getItem("bmc-game-test") !== "0"; } catch (e) { return true; } }
+    function testRow() {
+      const lab = el("label", "game-test"), cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = testOn();
+      cb.onchange = () => { try { localStorage.setItem("bmc-game-test", cb.checked ? "1" : "0"); } catch (e) {} };
+      lab.append(cb, el("span", null, "🧪 테스트 모드 — 공격력 " + TEST_MUL + "배, 순위표에 안 올라가요"));
+      return lab;
+    }
     function hurt(f, n, flash) {
+      if (s.test) n *= TEST_MUL;
       f.hp -= n;
       if (!flash) return;
       f.hit = 0.08;
@@ -4164,7 +4181,8 @@ body.game-full { overflow: hidden; }
         s.foes.forEach((f) => {
           const x = f.x + ox, y = f.y + oy;
           if (x < -70 || y < -70 || x > W + 70 || y > H + 70) return;
-          if (monOk && MF[f.skin]) { monster(f, x, y); if (f.slow > 0) { g.fillStyle = "rgba(165,243,252,.28)"; g.strokeStyle = "rgba(165,243,252,.8)"; g.beginPath(); g.arc(x, y, f.r * 1.3, 0, Math.PI * 2); g.fill(); g.stroke(); } return; }
+          /* 새 동작 그림만 있어도 그림으로 (2026-10-26 점검) */
+          if ((monOk && MF[f.skin]) || frame2(f)) { monster(f, x, y); if (f.slow > 0) { g.fillStyle = "rgba(165,243,252,.28)"; g.strokeStyle = "rgba(165,243,252,.8)"; g.beginPath(); g.arc(x, y, f.r * 1.3, 0, Math.PI * 2); g.fill(); g.stroke(); } return; }
           g.fillStyle = f.hit ? "#fff" : f.c;
           g.beginPath(); g.moveTo(x - f.r * 0.7, y - f.r * 0.5); g.lineTo(x - f.r * 0.45, y - f.r * 1.35); g.lineTo(x - f.r * 0.1, y - f.r * 0.8);
           g.moveTo(x + f.r * 0.7, y - f.r * 0.5); g.lineTo(x + f.r * 0.45, y - f.r * 1.35); g.lineTo(x + f.r * 0.1, y - f.r * 0.8); g.fill();
@@ -4291,6 +4309,8 @@ body.game-full { overflow: hidden; }
     $("gFull").onclick = toggleFull;
     $("gDash").addEventListener("pointerdown", (e) => { e.preventDefault(); e.stopPropagation(); dash(); });
 
+    /* 점검용 — 주소에 ?bmctest=1 이 있을 때만 시험(시험/전체점검-시험.cjs)이 게임 상태를 보고 바꿀 수 있게 (2026-10-26 "오류 · 버그 전체 확인"). 보통 때는 없다 */
+    if (/[?&]bmctest=1/.test(location.search)) window.__bmcGame = { get s() { return s; }, cast: cast, W: () => W, H: () => H };
     return {
       /* 다른 메뉴로 가면 멈춘다. 처음 들어오면(또는 다른 사람이 들어오면) 시작 안내 */
       render() {
