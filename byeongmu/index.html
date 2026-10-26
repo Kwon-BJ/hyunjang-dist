@@ -1150,7 +1150,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610260717";
+  const BUILD = "202610260737";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -3546,8 +3546,8 @@ body.game-full { overflow: hidden; }
       $("gameBox").scrollIntoView({ block: "center", behavior: "smooth" });
       s = { t: 0, hp: 100, max: 100, x: 0, y: 0, spd: 150, lv: 1, xp: 0, need: 6, kills: 0, foes: [], shots: [], ebs: [], gems: [], fx: [],
         spawn: 0, fire: 0, rate: 0.7, dmg: 10, multi: 1, pierce: 0, orbs: 0, orbA: 0, aura: 0, magnet: 60, regen: 0, hurt: 0,
-        stage: 1, bossN: 0, bossNow: null, aim: Math.PI / 2, mvA: Math.PI / 2, dashT: 0, dashCd: 0, dashX: 0, dashY: 1, trail: [], lock: null, hitFx: 0, fields: [], homs: [], walk: 0, moving: false, flash: 0, shotT: 0, bossKills: 0, up: {}, skills: [], cd: {}, cool: 1, ward: 0, msgT: 0, over: false };
-      renderSkills(); resume(); msg("1단계 — 죽을 때까지 버텨라!");
+        stage: 1, bossN: 0, bossNow: null, aim: Math.PI / 2, mvA: Math.PI / 2, dashT: 0, dashCd: 0, dashX: 0, dashY: 1, trail: [], lock: null, hitFx: 0, fields: [], homs: [], walk: 0, moving: false, items: [], flash: 0, shotT: 0, bossKills: 0, up: {}, skills: [], cd: {}, cool: 1, ward: 0, msgT: 0, over: false };
+      renderSkills(); resume(); msg("1단계 — " + sideText() + "에서 몰려온다!");
     }
     function resume() {
       $("gameOver").hidden = true; $("gameHud").hidden = false;
@@ -3664,19 +3664,29 @@ body.game-full { overflow: hidden; }
     }
     function spawn(kind, x, y) {
       if (!kind) { const q = Math.random(); kind = s.stage >= 5 && q < 0.1 ? "spit" : s.stage >= 3 && q < 0.22 ? "rock" : s.stage >= 2 && q < 0.45 ? "fast" : "imp"; }
-      if (x == null) for (let k = 0; k < 8; k++) { const a = Math.random() * Math.PI * 2, d = Math.max(260, Math.hypot(W, H) / 2 + 40); x = s.x + Math.cos(a) * d; y = s.y + Math.sin(a) * d; if (!mapOk || inside(x, y)) break; }
+      if (x == null) for (let k = 0; k < 8; k++) { const a = sideAngle(), d = Math.max(260, Math.hypot(W, H) / 2 + 40); x = s.x + Math.cos(a) * d; y = s.y + Math.sin(a) * d; if (!mapOk || inside(x, y)) break; }
       const P = inMap({ x: x, y: y }); x = P.x; y = P.y;
       const F = FOES[kind], hp = F.hp * (1 + (s.stage - 1) * 0.45);
       s.foes.push({ k: kind, skin: skinOf(kind), x: x, y: y, r: F.r, hp: hp, full: hp, spd: F.spd * Math.min(1.6, 1 + (s.stage - 1) * 0.05), dps: F.dps, c: F.c, xp: F.xp, hit: 0, oc: 0, cd: 1 + Math.random() * 2, dash: 0, ph: Math.random() * 10, age: 0 });
     }
     /* 단계가 오를 때 한 무리가 빙 둘러싸며 나온다 */
+    /* 몬스터 나오는 쪽 — "1단계 좌측 2단계 우측 3단계 윗쪽 4단계 아랫쪽 5단계 4방향 등등, 너무 다방면에서 나오니 정신을 못 차린다" (2026-10-26).
+       1 왼 · 2 오 · 3 위 · 4 아래 · 5 네 방향 · 6 좌우 · 7 위아래, 8단계부터 다시 1 처럼. 무리 · 대장도 그쪽에서. 한 쪽 안에서 좌우 ±20° 쯤 흩어짐 */
+    const SIDES = { L: Math.PI, R: 0, U: -Math.PI / 2, D: Math.PI / 2 }, SIDE_N = { L: "왼쪽", R: "오른쪽", U: "위쪽", D: "아래쪽" };
+    const WAVES = [["L"], ["R"], ["U"], ["D"], ["L", "R", "U", "D"], ["L", "R"], ["U", "D"]];
+    function sides() { return WAVES[(s.stage - 1) % WAVES.length]; }
+    function sideText() { const w = sides(); return w.length === 4 ? "사방" : w.map((d) => SIDE_N[d]).join(" · "); }
+    function sideAngle() { const w = sides(); return SIDES[w[Math.floor(Math.random() * w.length)]] + (Math.random() - 0.5) * 0.7; }
     function horde() {
-      const n = 6 + s.stage * 3, d = Math.max(240, Math.min(W, H) / 2 + 30);
-      for (let i = 0; i < n && s.foes.length < 300; i++) { const a = i * Math.PI * 2 / n; spawn(null, s.x + Math.cos(a) * d, s.y + Math.sin(a) * d); }
+      const w = sides(), n = 6 + s.stage * 3, per = Math.ceil(n / w.length), d = Math.max(240, Math.min(W, H) / 2 + 30);
+      for (let i = 0; i < n && s.foes.length < 300; i++) {
+        const k = Math.floor(i / w.length), a = SIDES[w[i % w.length]] + (per > 1 ? k / (per - 1) - 0.5 : 0) * 1.1;
+        spawn(null, s.x + Math.cos(a) * d, s.y + Math.sin(a) * d);
+      }
     }
     function spawnBoss(i) {
       const B = BOSSES[i % BOSSES.length], lap = Math.floor(i / BOSSES.length), k = 1 + lap * 1.5, name = B.name + (lap ? " " + (lap + 1) : "");
-      const a = Math.random() * Math.PI * 2, d = Math.max(260, Math.hypot(W, H) / 2 + 40);
+      const a = sideAngle(), d = Math.max(260, Math.hypot(W, H) / 2 + 40);
       const f = { k: "boss", skin: B.skin, name: name, act: B.act, x: s.x + Math.cos(a) * d, y: s.y + Math.sin(a) * d, r: B.r, hp: B.hp * k, full: B.hp * k,
         spd: B.spd * (1 + lap * 0.1), dps: B.dps * (1 + lap * 0.5), c: B.c, xp: B.xp * (1 + lap), hit: 0, oc: 0, cd: 2.5, dash: 0, n: 0, ph: Math.random() * 10, age: 0 };
       inMap(f); s.foes.push(f); s.bossNow = f; msg(name + " 나타남!");
@@ -3788,7 +3798,7 @@ body.game-full { overflow: hidden; }
       if (s.msgT > 0 && (s.msgT -= dt) <= 0) $("gMsg").classList.remove("on");
       /* 단계 — 30초마다 하나씩, 끝없이 */
       const st = 1 + Math.floor(s.t / STAGE);
-      if (st !== s.stage) { s.stage = st; horde(); msg(st + "단계 — 잡귀가 더 몰려온다!"); }
+      if (st !== s.stage) { s.stage = st; horde(); msg(st + "단계 — " + sideText() + "에서 몰려온다!"); }
       const bi = Math.floor(s.t / 60) - 1;
       if (bi >= s.bossN) { s.bossN = bi + 1; spawnBoss(bi); }
       /* 1단계 초당 1마리 → 8단계 10마리 → 많아야 14마리 (그 뒤로는 잡귀가 단단해지기만) */
@@ -3836,11 +3846,19 @@ body.game-full { overflow: hidden; }
         s.kills++;
         if (f.k === "boss") { s.bossKills++; if (s.bossNow === f) s.bossNow = null; msg(f.name + " 쓰러뜨림!"); }
         s.gems.push({ x: f.x, y: f.y, v: f.xp });
+        if (f.k === "boss") s.items.push({ k: "hp", x: f.x, y: f.y }); // "보스 잡을 때마다 HP 포션" (2026-10-26)
         if (f.skin) { const face = mon2Ok && MF2[SKIN2[f.skin]] ? FACE2[SKIN2[f.skin]] : FACE_R[f.skin], d2 = mon2Ok && MF2[SKIN2[f.skin]] ? 0.7 : 0.35; s.fx.push({ corpse: true, skin: f.skin, x: f.x, y: f.y, r: f.r, flip: face && (s.x < f.x ? -1 : 1) !== face ? -1 : 1, life: d2, dur: d2 }); }
         s.fx.push({ boom: true, spr: "smoke", x: f.x, y: f.y, r: f.r, c: f.c, size: f.r * 3.4, life: 0.4, dur: 0.4 });
         return false;
       });
       if (s.gems.length > 400) s.gems.splice(0, s.gems.length - 400);
+      /* HP 포션 — 주우면 최대 체력의 40% 회복. 구슬 끌기 범위 + 40 안이면 끌려온다 */
+      s.items = s.items.filter((m) => {
+        const dx = s.x - m.x, dy = s.y - m.y, L = Math.hypot(dx, dy) || 1;
+        if (L < 24) { const heal = Math.round(s.max * 0.4); s.hp = Math.min(s.max, s.hp + heal); s.fx.push({ num: "+" + heal, heal: true, x: s.x, y: s.y - 30, life: 0.6 }); msg("HP 포션 — 체력 " + heal + " 회복!"); return false; }
+        if (L < s.magnet + 40) { m.x += dx / L * 300 * dt; m.y += dy / L * 300 * dt; }
+        return true;
+      });
       s.gems = s.gems.filter((m) => {
         const dx = s.x - m.x, dy = s.y - m.y, L = Math.hypot(dx, dy) || 1;
         if (L < 18) { s.xp += m.v; return false; }
@@ -4090,6 +4108,15 @@ body.game-full { overflow: hidden; }
         g.fillStyle = "#f6e2a4"; g.beginPath();
         s.gems.forEach((m) => { const x = m.x + ox, y = m.y + oy, r = m.v > 1 ? 8.5 : 6; if (x < -6 || y < -6 || x > W + 6 || y > H + 6) return; g.moveTo(x, y - r); g.lineTo(x + r, y); g.lineTo(x, y + r); g.lineTo(x - r, y); g.closePath(); });
         g.fill(); g.strokeStyle = "#ff9a1f"; g.lineWidth = 1.6; g.stroke(); g.lineWidth = 1; // 경험치 구슬 — 크게 · 주황 테두리 (2026-10-26)
+        s.items.forEach((m) => { // HP 포션 — 빨간 물약병, 둥실둥실 · 빛
+          const x = m.x + ox, y = m.y + oy + Math.sin(s.t * 4 + m.x) * 3;
+          g.fillStyle = "rgba(255,60,60,.25)"; g.beginPath(); g.arc(x, y, 18, 0, Math.PI * 2); g.fill();
+          g.fillStyle = "#e9eef5"; g.fillRect(x - 3.5, y - 15, 7, 7);
+          g.fillStyle = "#8a5a2b"; g.fillRect(x - 4.5, y - 18, 9, 4);
+          g.fillStyle = "#e0242c"; g.strokeStyle = "#fff"; g.lineWidth = 1.5; g.beginPath(); g.arc(x, y, 9, 0, Math.PI * 2); g.fill(); g.stroke(); g.lineWidth = 1;
+          g.fillStyle = "rgba(255,255,255,.75)"; g.beginPath(); g.arc(x - 3, y - 3, 2.6, 0, Math.PI * 2); g.fill();
+          g.fillStyle = "#fff"; g.font = "800 9px sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("HP", x, y + 2);
+        });
         s.fx.forEach((x) => {
           if (x.corpse) {
             const A2 = mon2Ok && MF2[SKIN2[x.skin]];
@@ -4113,7 +4140,7 @@ body.game-full { overflow: hidden; }
           if (x.num) {
             const nx = x.x + ox, ny = x.y + oy - (0.6 - x.life) * 50;
             g.font = "800 13px 'Noto Sans KR', sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.85)"; g.strokeText(x.num, nx, ny);
-            g.fillStyle = x.num >= 60 ? "#ffd36b" : "#fff"; g.fillText(x.num, nx, ny); g.lineWidth = 1;
+            g.fillStyle = x.heal ? "#5eea7a" : x.num >= 60 ? "#ffd36b" : "#fff"; g.fillText(x.num, nx, ny); g.lineWidth = 1;
           } else if (x.frost) {
             const bx = x.x + ox, by = x.y + oy, r = x.r * (1 - x.life / 0.45 * 0.6);
             g.fillStyle = "rgba(165,243,252,.18)"; g.strokeStyle = "rgba(220,250,255,.9)"; g.lineWidth = 3; g.beginPath(); g.arc(bx, by, r, 0, Math.PI * 2); g.fill(); g.stroke(); g.lineWidth = 1;
