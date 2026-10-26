@@ -1181,7 +1181,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610261311";
+  const BUILD = "202610262247";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -3833,11 +3833,11 @@ body.game-full { overflow: hidden; }
       const f = { k: "boss", skin: B.skin, name: name, act: B.act, x: s.x + Math.cos(a) * d, y: s.y + Math.sin(a) * d, r: B.r, hp: B.hp * k * (1 + (s.stage - 1) * 0.2), full: B.hp * k * (1 + (s.stage - 1) * 0.2),
         spd: B.spd * (1 + lap * 0.1) * Math.min(1.8, 1 + (s.stage - 1) * 0.04), dps: B.dps * (1 + lap * 0.5) * (1 + (s.stage - 1) * 0.1), bd: 1 + (s.stage - 1) * 0.12, c: B.c, xp: B.xp * (1 + lap), hit: 0, oc: 0, cd: 2.5, dash: 0, n: 0, ph: Math.random() * 10, age: 0 };
       inMap(f);
-      /* 대장전 — 10 · 20 · 30 …단계 대장은 잡귀를 다 처치하고 맵 가운데 10m × 10m(800) 결투장에서. 잡을 때까지 잡귀 안 나옴 (2026-10-26) */
+      /* 대장전 — 10 · 20 · 30 …단계 대장은 잡귀를 다 처치하고 맵 가운데 13m × 13m(1040) 결투장에서. 잡을 때까지 잡귀 안 나옴 (2026-10-26, 10m → 13m 2026-10-27 — 맵 세로에 들어가는 가장 큰 네모) */
       if (s.stage % 10 === 0) {
         s.foes.forEach((o) => { o.hp = 0; }); s.ebs = []; s.hz = [];
-        s.arena = { x: 0, y: 0, h: 400 };
-        const q = Math.random() * Math.PI * 2; f.x = Math.cos(q) * 300; f.y = Math.sin(q) * 300; arenaClamp(s); arenaClamp(f);
+        s.arena = { x: 0, y: 0, h: 520 };
+        const q = Math.random() * Math.PI * 2; f.x = Math.cos(q) * 390; f.y = Math.sin(q) * 390; arenaClamp(s); arenaClamp(f);
         s.foes.push(f); s.bossNow = f; s.ward = Math.max(s.ward, 1.5); msg("대장전! " + name + " — 결투장에서 싸워라"); return;
       }
       s.foes.push(f); s.bossNow = f; msg(name + " 나타남!");
