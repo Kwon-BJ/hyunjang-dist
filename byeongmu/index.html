@@ -399,7 +399,7 @@ footer .tagline::before, footer .tagline::after { width: clamp(30px, 6vw, 60px);
 .gate b { color: var(--gold-hi); }
 body.locked .gate { display: block; }
 body.locked #menu, body.locked #homeBtn, body.locked #noticeView, body.locked #rosterView,
-body.locked #boardView, body.locked #badView, body.locked #membersView, body.locked #bannerTools { display: none !important; }
+body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked #membersView, body.locked #bannerTools { display: none !important; }
 @media (max-width: 1500px) { body.locked .acct { margin-left: auto; } }
 /* 프로필 사진 */
 .av { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; flex: none; border: 1px solid var(--gold-lo); }
@@ -597,6 +597,38 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
   .banner .tagline::before, .banner .tagline::after { width: 18px; }
 }
 
+/* 연병장 — 수요일 점검 시간에 문파원끼리 한 판 (2026-10-26). 그림은 직접 그린 도형만(게임 공식 그림 · 캐릭터 안 씀) */
+#gameView { display: flex; flex-direction: column; gap: 14px; }
+.game-hint { margin: 0; color: var(--muted); font-size: 13px; }
+.game-box { position: relative; border: 1px solid var(--gold-lo); border-radius: 6px; overflow: hidden; background: #07060a; }
+.game-box canvas { display: block; width: 100%; height: min(68vh, 620px); min-height: 360px; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.game-hud { position: absolute; left: 8px; right: 8px; top: 8px; display: flex; gap: 6px 10px; flex-wrap: wrap; align-items: center; pointer-events: none; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--gold-hi); text-shadow: 0 1px 2px #000; }
+.game-hud .hpbar { flex: 1 1 120px; max-width: 220px; height: 10px; border: 1px solid var(--gold-lo); border-radius: 999px; background: rgba(0,0,0,.6); overflow: hidden; }
+.game-hud .hpbar i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, var(--red), #ff6a4a); }
+.game-hud .xp { position: absolute; left: -8px; right: -8px; top: -8px; height: 4px; background: rgba(0,0,0,.6); }
+.game-hud .xp i { display: block; height: 100%; width: 0; background: var(--gold); }
+.game-hud .pause { pointer-events: auto; margin-left: auto; }
+.game-over { position: absolute; inset: 0; display: flex; padding: 16px; background: rgba(5,4,3,.82); overflow-y: auto; }
+.game-over[hidden] { display: none; }
+.game-over > div { margin: auto; width: min(100%, 440px); display: grid; gap: 12px; justify-items: center; text-align: center; }
+.game-over h3 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 26px; color: var(--gold-hi); }
+.game-over p { margin: 0; color: var(--ink); font-size: 14px; line-height: 1.6; }
+.game-over .best { color: var(--muted); font-size: 13px; }
+.game-over .btn { font-size: 16px; padding: 10px 22px; }
+.game-picks { display: grid; gap: 8px; width: 100%; }
+.game-picks button { display: grid; gap: 2px; text-align: left; padding: 12px 14px; border: 1px solid var(--gold-lo); border-radius: 6px; background: var(--panel-hi); color: var(--ink); cursor: pointer; font: inherit; }
+.game-picks button:hover, .game-picks button:focus-visible { border-color: var(--gold); }
+.game-picks b { color: var(--gold-hi); font-size: 15px; }
+.game-picks span { color: var(--muted); font-size: 13px; }
+/* 결과 — 카톡에 캡처해 올리기 좋게 닉네임 · 점수 · 날짜를 크게 */
+.game-card { width: 100%; box-sizing: border-box; padding: 20px 16px 18px; border: 2px solid var(--gold); border-radius: 8px; background: linear-gradient(180deg, #1f170b, #0d0a06); box-shadow: 0 0 0 1px #000, 0 0 24px rgba(214,176,98,.25); display: grid; gap: 6px; justify-items: center; }
+.game-card .k { font-family: var(--font-display); font-weight: 800; font-size: 15px; letter-spacing: .2em; color: var(--gold); }
+.game-card .who { font-size: clamp(24px, 7vw, 34px); font-weight: 800; color: var(--ink); overflow-wrap: anywhere; line-height: 1.25; }
+.game-card .sc { font-family: var(--font-display); font-weight: 800; font-size: clamp(48px, 15vw, 72px); line-height: 1.05; font-variant-numeric: tabular-nums; }
+.game-card .sc small { font-size: .4em; }
+.game-card .day { font-size: clamp(16px, 4.6vw, 20px); font-weight: 700; color: var(--gold-hi); font-variant-numeric: tabular-nums; }
+.game-card .det { font-size: 13px; color: var(--muted); }
+.game-card .new { margin-top: 2px; padding: 2px 12px; border-radius: 999px; background: var(--red); color: #fff; font-size: 13px; font-weight: 700; }
 </style>
 </head>
 <body>
@@ -631,6 +663,7 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
       <button type="button" class="menu-item" data-go="tactics">전략판</button>
       <button type="button" class="menu-item" data-go="board">자유게시판</button>
       <button type="button" class="menu-item" data-go="bad">비매너 게시판</button>
+      <button type="button" class="menu-item" data-go="game">연병장</button>
       <button type="button" class="menu-item" data-go="members" id="membersMenu" hidden>가입 승인</button>
     </div>
     <div class="acct" id="acct"></div>
@@ -901,6 +934,21 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
       <input type="file" id="mapFile" accept="image/*" hidden>
     </section>
 
+    <!-- 연병장 — 점검 시간 미니게임. 점수는 이 기기에만 저장(창구 안 씀) (2026-10-26) -->
+    <section id="gameView" hidden>
+      <h2 class="section-label"><svg aria-hidden="true"><use href="#i-war"/></svg>연병장</h2>
+      <p class="game-hint">화면을 누른 채 끌면 움직이고(PC 는 방향키 · WASD), 부적은 저절로 날아가요. 몰려오는 잡귀를 잡아 강해지고 <b>4분</b>을 버티면 승리!</p>
+      <div class="game-box" id="gameBox">
+        <canvas id="gameCv" aria-label="연병장 게임 화면"></canvas>
+        <div class="game-hud" id="gameHud" hidden>
+          <div class="xp"><i id="gXp"></i></div>
+          <span id="gTime">4:00</span><div class="hpbar"><i id="gHp"></i></div><span id="gLv">Lv 1</span><span id="gKill">0</span>
+          <button class="tiny pause" type="button" id="gPause">멈춤</button>
+        </div>
+        <div class="game-over" id="gameOver"><div id="gameOverIn"></div></div>
+      </div>
+    </section>
+
     <section id="membersView" hidden>
       <h2 class="section-label"><svg aria-hidden="true"><use href="#i-must"/></svg>가입 신청 <span class="count" id="pendCount"></span></h2>
       <div class="list" id="pendList"></div>
@@ -1004,7 +1052,7 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610250918";
+  const BUILD = "202610260302";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -1216,10 +1264,10 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
     items.forEach((b) => { if (b === hit) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   }
   function goHome() { view = "notice"; filter = "전체"; query = ""; $("search").value = ""; render(); window.scrollTo(0, 0); }
-  const VIEW_EL = { roster: "rosterView", tactics: "tacticsView", board: "boardView", bad: "badView", members: "membersView", auth: "authView" };
+  const VIEW_EL = { roster: "rosterView", tactics: "tacticsView", board: "boardView", bad: "badView", game: "gameView", members: "membersView", auth: "authView" };
   /* 보던 칸을 주소 끝(#schedule 등)에 적어 둔다 — F5 를 눌러도 공지사항으로 안 돌아가게 (2026-10-23
      "문파일정은 문파 일정 이런식으로"). 로그인 화면일 때는 안 바꿔서, 로그인하면 보던 칸으로 간다. */
-  const HASH = { "전체": "", "필독": "must", "문파전": "war", "행사": "schedule", "규정": "rules", "일반": "general", roster: "roster", tactics: "tactics", board: "board", bad: "bad", members: "members" };
+  const HASH = { "전체": "", "필독": "must", "문파전": "war", "행사": "schedule", "규정": "rules", "일반": "general", roster: "roster", tactics: "tactics", board: "board", bad: "bad", game: "game", members: "members" };
   function hashNow() { return view === "notice" ? HASH[filter] || "" : HASH[view] || null; }
   function writeHash() {
     const h = hashNow();
@@ -3234,6 +3282,277 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
     document.addEventListener("pointermove", move); document.addEventListener("pointerup", up); document.addEventListener("pointercancel", up);
   }
 
+  /* ── 연병장 ── 수요일 점검 시간에 문파원끼리 한 판 (2026-10-26). 「유니티 3D 서바이벌」 영상을 보고 웹으로 —
+     끌어서 움직이면 부적은 저절로, 잡귀를 잡아 강해지고 4분 버티기. 창구는 안 쓴다.
+     최고 점수는 이 기기에만(bmc-game-best, 닉네임별). 그림은 모두 직접 그린 도형 — 게임 공식 그림 · 캐릭터는 안 쓴다 */
+  const game = (() => {
+    const cv = $("gameCv"), g = cv.getContext("2d");
+    const ROUND = 240, WD = "일월화수목금토";
+    const FOES = {
+      imp: { r: 11, hp: 12, spd: 58, dps: 10, c: "#c4282c", xp: 1 },
+      fast: { r: 9, hp: 8, spd: 108, dps: 8, c: "#8e3bd1", xp: 1 },
+      rock: { r: 18, hp: 55, spd: 40, dps: 18, c: "#2f5bd0", xp: 3 },
+      boss: { r: 34, hp: 900, spd: 52, dps: 35, c: "#e0662a", xp: 20 },
+    };
+    const UPS = [
+      { n: "부적 위력", d: "부적 피해 +30%", f: () => { s.dmg *= 1.3; } },
+      { n: "부적 빠르게", d: "던지는 간격 −18%", f: () => { s.rate *= 0.82; }, ok: () => s.rate > 0.2 },
+      { n: "부적 한 장 더", d: "한 번에 한 장 더 던져요", f: () => { s.multi++; }, ok: () => s.multi < 6 },
+      { n: "꿰뚫기", d: "부적이 잡귀를 하나 더 뚫고 가요", f: () => { s.pierce++; }, ok: () => s.pierce < 4 },
+      { n: "수호 구슬", d: "몸 둘레를 도는 구슬 +1", f: () => { s.orbs++; }, ok: () => s.orbs < 6 },
+      { n: "기운 영역", d: "가까이 온 잡귀가 계속 다쳐요", f: () => { s.aura++; }, ok: () => s.aura < 5 },
+      { n: "날랜 발", d: "이동 속도 +12%", f: () => { s.spd *= 1.12; }, ok: () => s.spd < 260 },
+      { n: "튼튼한 몸", d: "최대 체력 +25, 그만큼 회복", f: () => { s.max += 25; s.hp += 25; } },
+      { n: "구슬 끌기", d: "경험 구슬을 더 멀리서 끌어와요", f: () => { s.magnet *= 1.5; }, ok: () => s.magnet < 300 },
+      { n: "숨 고르기", d: "1초마다 체력 1 회복", f: () => { s.regen++; }, ok: () => s.regen < 4 },
+    ];
+    let W = 0, H = 0, DPR = 1, s = null, raf = 0, last = 0, running = false, shown = "", stick = null;
+    const keys = {};
+    const MOVE = { ArrowUp: [0, -1], KeyW: [0, -1], ArrowDown: [0, 1], KeyS: [0, 1], ArrowLeft: [-1, 0], KeyA: [-1, 0], ArrowRight: [1, 0], KeyD: [1, 0] };
+
+    function nick() { return me ? me.gameId : canWrite ? "관리자" : "손님"; }
+    function bests() { try { return JSON.parse(localStorage.getItem("bmc-game-best") || "{}") || {}; } catch (e) { return {}; } }
+    function mmss(t) { t = Math.max(0, Math.ceil(t)); return Math.floor(t / 60) + ":" + pad(t % 60); }
+    function day(iso) { const d = new Date(iso); return fmt(iso) + " (" + WD[d.getDay()] + ") " + pad(d.getHours()) + ":" + pad(d.getMinutes()); }
+
+    function size() {
+      const r = cv.getBoundingClientRect();
+      if (!r.width) return;
+      DPR = Math.min(2, window.devicePixelRatio || 1); W = r.width; H = r.height;
+      cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+      draw();
+    }
+    if (window.ResizeObserver) new ResizeObserver(size).observe(cv); else window.addEventListener("resize", size);
+
+    /* ── 화면 위 안내판 (처음 · 강화 고르기 · 멈춤 · 결과) ── */
+    function panel(nodes) {
+      $("gameOverIn").replaceChildren(...nodes);
+      $("gameOver").hidden = false;
+      const b = $("gameOverIn").querySelector("button"); if (b) b.focus({ preventScroll: true });
+    }
+    function gBtn(text, fn, cls) { const b = el("button", "btn" + (cls ? " " + cls : ""), text); b.type = "button"; b.onclick = fn; return b; }
+    function bestLine() { const b = bests()[nick()]; return el("p", "best", b ? "내 최고 " + b.score.toLocaleString() + "점 · " + day(b.at) : "아직 기록이 없어요"); }
+    function intro() {
+      $("gameHud").hidden = true;
+      panel([el("h3", null, "연병장"), el("p", null, nick() + " 님, 4분 버텨 보세요."), bestLine(), gBtn("시작", begin)]);
+    }
+    function showPause() {
+      const row = el("div", "actions"); row.style.justifyContent = "center";
+      row.append(gBtn("계속", resume), gBtn("그만하기", () => end(false), "ghost"));
+      panel([el("h3", null, "멈춤"), el("p", null, mmss(ROUND - s.t) + " 남음 · 잡은 수 " + s.kills), row]);
+    }
+    function showPicks() {
+      const pool = UPS.filter((u) => !u.ok || u.ok()), picks = [];
+      while (picks.length < 3 && pool.length) picks.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
+      const box = el("div", "game-picks");
+      picks.forEach((u) => { const b = el("button"); b.type = "button"; b.append(el("b", null, u.n), el("span", null, u.d)); b.onclick = () => { u.f(); resume(); }; box.appendChild(b); });
+      panel([el("h3", null, "Lv " + s.lv + " — 하나 고르세요"), box]);
+    }
+    function showResult(win, score, isBest, when) {
+      const card = el("div", "game-card");
+      const sc = el("div", "sc gold-text", score.toLocaleString()); sc.appendChild(el("small", null, "점"));
+      card.append(el("div", "k", "병무청 연병장"), el("div", "who", nick()), sc, el("div", "day", day(when)),
+        el("div", "det", (win ? "4분 버티기 성공!" : mmss(s.t) + " 버팀") + " · 잡은 잡귀 " + s.kills + " · Lv " + s.lv));
+      if (isBest) card.appendChild(el("span", "new", "내 최고 기록!"));
+      $("gameHud").hidden = true;
+      panel([card, bestLine(), el("p", "best", "이 화면을 캡처해서 카톡에 올려 주세요"), gBtn("다시 하기", begin)]);
+    }
+
+    /* ── 한 판 ── */
+    function begin() {
+      $("gameBox").scrollIntoView({ block: "center", behavior: "smooth" });
+      s = { t: 0, hp: 100, max: 100, x: 0, y: 0, spd: 150, lv: 1, xp: 0, need: 6, kills: 0, foes: [], shots: [], gems: [], fx: [],
+        spawn: 0, fire: 0, rate: 0.7, dmg: 10, multi: 1, pierce: 0, orbs: 0, orbA: 0, aura: 0, magnet: 60, regen: 0, hurt: 0, boss: false, bossKill: false, over: false };
+      resume();
+    }
+    function resume() {
+      $("gameOver").hidden = true; $("gameHud").hidden = false;
+      running = true; last = performance.now();
+      if (!raf) raf = requestAnimationFrame(loop);
+    }
+    function pause() { if (!running) return; running = false; stick = null; showPause(); }
+    function end(win) {
+      running = false; s.over = true; stick = null;
+      const score = Math.round(s.kills * 10 + Math.floor(Math.min(s.t, ROUND)) * 2 + (win ? 500 : 0) + (s.bossKill ? 300 : 0));
+      const when = new Date().toISOString(), all = bests(), prev = all[nick()], isBest = !prev || score > prev.score;
+      if (isBest) { all[nick()] = { score: score, at: when }; try { localStorage.setItem("bmc-game-best", JSON.stringify(all)); } catch (e) {} }
+      draw(); showResult(win, score, isBest, when);
+    }
+    function loop(ts) {
+      raf = 0;
+      if (!running) return;
+      const dt = Math.min(0.05, Math.max(0, (ts - last) / 1000)); last = ts;
+      step(dt); draw(); hud();
+      if (running) raf = requestAnimationFrame(loop);
+    }
+    function dir() {
+      if (stick) {
+        const vx = stick.x - stick.ox, vy = stick.y - stick.oy, L = Math.hypot(vx, vy);
+        if (L < 6) return [0, 0];
+        const m = Math.min(1, L / 50); return [vx / L * m, vy / L * m];
+      }
+      let dx = 0, dy = 0;
+      Object.keys(keys).forEach((k) => { if (keys[k] && MOVE[k]) { dx += MOVE[k][0]; dy += MOVE[k][1]; } });
+      const L = Math.hypot(dx, dy); return L ? [dx / L, dy / L] : [0, 0];
+    }
+    function spawn(kind) {
+      if (!kind) { const q = Math.random(); kind = s.t > 90 && q < 0.12 ? "rock" : s.t > 40 && q < 0.38 ? "fast" : "imp"; }
+      const F = FOES[kind], a = Math.random() * Math.PI * 2, d = Math.max(260, Math.hypot(W, H) / 2 + 40);
+      s.foes.push({ k: kind, x: s.x + Math.cos(a) * d, y: s.y + Math.sin(a) * d, r: F.r, hp: F.hp * (kind === "boss" ? 1 : 1 + s.t / 80),
+        spd: F.spd * (1 + s.t / 600), dps: F.dps, c: F.c, xp: F.xp, hit: 0, oc: 0 });
+    }
+    function hurt(f, n, flash) { f.hp -= n; if (flash) f.hit = 0.08; }
+    function shoot() {
+      const near = s.foes.map((f) => [(f.x - s.x) ** 2 + (f.y - s.y) ** 2, f]).sort((a, b) => a[0] - b[0]);
+      for (let i = 0; i < s.multi; i++) {
+        const f = near[i % near.length][1], a = Math.atan2(f.y - s.y, f.x - s.x) + (i >= near.length ? (i - near.length + 1) * 0.15 : 0);
+        s.shots.push({ x: s.x, y: s.y, vx: Math.cos(a) * 430, vy: Math.sin(a) * 430, a: a, life: 1.1, p: s.pierce, hit: [] });
+      }
+    }
+    function step(dt) {
+      s.t += dt;
+      if (s.t >= ROUND) return end(true);
+      const [mx, my] = dir();
+      s.x += mx * s.spd * dt; s.y += my * s.spd * dt;
+      if (s.regen) s.hp = Math.min(s.max, s.hp + s.regen * dt);
+      s.hurt = Math.max(0, s.hurt - dt);
+      s.spawn += dt * (0.8 + s.t / 20);
+      while (s.spawn >= 1) { s.spawn--; if (s.foes.length < 260) spawn(); }
+      if (!s.boss && s.t >= 180) { s.boss = true; spawn("boss"); }
+      s.fire -= dt;
+      if (s.fire <= 0 && s.foes.length) { s.fire = s.rate; shoot(); }
+      s.shots.forEach((b) => {
+        b.x += b.vx * dt; b.y += b.vy * dt; b.life -= dt;
+        for (const f of s.foes) {
+          if (b.life <= 0) break;
+          if (f.hp <= 0 || b.hit.includes(f) || (f.x - b.x) ** 2 + (f.y - b.y) ** 2 > (f.r + 5) ** 2) continue;
+          hurt(f, s.dmg, true); b.hit.push(f);
+          if (b.p-- <= 0) b.life = 0;
+        }
+      });
+      s.shots = s.shots.filter((b) => b.life > 0);
+      s.orbA += dt * 3;
+      const auraR = 55 + s.aura * 12;
+      s.foes.forEach((f) => {
+        const dx = s.x - f.x, dy = s.y - f.y, L = Math.hypot(dx, dy) || 1;
+        f.x += dx / L * f.spd * dt; f.y += dy / L * f.spd * dt;
+        f.hit = Math.max(0, f.hit - dt); f.oc -= dt;
+        if (L < f.r + 15) { s.hp -= f.dps * dt; s.hurt = 0.15; }
+        if (s.aura && L < auraR + f.r) hurt(f, (6 + s.aura * 6) * dt);
+        for (let i = 0; i < s.orbs && f.oc <= 0; i++) {
+          const a = s.orbA + i * Math.PI * 2 / s.orbs, ox = s.x + Math.cos(a) * 70, oy = s.y + Math.sin(a) * 70;
+          if ((f.x - ox) ** 2 + (f.y - oy) ** 2 < (f.r + 9) ** 2) { hurt(f, 14 + s.dmg * 0.6, true); f.oc = 0.35; }
+        }
+      });
+      s.foes = s.foes.filter((f) => {
+        if (f.hp > 0) return true;
+        s.kills++; if (f.k === "boss") s.bossKill = true;
+        s.gems.push({ x: f.x, y: f.y, v: f.xp });
+        s.fx.push({ x: f.x, y: f.y, r: f.r, c: f.c, life: 0.3 });
+        return false;
+      });
+      if (s.gems.length > 400) s.gems.splice(0, s.gems.length - 400);
+      s.gems = s.gems.filter((m) => {
+        const dx = s.x - m.x, dy = s.y - m.y, L = Math.hypot(dx, dy) || 1;
+        if (L < 18) { s.xp += m.v; return false; }
+        if (L < s.magnet) { m.x += dx / L * 360 * dt; m.y += dy / L * 360 * dt; }
+        return true;
+      });
+      s.fx.forEach((x) => { x.life -= dt; }); s.fx = s.fx.filter((x) => x.life > 0);
+      if (s.hp <= 0) { s.hp = 0; return end(false); }
+      if (s.xp >= s.need) { s.xp -= s.need; s.lv++; s.need = Math.round(s.need * 1.22 + 2); running = false; stick = null; hud(); showPicks(); }
+    }
+
+    /* ── 그리기 — 모두 도형 ── */
+    function draw() {
+      if (!W) return;
+      g.setTransform(DPR, 0, 0, DPR, 0, 0);
+      g.fillStyle = "#0d0b09"; g.fillRect(0, 0, W, H);
+      const px = s ? s.x : 0, py = s ? s.y : 0, ox = W / 2 - px, oy = H / 2 - py;
+      g.strokeStyle = "rgba(214,176,98,.08)"; g.lineWidth = 1; g.beginPath();
+      for (let x = ((ox % 48) + 48) % 48; x < W; x += 48) { g.moveTo(x, 0); g.lineTo(x, H); }
+      for (let y = ((oy % 48) + 48) % 48; y < H; y += 48) { g.moveTo(0, y); g.lineTo(W, y); }
+      g.stroke();
+      if (s) {
+        if (s.aura) { g.beginPath(); g.arc(W / 2, H / 2, 55 + s.aura * 12, 0, Math.PI * 2); g.fillStyle = "rgba(214,176,98,.07)"; g.fill(); g.strokeStyle = "rgba(214,176,98,.35)"; g.stroke(); }
+        g.fillStyle = "#f6e2a4";
+        g.beginPath();
+        s.gems.forEach((m) => { const x = m.x + ox, y = m.y + oy, r = m.v > 1 ? 5 : 3.5; if (x < -6 || y < -6 || x > W + 6 || y > H + 6) return; g.moveTo(x, y - r); g.lineTo(x + r, y); g.lineTo(x, y + r); g.lineTo(x - r, y); g.closePath(); });
+        g.fill();
+        s.fx.forEach((x) => { g.beginPath(); g.arc(x.x + ox, x.y + oy, x.r * (1 + (0.3 - x.life) * 4), 0, Math.PI * 2); g.strokeStyle = x.c; g.globalAlpha = x.life / 0.3; g.stroke(); g.globalAlpha = 1; });
+        s.foes.forEach((f) => {
+          const x = f.x + ox, y = f.y + oy;
+          if (x < -50 || y < -50 || x > W + 50 || y > H + 50) return;
+          g.fillStyle = f.hit ? "#fff" : f.c;
+          g.beginPath(); g.moveTo(x - f.r * 0.7, y - f.r * 0.5); g.lineTo(x - f.r * 0.45, y - f.r * 1.35); g.lineTo(x - f.r * 0.1, y - f.r * 0.8);
+          g.moveTo(x + f.r * 0.7, y - f.r * 0.5); g.lineTo(x + f.r * 0.45, y - f.r * 1.35); g.lineTo(x + f.r * 0.1, y - f.r * 0.8); g.fill();
+          g.beginPath(); g.arc(x, y, f.r, 0, Math.PI * 2); g.fill();
+          g.fillStyle = "#fff"; const e = Math.max(1.6, f.r * 0.18);
+          g.beginPath(); g.arc(x - f.r * 0.35, y - f.r * 0.1, e, 0, Math.PI * 2); g.arc(x + f.r * 0.35, y - f.r * 0.1, e, 0, Math.PI * 2); g.fill();
+          if (f.k === "boss") { g.fillStyle = "rgba(0,0,0,.6)"; g.fillRect(x - 30, y + f.r + 6, 60, 5); g.fillStyle = "#ff6a4a"; g.fillRect(x - 30, y + f.r + 6, 60 * Math.max(0, f.hp) / FOES.boss.hp, 5); }
+        });
+        s.shots.forEach((b) => {
+          g.save(); g.translate(b.x + ox, b.y + oy); g.rotate(b.a + Math.PI / 2);
+          g.fillStyle = "#f3d36b"; g.fillRect(-4, -7, 8, 14); g.fillStyle = "#c4282c"; g.fillRect(-1, -5, 2, 10); g.restore();
+        });
+        for (let i = 0; i < s.orbs; i++) {
+          const a = s.orbA + i * Math.PI * 2 / s.orbs;
+          const x = W / 2 + Math.cos(a) * 70, y = H / 2 + Math.sin(a) * 70;
+          g.fillStyle = "rgba(111,155,255,.25)"; g.beginPath(); g.arc(x, y, 13, 0, Math.PI * 2); g.fill();
+          g.fillStyle = "#6f9bff"; g.beginPath(); g.arc(x, y, 8, 0, Math.PI * 2); g.fill();
+        }
+      }
+      g.beginPath(); g.arc(W / 2, H / 2, 15, 0, Math.PI * 2);
+      g.fillStyle = s && s.hurt ? "#ff8a80" : "#d6b062"; g.fill();
+      g.lineWidth = 2; g.strokeStyle = "#000"; g.stroke(); g.lineWidth = 1;
+      g.fillStyle = "#1a1208"; g.font = '800 17px "Nanum Myeongjo", serif'; g.textAlign = "center"; g.textBaseline = "middle";
+      g.fillText("兵", W / 2, H / 2 + 1);
+      if (stick) {
+        g.strokeStyle = "rgba(246,226,164,.45)"; g.beginPath(); g.arc(stick.ox, stick.oy, 50, 0, Math.PI * 2); g.stroke();
+        const [dx, dy] = dir(); g.fillStyle = "rgba(246,226,164,.35)"; g.beginPath(); g.arc(stick.ox + dx * 50, stick.oy + dy * 50, 18, 0, Math.PI * 2); g.fill();
+      }
+    }
+    function hud() {
+      $("gTime").textContent = mmss(ROUND - s.t);
+      $("gHp").style.width = (100 * s.hp / s.max) + "%";
+      $("gLv").textContent = "Lv " + s.lv;
+      $("gKill").textContent = "잡은 수 " + s.kills;
+      $("gXp").style.width = Math.min(100, 100 * s.xp / s.need) + "%";
+    }
+
+    /* ── 손 · 자판 ── 누른 자리가 손잡이 가운데가 된다 */
+    function spot(e) { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
+    cv.addEventListener("pointerdown", (e) => {
+      if (!running) return;
+      e.preventDefault();
+      try { cv.setPointerCapture(e.pointerId); } catch (err) {}
+      const [x, y] = spot(e); stick = { id: e.pointerId, ox: x, oy: y, x: x, y: y };
+    });
+    cv.addEventListener("pointermove", (e) => { if (stick && e.pointerId === stick.id) { const [x, y] = spot(e); stick.x = x; stick.y = y; } });
+    const lift = (e) => { if (stick && e.pointerId === stick.id) stick = null; };
+    cv.addEventListener("pointerup", lift); cv.addEventListener("pointercancel", lift);
+    cv.addEventListener("contextmenu", (e) => e.preventDefault());
+    window.addEventListener("keydown", (e) => {
+      if (view !== "game" || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+      if (MOVE[e.code]) { keys[e.code] = true; if (running) e.preventDefault(); }
+      if (running && e.code === "Space") e.preventDefault();
+      if (e.code === "Escape" || e.code === "KeyP") pause();
+    });
+    window.addEventListener("keyup", (e) => { delete keys[e.code]; });
+    window.addEventListener("blur", () => { Object.keys(keys).forEach((k) => delete keys[k]); pause(); });
+    document.addEventListener("visibilitychange", () => { if (document.hidden) pause(); });
+    $("gPause").onclick = pause;
+
+    return {
+      /* 다른 메뉴로 가면 멈춘다. 처음 들어오면 시작 안내 */
+      render() {
+        if (view !== "game") { pause(); return; }
+        if (shown !== nick()) { shown = nick(); s = null; running = false; stick = null; intro(); }
+        size();
+      },
+    };
+  })();
+
   /* ── 그리기 ── */
   /* 이 기계에 둔 사본(bmc-data)도 바로 고친다 — 안 그러면 저장 직후 F5 에 잠깐 예전 것이 보였다 (2026-10-23) */
   function saveCache() { if (!loaded || !(me || canWrite)) return; try { localStorage.setItem("bmc-data", JSON.stringify(DATA)); } catch (e) {} }
@@ -3250,6 +3569,7 @@ body.locked #boardView, body.locked #badView, body.locked #membersView, body.loc
     renderRoster();
     renderBoard();
     renderBad();
+    game.render();
     writeHash();
   }
 
