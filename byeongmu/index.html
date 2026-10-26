@@ -1048,7 +1048,7 @@ body.game-full { overflow: hidden; }
     <!-- 연병장 — 점검 시간 미니게임. 점수는 이 기기에만 저장(창구 안 씀) (2026-10-26) -->
     <section id="gameView" hidden>
       <h2 class="section-label"><svg aria-hidden="true"><use href="#i-war"/></svg>연병장</h2>
-      <p class="game-hint">화면을 누른 채 끌면 움직이고(PC 는 방향키 · WASD), 총은 <b>바라보는 쪽</b>으로 쏘고, 그쪽 둘레 3m(밝은 동그라미) 안 몬스터는 어느 쪽이든 자동 조준돼요. 30초마다 단계가 올라 잡귀가 늘고, 2 · 4 · 6 …단계 끝에 대장이 나와요 — <b>대장을 잡아야 다음 단계</b>로 가요. 레벨이 오르면 강화나 <b>스킬</b>을 고르고, 스킬(6가지)은 배우면 <b>저절로</b> 나가요(오른쪽 아래 단추 · PC 1 ~ 6 으로도), <b>대쉬</b>는 오른쪽 아래 단추(PC 는 스페이스) — 5초마다, 대쉬하는 동안은 안 맞아요. <b>죽을 때까지</b> 버틴 만큼 점수 — 끝나면 순위표에 올라가요!</p>
+      <p class="game-hint">화면을 누른 채 끌면 움직이고(PC 는 방향키 · WASD), 총은 <b>바라보는 쪽</b>으로 쏘고, 그쪽 둘레 3m(밝은 동그라미) 안 몬스터는 어느 쪽이든 자동 조준돼요. 30초마다 단계가 올라 잡귀가 늘고, 2 · 4 · 6 …단계 끝에 대장이 나와요 — <b>대장을 잡아야 다음 단계</b>로 가요(90초 안에 못 잡으면 대장이 물러가고 다음 단계 — 단계는 끝없이). 레벨이 오르면 강화나 <b>스킬</b>을 고르고, 스킬(6가지)은 배우면 <b>저절로</b> 나가요(오른쪽 아래 단추 · PC 1 ~ 6 으로도), <b>대쉬</b>는 오른쪽 아래 단추(PC 는 스페이스) — 5초마다, 대쉬하는 동안은 안 맞아요. <b>죽을 때까지</b> 버틴 만큼 점수 — 끝나면 순위표에 올라가요!</p>
       <div class="game-box" id="gameBox">
         <canvas id="gameCv" aria-label="연병장 게임 화면"></canvas>
         <div class="game-hud" id="gameHud" hidden>
@@ -1181,7 +1181,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610261259";
+  const BUILD = "202610261311";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -3441,6 +3441,9 @@ body.game-full { overflow: hidden; }
   const game = (() => {
     const cv = $("gameCv"), g = cv.getContext("2d");
     const STAGE = 30, WD = "일월화수목금토";
+    /* 단계는 끝없이 — "229,999점에서 사람들이 멈췄다, 단계는 무제한으로 계속 할 수 있게" (2026-10-26). 22단계 대장(늑대 왕 4)을
+       못 잡아 단계가 멈추고, 잡은 수만 늘어 점수가 229,999 에 걸렸다. 대장이 90초 안에 안 잡히면 물러가고(대장 수엔 안 셈) 다음 단계로 */
+    const BOSS_WAIT = 90;
     const FOES = {
       imp: { r: 11, hp: 9, spd: 58, dps: 10, c: "#c4282c", xp: 1 },
       fast: { r: 9, hp: 8, spd: 108, dps: 8, c: "#8e3bd1", xp: 1 },
@@ -3564,7 +3567,7 @@ body.game-full { overflow: hidden; }
       $("gameHud").hidden = true;
       panel([el("h3", null, "연병장"), el("p", null, nick() + " 님, 죽을 때까지 버텨 보세요."),
         el("p", "best", "상자를 열면 자석 · 폭탄 · 회복, 가끔 함정(독 · 메테오 · 몬스터). 움직이기 — 휴대폰은 화면을 누른 채 끌기 · PC 는 방향키(또는 WASD). 둘레 3m 동그라미 안은 자동 조준, 없으면 바라보는 쪽. 대쉬는 스페이스(휴대폰은 오른쪽 아래 단추) 5초마다. 스킬은 배우면 저절로 나가요(1 ~ 6 으로도)"),
-        el("p", "best", "30초마다 단계가 올라 잡귀가 세지고 많아져요. 2 · 4 · 6 …단계 끝에 대장이 나오고, 대장을 잡아야 다음 단계로 가요. 끝나면 순위표에 올라가요."), pickRow(), (() => { const r = el("div", "chips gspeed-pick"); [1, 2, 3].forEach((v) => { const b = el("button", "chip", v + "배속"); b.type = "button"; b.dataset.v = v; b.setAttribute("aria-pressed", String(v === speed)); b.onclick = () => setSpeed(v); r.appendChild(b); }); return r; })(), ...(canTest() ? [testRow()] : []), bestLine(), (() => { const r = el("div", "game-start"); r.append(gBtn("시작", begin), gBtn(isFull() ? "전체화면 끄기" : "⛶ 전체화면", toggleFull, "ghost gfull")); return r; })()]);
+        el("p", "best", "30초마다 단계가 올라 잡귀가 세지고 많아져요. 2 · 4 · 6 …단계 끝에 대장이 나오고, 대장을 잡아야 다음 단계로 가요(90초 지나면 물러가요). 끝나면 순위표에 올라가요."), pickRow(), (() => { const r = el("div", "chips gspeed-pick"); [1, 2, 3].forEach((v) => { const b = el("button", "chip", v + "배속"); b.type = "button"; b.dataset.v = v; b.setAttribute("aria-pressed", String(v === speed)); b.onclick = () => setSpeed(v); r.appendChild(b); }); return r; })(), ...(canTest() ? [testRow()] : []), bestLine(), (() => { const r = el("div", "game-start"); r.append(gBtn("시작", begin), gBtn(isFull() ? "전체화면 끄기" : "⛶ 전체화면", toggleFull, "ghost gfull")); return r; })()]);
       drawPick();
     }
     function mine() { return UPS.filter((u) => s.up[u.k]).map((u) => u.n + " " + s.up[u.k]).join(" · ") || "아직 강화 없음"; }
@@ -3629,12 +3632,12 @@ body.game-full { overflow: hidden; }
       if (!raf) raf = requestAnimationFrame(loop);
     }
     function pause() { if (!running) return; running = false; stick = null; showPause(); }
-    /* 끝 — 점수는 창구가 같은 셈으로 다시 센다(단계 × 10000 + 잡은 수 + 대장 × 100) */
+    /* 끝 — 점수는 창구가 같은 셈으로 다시 센다(단계 × 100000 + 잡은 수 + 대장 × 100) */
     function end() {
       running = false; s.over = true; stick = null;
       const sec = Math.floor(s.t), run = s;
       if (window.__bmcNewBuildIdle) setTimeout(window.__bmcNewBuildIdle, 20000); // 결과를 캡처할 틈을 두고 새 판으로
-      draw(); showResult(s.stage * 10000 + Math.min(9999, s.kills + s.bossKills * 100), new Date().toISOString()); // 단계가 먼저 (창구 gameScore 와 같은 셈, 2026-10-26)
+      draw(); showResult(s.stage * 100000 + Math.min(99999, s.kills + s.bossKills * 100), new Date().toISOString()); // 단계가 먼저 (창구 gameScore 와 같은 셈, 2026-10-26 — 잡은 수가 9999 에 걸려 × 10만으로)
       ping(true); // 지금 하는 사람 목록에서 뺀다
       if (!me || !token || s.test) return; // 테스트 모드는 순위표에 안 올림
       call("saveGameScore", token, { sec: sec, stage: s.stage, kills: s.kills, bosses: s.bossKills, lv: s.lv }).then((r) => {
@@ -3989,9 +3992,13 @@ body.game-full { overflow: hidden; }
       if (!bossOn) {
         s.stageT += dt;
         if (s.stageT >= STAGE) { if (s.stage % 2 === 0) { s.stageT = STAGE; spawnBoss(s.bossN++); } else nextStage(""); }
+      } else if (s.bossNow.age >= BOSS_WAIT) {
+        const B = s.bossNow; s.foes = s.foes.filter((f) => f !== B); s.bossNow = null; s.arena = null;
+        s.fx.push({ boom: true, spr: "smoke", x: B.x, y: B.y, r: B.r, c: B.c, size: B.r * 3.4, life: 0.6, dur: 0.6 });
+        nextStage(B.name + " 물러남! ");
       }
       /* 1단계 초당 1마리 → 8단계 10마리 → 많아야 14마리 (그 뒤로는 잡귀가 단단해지기만) */
-      s.spawn += dt * Math.min(20, s.stage * 1.6 + 0.4) * /* 2026-10-26 더 많이 */ (bossOn && s.bossNow.age < 45 ? 0.35 : 1);
+      s.spawn += dt * Math.min(20, s.stage * 1.6 + 0.4) * /* 2026-10-26 더 많이 */ (bossOn && s.bossNow && s.bossNow.age < 45 ? 0.35 : 1);
       while (s.spawn >= 1) { s.spawn--; if (s.foes.length < 360) spawn(); }
       s.fire -= dt;
       if (s.fire <= 0 && s.foes.length) { s.fire = s.rate; shoot(); }
@@ -4548,7 +4555,7 @@ body.game-full { overflow: hidden; }
       $("gXp").style.width = Math.min(100, 100 * s.xp / s.need) + "%";
       const B = s.bossNow;
       $("gBoss").hidden = !B;
-      if (B) { $("gBossName").textContent = B.name; $("gBossHp").style.width = Math.max(0, 100 * B.hp / B.full) + "%"; }
+      if (B) { $("gBossName").textContent = B.name + " · " + Math.max(0, Math.ceil(BOSS_WAIT - (B.age || 0))) + "초"; $("gBossHp").style.width = Math.max(0, 100 * B.hp / B.full) + "%"; }
       $("gDash").style.setProperty("--cd", s.dashCd > 0 ? s.dashCd / DASH_CD : 0);
       $("gDash").classList.toggle("ready", (s.dashN == null ? 1 : s.dashN) > 0);
       $("gDashN").textContent = (s.up.dashx ? (s.dashN == null ? 1 : s.dashN) + "/" + (1 + s.up.dashx) : "Space");
