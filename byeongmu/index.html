@@ -1136,7 +1136,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610260626";
+  const BUILD = "202610260630";
   (async () => {
     try {
       const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
@@ -4174,8 +4174,11 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
     cv.addEventListener("contextmenu", (e) => e.preventDefault());
     window.addEventListener("keydown", (e) => {
       if (view !== "game" || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
-      if (MOVE[e.code]) { keys[e.code] = true; if (running) e.preventDefault(); }
-      if (running && e.code === "Space") { e.preventDefault(); if (!e.repeat) dash(); }
+      /* 한 판을 시작한 뒤에는(강화 고르기 · 멈춤 · 결과 화면 중에도) 방향키 · WASD · 스페이스로 홈페이지가 스크롤되지 않게 —
+         "시작 눌리면 키보드만 작동되게, 화면 움직여서 불편하단다" (2026-10-26). 안내판 단추에 맞춘 스페이스(누르기)는 그대로 */
+      const playing = !!s;
+      if (MOVE[e.code]) { keys[e.code] = true; if (playing) e.preventDefault(); }
+      if (e.code === "Space" && (running || (playing && e.target.tagName !== "BUTTON"))) { e.preventDefault(); if (running && !e.repeat) dash(); }
       if (running && SKEY[e.code] != null) { e.preventDefault(); cast(s.skills[SKEY[e.code]]); }
       if (e.code === "Escape" || e.code === "KeyP") pause();
     });
