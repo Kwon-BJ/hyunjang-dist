@@ -73,6 +73,7 @@ const APP = (() => {
     if (m.t === "leave") { delete A.others[m.id]; return; }
     if (m.t === "mv") { const o = A.others[m.id]; if (o) { o.tx = m.x; o.tz = m.z; o.face = m.face; o.st = m.st; o.th = m.h || 0; } return; }
     if (m.t === "online") return onlinePanel(m.list);
+    if (m.t === "rank") return rankPanel(m.list);
     if (m.t === "chat") { chatLine(m.nick, m.text); A.bubbles[m.id] = { text: m.text, t: 4 }; return; }
     if (m.t === "pinv") return ask(m.nick + " 님이 파티를 신청했어요.", () => send({ t: "pacc", from: m.from }));
     if (m.t === "duelReq") return ask("⚔ " + m.nick + " 님이 결투를 신청했어요.", () => send({ t: "duelAcc", from: m.from }));
@@ -645,6 +646,18 @@ const APP = (() => {
     right.append(el("p", null, "Lv " + p.lv + " · " + p.job + (p.op ? " · ⚜운영자" : "")), el("p", "sub", "공격 " + (p.atk || 0) + " · 방어 " + (p.def || 0) + " · 체력 " + (p.hpMax || 0)), el("p", "sub", "던전 클리어 " + p.clears + "번 · 결투 " + ((p.pvp && p.pvp.w) || 0) + "승 " + ((p.pvp && p.pvp.l) || 0) + "패"), el("b", null, "끼고 있는 장비"), eq); w.append(left, right);
     panel([el("h2", null, p.nick), w, row(btn("닫기", closePanel, "ghost"))], true);
   }
+  /* 순위표 — 모든 사람(레벨순) · 접속 중이면 이름 밝게, 아니면 어둡게 · 직업별 탭 (2026-10-28 부장님) */
+  let rankTab = "all";
+  function rankPanel(list) {
+    const J = { kh: "강혁 · 무사", hr: "혜린 · 도사", ds: "대성 · 수호자", je: "지은 · 사수", mj: "무진 · 자객" }, tabs = el("div", "row rtabs");
+    [["all", "전체"], ["kh", "강혁"], ["hr", "혜린"], ["ds", "대성"], ["je", "지은"], ["mj", "무진"]].forEach(([k, n]) => { const b = btn(n + " " + (k === "all" ? list.length : list.filter((o) => o.hero === k).length), () => { rankTab = k; rankPanel(list); }, "tiny" + (rankTab === k ? "" : " ghost")); tabs.appendChild(b); });
+    const box = el("div", "bag rank"), L = list.filter((o) => rankTab === "all" || o.hero === rankTab), onN = list.filter((o) => o.on).length;
+    L.forEach((o, i) => { const r = el("div", "item rk" + (o.on ? " on" : " off")), no = el("b", "rno", String(i + 1)); if (i < 3) no.classList.add("top" + (i + 1));
+      const nm = el("span", "rnm", o.nick + (o.id === A.me.id ? " (나)" : "")), sub = el("small", null, "Lv " + o.lv + " · " + (J[o.hero] || "") + (o.on ? " · ● " + o.where : " · 접속 안 함"));
+      r.append(no, nm, sub, btn("정보", () => send({ t: "who", id: o.id }), "tiny ghost")); box.appendChild(r); });
+    if (!L.length) box.appendChild(el("small", null, "아직 이 직업 캐릭터가 없어요."));
+    panel([el("h2", null, "🏆 순위표 — 접속 " + onN + "명 / 전체 " + list.length + "명"), tabs, box, row(btn("새로 보기", () => send({ t: "rank" }), "ghost"), btn("닫기", closePanel, "ghost"))]);
+  }
   function onlinePanel(list) {
     const J = { kh: "무사", hr: "도사", ds: "수호자", je: "사수", mj: "자객" }, box = el("div", "bag");
     list.forEach((o) => { const r = el("div", "item"); r.append(el("span", null, (o.op ? "⚜ " : "") + o.nick + (o.id === A.me.id ? " (나)" : "")), el("small", null, "Lv " + o.lv + (J[o.hero] ? " · " + J[o.hero] : "") + " · " + o.where + (o.party ? " · 파티" : ""))); if (o.id !== A.me.id) r.appendChild(btn("정보", () => send({ t: "who", id: o.id }), "tiny ghost")); box.appendChild(r); });
@@ -689,7 +702,7 @@ const APP = (() => {
     pop.querySelectorAll("button").forEach((b) => { const r = FR.ui && FR.ui[map[b.dataset.m]], i = b.querySelector(".mic"); if (r && i) { const s = 40 / 64; i.style.width = Math.round(r[2] * s) + "px"; i.style.backgroundPosition = "-" + r[0] * s + "px -" + r[1] * s + "px"; i.style.backgroundSize = 2048 * s + "px auto"; }
       b.onclick = () => { pop.hidden = true; const m = b.dataset.m; if (m === "online" || m === "keys" || m === "char") { $({ online: "hudOnline", keys: "hudKeys", char: "hudOut" }[m]).click(); return; } if (b.dataset.m === "skill") skillPanel(); else if (b.dataset.m === "equip") { const E = $("equipSide"); if (E.hidden) equipPanel(); else E.hidden = true; } else { const S = $("bagSide"); if (S.hidden) bagPanel(); else S.hidden = true; } }; });
     $("menuBtn").onclick = (e) => { e.stopPropagation(); pop.hidden = !pop.hidden; };
-    addEventListener("pointerdown", (e) => { if (!pop.hidden && !e.target.closest("#topMenu")) pop.hidden = true; }); })(); $("hudOnline").onclick = () => send({ t: "online" }); $("hudBag").onclick = () => { const S = $("bagSide"); if (S.hidden) bagPanel(); else S.hidden = true; }; $("hudEquip").onclick = () => { const E = $("equipSide"); if (E.hidden) equipPanel(); else E.hidden = true; }; $("hudKeys").onclick = keyPanel; $("hudOut").onclick = () => { send({ t: "back" }); charScreen(); };
+    addEventListener("pointerdown", (e) => { if (!pop.hidden && !e.target.closest("#topMenu")) pop.hidden = true; }); })(); $("hudOnline").onclick = () => send({ t: "rank" }); $("hudBag").onclick = () => { const S = $("bagSide"); if (S.hidden) bagPanel(); else S.hidden = true; }; $("hudEquip").onclick = () => { const E = $("equipSide"); if (E.hidden) equipPanel(); else E.hidden = true; }; $("hudKeys").onclick = keyPanel; $("hudOut").onclick = () => { send({ t: "back" }); charScreen(); };
 
   /* ── 한 틀 ── */
   let last = 0;
