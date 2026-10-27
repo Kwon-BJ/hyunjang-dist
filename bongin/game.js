@@ -277,10 +277,11 @@ const Dungeon = (() => {
     S.dashCd = Math.max(0, (S.dashCd || 0) - dt);
     const dd = C.dash ? C.dash() : 0;
     if (dd && S.dashCd <= 0 && (free || H.st === "atk") && grounded) { H.st = "sprint"; H.t = 0; H.face = dd; H.inv = Math.max(H.inv, 0.22); S.dashCd = 0.45; H.queued = false; }
-    SKILL.forEach((sk, i) => {
-      if (!KEYS.take(ACTS[i]) || S.cd[i] > 0 || !(free || H.st === "atk") || !grounded) return;
-      S.cd[i] = sk.cd; H.queued = false; cast(sk);
-    });
+    /* 스킬 — 누른 것을 0.4초 기억했다가 움직일 수 있게 되면 바로(다른 동작 중에 누르면 버려져 '먹통' 같던 것). 기다림 중이면 머리 위에 알려 줌 */
+    SKILL.forEach((sk, i) => { if (KEYS.take(ACTS[i])) { if (S.cd[i] > 0) { if (!(S.cdSay > 0)) { num(H.x, H.z - H.h - 140, sk.short + " " + Math.ceil(S.cd[i]) + "초", "#c9c2b0"); S.cdSay = 0.4; } } else S.skBuf = { i, t: 0.4 }; } });
+    S.cdSay = Math.max(0, (S.cdSay || 0) - dt);
+    if (S.skBuf) { const i = S.skBuf.i, sk = SKILL[i], ready = free || H.st === "atk" || (H.st === "cast" && H.t >= 0.12) || H.st === "sprint";
+      if (ready && grounded && S.cd[i] <= 0) { S.cd[i] = sk.cd; H.queued = false; S.skBuf = null; cast(sk); } else if ((S.skBuf.t -= dt) <= 0) S.skBuf = null; }
     if (H.st === "dash") {
       H.x += H.face * 1150 * dt;
       S.foes.forEach((f) => { if (!H.hit.includes(f) && Math.abs(f.x - H.x) < 60 + f.D.w * 0.5 && Math.abs(f.z - H.z) < 45) { H.hit.push(f); hitFoe(f, H.dashDmg || 28, "launch", H.face); } });
@@ -423,10 +424,10 @@ const Dungeon = (() => {
   }
 
   /* ── 그리기 ── */
-  function frame(g, im, fr, x, y, sc, flip, ax, alpha, rot) {
+  function frame(g, im, fr, x, y, sc, flip, ax, alpha, rot, sx, sy) {
     if (!fr || !im.complete) return;
     const w = fr[2] * sc, h = fr[3] * sc;
-    g.save(); g.translate(x, y); if (rot) g.rotate(rot); if (flip) g.scale(-1, 1); if (alpha != null) g.globalAlpha *= alpha;
+    g.save(); g.translate(x, y); if (rot) g.rotate(rot); g.scale((flip ? -1 : 1) * (sx || 1), sy || 1); if (alpha != null) g.globalAlpha *= alpha;
     g.drawImage(im, fr[0], fr[1], fr[2], fr[3], -w * (ax == null ? 0.5 : ax), -h, w, h); g.restore();
   }
   function centered(g, im, fr, x, y, size, flip, alpha, rot) {
@@ -473,16 +474,28 @@ const Dungeon = (() => {
     const flip = D.native ? f.face !== D.native : f.face < 0;
     const a = f.st === "dead" ? clamp(f.t / 0.5, 0, 1) : 1;
     if (f.st === "air" && !D.boss) rot = -f.face * Math.min(1.2, f.h / 200);
-    if (A.img) { // 그림이 한 장뿐 — 몸을 기울여 준비 · 공격 · 맞음 · 쓰러짐을 보여 줌
-      if (f.st === "wind") rot = -f.face * 0.1; else if (f.st === "atk") rot = f.face * 0.16; else if (f.st === "hit") rot = -f.face * 0.18;
-      else if (f.st === "down" || f.st === "dead") rot = -f.face * 1.45; }
-    const bob = f.moving && f.st === "walk" ? Math.abs(Math.sin((S.t + f.ph) * 9)) * 4 : 0;
+    let bob = f.moving && f.st === "walk" ? Math.abs(Math.sin((S.t + f.ph) * 9)) * 4 : 0, sx = 1, sy = 1, lx = 0;
+    if (A.img) { // 그림 한 장 — 몸짓으로 움직임(목표 자세로 부드럽게 다가감)
+      const fc = f.face, slime = f.kind === "slime", ph = (S.t + f.ph) * (slime ? 7 : 4 + D.spd / 45), stride = Math.sin(ph);
+      let tr = 0, tsx = 1, tsy = 1;
+      if (f.st === "walk") {
+        if (f.moving) { if (slime) { tsy = 1 + 0.14 * stride; tsx = 1 - 0.1 * stride; bob = Math.max(0, stride) * 10; } else { tr = fc * (0.06 + 0.04 * stride); bob = Math.abs(stride) * (D.boss ? 4 : 6); tsy = 1 - 0.03 * Math.abs(stride); } }
+        else { tsy = 1 + 0.025 * Math.sin(S.t * 3 + f.ph); tsx = 1 - 0.015 * Math.sin(S.t * 3 + f.ph); } // 숨쉬기
+      } else if (f.st === "wind") { const p = clamp(1 - f.t / (D.boss ? 0.85 : D.wind), 0, 1), e = p * p * (3 - 2 * p); tr = -fc * 0.2 * e; tsx = 1 - 0.1 * e; tsy = 1 + 0.07 * e; lx = -fc * 8 * e; } // 젖히며 힘 모으기
+      else if (f.st === "atk") { tr = fc * 0.28; tsx = 1.12; tsy = 0.94; lx = fc * 10; } // 덮치기
+      else if (f.st === "hit") { const p = clamp(f.t / 0.38, 0, 1); tr = -fc * 0.25 * p; tsx = 1 - 0.06 * p; lx = -fc * 6 * p; }
+      else if (f.st === "air") { tr = -fc * Math.min(1.2, f.h / 200); }
+      else if (f.st === "down" || f.st === "dead") { tr = -fc * 1.5; tsy = 0.95; }
+      const k = f.st === "atk" ? 0.5 : f.st === "down" || f.st === "dead" ? 0.18 : 0.22; // 얼마나 빨리 그 자세로
+      f.ar = (f.ar || 0) + (tr - (f.ar || 0)) * k; f.asx = (f.asx || 1) + (tsx - (f.asx || 1)) * k; f.asy = (f.asy || 1) + (tsy - (f.asy || 1)) * k; f.alx = (f.alx || 0) + (lx - (f.alx || 0)) * k;
+      rot = f.ar; sx = f.asx; sy = f.asy; lx = f.alx;
+    }
     g.save();
-    if (f.st === "wind") g.translate((Math.random() - 0.5) * 3, 0);
+    if (f.st === "wind" && !A.img) g.translate((Math.random() - 0.5) * 3, 0);
     if (D.tint) g.filter = D.tint;
-    frame(g, IM, fr, x, y + 2 - bob, D.sc, flip, 0.5, a, rot);
+    frame(g, IM, fr, x + lx, y + 2 - bob, D.sc, flip, 0.5, a, rot, sx, sy);
     g.filter = "none";
-    if (f.flash > 0 || f.st === "wind") { g.globalCompositeOperation = "lighter"; frame(g, IM, fr, x, y + 2 - bob, D.sc, flip, 0.5, f.st === "wind" ? 0.35 + 0.25 * Math.sin(S.t * 40) : 0.6, rot); }
+    if (f.flash > 0 || f.st === "wind") { g.globalCompositeOperation = "lighter"; frame(g, IM, fr, x + lx, y + 2 - bob, D.sc, flip, 0.5, f.st === "wind" ? 0.2 + 0.15 * Math.sin(S.t * 30) : 0.6, rot, sx, sy); }
     g.restore();
     if (!D.boss && f.st !== "dead" && f.hp < f.max) { const w = 50, by = y - fr[3] * D.sc - 10; g.fillStyle = "rgba(0,0,0,.6)"; g.fillRect(x - w / 2, by, w, 5); g.fillStyle = "#e5484d"; g.fillRect(x - w / 2, by, w * clamp(f.hp / f.max, 0, 1), 5); }
   }
