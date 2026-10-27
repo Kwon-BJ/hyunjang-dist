@@ -2,6 +2,28 @@
    제미나이 부위 그림이 오기 전까지 쓰는 코드 그림. 발 가운데가 (0,0), 오른쪽을 본다. pose = { st, t, walk, step }
    st: idle · walk · run · atk(step 0~2) · airatk · jump · cast · dash · hit · fall · down · dead */
 "use strict";
+/* 기본 캐릭터 — 연병장 다섯 명. 내 캐릭터는 이 중 하나의 모습(look.hero) */
+const HEROES = [["kh", "강혁", "무사", "m"], ["hr", "혜린", "도사", "f"], ["ds", "대성", "수호자", "m"], ["je", "지은", "사수", "f"], ["mj", "무진", "자객", "m"]];
+const HERO_IMG = (() => { const V = ((document.currentScript && document.currentScript.src) || "").split("?v=")[1] || ""; const i = new Image(); i.src = "img/heroes5.png" + (V ? "?v=" + V : ""); return i; })();
+/* 동작 → 그림 칸 · 몸 가운데 자리(칼 · 활이 앞으로 뻗은 칸은 몸이 왼쪽에 있음) */
+const HERO_AX = { atk1: 0.38, atk2: 0.42, atk3: 0.34, fall: 0.5, dead: 0.5 };
+function heroFrame(st, pose) {
+  if (st === "atk") return ["atk1", "atk2", "atk3"][pose.step | 0] || "atk1";
+  if (st === "airatk") return "atk2"; if (st === "cast" || st === "dash") return "atk3";
+  if (st === "walk" || st === "run") return Math.floor((pose.walk || 0) / Math.PI) % 2 ? "side2" : "side";
+  if (st === "jump") return "side2"; if (st === "hit") return "hit"; if (st === "fall" || st === "roll") return "fall";
+  if (st === "down" || st === "dead") return "dead"; if (st === "front") return "front";
+  return "idle";
+}
+function heroOf(L) { const h = L && L.hero; return HEROES.some((x) => x[0] === h) ? h : (L && L.g === "f" ? "hr" : "kh"); }
+function drawHero(g, L, pose, sc) {
+  const F = FR.heroes && FR.heroes[heroOf(L)]; if (!F || !HERO_IMG.complete || !HERO_IMG.naturalWidth) return false;
+  const n = heroFrame(pose.st, pose), r = F[n] || F.idle || F.front, k = sc * 0.95, ax = HERO_AX[n] || 0.5;
+  const bob = pose.st === "idle" ? Math.sin((pose.t || 0) * 3) * 1.2 : (pose.st === "walk" || pose.st === "run") ? -Math.abs(Math.sin(pose.walk || 0)) * 2 : 0;
+  g.drawImage(HERO_IMG, r[0], r[1], r[2], r[3], -r[2] * k * ax, -r[3] * k + 2 + bob, r[2] * k, r[3] * k);
+  return true;
+}
+
 const LOOK = {
   parts: [
     ["face", "얼굴형", ["둥근", "갸름한", "각진"]],
@@ -29,8 +51,8 @@ const LOOK = {
     const P = LOOK.parts.find((p) => p[0] === k); return P && P[2] ? P[2][i] : null;
   },
   color(k, i) { return { hc: LOOK.HC, ec: LOOK.EC, skin: LOOK.SKIN, oc: LOOK.OC }[k] ? { hc: LOOK.HC, ec: LOOK.EC, skin: LOOK.SKIN, oc: LOOK.OC }[k][i] : null; },
-  random() { const g = Math.random() < 0.5 ? "m" : "f", o = { g }; LOOK.parts.forEach(([k]) => { o[k] = Math.floor(Math.random() * LOOK.count(k, g)); }); return o; },
-  base(g) { return { g: g || "m", face: 0, hair: 0, hc: 0, eye: 0, ec: 0, brow: 0, nose: 0, mouth: 0, skin: 0, mark: 0, oc: 0 }; },
+  random() { const H = HEROES[Math.floor(Math.random() * HEROES.length)], g = H[3], o = { g, hero: H[0] }; LOOK.parts.forEach(([k]) => { o[k] = Math.floor(Math.random() * LOOK.count(k, g)); }); return o; },
+  base(g) { return { g: g || "m", hero: g === "f" ? "hr" : "kh", face: 0, hair: 0, hc: 0, eye: 0, ec: 0, brow: 0, nose: 0, mouth: 0, skin: 0, mark: 0, oc: 0 }; },
 };
 
 function shade(hex, k) { // k < 0 어둡게, > 0 밝게
@@ -40,6 +62,7 @@ function shade(hex, k) { // k < 0 어둡게, > 0 밝게
 
 function drawChar(g, L, pose, sc, opt) {
   L = L || LOOK.base("m"); pose = pose || { st: "idle", t: 0 }; opt = opt || {};
+  if (drawHero(g, L, pose, sc)) return; // 기본 캐릭터 그림(없으면 아래 코드 그림)
   const st = pose.st, t = pose.t || 0, fem = L.g === "f", OUT = "#1a1012";
   const skin = LOOK.SKIN[L.skin] || LOOK.SKIN[0], hair = LOOK.HC[L.hc] || LOOK.HC[0], cloth = LOOK.OC[L.oc] || LOOK.OC[0], eyeC = LOOK.EC[L.ec] || LOOK.EC[0];
   const pants = "#2a2430", boot = "#3a2a1e";
