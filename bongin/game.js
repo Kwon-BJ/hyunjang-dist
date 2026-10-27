@@ -8,7 +8,7 @@ const Dungeon = (() => {
   const VW = 960, VH = 540, Z0 = 368, Z1 = 512, ROOM = 1800, G = 1900;
   const V = ((document.currentScript && document.currentScript.src) || "").split("?v=")[1] || ""; // 판 번호 — 새 판이면 그림도 새로 받음
   const img = (src) => { const i = new Image(); i.src = src + (V ? "?v=" + V : ""); return i; };
-  const IMG = { hero: img("img/heroes5.png"), mon: img("img/mon2.png"), hsk: img("img/hsk.png"), mfx: img("img/mfx.png") };
+  const IMG = { hero: img("img/heroes5.png"), mon: img("img/mon2.png"), mon3a: img("img/mon3a.png"), mon3b: img("img/mon3b.png"), hsk: img("img/hsk.png"), mfx: img("img/mfx.png") };
   const rnd = (a, b) => a + Math.random() * (b - a);
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
@@ -18,7 +18,12 @@ const Dungeon = (() => {
     goblin: { name: "고블린", hp: 110, spd: 115, sc: 0.85, dmg: 10, act: "swing", range: 80, wind: 0.42, native: 1, w: 32 },
     wolf: { name: "늑대", hp: 95, spd: 200, sc: 0.8, dmg: 9, act: "pounce", range: 230, wind: 0.38, native: 1, w: 38 },
     golem: { name: "바위 거인", hp: 2600, spd: 70, sc: 1.75, dmg: 24, act: "boss", range: 150, wind: 0.8, native: 0, w: 70, boss: true },
-    gchief: { name: "고블린 족장", hp: 3400, spd: 105, sc: 1.5, dmg: 26, act: "boss", range: 150, wind: 0.7, native: 1, w: 60, boss: true, sprite: "goblin", tint: "hue-rotate(-70deg) saturate(1.5) brightness(.9)" },
+    gchief: { name: "고블린 족장", hp: 3400, spd: 105, sc: 0.55, dmg: 26, act: "boss", range: 150, wind: 0.7, native: 1, w: 60, boss: true },
+    /* 오크족 — 그림 한 장짜리(FR.mon 의 img 가 mon3a). shoot = 줄 맞춰 화살, curse = 발밑에 저주 */
+    orc: { name: "오크 전사", hp: 260, spd: 100, sc: 0.44, dmg: 18, act: "swing", range: 95, wind: 0.5, native: 1, w: 40 },
+    orcArcher: { name: "오크 궁수", hp: 170, spd: 95, sc: 0.44, dmg: 14, act: "shoot", range: 520, wind: 0.7, native: 1, w: 32 },
+    orcShaman: { name: "오크 주술사", hp: 200, spd: 80, sc: 0.44, dmg: 20, act: "curse", range: 460, wind: 0.9, native: 1, w: 32 },
+    orcChief: { name: "오크 대장 우르각", hp: 5200, spd: 95, sc: 0.6, dmg: 32, act: "boss", range: 160, wind: 0.7, native: 1, w: 70, boss: true },
     wchief: { name: "늑대 우두머리", hp: 3800, spd: 170, sc: 1.4, dmg: 28, act: "boss", range: 160, wind: 0.6, native: 1, w: 64, boss: true, sprite: "wolf", tint: "grayscale(.6) brightness(1.25) contrast(1.2)" },
   };
   /* ── 던전 — 서버 DUNGEONS 와 같은 열쇠 ── */
@@ -38,6 +43,11 @@ const Dungeon = (() => {
       { text: "늑대와 고블린 사냥꾼!", list: ["wolf", "wolf", "wolf", "goblin", "goblin", "goblin"] },
       { text: "골짜기 깊은 곳 — 무리가 몰려온다!", list: ["wolf", "wolf", "wolf", "wolf", "wolf", "goblin", "goblin"] },
       { text: "대장 늑대 우두머리 등장!", list: ["wchief"] } ] },
+    orc: { name: "오크족의 성지", theme: "orc", waves: [
+      { text: "오크족의 성지 — 전사들이 막아선다!", list: ["orc", "orc", "orc", "orcArcher"] },
+      { text: "화살이 날아온다 — 붉은 줄을 피해!", list: ["orc", "orc", "orcArcher", "orcArcher", "orcShaman"] },
+      { text: "주술사의 저주 — 발밑 붉은 원을 피해!", list: ["orc", "orc", "orc", "orcArcher", "orcShaman", "orcShaman"] },
+      { text: "대장 오크 우르각 등장!", list: ["orcChief", "orcArcher", "orcShaman"] } ] },
   };
   const ATK = [
     { dur: 0.3, act: [0.06, 0.16], range: 100, dmg: 12, type: "stagger", lunge: 70 },
@@ -50,7 +60,8 @@ const Dungeon = (() => {
   let S = null, C = null, stop = 0, shake = 0, nextId = 1;
   const host = () => !C.party || C.party.host === C.me;
 
-  /* cfg = { d, me, look, nick, stats:{hpMax, atk, def}, potions, party:{host, members:[{id,nick,look,lv}]} | null, send(data, to), usePotion(), onEnd(res), axis() } */
+  /* cfg = { d, me, look, nick, stats:{hpMax, atk, def}, potions, party:{host, members:[{id,nick,look,lv}]} | null, send(data, to), usePotion(), onEnd(res), axis(), watch }
+     watch = 운영자 투명 관전 — 내 캐릭터는 없고(몬스터가 안 노림 · 안 그림 · 안 보냄), 화면은 파티장을 따라간다 */
   function start(cfg) {
     C = cfg; const D = DUN[cfg.d] || DUN.forest;
     const n = cfg.party ? cfg.party.members.length : 1;
@@ -62,6 +73,7 @@ const Dungeon = (() => {
       combo: 0, comboT: 0, maxCombo: 0, hitsTaken: 0, cd: [0, 0, 0], ring: 0, over: false, win: false, lose: false, camX: 0, endT: 0, ended: false,
       remote: {}, sendT: 0, syncT: 0,
     };
+    if (cfg.watch) { S.hero.hp = 0; S.hero.x = -999; }
     if (cfg.party) cfg.party.members.forEach((m, i) => { if (m.id !== cfg.me) S.remote[m.id] = { id: m.id, nick: m.nick, look: m.look, x: 180 - i * 30, z: 420 + i * 25, h: 0, face: 1, st: "idle", t: 0, step: 0, walk: 0, hp: 1, max: 1, tx: 180 - i * 30, tz: 420 + i * 25, th: 0, alive: true, inv: 0 }; });
   }
   function banner(t) { S.banner = t; S.bannerT = 2.2; }
@@ -135,7 +147,7 @@ const Dungeon = (() => {
     if (S.bannerT > 0) S.bannerT -= dt;
     if (S.comboT > 0 && (S.comboT -= dt) <= 0) S.combo = 0;
     for (let i = 0; i < 3; i++) S.cd[i] = Math.max(0, S.cd[i] - dt);
-    heroStep(dt);
+    if (!C.watch) heroStep(dt);
     if (host()) S.foes.forEach((f) => foeStep(f, dt));
     else S.foes.forEach((f) => { f.x += (f.tx - f.x) * Math.min(1, dt * 12); f.z += (f.tz - f.z) * Math.min(1, dt * 12); f.h += (f.th - f.h) * Math.min(1, dt * 14); f.flash = Math.max(0, f.flash - dt); if (f.st === "dead") f.t -= dt; });
     S.foes = S.foes.filter((f) => !(f.st === "dead" && f.t <= 0));
@@ -156,10 +168,11 @@ const Dungeon = (() => {
     S.fx.forEach((x) => { x.t -= dt; }); S.fx = S.fx.filter((x) => x.t > 0);
     S.nums.forEach((n) => { n.t -= dt; n.y -= 60 * dt; }); S.nums = S.nums.filter((n) => n.t > 0);
     S.tele = S.tele.filter((t) => (t.t -= dt) > 0);
-    S.camX += (clamp(H.x - VW * 0.42, 0, ROOM - VW) - S.camX) * Math.min(1, dt * 8);
+    const eye = C.watch ? (S.remote[C.party.host] || Object.values(S.remote)[0] || H) : H; // 관전 — 파티장을 따라감
+    S.camX += (clamp(eye.x - VW * 0.42, 0, ROOM - VW) - S.camX) * Math.min(1, dt * 8);
     if (shake > 0) shake -= dt;
     /* 파티 — 내 자리 초당 15번, 파티장은 몬스터 자리 초당 12번 */
-    if (C.party) {
+    if ((C.party || S.spec) && !C.watch) { // S.spec = 운영자가 보는 중(혼자 하는 판도 보냄)
       if ((S.sendT -= dt) <= 0) { S.sendT = 1 / 15; C.send({ k: "me", x: Math.round(H.x), z: Math.round(H.z), h: Math.round(H.h), face: H.face, st: H.st, step: H.step, hp: Math.max(0, Math.round(H.hp)), max: H.max }); }
       if (host() && (S.syncT -= dt) <= 0) { S.syncT = 1 / 12; C.send({ k: "sync", wave: S.wave, banner: S.bannerT > 2 ? S.banner : "", win: S.win ? 1 : 0, lose: S.lose ? 1 : 0, tele: S.tele.map((t) => [t.k, Math.round(t.k === "rect" ? t.x0 : t.x), Math.round(t.x1 || 0), Math.round(t.z), t.zr || t.r, +t.t.toFixed(2), t.full]), foes: S.foes.map((f) => [f.id, f.kind, Math.round(f.x), Math.round(f.z), Math.round(f.h), f.st, f.face, Math.round(f.hp), f.max]) }); }
     }
@@ -236,14 +249,20 @@ const Dungeon = (() => {
     if (D.boss) return bossStep(f, dt, dx, dz);
     if (f.st === "walk") {
       f.face = Math.sign(dx) || f.face;
-      const want = D.act === "pounce" ? D.range * 0.8 : D.range * 0.6;
-      const gx = Math.abs(dx) > want ? Math.sign(dx) * D.spd : 0, gz = Math.abs(dz) > 8 ? Math.sign(dz) * D.spd * 0.55 : 0;
+      const ranged = D.act === "shoot" || D.act === "curse";
+      const want = D.act === "pounce" ? D.range * 0.8 : ranged ? D.range * 0.75 : D.range * 0.6;
+      let gx = Math.abs(dx) > want ? Math.sign(dx) * D.spd : 0; if (ranged && Math.abs(dx) < 200) gx = -Math.sign(dx) * D.spd * 0.7;
+      const gz = Math.abs(dz) > 8 && D.act !== "curse" ? Math.sign(dz) * D.spd * 0.55 : 0;
       f.x += gx * dt; f.z = clamp(f.z + gz * dt, Z0, Z1); f.moving = !!(gx || gz);
-      if (f.cd <= 0 && Math.abs(dx) < D.range && Math.abs(dz) < 22) { f.st = "wind"; f.t = D.wind; }
+      if (f.cd <= 0 && Math.abs(dx) < D.range && Math.abs(dz) < (D.act === "curse" ? 200 : 22)) { f.st = "wind"; f.t = D.wind;
+        if (D.act === "shoot") S.tele.push({ k: "rect", x0: f.face > 0 ? f.x + 20 : f.x - D.range, x1: f.face > 0 ? f.x + D.range : f.x - 20, z: f.z, zr: 18, t: f.t, full: f.t });
+        if (D.act === "curse") { f.cx = T.x; f.cz = T.z; S.tele.push({ k: "ring", x: f.cx, z: f.cz, r: 85, t: f.t, full: f.t }); } }
     } else if (f.st === "wind") {
       if (f.t <= 0) {
         f.st = "atk"; f.hitDone = false;
-        if (D.act === "pounce") { f.t = 0.42; f.vx = f.face * 620; }
+        if (D.act === "shoot") { f.t = 0.3; f.hitDone = true; heroes().forEach((h) => { if ((h.x - f.x) * f.face > 0 && Math.abs(h.x - f.x) < D.range && Math.abs(h.z - f.z) < 24 && h.h < 60) { hurt(h, D.dmg, false, f.face); addFx({ k: "spark", x: h.x, y: h.z - 50, t: 0.22, d: 0.22, s: 60 }); } }); }
+        else if (D.act === "curse") { f.t = 0.3; f.hitDone = true; addFx({ k: "quake", x: f.cx, y: f.cz, t: 0.5, d: 0.5, s: 180 }); heroes().forEach((h) => { if (Math.hypot(h.x - f.cx, (h.z - f.cz) * 2) < 90 && h.h < 50) hurt(h, D.dmg, false, Math.sign(h.x - f.cx) || 1); }); }
+        else if (D.act === "pounce") { f.t = 0.42; f.vx = f.face * 620; }
         else if (D.act === "lunge") { f.t = 0.5; f.vx = f.face * 260; f.vh = 300; }
         else { f.t = 0.25; f.vx = f.face * 60; }
       }
@@ -343,7 +362,7 @@ const Dungeon = (() => {
       if (!me) { g.fillStyle = "rgba(0,0,0,.6)"; g.fillRect(x - 22, y - 122, 44, 4); g.fillStyle = "#3ccf6a"; g.fillRect(x - 22, y - 122, 44 * clamp(P.hp / (P.max || 1), 0, 1), 4); } }
   }
   function drawFoe(g, f, cx) {
-    const x = f.x - cx, y = f.z - f.h, D = f.D, A = FR.mon[D.sprite || f.kind];
+    const x = f.x - cx, y = f.z - f.h, D = f.D, A = FR.mon[D.sprite || f.kind], IM = IMG[A.img || "mon"];
     shadow(g, x, f.z, D.w * 0.9 * Math.max(0.5, 1 - f.h / 400));
     let list = A.move, rot = 0;
     if (f.st === "hit" || f.st === "air") list = A.hit;
@@ -353,13 +372,16 @@ const Dungeon = (() => {
     const flip = D.native ? f.face !== D.native : f.face < 0;
     const a = f.st === "dead" ? clamp(f.t / 0.5, 0, 1) : 1;
     if (f.st === "air" && !D.boss) rot = -f.face * Math.min(1.2, f.h / 200);
+    if (A.img) { // 그림이 한 장뿐 — 몸을 기울여 준비 · 공격 · 맞음 · 쓰러짐을 보여 줌
+      if (f.st === "wind") rot = -f.face * 0.1; else if (f.st === "atk") rot = f.face * 0.16; else if (f.st === "hit") rot = -f.face * 0.18;
+      else if (f.st === "down" || f.st === "dead") rot = -f.face * 1.45; }
     const bob = f.moving && f.st === "walk" ? Math.abs(Math.sin((S.t + f.ph) * 9)) * 4 : 0;
     g.save();
     if (f.st === "wind") g.translate((Math.random() - 0.5) * 3, 0);
     if (D.tint) g.filter = D.tint;
-    frame(g, IMG.mon, fr, x, y + 2 - bob, D.sc, flip, 0.5, a, rot);
+    frame(g, IM, fr, x, y + 2 - bob, D.sc, flip, 0.5, a, rot);
     g.filter = "none";
-    if (f.flash > 0 || f.st === "wind") { g.globalCompositeOperation = "lighter"; frame(g, IMG.mon, fr, x, y + 2 - bob, D.sc, flip, 0.5, f.st === "wind" ? 0.35 + 0.25 * Math.sin(S.t * 40) : 0.6, rot); }
+    if (f.flash > 0 || f.st === "wind") { g.globalCompositeOperation = "lighter"; frame(g, IM, fr, x, y + 2 - bob, D.sc, flip, 0.5, f.st === "wind" ? 0.35 + 0.25 * Math.sin(S.t * 40) : 0.6, rot); }
     g.restore();
     if (!D.boss && f.st !== "dead" && f.hp < f.max) { const w = 50, by = y - fr[3] * D.sc - 10; g.fillStyle = "rgba(0,0,0,.6)"; g.fillRect(x - w / 2, by, w, 5); g.fillStyle = "#e5484d"; g.fillRect(x - w / 2, by, w * clamp(f.hp / f.max, 0, 1), 5); }
   }
@@ -375,7 +397,7 @@ const Dungeon = (() => {
     const H = S.hero;
     if (S.ring > 0) centered(g, IMG.hsk, FR.hsk.kh_ring, H.x - cx, H.z - 30 - H.h, 270, false, Math.min(1, S.ring / 0.3) * 0.95, S.t * 5);
     const bodies = S.foes.map((f) => [f.z, () => drawFoe(g, f, cx)]);
-    bodies.push([H.z + 0.1, () => drawPerson(g, H, C.look, cx, true, C.party ? C.nick : "")]);
+    if (!C.watch) bodies.push([H.z + 0.1, () => drawPerson(g, H, C.look, cx, true, C.party ? C.nick : "")]);
     for (const id in S.remote) { const r = S.remote[id]; bodies.push([r.z, () => drawPerson(g, r, r.look, cx, false, r.nick)]); }
     bodies.sort((a, b) => a[0] - b[0]).forEach((b) => b[1]());
     S.shots.forEach((s) => centered(g, IMG.hsk, FR.hsk.kh_wave, s.x - cx, s.z - 60, 170, s.face < 0, Math.min(1, s.t / 0.15)));
@@ -394,6 +416,7 @@ const Dungeon = (() => {
   function hud(g, touch) {
     const H = S.hero;
     g.textAlign = "left";
+    if (C.watch) { g.font = "800 15px 'Noto Sans KR', sans-serif"; g.fillStyle = "#c58cff"; g.fillText("👁 투명 관전 중 · " + S.D.name + " — 이 판 사람들에게는 안 보여요", 22, 30); g.font = "600 12px 'Noto Sans KR', sans-serif"; let py = 56; for (const id in S.remote) { const r = S.remote[id]; g.fillStyle = "#bfe3ff"; g.fillText(r.nick, 22, py); bar(g, 110, py - 9, 90, 7, r.hp / (r.max || 1), "#3ccf6a"); py += 18; } return; }
     g.font = "700 15px 'Noto Sans KR', sans-serif"; g.fillStyle = "#f6d27a"; g.fillText(C.nick + "  ·  " + S.D.name, 22, 30);
     bar(g, 22, 40, 260, 14, H.hp / H.max, H.hp / H.max > 0.3 ? "#3ccf6a" : "#e5484d");
     g.font = "600 12px 'Noto Sans KR', sans-serif"; g.fillStyle = "#fff"; g.fillText(Math.ceil(H.hp) + " / " + H.max, 28, 52);
@@ -409,7 +432,7 @@ const Dungeon = (() => {
       if (S.cd[i] > 0) { g.fillStyle = "rgba(0,0,0,.55)"; g.fillRect(x, y + 56 * (1 - S.cd[i] / sk.cd), 56, 56 * S.cd[i] / sk.cd); g.fillStyle = "#fff"; g.textAlign = "center"; g.font = "800 16px sans-serif"; g.fillText(Math.ceil(S.cd[i]), x + 28, y + 34); }
       g.fillStyle = "#f6d27a"; g.textAlign = "left"; g.font = "700 11px sans-serif"; g.fillText(KEYS.label(sk.act), x + 4, y + 13); });
   }
-  return { start, step, draw, net, MON, DUN, SKILL, get S() { return S; }, quit() { if (S) S.ended = true; S = null; } };
+  return { start, step, draw, net, MON, DUN, SKILL, get S() { return S; }, quit() { if (S) S.ended = true; S = null; }, watched() { if (S) S.spec = true; } };
 })();
 
 /* ── 배경 — 마을 · 던전마다. 제미나이 맵 그림(img/maps/<이름>.jpg, frames.js 의 MAPS 에 적힌 것)이 있으면 그것을, 없으면 코드로 그린다
@@ -417,7 +440,7 @@ const Dungeon = (() => {
    GF = 그림에서 땅이 시작하는 높이(0~1) — 그 줄이 게임 바닥(Z0)쯤 오게 그림을 위로 올리고 키운다 ── */
 const BG = (() => {
   const V = ((document.currentScript && document.currentScript.src) || "").split("?v=")[1] || "";
-  const pics = {}, GF = { town: 0.79, gate: 0.78, forest: 0.8, goblin: 0.72, wolf: 0.76 };
+  const pics = {}, GF = { town: 0.79, gate: 0.78, forest: 0.8, goblin: 0.72, wolf: 0.76, orc: 0.7 };
   (window.MAPS || []).forEach((n) => { const i = new Image(); i.src = "img/maps/" + n + ".jpg" + (V ? "?v=" + V : ""); pics[n] = i; });
   const ok = (P) => P && P.complete && P.naturalWidth;
   function tile(g, P, x, w, y, h, flip) {
@@ -429,10 +452,19 @@ const BG = (() => {
     const gf = GF[theme] || 0.75, yo = Math.max(0, Math.min(140, (gf * VH - Z0 - 16) / (1 - gf)));
     const h = VH + yo, w = P.naturalWidth * h / P.naturalHeight, y = -yo, sx = cx * (o.par || 0.6);
     const E = o.end && ok(pics[o.end.pic]) ? pics[o.end.pic] : null;
-    let stopX = Infinity, base = 0;
-    if (E) { const we = E.naturalWidth * h / E.naturalHeight; stopX = o.end.at - o.end.f * we; base = stopX; tile(g, E, stopX - sx, we, y, h, false); }
+    let stopX = Infinity, base = 0, we = 0, fw = 0;
+    if (E) { we = E.naturalWidth * h / E.naturalHeight; fw = we * (o.end.fade == null ? 0.25 : o.end.fade); stopX = o.end.at - o.end.f * we; base = stopX + fw; } // 마지막 그림은 앞 그림과 fw 만큼 겹쳐 서서히 바뀜
     const n0 = Math.floor((sx - base) / w);
-    for (let n = n0; ; n++) { const wx = base + n * w; if (wx - sx > VW || wx >= stopX) break; tile(g, P, wx - sx, w, y, h, (n & 1) !== 0); }
+    for (let n = n0; ; n++) { const wx = base + n * w; if (wx - sx > VW || wx >= base) break; tile(g, P, wx - sx, w, y, h, (n & 1) !== 0); }
+    if (E && stopX - sx < VW) g.drawImage(fw ? faded(E, o.end.fade == null ? 0.25 : o.end.fade) : E, stopX - sx, y, we + 1, h);
+  }
+  const fades = new Map();
+  function faded(P, f) { // 왼쪽 f 만큼 투명 → 불투명으로 — 그림끼리 이음새 없이 겹치기
+    let c = fades.get(P); if (c) return c;
+    c = document.createElement("canvas"); c.width = P.naturalWidth; c.height = P.naturalHeight; const t = c.getContext("2d");
+    t.drawImage(P, 0, 0); const gr = t.createLinearGradient(0, 0, c.width * f, 0); gr.addColorStop(0, "rgba(0,0,0,0)"); gr.addColorStop(1, "rgba(0,0,0,1)");
+    t.globalCompositeOperation = "destination-in"; t.fillStyle = gr; t.fillRect(0, 0, c.width * f, c.height);
+    fades.set(P, c); return c;
   }
   const HILLS = Array.from({ length: 40 }, (_, i) => [i * 120, 150 + Math.sin(i * 1.7) * 40 + Math.sin(i * 0.6) * 30]);
   const TREES = Array.from({ length: 70 }, (_, i) => [i * 55 + Math.sin(i * 3.1) * 20, 60 + (i * 37 % 50), 0.8 + (i * 13 % 7) / 10]);
