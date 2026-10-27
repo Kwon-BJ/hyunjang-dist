@@ -188,6 +188,7 @@ const Dungeon = (() => {
      강공격 = 넉백 · 띄우기 · 피해 30 넘는 것(콤보 마지막 타 · 큰 스킬). 수치는 시험(전투-시험 타격감)으로 맞춤 */
   const FEEL = { stop: 0.06, stopHeavy: 0.11, stopBoss: 0.15, push: 260, pushHeavy: 580, stun: 0.42, stunHeavy: 0.7, bossPush: 12, shake: 0.12, shakeHeavy: 0.3 };
   function hitFoe(f, dmg, type, dir, remote) {
+    if (S.ghost) return false;
     if (S.remote[f.id] === f) return hitPlayer(f, dmg, type, dir); // 결투 상대
     if (f.st === "dead" || f.inv > 0) return false;
     const heavy = type === "knock" || type === "launch" || dmg >= 30; f.shk = heavy ? 0.16 : 0.1; // 맞은 몸 떨림(히트스톱 동안)
@@ -230,7 +231,7 @@ const Dungeon = (() => {
   /* 몬스터가 노리는 사람 — 살아 있는 사람 중 가장 가까운 */
   /* 결투 — 상대를 몬스터처럼 때릴 수 있게. 맞힌 것은 그 사람에게 보내고(사람끼리는 피해 절반), 그쪽이 맞음 */
   function pvpFoes() { if (!S.D.pvp || S.pvpT > 0 || S.over) return []; const a = []; for (const id in S.remote) { const r = S.remote[id]; if (r.hp > 0) { r.D = r.D || { w: 30, sc: 1, boss: false }; r.st2 = "walk"; a.push(r); } } return a; }
-  function hitPlayer(r, dmg, type, dir) { if (S.hit2 && S.hit2[r.id] > S.t) return false; (S.hit2 = S.hit2 || {})[r.id] = S.t + 0.12; const d = Math.round(dmg * S.mult * 0.5 * rnd(0.92, 1.08)); num(r.x, r.z - r.h - 110, d, "#ffd36b"); addFx({ k: "spark", x: r.x, y: r.z - r.h - 50, t: 0.22, d: 0.22, s: 70 }); C.send({ k: "hurt", dmg: d, heavy: type === "launch" || type === "knock", dir, pvp: 1 }, r.id); S.combo++; S.comboT = 1.6; S.maxCombo = Math.max(S.maxCombo, S.combo); return true; }
+  function hitPlayer(r, dmg, type, dir) { if (S.ghost) return false; if (S.hit2 && S.hit2[r.id] > S.t) return false; (S.hit2 = S.hit2 || {})[r.id] = S.t + 0.12; const d = Math.round(dmg * S.mult * 0.5 * rnd(0.92, 1.08)); num(r.x, r.z - r.h - 110, d, "#ffd36b"); addFx({ k: "spark", x: r.x, y: r.z - r.h - 50, t: 0.22, d: 0.22, s: 70 }); C.send({ k: "hurt", dmg: d, heavy: type === "launch" || type === "knock", dir, pvp: 1 }, r.id); S.combo++; S.comboT = 1.6; S.maxCombo = Math.max(S.maxCombo, S.combo); return true; }
   function heroes() { const a = []; if (S.hero.hp > 0 && !C.gm) a.push(S.hero); for (const id in S.remote) { const r = S.remote[id]; if (r.alive && r.hp > 0 && !r.op) a.push(r); } return a; } // 운영자(op)는 몬스터가 안 노림
   function target(f) { let best = null, bd = 1e9; heroes().forEach((h) => { const d = Math.abs(h.x - f.x) + Math.abs(h.z - f.z) * 2; if (d < bd) { bd = d; best = h; } }); return best || S.hero; }
 
@@ -270,13 +271,13 @@ const Dungeon = (() => {
       if (Math.abs(dz) < 18 && Math.abs(dx) < need && a.h < 1 && b.h < 1) { const p = (need - Math.abs(dx)) / 2 * Math.sign(dx || 1); a.x -= p; b.x += p; }
     }
     S.shots.forEach((s) => {
-      s.x += s.vx * dt; s.t -= dt;
+      s.x += s.vx * dt; s.t -= dt; if (s.ghost) return;
       pvpFoes().forEach((r) => { if (!s.hit.includes(r) && Math.abs(r.x - s.x) < 70 && Math.abs(r.z - s.z) < 45) { s.hit.push(r); hitPlayer(r, s.sk ? s.sk.dmg : 34, s.sk ? s.sk.type : "knock", Math.sign(s.vx)); } });
       S.foes.forEach((f) => { if (!s.hit.includes(f) && Math.abs(f.x - s.x) < 60 + f.D.w && Math.abs(f.z - s.z) < 45 + (f.D.boss ? 30 : 0)) { s.hit.push(f); hitFoe(f, s.sk ? s.sk.dmg : 34, s.sk ? s.sk.type : "knock", Math.sign(s.vx)); } });
     });
     S.shots = S.shots.filter((s) => s.t > 0 && s.x > -100 && s.x < ROOM + 100);
     S.zones.forEach((zn) => { // 둘레 · 자리 스킬 — tick 마다 안에 있는 적을 침
-      zn.t -= dt; if (zn.follow) { zn.x = H.x; zn.z = H.z; }
+      zn.t -= dt; if (zn.follow) { const w = zn.who || H; zn.x = w.x; zn.z = w.z; } if (zn.ghost) return;
       if ((zn.tt -= dt) <= 0) { zn.tt = zn.sk.tick; pvpFoes().forEach((r) => { if (Math.abs(r.x - zn.x) < zn.sk.r + 15 && Math.abs(r.z - zn.z) < 60) hitPlayer(r, zn.sk.dmg, zn.sk.type || "stagger", Math.sign(r.x - zn.x) || 1); }); S.foes.forEach((f) => { if (Math.abs(f.x - zn.x) < zn.sk.r + f.D.w * 0.5 && Math.abs(f.z - zn.z) < 60) hitFoe(f, zn.sk.dmg, zn.sk.type || "stagger", Math.sign(f.x - zn.x) || 1); }); }
     });
     S.zones = S.zones.filter((zn) => zn.t > 0);
@@ -295,8 +296,18 @@ const Dungeon = (() => {
     if (S.over && !S.ended && (S.endT -= dt) <= 0) { S.ended = true; C.onEnd({ win: S.win, sec: Math.floor(S.t), maxCombo: S.maxCombo, hits: S.hitsTaken, tower: !!S.D.tower, floor: S.cleared || 0, kills: S.kills || 0 }); }
   }
 
-  function cast(sk) {
-    if (sk.kind === "ult") { S.flash = 0.5; shake = 0.7; banner("궁극기 — " + sk.name + "!"); S.hero.inv = Math.max(S.hero.inv, 1); sk.multi.forEach((m) => cast(m)); return; } // 궁극기 — 여러 재주를 한 번에
+  /* 다른 사람 스킬도 보이게 (2026-10-27 "내가 보는 화면이랑 상대방이 보는 화면에서 스킬을 써도 스킬 나가는 게 안 보인다").
+     스킬을 쓰면 무엇을(ALL_SKILLS 번호) 파티 · 결투 상대에게 알리고, 받은 쪽은 그 사람 자리에서 같은 그림만 그림(ghost — 피해는 쓴 사람 쪽에서 이미 보냄) */
+  function ghostCast(r, sk) {
+    if (!r || !sk) return; const me = S.hero, n0 = S.shots.length, z0 = S.zones.length, fl = S.flash, sh = shake;
+    S.hero = r; S.ghost = true; try { cast(sk, true); } finally { S.hero = me; S.ghost = false; }
+    for (let k = n0; k < S.shots.length; k++) S.shots[k].ghost = true;
+    for (let k = z0; k < S.zones.length; k++) { S.zones[k].ghost = true; S.zones[k].who = r; }
+    S.flash = Math.max(fl, S.flash * 0.4); shake = Math.max(sh, shake * 0.4); // 남의 궁극기는 화면을 덜 흔듦
+  }
+  function cast(sk, sub) {
+    if (!sub && !S.ghost && C.party) C.send({ k: "cast", i: ALL_SKILLS.indexOf(sk) });
+    if (sk.kind === "ult") { S.flash = 0.5; shake = 0.7; banner("궁극기 — " + sk.name + "!"); S.hero.inv = Math.max(S.hero.inv, 1); sk.multi.forEach((m) => cast(m, true)); return; } // 궁극기 — 여러 재주를 한 번에
     const H = S.hero, near = (r) => S.foes.filter((f) => f.st !== "dead" && Math.abs(f.x - H.x) < r).concat(pvpFoes().filter((p) => Math.abs(p.x - H.x) < r)).sort((a, b) => Math.abs(a.x - H.x) - Math.abs(b.x - H.x));
     if (sk.kind === "shot") { H.st = "cast"; H.t = 0; const n = sk.n || 1; for (let k = 0; k < n; k++) S.shots.push({ x: H.x + H.face * 40, z: clamp(H.z + (k - (n - 1) / 2) * 34, Z0, Z1), vx: H.face * sk.spd, t: sk.life, hit: [], face: H.face, sk }); }
     else if (sk.kind === "aura") { S.zones.push({ follow: true, x: H.x, z: H.z, t: sk.dur, tt: 0, sk }); H.st = "cast"; H.t = 0.1; }
@@ -510,6 +521,7 @@ const Dungeon = (() => {
   }
   function net(from, d) {
     if (!S || !C.party || !d) return;
+    if (d.k === "cast") { ghostCast(S.remote[from], ALL_SKILLS[d.i]); return; }
     if (d.k === "door") { if (host() && S.door) goRoom(S.room + 1); return; }
     if (d.k === "me") { const r = S.remote[from]; if (!r) return; Object.assign(r, { tx: d.x, tz: d.z, th: d.h, face: d.face, step: d.step, hp: d.hp, max: d.max, alive: d.hp > 0 }); if (r.st !== d.st) { r.st = d.st; r.t = 0; } return; }
     if (d.k === "hit" && host()) { const f = S.foes.find((x) => x.id === d.i); if (f) hitFoe(f, Math.min(600, +d.dmg || 0), d.type, d.dir || 1, true); return; }
@@ -622,7 +634,7 @@ const Dungeon = (() => {
       else { g.beginPath(); g.ellipse(t.x - cx, t.z, t.r, t.r * 0.42, 0, 0, Math.PI * 2); g.fill(); g.stroke(); g.fillStyle = "rgba(255,50,40,.35)"; g.beginPath(); g.ellipse(t.x - cx, t.z, t.r * p, t.r * 0.42 * p, 0, 0, Math.PI * 2); g.fill(); }
     });
     const H = S.hero;
-    S.zones.forEach((zn) => centered(g, IMG.hsk, FR.hsk[zn.sk.fr], zn.x - cx, zn.z - 30 - (zn.follow ? H.h : 0), zn.sk.size, false, Math.min(1, zn.t / 0.3) * 0.95, zn.sk.spin ? S.t * zn.sk.spin : 0));
+    S.zones.forEach((zn) => centered(g, IMG.hsk, FR.hsk[zn.sk.fr], zn.x - cx, zn.z - 30 - (zn.follow ? (zn.who || H).h || 0 : 0), zn.sk.size, false, Math.min(1, zn.t / 0.3) * 0.95, zn.sk.spin ? S.t * zn.sk.spin : 0));
     const bodies = S.foes.map((f) => [f.z, () => drawFoe(g, f, cx)]);
     if (!C.watch) bodies.push([H.z + 0.1, () => drawPerson(g, H, C.look, cx, true, C.party ? C.nick : "")]);
     for (const id in S.remote) { const r = S.remote[id]; bodies.push([r.z, () => drawPerson(g, r, r.look, cx, false, r.nick)]); }
