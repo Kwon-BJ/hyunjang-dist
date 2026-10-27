@@ -53,6 +53,7 @@ const Dungeon = (() => {
   /* 무한의 탑 — 층 n 의 무리 · 강해지는 정도. 10층마다 대장 */
   const TOWER = { name: "무한의 탑", theme: "castle", tower: true, waves: [] };
   DUN.tower = TOWER;
+  DUN.arena = { name: "결투장", theme: "castle", pvp: true, waves: [] }; // 결투 — 몬스터 없음, 둘이 싸움
   function towerFloor(n) {
     const pool = ["slime", "goblin", "wolf"].concat(n >= 8 ? ["orc"] : [], n >= 15 ? ["orcArcher"] : [], n >= 22 ? ["orcShaman"] : []);
     const bosses = ["golem", "gchief", "wchief", "orcChief"], list = [];
@@ -94,21 +95,43 @@ const Dungeon = (() => {
   const SKILLS = {
     kh: [{ name: "화염 검기", short: "검기", cd: 3, fr: "kh_wave", kind: "shot", spd: 760, life: 0.75, dmg: 34, type: "knock", size: 170 },
          { name: "화염검 진", short: "검진", cd: 8, fr: "kh_ring", kind: "aura", dur: 3, tick: 0.3, r: 120, dmg: 11, size: 270, spin: 5 },
-         { name: "화염 돌진", short: "돌진", cd: 5, fr: "kh_dash", kind: "dash", dmg: 28 }],
+         { name: "화염 돌진", short: "돌진", cd: 5, fr: "kh_dash", kind: "dash", dmg: 28 },
+         { name: "화염 회오리", short: "회오리", cd: 9, fr: "kh_ring", kind: "aura", dur: 2, tick: 0.2, r: 140, dmg: 9, size: 320, spin: 9 },
+         { name: "올려베기", short: "올려", cd: 5, fr: "kh_wave", kind: "slam", range: 230, dmg: 36, size: 260 },
+         { name: "검기 난무", short: "난무", cd: 6, fr: "kh_wave", kind: "shot", n: 3, spd: 900, life: 0.55, dmg: 22, type: "stagger", size: 120 },
+         { name: "적염 강림", short: "궁극", cd: 45, fr: "kh_ring", kind: "ult", multi: [{ kind: "zone", fr: "kh_ring", at: 0, r: 620, dur: 2.5, tick: 0.25, dmg: 30, size: 900, spin: 4 }, { kind: "slam", fr: "kh_wave", range: 500, dmg: 80, size: 420 }] }],
     hr: [{ name: "부적 날리기", short: "부적", cd: 3, fr: "hr_tali", kind: "shot", n: 3, spd: 620, life: 0.9, dmg: 20, type: "stagger", size: 90 },
          { name: "뇌전", short: "뇌전", cd: 7, fr: "hr_bolt", kind: "strike", n: 3, range: 560, dmg: 46, type: "launch", size: 190 },
-         { name: "팔괘진", short: "팔괘", cd: 9, fr: "hr_bagua", kind: "zone", at: 0, r: 160, dur: 4, tick: 0.35, dmg: 12, size: 300, spin: 1.5 }],
+         { name: "팔괘진", short: "팔괘", cd: 9, fr: "hr_bagua", kind: "zone", at: 0, r: 160, dur: 4, tick: 0.35, dmg: 12, size: 300, spin: 1.5 },
+         { name: "뇌운", short: "뇌운", cd: 8, fr: "hr_bolt", kind: "zone", at: 260, r: 150, dur: 2.5, tick: 0.3, dmg: 14, size: 280, spin: 0 },
+         { name: "부적 폭발", short: "폭발", cd: 6, fr: "hr_tali", kind: "strike", n: 5, range: 420, dmg: 30, type: "knock", size: 130 },
+         { name: "결계", short: "결계", cd: 12, fr: "hr_bagua", kind: "guard", dur: 2, r: 120, dmg: 8, size: 260 },
+         { name: "천뢰 강림", short: "궁극", cd: 45, fr: "hr_bolt", kind: "ult", multi: [{ kind: "strike", fr: "hr_bolt", n: 12, range: 950, dmg: 85, type: "launch", size: 280 }, { kind: "zone", fr: "hr_bagua", at: 0, r: 500, dur: 2, tick: 0.3, dmg: 18, size: 700, spin: 2 }] }],
     ds: [{ name: "금강종", short: "금강", cd: 9, fr: "ds_bell", kind: "guard", dur: 2.5, r: 110, dmg: 8, size: 220 },
          { name: "대지 내려치기", short: "내려", cd: 5, fr: "ds_slam", kind: "slam", range: 300, dmg: 40, size: 320 },
-         { name: "투기", short: "투기", cd: 8, fr: "ds_aura", kind: "aura", dur: 4, tick: 0.4, r: 140, dmg: 13, size: 300, spin: 0 }],
+         { name: "투기", short: "투기", cd: 8, fr: "ds_aura", kind: "aura", dur: 4, tick: 0.4, r: 140, dmg: 13, size: 300, spin: 0 },
+         { name: "철퇴 돌진", short: "돌진", cd: 5, fr: "ds_slam", kind: "dash", dmg: 34 },
+         { name: "호랑이 포효", short: "포효", cd: 9, fr: "ds_aura", kind: "aura", dur: 1.2, tick: 0.3, r: 180, dmg: 16, type: "knock", size: 360, spin: 0 },
+         { name: "종소리", short: "종", cd: 7, fr: "ds_bell", kind: "strike", n: 6, range: 360, dmg: 24, type: "stagger", size: 150 },
+         { name: "금강 진노", short: "궁극", cd: 45, fr: "ds_slam", kind: "ult", multi: [{ kind: "guard", fr: "ds_bell", dur: 3, r: 160, dmg: 10, size: 320 }, { kind: "slam", fr: "ds_slam", range: 700, dmg: 120, size: 520 }] }],
     je: [{ name: "바람 화살", short: "바람", cd: 2.5, fr: "je_wind", kind: "shot", spd: 1150, life: 0.6, dmg: 30, type: "stagger", size: 170 },
          { name: "화살비", short: "화살비", cd: 7, fr: "je_rain", kind: "zone", at: 280, r: 150, dur: 1.6, tick: 0.2, dmg: 10, size: 300, spin: 0 },
-         { name: "폭풍 화살", short: "폭풍", cd: 6, fr: "je_storm", kind: "shot", spd: 520, life: 1.1, dmg: 58, type: "knock", size: 230 }],
+         { name: "폭풍 화살", short: "폭풍", cd: 6, fr: "je_storm", kind: "shot", spd: 520, life: 1.1, dmg: 58, type: "knock", size: 230 },
+         { name: "연사", short: "연사", cd: 5, fr: "je_wind", kind: "shot", n: 5, spd: 1200, life: 0.5, dmg: 12, type: "stagger", size: 100 },
+         { name: "꿰뚫는 화살", short: "꿰뚫", cd: 6, fr: "je_storm", kind: "strike", n: 4, range: 620, dmg: 26, type: "knock", size: 150 },
+         { name: "독수리 화살", short: "독수리", cd: 7, fr: "je_storm", kind: "shot", spd: 700, life: 1.2, dmg: 42, type: "launch", size: 180 },
+         { name: "천궁 화살비", short: "궁극", cd: 45, fr: "je_rain", kind: "ult", multi: [{ kind: "zone", fr: "je_rain", at: 300, r: 450, dur: 3, tick: 0.2, dmg: 22, size: 760, spin: 0 }] }],
     mj: [{ name: "그림자 습격", short: "습격", cd: 4, fr: "mj_shadow", kind: "blink", range: 520, dmg: 44, size: 200 },
          { name: "독안개", short: "독", cd: 8, fr: "mj_poison", kind: "zone", at: 170, r: 140, dur: 3.2, tick: 0.4, dmg: 12, size: 280, spin: 0 },
-         { name: "표창", short: "표창", cd: 2.5, fr: "mj_star", kind: "shot", n: 3, spd: 980, life: 0.6, dmg: 18, type: "stagger", size: 80 }],
+         { name: "표창", short: "표창", cd: 2.5, fr: "mj_star", kind: "shot", n: 3, spd: 980, life: 0.6, dmg: 18, type: "stagger", size: 80 },
+         { name: "연환 습격", short: "연환", cd: 3, fr: "mj_shadow", kind: "blink", range: 420, dmg: 30, size: 180 },
+         { name: "그림자 분신", short: "분신", cd: 9, fr: "mj_shadow", kind: "aura", dur: 3, tick: 0.25, r: 120, dmg: 10, size: 240, spin: 0 },
+         { name: "독 표창", short: "독표", cd: 5, fr: "mj_star", kind: "shot", n: 5, spd: 900, life: 0.6, dmg: 14, type: "stagger", size: 70 },
+         { name: "흑룡 난무", short: "궁극", cd: 45, fr: "mj_shadow", kind: "ult", multi: [{ kind: "strike", fr: "mj_shadow", n: 10, range: 950, dmg: 65, type: "launch", size: 230 }, { kind: "zone", fr: "mj_poison", at: 0, r: 480, dur: 2.5, tick: 0.3, dmg: 16, size: 700, spin: 0 }] }],
   };
-  const ACTS = ["s1", "s2", "s3"];
+  const ACTS = ["s1", "s2", "s3", "s4", "s5", "s6", "ult"];
+  const MPCOST = [8, 12, 15, 18, 22, 25, 50]; // 스킬 칸 번호(스킬 순서)마다 마력
+  const mpOf = (i) => (SKILL[i] && SKILL[i].mp) || MPCOST[i] || 15;
   let SKILL = SKILLS.kh;
 
   let S = null, C = null, stop = 0, shake = 0, nextId = 1;
@@ -123,12 +146,13 @@ const Dungeon = (() => {
     stop = 0; shake = 0;
     S = {
       D, t: 0, wave: 0, waveT: 1.2, spawned: false, banner: "", bannerT: 0, foes: [], shots: [], fx: [], nums: [], tele: [],
-      hero: { x: 220, z: 440, h: 0, vx: 0, vh: 0, face: 1, hp: cfg.stats.hpMax, max: cfg.stats.hpMax, st: "idle", t: 0, inv: 0, step: 0, queued: false, hit: [], walk: 0 },
-      mult: cfg.stats.atk / 33, hpK: 1 + 0.6 * (n - 1), potions: Object.assign({ p1: 0, p2: 0, p3: 0, p4: 0, p5: 0 }, typeof cfg.potions === "object" ? cfg.potions : { p1: cfg.potions || 0 }), potCd: 0, regen: null,
-      combo: 0, comboT: 0, maxCombo: 0, hitsTaken: 0, cd: [0, 0, 0], ring: 0, over: false, win: false, lose: false, camX: 0, endT: 0, ended: false,
-      remote: {}, sendT: 0, syncT: 0, zones: [],
+      hero: { x: 220, z: 440, h: 0, vx: 0, vh: 0, face: 1, hp: cfg.stats.hpMax, max: cfg.stats.hpMax, mp: cfg.stats.mpMax || 150, mpMax: cfg.stats.mpMax || 150, st: "idle", t: 0, inv: 0, step: 0, queued: false, hit: [], walk: 0 },
+      mult: cfg.stats.atk / 33, hpK: 1 + 0.6 * (n - 1), potions: Object.assign({ p1: 0, p2: 0, p3: 0, p4: 0, p5: 0, p6: 0, mp1: 0, mp2: 0, mp3: 0 }, typeof cfg.potions === "object" ? cfg.potions : { p1: cfg.potions || 0 }), potCd: 0, regen: null,
+      combo: 0, comboT: 0, maxCombo: 0, hitsTaken: 0, cd: [0, 0, 0, 0, 0, 0, 0], ring: 0, over: false, win: false, lose: false, camX: 0, endT: 0, ended: false,
+      remote: {}, sendT: 0, syncT: 0, zones: [], loot: [], learned: cfg.learned || null, slots: cfg.slots || [0, 1, 2, 3, 4, 5, 6],
     };
     if (cfg.watch) { S.hero.hp = 0; S.hero.x = -999; }
+    if (D.pvp) { const left = cfg.party && cfg.party.host === cfg.me; S.hero.x = left ? 600 : 1200; S.hero.face = left ? 1 : -1; S.pvpT = 3; S.spawned = true; for (const id in S.remote) { S.remote[id].x = S.remote[id].tx = left ? 1200 : 600; S.remote[id].face = left ? -1 : 1; } } // 결투 — 양쪽 끝에서, 3초 세고 시작
     if (cfg.party) cfg.party.members.forEach((m, i) => { if (m.id !== cfg.me) S.remote[m.id] = { id: m.id, nick: m.nick, look: m.look, gear: m.gear, x: 180 - i * 30, z: 420 + i * 25, h: 0, face: 1, st: "idle", t: 0, step: 0, walk: 0, hp: 1, max: 1, tx: 180 - i * 30, tz: 420 + i * 25, th: 0, alive: true, inv: 0 }; });
   }
   function banner(t) { S.banner = t; S.bannerT = 2.2; }
@@ -146,6 +170,7 @@ const Dungeon = (() => {
 
   /* 맞히기 — 파티원은 보이는 것만 하고 파티장에게 보낸다. remote = 파티원이 보낸 것 */
   function hitFoe(f, dmg, type, dir, remote) {
+    if (S.remote[f.id] === f) return hitPlayer(f, dmg, type, dir); // 결투 상대
     if (f.st === "dead" || f.inv > 0) return false;
     if (!remote) { dmg = Math.round(dmg * S.mult * rnd(0.92, 1.08)); S.combo++; S.comboT = 1.6; S.maxCombo = Math.max(S.maxCombo, S.combo); stop = Math.max(stop, type === "launch" ? 0.07 : 0.045); num(f.x, f.z - f.h - f.D.sc * 70, dmg, type === "launch" ? "#ffd36b" : "#fff"); }
     addFx({ k: "spark", x: f.x - dir * 10, y: f.z - f.h - 40 * f.D.sc, t: 0.22, d: 0.22, s: 70 });
@@ -181,9 +206,12 @@ const Dungeon = (() => {
     if (heavy) { H.st = "fall"; H.vh = 420; H.vx = dir * 300; H.t = 0; }
     else { H.st = "hit"; H.t = 0.3; H.vx = dir * 160; H.inv = 0.45; }
     H.queued = false;
-    if (H.hp <= 0) { H.hp = 0; H.st = "fall"; H.vh = 300; if (!C.party) { S.over = true; S.lose = true; S.endT = 1.6; } }
+    if (H.hp <= 0) { H.hp = 0; H.st = "fall"; H.vh = 300; if (!C.party || S.D.pvp) { S.over = true; S.lose = true; S.endT = 1.6; } if (S.D.pvp && C.duelLose) C.duelLose(); }
   }
   /* 몬스터가 노리는 사람 — 살아 있는 사람 중 가장 가까운 */
+  /* 결투 — 상대를 몬스터처럼 때릴 수 있게. 맞힌 것은 그 사람에게 보내고(사람끼리는 피해 절반), 그쪽이 맞음 */
+  function pvpFoes() { if (!S.D.pvp || S.pvpT > 0 || S.over) return []; const a = []; for (const id in S.remote) { const r = S.remote[id]; if (r.hp > 0) { r.D = r.D || { w: 30, sc: 1, boss: false }; r.st2 = "walk"; a.push(r); } } return a; }
+  function hitPlayer(r, dmg, type, dir) { if (S.hit2 && S.hit2[r.id] > S.t) return false; (S.hit2 = S.hit2 || {})[r.id] = S.t + 0.12; const d = Math.round(dmg * S.mult * 0.5 * rnd(0.92, 1.08)); num(r.x, r.z - r.h - 110, d, "#ffd36b"); addFx({ k: "spark", x: r.x, y: r.z - r.h - 50, t: 0.22, d: 0.22, s: 70 }); C.send({ k: "hurt", dmg: d, heavy: type === "launch" || type === "knock", dir, pvp: 1 }, r.id); S.combo++; S.comboT = 1.6; S.maxCombo = Math.max(S.maxCombo, S.combo); return true; }
   function heroes() { const a = []; if (S.hero.hp > 0 && !C.gm) a.push(S.hero); for (const id in S.remote) { const r = S.remote[id]; if (r.alive && r.hp > 0 && !r.op) a.push(r); } return a; } // 운영자(op)는 몬스터가 안 노림
   function target(f) { let best = null, bd = 1e9; heroes().forEach((h) => { const d = Math.abs(h.x - f.x) + Math.abs(h.z - f.z) * 2; if (d < bd) { bd = d; best = h; } }); return best || S.hero; }
 
@@ -193,7 +221,8 @@ const Dungeon = (() => {
     if (stop > 0) { stop -= dt; return; }
     S.t += dt;
     const H = S.hero;
-    if (S.D.tower && !S.win && !S.lose) { // 무한의 탑 — 층을 깨면 30초 쉬고(말걸기 키로 바로) 다음 층
+    if (S.D.pvp) { if (S.pvpT > 0) { const b = Math.ceil(S.pvpT); S.pvpT -= dt; if (Math.ceil(S.pvpT) !== b) banner(S.pvpT > 0 ? String(Math.ceil(S.pvpT)) : "결투 시작!"); } }
+    else if (S.D.tower && !S.win && !S.lose) { // 무한의 탑 — 층을 깨면 30초 쉬고(말걸기 키로 바로) 다음 층
       const alive = S.foes.some((f) => f.st !== "dead");
       if (S.spawned && !alive) { S.spawned = false; S.cleared = S.floor; if (S.floor >= 99) { S.win = true; S.over = true; S.endT = 1.8; banner("99층 정복!"); } else { S.rest = 30; H.hp = Math.min(H.max, H.hp + H.max * 0.25); banner(S.floor + "층 돌파! 30초 쉬고 " + (S.floor + 1) + "층으로"); } }
       if (!S.spawned && !S.over) { if (S.rest > 0) { S.rest -= dt; if (KEYS.take("talk")) S.rest = 0; } if (!(S.rest > 0)) { S.floor = (S.floor || 0) + 1; S.spawned = true; S.rest = 0; banner("무한의 탑 " + S.floor + "층" + (S.floor % 10 === 0 ? " — 대장!" : "")); towerFloor(S.floor).forEach((k, i) => spawn(k, i, towerScale(MON[k], S.floor))); } }
@@ -205,10 +234,13 @@ const Dungeon = (() => {
     }
     if (S.bannerT > 0) S.bannerT -= dt;
     if (S.comboT > 0 && (S.comboT -= dt) <= 0) S.combo = 0;
-    for (let i = 0; i < 3; i++) S.cd[i] = Math.max(0, S.cd[i] - dt);
+    for (let i = 0; i < S.cd.length; i++) S.cd[i] = Math.max(0, S.cd[i] - dt);
     if (!C.watch) heroStep(dt);
     if (host()) S.foes.forEach((f) => foeStep(f, dt));
     else S.foes.forEach((f) => { f.x += (f.tx - f.x) * Math.min(1, dt * 12); f.z += (f.tz - f.z) * Math.min(1, dt * 12); f.h += (f.th - f.h) * Math.min(1, dt * 14); f.flash = Math.max(0, f.flash - dt); if (f.st === "dead") f.t -= dt; });
+    S.foes.forEach((f) => { if ((f.st === "dead" || f.dying) && !f.lootDone && !f.D.boss && !S.D.pvp && !C.watch && !C.gm) { f.lootDone = true; S.loot.push({ x: f.x, z: f.z, h: 40, vh: 420, vx: rnd(-80, 80), t: 0 }); } });
+    S.loot.forEach((o) => { o.t += dt; if (o.t < 0.55) { o.h = Math.max(0, o.h + o.vh * dt); o.vh -= 1500 * dt; o.x += o.vx * dt; } else { const dx = H.x - o.x, dz = H.z - o.z, d = Math.hypot(dx, dz) || 1, sp = 500 + (o.t - 0.55) * 2600; o.x += dx / d * Math.min(d, sp * dt); o.z += dz / d * Math.min(d, sp * dt); o.h += (60 - o.h) * Math.min(1, dt * 8); if (d < 30) { o.got = true; if (C.loot) C.loot(); } } }); // 자석
+    S.loot = S.loot.filter((o) => !o.got);
     S.foes = S.foes.filter((f) => !(f.st === "dead" && f.t <= 0));
     if (host()) for (let i = 0; i < S.foes.length; i++) for (let j = i + 1; j < S.foes.length; j++) {
       const a = S.foes[i], b = S.foes[j], dx = b.x - a.x, dz = b.z - a.z, need = (a.D.w + b.D.w) * 0.6;
@@ -216,12 +248,13 @@ const Dungeon = (() => {
     }
     S.shots.forEach((s) => {
       s.x += s.vx * dt; s.t -= dt;
+      pvpFoes().forEach((r) => { if (!s.hit.includes(r) && Math.abs(r.x - s.x) < 70 && Math.abs(r.z - s.z) < 45) { s.hit.push(r); hitPlayer(r, s.sk ? s.sk.dmg : 34, s.sk ? s.sk.type : "knock", Math.sign(s.vx)); } });
       S.foes.forEach((f) => { if (!s.hit.includes(f) && Math.abs(f.x - s.x) < 60 + f.D.w && Math.abs(f.z - s.z) < 45 + (f.D.boss ? 30 : 0)) { s.hit.push(f); hitFoe(f, s.sk ? s.sk.dmg : 34, s.sk ? s.sk.type : "knock", Math.sign(s.vx)); } });
     });
     S.shots = S.shots.filter((s) => s.t > 0 && s.x > -100 && s.x < ROOM + 100);
     S.zones.forEach((zn) => { // 둘레 · 자리 스킬 — tick 마다 안에 있는 적을 침
       zn.t -= dt; if (zn.follow) { zn.x = H.x; zn.z = H.z; }
-      if ((zn.tt -= dt) <= 0) { zn.tt = zn.sk.tick; S.foes.forEach((f) => { if (Math.abs(f.x - zn.x) < zn.sk.r + f.D.w * 0.5 && Math.abs(f.z - zn.z) < 60) hitFoe(f, zn.sk.dmg, zn.sk.type || "stagger", Math.sign(f.x - zn.x) || 1); }); }
+      if ((zn.tt -= dt) <= 0) { zn.tt = zn.sk.tick; pvpFoes().forEach((r) => { if (Math.abs(r.x - zn.x) < zn.sk.r + 15 && Math.abs(r.z - zn.z) < 60) hitPlayer(r, zn.sk.dmg, zn.sk.type || "stagger", Math.sign(r.x - zn.x) || 1); }); S.foes.forEach((f) => { if (Math.abs(f.x - zn.x) < zn.sk.r + f.D.w * 0.5 && Math.abs(f.z - zn.z) < 60) hitFoe(f, zn.sk.dmg, zn.sk.type || "stagger", Math.sign(f.x - zn.x) || 1); }); }
     });
     S.zones = S.zones.filter((zn) => zn.t > 0);
     for (const id in S.remote) { const r = S.remote[id]; r.x += (r.tx - r.x) * Math.min(1, dt * 12); r.z += (r.tz - r.z) * Math.min(1, dt * 12); r.h += (r.th - r.h) * Math.min(1, dt * 14); r.t += dt; if (r.st === "walk" || r.st === "run") r.walk += dt * 10; }
@@ -240,7 +273,8 @@ const Dungeon = (() => {
   }
 
   function cast(sk) {
-    const H = S.hero, near = (r) => S.foes.filter((f) => f.st !== "dead" && Math.abs(f.x - H.x) < r).sort((a, b) => Math.abs(a.x - H.x) - Math.abs(b.x - H.x));
+    if (sk.kind === "ult") { S.flash = 0.5; shake = 0.7; banner("궁극기 — " + sk.name + "!"); S.hero.inv = Math.max(S.hero.inv, 1); sk.multi.forEach((m) => cast(m)); return; } // 궁극기 — 여러 재주를 한 번에
+    const H = S.hero, near = (r) => S.foes.filter((f) => f.st !== "dead" && Math.abs(f.x - H.x) < r).concat(pvpFoes().filter((p) => Math.abs(p.x - H.x) < r)).sort((a, b) => Math.abs(a.x - H.x) - Math.abs(b.x - H.x));
     if (sk.kind === "shot") { H.st = "cast"; H.t = 0; const n = sk.n || 1; for (let k = 0; k < n; k++) S.shots.push({ x: H.x + H.face * 40, z: clamp(H.z + (k - (n - 1) / 2) * 34, Z0, Z1), vx: H.face * sk.spd, t: sk.life, hit: [], face: H.face, sk }); }
     else if (sk.kind === "aura") { S.zones.push({ follow: true, x: H.x, z: H.z, t: sk.dur, tt: 0, sk }); H.st = "cast"; H.t = 0.1; }
     else if (sk.kind === "zone") { S.zones.push({ x: H.x + H.face * sk.at, z: H.z, t: sk.dur, tt: 0, sk }); H.st = "cast"; H.t = 0; }
@@ -250,20 +284,22 @@ const Dungeon = (() => {
       if (f) { const side = f.x >= H.x ? 1 : -1; H.x = clamp(f.x + side * (f.D.w + 40), 30, ROOM - 30); H.z = f.z; H.face = -side; hitFoe(f, sk.dmg, "launch", -side); addFx({ k: "hsk", fr: sk.fr, x: H.x, y: H.z - 50, t: 0.4, d: 0.4, s: sk.size, flip: H.face < 0 }); }
       H.st = "atk"; H.step = 2; H.t = 0; H.inv = 0.35; }
     else if (sk.kind === "slam") { H.st = "cast"; H.t = 0; shake = 0.35; addFx({ k: "hsk", fr: sk.fr, x: H.x + H.face * 150, y: H.z - 20, t: 0.5, d: 0.5, s: sk.size, flip: H.face < 0 }); addFx({ k: "quake", x: H.x + H.face * 150, y: H.z, t: 0.5, d: 0.5, s: 300 });
-      S.foes.forEach((f) => { const d = (f.x - H.x) * H.face; if (d > -20 && d < sk.range + f.D.w && Math.abs(f.z - H.z) < 60) hitFoe(f, sk.dmg, "launch", H.face); }); }
+      S.foes.concat(pvpFoes()).forEach((f) => { const d = (f.x - H.x) * H.face; if (d > -20 && d < sk.range + f.D.w && Math.abs(f.z - H.z) < 60) hitFoe(f, sk.dmg, "launch", H.face); }); }
     else if (sk.kind === "guard") { H.inv = sk.dur; H.st = "cast"; H.t = 0; S.zones.push({ follow: true, x: H.x, z: H.z, t: sk.dur, tt: 0, sk: Object.assign({}, sk, { tick: 0.5, type: "knock" }) }); }
   }
   /* 물약 — 빠른 칸 1~5. p1 체력 40% · p2 80% · p3 6초 동안 60% · p4 금단(가득 + 3초 무적) · p5 기력(스킬 기다림 없앰). 서로 1초 간격 */
-  const POTS = ["p1", "p2", "p3", "p4", "p5"];
+  const POTS = ["p1", "p2", "p6", "mp1", "mp2", "mp3", "p4", "p5"]; // 체력 소 · 중 · 대 · 마력 소 · 중 · 대 · 금단 · 기력 (회복 단약 p3 는 Q 로)
   function usePot(k) {
     const H = S.hero; if (!S.potions[k] || S.potCd > 0 || H.hp <= 0) return;
-    if ((k === "p1" || k === "p2" || k === "p3") && H.hp >= H.max) return;
+    if ((k === "p1" || k === "p2" || k === "p6" || k === "p3") && H.hp >= H.max) return;
+    if (k.startsWith("mp") && H.mp >= H.mpMax) return;
     if (k === "p5" && !S.cd.some((v) => v > 0)) return;
     S.potions[k]--; S.potCd = 1; C.usePotion(k);
-    if (k === "p1" || k === "p2") { const heal = Math.round(H.max * (k === "p1" ? 0.4 : 0.8)); H.hp = Math.min(H.max, H.hp + heal); num(H.x, H.z - 130, "+" + heal, "#5eea7a"); }
+    if (k === "p1" || k === "p2" || k === "p6") { const heal = Math.round(H.max * { p1: 0.3, p2: 0.6, p6: 1 }[k]); H.hp = Math.min(H.max, H.hp + heal); num(H.x, H.z - 130, "+" + heal, "#5eea7a"); }
+    if (k.startsWith("mp")) { const m2 = Math.round(H.mpMax * { mp1: 0.3, mp2: 0.6, mp3: 1 }[k]); H.mp = Math.min(H.mpMax, H.mp + m2); num(H.x, H.z - 130, "+" + m2 + " 마력", "#7fb7ff"); }
     if (k === "p3") { S.regen = { left: H.max * 0.6, rate: H.max * 0.1 }; num(H.x, H.z - 130, "회복", "#7fe39a"); }
     if (k === "p4") { H.hp = H.max; H.inv = 3; num(H.x, H.z - 130, "금단!", "#ffd36b"); }
-    if (k === "p5") { S.cd = [0, 0, 0]; num(H.x, H.z - 130, "기력!", "#7fc8ff"); }
+    if (k === "p5") { S.cd = S.cd.map(() => 0); num(H.x, H.z - 130, "기력!", "#7fc8ff"); }
   }
   function heroStep(dt) {
     const H = S.hero, [ax, az, run] = C.axis();
@@ -271,21 +307,23 @@ const Dungeon = (() => {
     const grounded = H.h <= 0 && H.vh <= 0, free = H.st === "idle" || H.st === "walk" || H.st === "run";
     if (H.hp <= 0) { gravity(H, dt); H.x += H.vx * dt; H.vx *= 0.9; if (H.h <= 0) H.st = "dead"; return; }
     if (S.over && S.win) { if (grounded) H.st = "idle"; return; }
-    S.potCd = Math.max(0, S.potCd - dt);
+    S.potCd = Math.max(0, S.potCd - dt); if (H.hp > 0) H.mp = Math.min(H.mpMax, H.mp + (2 + H.mpMax * 0.015) * dt); // 마력 저절로
     if (S.regen) { const d = Math.min(S.regen.left, S.regen.rate * dt); S.regen.left -= d; H.hp = Math.min(H.max, H.hp + d); if (S.regen.left <= 0.5) S.regen = null; }
-    if (KEYS.take("potion")) usePot(["p1", "p2", "p3"].find((k) => S.potions[k] > 0) || "p1");
+    if (KEYS.take("potion")) usePot(["p1", "p2", "p6", "p3"].find((k) => S.potions[k] > 0) || "p1");
+    if (KEYS.take("mpot")) usePot(["mp1", "mp2", "mp3"].find((k) => S.potions[k] > 0) || "mp1");
     POTS.forEach((k, i) => { if (KEYS.take("q" + (i + 1))) usePot(k); });
     S.dashCd = Math.max(0, (S.dashCd || 0) - dt);
     const dd = C.dash ? C.dash() : 0;
     if (dd && S.dashCd <= 0 && (free || H.st === "atk") && grounded) { H.st = "sprint"; H.t = 0; H.face = dd; H.inv = Math.max(H.inv, 0.22); S.dashCd = 0.45; H.queued = false; }
     /* 스킬 — 누른 것을 0.4초 기억했다가 움직일 수 있게 되면 바로(다른 동작 중에 누르면 버려져 '먹통' 같던 것). 기다림 중이면 머리 위에 알려 줌 */
-    SKILL.forEach((sk, i) => { if (KEYS.take(ACTS[i])) { if (S.cd[i] > 0) { if (!(S.cdSay > 0)) { num(H.x, H.z - H.h - 140, sk.short + " " + Math.ceil(S.cd[i]) + "초", "#c9c2b0"); S.cdSay = 0.4; } } else S.skBuf = { i, t: 0.4 }; } });
-    S.cdSay = Math.max(0, (S.cdSay || 0) - dt);
+    S.slots.forEach((si, slot) => { const i = si, sk = SKILL[si]; if (KEYS.take(ACTS[slot]) && sk) { if (S.learned && !S.learned.includes(i)) { if (!(S.cdSay > 0)) { num(H.x, H.z - H.h - 140, sk.short + " — 아직 안 배움", "#c9c2b0"); S.cdSay = 0.6; } } else if (S.cd[i] > 0) { if (!(S.cdSay > 0)) { num(H.x, H.z - H.h - 140, sk.short + " " + Math.ceil(S.cd[i]) + "초", "#c9c2b0"); S.cdSay = 0.4; } } else S.skBuf = { i, t: 0.4 }; } });
+    S.cdSay = Math.max(0, (S.cdSay || 0) - dt); S.flash = Math.max(0, (S.flash || 0) - dt);
     if (S.skBuf) { const i = S.skBuf.i, sk = SKILL[i], ready = free || H.st === "atk" || (H.st === "cast" && H.t >= 0.12) || H.st === "sprint";
-      if (ready && grounded && S.cd[i] <= 0) { S.cd[i] = sk.cd; H.queued = false; S.skBuf = null; cast(sk); } else if ((S.skBuf.t -= dt) <= 0) S.skBuf = null; }
+      if (ready && grounded && S.cd[i] <= 0) { if (H.mp < mpOf(i)) { S.skBuf = null; if (!(S.cdSay > 0)) { num(H.x, H.z - H.h - 140, "마력 부족", "#7fb7ff"); S.cdSay = 0.6; } } else { H.mp -= mpOf(i); S.cd[i] = sk.cd; H.queued = false; S.skBuf = null; cast(sk); } } else if ((S.skBuf.t -= dt) <= 0) S.skBuf = null; }
     if (H.st === "dash") {
       H.x += H.face * 1150 * dt;
       S.foes.forEach((f) => { if (!H.hit.includes(f) && Math.abs(f.x - H.x) < 60 + f.D.w * 0.5 && Math.abs(f.z - H.z) < 45) { H.hit.push(f); hitFoe(f, H.dashDmg || 28, "launch", H.face); } });
+      pvpFoes().forEach((r) => { if (!H.hit.includes(r) && Math.abs(r.x - H.x) < 75 && Math.abs(r.z - H.z) < 45) { H.hit.push(r); hitPlayer(r, H.dashDmg || 28, "launch", H.face); } });
       if (H.t >= 0.28) { H.st = "idle"; H.vx = 0; }
     } else if (H.st === "cast") { if (H.t >= 0.22) H.st = "idle"; }
     else if (H.st === "sprint") { H.x = clamp(H.x + H.face * 980 * dt, 20, ROOM - 20); if (H.t >= 0.2) H.st = "idle"; } // 대시
@@ -299,7 +337,7 @@ const Dungeon = (() => {
       if (H.st === "atk" && H.t < A.act[0] + 0.05) H.x += H.face * A.lunge * dt * 4 * (1 - H.t / (A.act[0] + 0.05));
       if (H.t >= A.act[0] && H.t <= A.act[1]) {
         if (A.shot && H.st === "atk") { if (!H.hit.includes("shot")) { H.hit.push("shot"); const sh = A.shot; for (let k = 0; k < sh.n; k++) S.shots.push({ x: H.x + H.face * 40, z: clamp(H.z + (k - (sh.n - 1) / 2) * 30, Z0, Z1), vx: H.face * sh.spd, t: sh.life, hit: [], face: H.face, sk: { fr: sh.fr, size: sh.size, dmg: A.dmg, type: A.type } }); } } // 부적 · 화살
-        else S.foes.forEach((f) => { if (!H.hit.includes(f) && inFront(H, f, A.range, 32)) { H.hit.push(f); hitFoe(f, A.dmg, A.type, H.face); if (A.quake && !H.hit.includes("q")) { H.hit.push("q"); shake = 0.25; addFx({ k: "quake", x: H.x + H.face * 110, y: H.z, t: 0.45, d: 0.45, s: 260 }); } } });
+        else S.foes.concat(pvpFoes()).forEach((f) => { if (f.remoteHero !== undefined || S.remote[f.id] === f) { if (!H.hit.includes(f) && inFront(H, f, A.range, 32)) { H.hit.push(f); hitPlayer(f, A.dmg, A.type, H.face); } return; } if (!H.hit.includes(f) && inFront(H, f, A.range, 32)) { H.hit.push(f); hitFoe(f, A.dmg, A.type, H.face); if (A.quake && !H.hit.includes("q")) { H.hit.push("q"); shake = 0.25; addFx({ k: "quake", x: H.x + H.face * 110, y: H.z, t: 0.45, d: 0.45, s: 260 }); } } });
       }
       if (KEYS.take("back") && H.st === "atk") { H.st = "backstep"; H.t = 0; H.vh = 260; H.inv = 0.28; H.queued = false; return; }
       if (KEYS.take("atk") && H.st === "atk") H.queued = true; // 공격 중엔 언제 눌러도 다음 타로(맞힐 때 멈칫과 겹쳐 버려지던 것)
@@ -407,7 +445,7 @@ const Dungeon = (() => {
     if (!S || !C.party || !d) return;
     if (d.k === "me") { const r = S.remote[from]; if (!r) return; Object.assign(r, { tx: d.x, tz: d.z, th: d.h, face: d.face, step: d.step, hp: d.hp, max: d.max, alive: d.hp > 0 }); if (r.st !== d.st) { r.st = d.st; r.t = 0; } return; }
     if (d.k === "hit" && host()) { const f = S.foes.find((x) => x.id === d.i); if (f) hitFoe(f, Math.min(600, +d.dmg || 0), d.type, d.dir || 1, true); return; }
-    if (d.k === "hurt") { hurt(S.hero, +d.dmg || 0, !!d.heavy, d.dir || 1); return; }
+    if (d.k === "hurt") { if (d.pvp && (!S.D.pvp || S.pvpT > 0)) return; hurt(S.hero, +d.dmg || 0, !!d.heavy, d.dir || 1); return; }
     if (d.k === "sync" && !host()) {
       const seen = new Set();
       d.foes.forEach(([id, kind, x, z, h, st, face, hp, max]) => {
@@ -515,6 +553,7 @@ const Dungeon = (() => {
     if (!C.watch) bodies.push([H.z + 0.1, () => drawPerson(g, H, C.look, cx, true, C.party ? C.nick : "")]);
     for (const id in S.remote) { const r = S.remote[id]; bodies.push([r.z, () => drawPerson(g, r, r.look, cx, false, r.nick)]); }
     bodies.sort((a, b) => a[0] - b[0]).forEach((b) => b[1]());
+    S.loot.forEach((o) => { const r = FR.items && FR.items.box; if (!r || !IMG.items.complete) return; const k = 30 / Math.max(r[2], r[3]), x = o.x - cx, y = o.z - o.h; g.save(); g.shadowColor = "rgba(255,220,90,.9)"; g.shadowBlur = 10; g.drawImage(IMG.items, r[0], r[1], r[2], r[3], x - r[2] * k / 2, y - r[3] * k / 2, r[2] * k, r[3] * k); g.restore(); }); // 드롭 주머니
     S.shots.forEach((s) => centered(g, IMG.hsk, FR.hsk[s.sk ? s.sk.fr : "kh_wave"], s.x - cx, s.z - 60, s.sk ? s.sk.size : 170, s.face < 0, Math.min(1, s.t / 0.15)));
     S.fx.forEach((x) => {
       const p = 1 - x.t / x.d;
@@ -535,33 +574,40 @@ const Dungeon = (() => {
     g.font = "700 15px 'Noto Sans KR', sans-serif"; g.fillStyle = "#f6d27a"; g.fillText(C.nick + "  ·  " + S.D.name, 22, 30);
     bar(g, 22, 40, 260, 14, H.hp / H.max, H.hp / H.max > 0.3 ? "#3ccf6a" : "#e5484d");
     g.font = "600 12px 'Noto Sans KR', sans-serif"; g.fillStyle = "#fff"; g.fillText(Math.ceil(H.hp) + " / " + H.max, 28, 52);
+    bar(g, 22, 57, 260, 8, H.mp / H.mpMax, "#3f8cff"); // 마력
     g.fillStyle = "#c9b48a"; g.fillText("무리 " + Math.min(S.wave + 1, S.D.waves.length) + " / " + S.D.waves.length + "   " + Math.floor(S.t / 60) + ":" + String(Math.floor(S.t % 60)).padStart(2, "0") + "   물약 " + Object.values(S.potions).reduce((a, b) => a + b, 0) + (touch ? "" : " (" + KEYS.label("potion") + ")"), 22, 74);
     let py = 96; for (const id in S.remote) { const r = S.remote[id]; g.fillStyle = "#bfe3ff"; g.fillText(r.nick, 22, py); bar(g, 110, py - 9, 90, 7, r.hp / (r.max || 1), "#3ccf6a"); py += 18; }
     if (S.D.tower) { g.textAlign = "right"; g.font = "900 22px 'Noto Sans KR', sans-serif"; g.lineWidth = 4; g.strokeStyle = "rgba(0,0,0,.8)"; const tt = "무한의 탑 " + (S.floor || 1) + "층"; g.strokeText(tt, VW - 22, 70); g.fillStyle = "#ffd36b"; g.fillText(tt, VW - 22, 70);
       if (S.rest > 0 && !S.over) { g.textAlign = "center"; g.font = "800 20px 'Noto Sans KR', sans-serif"; const r = "쉬는 시간 " + Math.ceil(S.rest) + "초 — " + (touch ? "말걸기 단추" : KEYS.label("talk")) + " 로 바로 " + (S.floor + 1) + "층"; g.strokeText(r, VW / 2, 120); g.fillStyle = "#9df59a"; g.fillText(r, VW / 2, 120); } }
+    if (S.flash > 0) { g.fillStyle = "rgba(255,240,200," + Math.min(0.5, S.flash) + ")"; g.fillRect(0, 0, VW, VH); }
     const B = S.foes.find((f) => f.D.boss && f.st !== "dead");
     if (B) { g.textAlign = "center"; g.font = "800 15px 'Noto Sans KR', sans-serif"; g.fillStyle = "#ffb08a"; g.fillText(B.D.name, VW / 2, 28); bar(g, VW / 2 - 220, 36, 440, 12, B.hp / B.max, "#e0662a"); }
     if (S.combo >= 2) { g.textAlign = "right"; g.font = "900 " + (30 + Math.min(20, S.combo)) + "px 'Noto Sans KR', sans-serif"; g.lineWidth = 5; g.strokeStyle = "rgba(0,0,0,.8)"; const t = S.combo + " 연속!"; g.strokeText(t, VW - 24, 120); g.fillStyle = "#ffd36b"; g.fillText(t, VW - 24, 120); }
     if (S.bannerT > 0) { g.textAlign = "center"; g.font = "800 26px 'Noto Sans KR', sans-serif"; g.globalAlpha = Math.min(1, S.bannerT / 0.4); g.lineWidth = 5; g.strokeStyle = "rgba(0,0,0,.8)"; g.strokeText(S.banner, VW / 2, 170); g.fillStyle = "#fff1d0"; g.fillText(S.banner, VW / 2, 170); g.globalAlpha = 1; }
     if (H.hp <= 0 && C.party && !S.over) { g.textAlign = "center"; g.font = "800 20px 'Noto Sans KR', sans-serif"; g.fillStyle = "#ff8a7a"; g.fillText("쓰러졌어요 — 파티원이 이기면 같이 보상을 받아요", VW / 2, 220); }
-    { // 물약 빠른 칸 — 가운데 아래
-      const x0 = VW / 2 - 150, y0 = VH - 64;
-      g.fillStyle = "rgba(10,8,8,.55)"; if (g.roundRect) { g.beginPath(); g.roundRect(x0 - 8, y0 - 26, 316, 86, 10); g.fill(); } else g.fillRect(x0 - 8, y0 - 26, 316, 86);
-      bar(g, x0, y0 - 18, 300, 12, H.hp / H.max, H.hp / H.max > 0.3 ? "#5fd36a" : "#e5484d");
-      g.textAlign = "center"; g.font = "800 11px 'Noto Sans KR', sans-serif"; g.fillStyle = "#fff"; g.fillText(Math.ceil(H.hp) + " / " + H.max, VW / 2, y0 - 8);
-      POTS.forEach((k, i) => { const x = x0 + i * 61, y = y0, r = FR.items && FR.items[k], n = S.potions[k] || 0;
-        g.fillStyle = "rgba(30,26,30,.85)"; g.fillRect(x, y, 54, 44); g.strokeStyle = n ? "#8a7a5a" : "#3a3434"; g.lineWidth = 1; g.strokeRect(x, y, 54, 44);
-        if (r && IMG.items.complete) { const kk = 36 / Math.max(r[2], r[3]); g.globalAlpha = n ? 1 : 0.3; g.drawImage(IMG.items, r[0], r[1], r[2], r[3], x + 27 - r[2] * kk / 2, y + 22 - r[3] * kk / 2, r[2] * kk, r[3] * kk); g.globalAlpha = 1; }
-        if (S.potCd > 0 && n) { g.fillStyle = "rgba(0,0,0,.5)"; g.fillRect(x, y + 44 * (1 - S.potCd), 54, 44 * S.potCd); }
-        g.textAlign = "right"; g.font = "800 13px 'Noto Sans KR', sans-serif"; g.lineWidth = 3; g.strokeStyle = "#000"; g.strokeText(String(n), x + 51, y + 41); g.fillStyle = "#fff"; g.fillText(String(n), x + 51, y + 41);
-        if (!touch) { g.textAlign = "center"; g.font = "700 10px sans-serif"; g.fillStyle = "#c9c2b0"; g.fillText(KEYS.label("q" + (i + 1)), x + 27, y + 56); } });
+    if (!touch) { // 물약 빠른 칸 — 가운데 아래(휴대폰은 「물약」 단추 하나로)
+      const x0 = 150, y0 = VH - 58, W8 = POTS.length * 50 - 4, cxm = x0 + W8 / 2;
+      g.fillStyle = "rgba(10,8,8,.55)"; if (g.roundRect) { g.beginPath(); g.roundRect(x0 - 8, y0 - 36, W8 + 16, 94, 10); g.fill(); } else g.fillRect(x0 - 8, y0 - 36, W8 + 16, 94);
+      bar(g, x0, y0 - 30, W8, 11, H.hp / H.max, H.hp / H.max > 0.3 ? "#5fd36a" : "#e5484d"); bar(g, x0, y0 - 16, W8, 9, H.mp / H.mpMax, "#3f8cff");
+      g.textAlign = "center"; g.font = "800 10px 'Noto Sans KR', sans-serif"; g.fillStyle = "#fff"; g.fillText(Math.ceil(H.hp) + " / " + H.max, cxm, y0 - 21); g.fillText(Math.floor(H.mp) + " / " + H.mpMax, cxm, y0 - 8.5);
+      POTS.forEach((k, i) => { const x = x0 + i * 50, y = y0, r = FR.items && FR.items[k], n = S.potions[k] || 0;
+        g.fillStyle = "rgba(30,26,30,.85)"; g.fillRect(x, y, 46, 40); g.strokeStyle = n ? (k.startsWith("mp") ? "#4a7ac8" : "#8a7a5a") : "#3a3434"; g.lineWidth = 1; g.strokeRect(x, y, 46, 40);
+        if (r && IMG.items.complete) { const kk = 32 / Math.max(r[2], r[3]); g.globalAlpha = n ? 1 : 0.3; g.drawImage(IMG.items, r[0], r[1], r[2], r[3], x + 23 - r[2] * kk / 2, y + 20 - r[3] * kk / 2, r[2] * kk, r[3] * kk); g.globalAlpha = 1; }
+        if (S.potCd > 0 && n) { g.fillStyle = "rgba(0,0,0,.5)"; g.fillRect(x, y + 40 * (1 - S.potCd), 46, 40 * S.potCd); }
+        g.textAlign = "right"; g.font = "800 12px 'Noto Sans KR', sans-serif"; g.lineWidth = 3; g.strokeStyle = "#000"; g.strokeText(String(n), x + 44, y + 38); g.fillStyle = "#fff"; g.fillText(String(n), x + 44, y + 38);
+        g.textAlign = "center"; g.font = "700 9px sans-serif"; g.fillStyle = "#c9c2b0"; g.fillText(KEYS.label("q" + (i + 1)), x + 23, y + 51); });
     }
-    if (!touch) SKILL.forEach((sk, i) => { const x = VW - 210 + i * 66, y = VH - 70; g.fillStyle = "rgba(20,10,8,.75)"; g.fillRect(x, y, 56, 56); g.strokeStyle = "#b8893a"; g.lineWidth = 1; g.strokeRect(x, y, 56, 56);
-      centered(g, IMG.hsk, FR.hsk[sk.fr], x + 28, y + 28, 48, false, S.cd[i] > 0 ? 0.35 : 1);
-      if (S.cd[i] > 0) { g.fillStyle = "rgba(0,0,0,.55)"; g.fillRect(x, y + 56 * (1 - S.cd[i] / sk.cd), 56, 56 * S.cd[i] / sk.cd); g.fillStyle = "#fff"; g.textAlign = "center"; g.font = "800 16px sans-serif"; g.fillText(Math.ceil(S.cd[i]), x + 28, y + 34); }
-      g.fillStyle = "#f6d27a"; g.textAlign = "left"; g.font = "700 11px sans-serif"; g.fillText(KEYS.label(ACTS[i]), x + 4, y + 13); });
+    if (!touch) for (let slot = 0; slot < 7; slot++) { // 둥근 스킬 칸 — 위 1·2·3·궁극, 아래 4·5·6 (스킬창에서 끌어다 바꿈)
+      const i = S.slots[slot], sk = SKILL[i], ult = slot === 6, x = VW - 300 + (slot < 3 ? slot * 62 + 31 : ult ? 3 * 62 + 31 : (slot - 3) * 62), y = slot < 3 || ult ? VH - 128 : VH - 66, R = ult ? 28 : 26;
+      g.save(); g.beginPath(); if (ult) { for (let k = 0; k < 6; k++) { const a = Math.PI / 6 + k * Math.PI / 3; g.lineTo(x + 28 + Math.cos(a) * (R + 3), y + 28 + Math.sin(a) * (R + 3)); } g.closePath(); } else g.arc(x + 28, y + 28, R, 0, Math.PI * 2);
+      g.fillStyle = "rgba(15,12,20,.8)"; g.fill(); g.lineWidth = ult ? 3 : 2; g.strokeStyle = ult ? "#ffcf4a" : "rgba(220,210,190,.55)"; if (ult) { g.shadowColor = "rgba(255,200,60,.9)"; g.shadowBlur = 12; } g.stroke(); g.shadowBlur = 0; g.clip();
+      if (sk) { const lock = S.learned && !S.learned.includes(i); centered(g, IMG.hsk, FR.hsk[sk.fr], x + 28, y + 28, 50, false, lock ? 0.15 : S.cd[i] > 0 ? 0.4 : 1);
+        if (S.cd[i] > 0) { g.fillStyle = "rgba(0,0,0,.55)"; g.fillRect(x, y + 56 * (1 - S.cd[i] / sk.cd), 56, 56 * S.cd[i] / sk.cd); g.fillStyle = "#fff"; g.textAlign = "center"; g.font = "800 16px sans-serif"; g.fillText(Math.ceil(S.cd[i]), x + 28, y + 34); } }
+      g.restore();
+      const lab = KEYS.label(ACTS[slot]); g.fillStyle = "rgba(0,0,0,.75)"; g.fillRect(x + 36, y + 42, 18, 15); g.fillStyle = "#e8e2d0"; g.textAlign = "center"; g.font = "800 11px sans-serif"; g.fillText(lab.length > 2 ? lab.slice(0, 2) : lab, x + 45, y + 54);
+    }
   }
-  return { gmAura: (g, x, y) => gmAura(g, x, y, performance.now() / 1000), start, step, draw, net, MON, DUN, SKILLS, get SKILL() { return SKILL; }, get S() { return S; }, quit() { if (S) S.ended = true; S = null; }, addRemote(p) { if (!S || S.remote[p.id]) return; if (!C.party) C.party = { host: C.me, members: [] }; S.spec = true; /* 혼자 하던 판에 운영자가 들어오면 그때부터 주고받음 */ S.remote[p.id] = { id: p.id, nick: p.nick, look: p.look, gear: p.gear, op: !!p.op, x: S.hero.x - 60, z: S.hero.z, h: 0, face: 1, st: "idle", t: 0, step: 0, walk: 0, hp: 1, max: 1, tx: S.hero.x - 60, tz: S.hero.z, th: 0, alive: true, inv: 0 }; }, watched() { if (S) S.spec = true; } };
+  return { lootText(t2) { if (S) num(S.hero.x, S.hero.z - S.hero.h - 125, t2, "#ffe08a"); }, duelWon() { if (S && !S.over) { S.over = true; S.win = true; S.endT = 1.6; banner("승리!"); } }, gmAura: (g, x, y) => gmAura(g, x, y, performance.now() / 1000), start, step, draw, net, MON, DUN, SKILLS, get SKILL() { return SKILL; }, get S() { return S; }, quit() { if (S) S.ended = true; S = null; }, addRemote(p) { if (!S || S.remote[p.id]) return; if (!C.party) C.party = { host: C.me, members: [] }; S.spec = true; /* 혼자 하던 판에 운영자가 들어오면 그때부터 주고받음 */ S.remote[p.id] = { id: p.id, nick: p.nick, look: p.look, gear: p.gear, op: !!p.op, x: S.hero.x - 60, z: S.hero.z, h: 0, face: 1, st: "idle", t: 0, step: 0, walk: 0, hp: 1, max: 1, tx: S.hero.x - 60, tz: S.hero.z, th: 0, alive: true, inv: 0 }; }, watched() { if (S) S.spec = true; } };
 })();
 
 /* ── 배경 — 마을 · 던전마다. 제미나이 맵 그림(img/maps/<이름>.jpg, frames.js 의 MAPS 에 적힌 것)이 있으면 그것을, 없으면 코드로 그린다
