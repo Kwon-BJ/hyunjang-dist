@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0c0708">
+<title>봉인검록 — 시제품</title>
+<!-- 봉인검록(가칭) 전투 시제품 (2026-10-27). 병무청 문파원 클로즈 베타 전 단계 — 방 하나에서 이동 · 3타 콤보 · 띄우기 · 공중 콤보 · 회피 · 스킬 3개.
+     그림은 연병장 것(무사 강혁 · 몬스터 · 스킬 효과)을 빌려 씀. 나중에 앱으로 감쌀 수 있게 이 폴더 하나로 돈다 -->
+<style>
+  html, body { margin: 0; height: 100%; background: #0c0708; color: #f3e6c8; font-family: "Noto Sans KR", system-ui, sans-serif; overflow: hidden; touch-action: none; -webkit-user-select: none; user-select: none; }
+  #stage { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+  canvas { display: block; width: 100%; height: 100%; }
+  .panel { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(8,4,6,.72); }
+  .panel[hidden] { display: none; }
+  .card { max-width: 560px; width: 86%; padding: 22px 26px; border: 1px solid #b8893a; border-radius: 14px; background: linear-gradient(#1e1214, #120a0c); text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,.6); max-height: 88%; overflow: auto; }
+  .card h1 { margin: 0 0 4px; font-size: 34px; letter-spacing: 4px; color: #f6d27a; text-shadow: 0 2px 0 #5b2a12; }
+  .card .sub { margin: 0 0 14px; font-size: 13px; color: #c9b48a; }
+  .card p { margin: 6px 0; font-size: 14px; line-height: 1.55; }
+  .keys { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 12px auto; text-align: left; font-size: 13px; width: fit-content; }
+  .keys b { color: #f6d27a; }
+  .btns { display: flex; gap: 10px; justify-content: center; margin-top: 14px; flex-wrap: wrap; }
+  .btn { font: inherit; font-size: 16px; font-weight: 700; padding: 10px 26px; border-radius: 999px; border: 1px solid #f6d27a; background: #8a2a1c; color: #fff4dc; cursor: pointer; }
+  .btn.ghost { background: transparent; color: #f6d27a; }
+  .res { font-size: 15px; margin: 10px 0; }
+  .grade { font-size: 64px; font-weight: 900; color: #f6d27a; line-height: 1; margin: 6px 0; }
+  /* 휴대폰 단추 — 터치 기기에서만 */
+  .pad { position: absolute; inset: 0; pointer-events: none; }
+  .pad[hidden] { display: none; }
+  .tb { position: absolute; pointer-events: auto; border-radius: 50%; border: 2px solid rgba(246,210,122,.7); background: rgba(40,16,14,.55); color: #fff4dc; font: 700 13px "Noto Sans KR", sans-serif; display: flex; align-items: center; justify-content: center; text-align: center; touch-action: none; }
+  .tb.on { background: rgba(160,60,30,.75); }
+  .tb small { display: block; font-size: 10px; opacity: .8; }
+  .tb .cd { position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(rgba(0,0,0,.65) calc(var(--cd, 0) * 360deg), transparent 0); pointer-events: none; }
+  #rotate { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: #0c0708; font-size: 18px; text-align: center; padding: 20px; z-index: 9; }
+  @media (orientation: portrait) and (pointer: coarse) { #rotate { display: flex; } }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="cv" aria-label="봉인검록 게임 화면"></canvas>
+  <div class="pad" id="pad" hidden>
+    <div class="tb" id="tAtk" style="right:4%;bottom:8%;width:17%;height:30.2%;font-size:17px">공격</div>
+    <div class="tb" id="tJump" style="right:23%;bottom:5%;width:10%;height:17.8%">점프</div>
+    <div class="tb" id="tRoll" style="right:4%;bottom:42%;width:10%;height:17.8%">회피</div>
+    <div class="tb" id="tS1" style="right:24%;bottom:26%;width:9%;height:16%"><span>검기<small>A</small></span><i class="cd"></i></div>
+    <div class="tb" id="tS2" style="right:16%;bottom:43%;width:9%;height:16%"><span>검진<small>S</small></span><i class="cd"></i></div>
+    <div class="tb" id="tS3" style="right:15%;bottom:62%;width:9%;height:16%"><span>돌진<small>D</small></span><i class="cd"></i></div>
+  </div>
+  <div class="panel" id="intro">
+    <div class="card">
+      <h1>封印劍錄</h1>
+      <p class="sub">봉인검록 — 전투 시제품 · 병무청 문파원 미리 해 보기</p>
+      <p id="hello">무사 강혁으로 검은 숲 어귀의 잡귀를 물리치고 바위 거인을 쓰러뜨리세요.</p>
+      <div class="keys">
+        <b>← → ↑ ↓</b><span>움직이기(↑ ↓ 는 안쪽 · 바깥쪽 줄) · 같은 쪽 두 번 = 달리기</span>
+        <b>X</b><span>공격 — 이어 누르면 3타, 3타째는 띄우기 · 떠 있는 적은 계속 때릴 수 있어요</span>
+        <b>C</b><span>점프 — 공중에서 X 는 내려베기</span>
+        <b>Z</b><span>구르기(잠깐 무적)</span>
+        <b>A S D</b><span>화염 검기 · 화염검 진 · 화염 돌진</span>
+      </div>
+      <p class="sub">휴대폰은 가로로 · 왼쪽을 누른 채 끌어 움직이고 오른쪽 단추로 싸워요</p>
+      <div class="btns"><button class="btn" id="startBtn" type="button">시작</button><button class="btn ghost" id="fullBtn" type="button">전체화면</button></div>
+    </div>
+  </div>
+  <div class="panel" id="result" hidden>
+    <div class="card">
+      <h1 id="resTitle">클리어!</h1>
+      <div class="grade" id="resGrade">S</div>
+      <div class="res" id="resLine"></div>
+      <p class="sub">시제품이에요 — 손맛 · 어려움 · 버그를 문파 카톡에 알려 주세요</p>
+      <div class="btns"><button class="btn" id="againBtn" type="button">다시 하기</button></div>
+    </div>
+  </div>
+</div>
+<div id="rotate">휴대폰을 가로로 돌려 주세요</div>
+<script src="frames.js?v=202610270355"></script>
+<script src="game.js?v=202610270355"></script>
+</body>
+</html>
