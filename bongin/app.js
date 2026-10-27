@@ -55,6 +55,8 @@ const APP = (() => {
     if (m.t === "gmjoin") return Dungeon.addRemote(m.p);
     if (m.t === "spec") return Dungeon.watched();
     if (m.t === "twr") return towerPanel(m);
+    if (m.t === "loot") { Dungeon.lootText(m.gold ? "+" + m.gold + " G" : "+ " + m.name); return; }
+    if (m.t === "cardRes") { A.cardRes = m; if (A.result) showResult(); return; }
     if (m.t === "gear") { const o = A.others[m.id]; if (o) o.gear = m.gear; return; }
     if (m.t === "ground") { A.ground = m.list || []; return; }
     if (m.t === "gadd") { A.ground = (A.ground || []).concat(m.g); return; }
@@ -68,19 +70,21 @@ const APP = (() => {
     if (m.t === "others") { A.others = {}; m.list.filter((p) => p.id !== A.me.id).forEach(addOther); return; }
     if (m.t === "join") return m.p.id === A.me.id ? null : addOther(m.p); // 나 자신은 다른 사람 목록에 안 넣음
     if (m.t === "leave") { delete A.others[m.id]; return; }
-    if (m.t === "mv") { const o = A.others[m.id]; if (o) { o.tx = m.x; o.tz = m.z; o.face = m.face; o.st = m.st; } return; }
+    if (m.t === "mv") { const o = A.others[m.id]; if (o) { o.tx = m.x; o.tz = m.z; o.face = m.face; o.st = m.st; o.th = m.h || 0; } return; }
     if (m.t === "chat") { chatLine(m.nick, m.text); A.bubbles[m.id] = { text: m.text, t: 4 }; return; }
     if (m.t === "pinv") return ask(m.nick + " 님이 파티를 신청했어요.", () => send({ t: "pacc", from: m.from }));
+    if (m.t === "duelReq") return ask("⚔ " + m.nick + " 님이 결투를 신청했어요.", () => send({ t: "duelAcc", from: m.from }));
+    if (m.t === "duelEnd") { if (m.win) Dungeon.duelWon(); A.duelRes = m; return; }
     if (m.t === "treq") return ask(m.nick + " 님이 거래를 신청했어요.", () => send({ t: "tacc", from: m.from }));
     if (m.t === "party") { A.party = m.party; drawParty(); return; }
     if (m.t === "trade") { A.trade = m; tradePanel(); return; }
-    if (m.t === "tend") { A.trade = null; closePanel(); toast(m.text, m.ok ? "" : "bad"); return; }
+    if (m.t === "tend") { tradeView = "main"; pick = new Set(); offerGold = 0; A.trade = null; closePanel(); toast(m.text, m.ok ? "" : "bad"); return; }
     if (m.t === "enh") { toast(m.name + (m.ok ? " 강화 성공! +" + m.after : m.after < m.before ? " 강화 실패 — +" + m.after + " 로 내려갔어요" : " 강화 실패 — +" + m.after + " 그대로"), m.ok ? "good" : "bad"); return; }
     if (m.t === "dgo") return goDungeon(m);
     if (m.t === "relay") return Dungeon.net(m.from, m.data);
     if (m.t === "reward") { A.reward = m; showReward(); return; }
     if (m.t === "dabort") { Dungeon.quit(); toast(m.text, "bad"); backToTown(); return; }
-    if (m.t === "who") { const p = m.p; panel([el("h2", null, p.nick), el("p", null, "Lv " + p.lv + " · " + p.job + " · 던전 클리어 " + p.clears + "번"), preview(p.look, 160), row(btn("닫기", closePanel, "ghost"))]); return; }
+    if (m.t === "who") { const p = m.p; panel([el("h2", null, p.nick), el("p", null, "Lv " + p.lv + " · " + p.job + " · 던전 클리어 " + p.clears + "번 · 결투 " + ((p.pvp && p.pvp.w) || 0) + "승 " + ((p.pvp && p.pvp.l) || 0) + "패"), preview(p.look, 160), row(btn("닫기", closePanel, "ghost"))]); return; }
   }
   function addOther(p) { A.others[p.id] = Object.assign({ tx: p.x, tz: p.z, walk: 0, t: 0 }, p); }
 
@@ -136,7 +140,7 @@ const APP = (() => {
     const info = el("div", "cinfo");
     info.append(el("h2", null, C.name), el("p", null, "Lv " + C.lv + " · " + C.job + " · 경험치 " + C.exp + " / " + C.need), el("p", null, "공격 " + C.atk + " · 방어 " + C.def + " · 체력 " + C.hpMax + " · " + C.gold.toLocaleString() + " 골드"), equipList(), bagList("char"));
     const keys = btn("키 설정", keyPanel, "ghost"), remake = btn("캐릭터 다시 만들기", () => { if (remake.dataset.sure) { send({ t: "remake" }); return; } remake.dataset.sure = 1; remake.textContent = "정말 지울까요? (Lv · 가방이 모두 사라져요)"; }, "ghost danger");
-    const w = el("div", "create"); const left = el("div", "cleft"); left.append(preview(C.look, 220, "idle")); w.append(left, info);
+    const w = el("div", "create"); const left = el("div", "cleft"); const pvC = preview(C.look, 220, "idle"); pvC.op = !!(A.me && A.me.op); pvC.gear = C.gear; left.append(pvC); w.append(left, info);
     panel([w, row(btn("마을로 들어가기", enterTown), keys, remake)], true);
     $("hud").hidden = true;
   }
@@ -201,6 +205,8 @@ const APP = (() => {
     H.t += dt;
     if (!$("panel").hidden || typing) { H.st = "idle"; }
     else {
+      if (KEYS.take("jump") && !(H.h > 0)) { H.vh = 620; H.h = 0.1; } // 마을 점프
+      if (H.h > 0 || H.vh > 0) { H.h = Math.max(0, (H.h || 0) + H.vh * dt); H.vh -= 1900 * dt; if (H.h <= 0) { H.h = 0; H.vh = 0; } }
       const dd = dash(); if (dd && !(H.dashT > 0)) { H.dashT = 0.2; H.dashDir = dd; H.face = dd; }
       if (H.dashT > 0) { H.dashT -= dt; H.x = clamp(H.x + H.dashDir * 950 * dt, 40, TOWN_W - 40); }
       const sp = run ? 380 : 240;
@@ -209,15 +215,16 @@ const APP = (() => {
       H.st = H.dashT > 0 ? "sprint" : ax || az ? (run ? "run" : "walk") : "idle"; if (ax || az) H.walk += dt * (run ? 14 : 9);
       if (KEYS.take("talk")) talkNear();
       if (KEYS.take("bag")) { const S = $("bagSide"); if (S.hidden) bagPanel(); else S.hidden = true; }
+      if (KEYS.take("skills")) skillPanel();
       if (KEYS.take("equip")) { const E = $("equipSide"); if (E.hidden) equipPanel(); else E.hidden = true; }
       if (H.x > TOWN_W - 60) { H.x = TOWN_W - 140; gateTalk(); }
     }
     if (KEYS.take("chat")) $("chatIn").focus();
     if (KEYS.take("menu")) { if (!$("panel").hidden) closePanel(); }
-    for (const id in A.others) { const o = A.others[id]; o.x += (o.tx - o.x) * Math.min(1, dt * 10); o.z += (o.tz - o.z) * Math.min(1, dt * 10); o.t += dt; if (o.st === "walk" || o.st === "run") o.walk += dt * 9; }
+    for (const id in A.others) { const o = A.others[id]; o.x += (o.tx - o.x) * Math.min(1, dt * 10); o.z += (o.tz - o.z) * Math.min(1, dt * 10); o.h = (o.h || 0) + ((o.th || 0) - (o.h || 0)) * Math.min(1, dt * 14); o.t += dt; if (o.st === "walk" || o.st === "run") o.walk += dt * 9; }
     for (const id in A.bubbles) if ((A.bubbles[id].t -= dt) <= 0) delete A.bubbles[id];
     A.camX += (clamp(H.x - VW * 0.45, 0, TOWN_W - VW) - A.camX) * Math.min(1, dt * 8);
-    if ((mvT -= dt) <= 0) { mvT = 0.1; const k = Math.round(H.x) + "," + Math.round(H.z) + "," + H.face + "," + H.st; if (k !== lastMv) { lastMv = k; send({ t: "mv", x: Math.round(H.x), z: Math.round(H.z), face: H.face, st: H.st }); } }
+    if ((mvT -= dt) <= 0) { mvT = 0.1; const k = Math.round(H.x) + "," + Math.round(H.z) + "," + H.face + "," + H.st + "," + Math.round(H.h || 0); if (k !== lastMv) { lastMv = k; send({ t: "mv", h: Math.round(H.h || 0), x: Math.round(H.x), z: Math.round(H.z), face: H.face, st: H.st }); } }
   }
   function nearNpc() { const H = A.hero; let best = null, bd = 110; NPC.forEach((n) => { const d = Math.abs(n.x - H.x) + Math.abs(n.z - H.z) * 0.5; if (d < bd) { bd = d; best = n; } }); return best; }
   function nearItem() { const H = A.hero; let best = null, bd = 80; (A.ground || []).forEach((o) => { const d = Math.abs(o.x - H.x) + Math.abs(o.z - H.z) * 0.6; if (d < bd) { bd = d; best = o; } }); return best; }
@@ -270,7 +277,7 @@ const APP = (() => {
     const x = P.x - cx; if (x < -100 || x > VW + 100) return;
     g.fillStyle = "rgba(0,0,0,.35)"; g.beginPath(); g.ellipse(x, P.z, 24, 7, 0, 0, Math.PI * 2); g.fill();
     const isOp = me ? A.me && A.me.op : P.op; if (isOp) Dungeon.gmAura(g, x, P.z + 2);
-    g.save(); g.translate(x, P.z + 2); if (P.face < 0) g.scale(-1, 1); if (P.st === "sprint") { g.save(); g.globalAlpha = 0.3; g.translate(-34, 0); drawChar(g, look, { st: "sprint", t: P.t }, 1); g.restore(); }
+    g.save(); g.translate(x, P.z + 2 - (P.h || 0)); if (P.face < 0) g.scale(-1, 1); if (P.st === "sprint") { g.save(); g.globalAlpha = 0.3; g.translate(-34, 0); drawChar(g, look, { st: "sprint", t: P.t }, 1); g.restore(); }
     drawChar(g, look, { st: P.st === "run" ? "run" : P.st === "walk" ? "walk" : P.st === "sprint" ? "sprint" : "idle", t: P.t, walk: P.walk }, 1, { gear: me ? A.char.gear : P.gear, op: isOp }); g.restore();
     const party = A.party && A.party.members.some((m) => m.id === id);
     g.font = "700 12px 'Noto Sans KR', sans-serif"; g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.85)"; const label = (isOp ? "⚜운영자 " : "") + nick + (P.lv ? " Lv" + P.lv : ""); g.strokeText(label, x, P.z - 128); g.fillStyle = me ? "#ffe08a" : party ? "#7fe3ff" : "#fff"; g.fillText(label, x, P.z - 128);
@@ -284,8 +291,8 @@ const APP = (() => {
     for (const n of NPC) if (Math.abs(n.x - x) < 30 && y > n.z - 125 && y < n.z + 10 && Math.abs(n.x - A.hero.x) < 200) return n.talk();
   });
   function personMenu(o) {
-    panel([el("h2", null, o.nick + " · Lv " + (o.lv || 1)), preview(o.look, 140),
-      row(btn("정보 보기", () => send({ t: "who", id: o.id }), "ghost"), btn("파티 신청", () => { send({ t: "pinv", to: o.id }); closePanel(); }), btn("거래 신청", () => { send({ t: "treq", to: o.id }); closePanel(); }), btn("닫기", closePanel, "ghost"))]);
+    panel([el("h2", null, o.nick + " · Lv " + (o.lv || 1)), (() => { const v = preview(o.look, 140); v.op = !!o.op; return v; })(),
+      row(btn("정보 보기", () => send({ t: "who", id: o.id }), "ghost"), btn("파티 신청", () => { send({ t: "pinv", to: o.id }); closePanel(); }), btn("거래 신청", () => { send({ t: "treq", to: o.id }); closePanel(); }), btn("결투 신청", () => { send({ t: "duelReq", to: o.id }); closePanel(); }, "danger"), btn("닫기", closePanel, "ghost"))]);
   }
   /* 파티 칸 */
   function drawParty() {
@@ -323,7 +330,7 @@ const APP = (() => {
     const N = { kh: "강혁", hr: "혜린", ds: "대성", je: "지은", mj: "무진" }, J = { kh: "무사", hr: "도사", ds: "수호자", je: "사수", mj: "자객" }, sk = Dungeon.SKILLS[k];
     const mine = A.char && A.char.look && (A.char.look.hero || "kh") === k;
     panel([el("h2", null, "스승 " + N[k] + " — " + J[k]), el("p", "story", mine ? "나와 같은 길을 걷는구나. 내 기술을 가르쳐 주마." : "내 기술은 이렇다네. 나와 같은 모습으로 길을 시작하면 쓸 수 있지."),
-      el("p", null, sk.map((s, i) => s.name + " " + KEYS.label(["s1", "s2", "s3"][i])).join(" · ")), el("p", "sub", "평타 " + KEYS.label("atk") + " (3타째 띄우기) · 점프 " + KEYS.label("jump") + " · 구르기 " + KEYS.label("roll") + " · 물약 " + KEYS.label("potion")), row(btn("명심하겠습니다", closePanel))]);
+      el("p", null, sk.map((s, i) => s.name + " " + KEYS.label(["s1", "s2", "s3", "s4", "s5", "s6", "ult"][i])).join(" · ")), el("p", "sub", "평타 " + KEYS.label("atk") + " (3타째 띄우기) · 점프 " + KEYS.label("jump") + " · 구르기 " + KEYS.label("roll") + " · 물약 " + KEYS.label("potion")), row(mine ? btn("스킬 배우기", skillPanel) : el("span"), btn("명심하겠습니다", closePanel, mine ? "ghost" : ""))]);
   }
 
   function gateTalk() {
@@ -337,12 +344,12 @@ const APP = (() => {
   /* ── 가방 — 오른쪽 창. 종류별로 묶고(접기 · 펴기), 칸은 등급 색 · 아이콘 · +강화 · 개수 · E(끼는 중). 칸을 누르면 아래에 정보 · 끼기 ── */
   const ITEM_IMG = new Image(); ITEM_IMG.src = "img/items.webp" + (V ? "?v=" + V : "");
   const BAG_MAX = 100, KINDS = [["weapon", "무기", "⚔"], ["armor", "방어구", "🛡"], ["acc", "장신구", "💍"], ["potion", "소모품", "🧪"], ["material", "재료", "💎"]];
-  const GROUP = { pants: "armor", shoes: "armor", greave: "armor", gloves: "armor", ring: "acc", earring: "acc", bracelet: "acc", necklace: "acc" };
-  const SLOT_NAMES = { weapon: "무기", armor: "갑옷", pants: "하의", greave: "각반", shoes: "신발", gloves: "장갑", ring: "반지", earring: "귀걸이", bracelet: "팔찌", necklace: "목걸이" };
+  const GROUP = { skin: "acc", pants: "armor", shoes: "armor", greave: "armor", gloves: "armor", ring: "acc", earring: "acc", bracelet: "acc", necklace: "acc" };
+  const SLOT_NAMES = { skin: "스킨", weapon: "무기", armor: "갑옷", pants: "하의", greave: "각반", shoes: "신발", gloves: "장갑", ring: "반지", earring: "귀걸이", bracelet: "팔찌", necklace: "목걸이" };
   const isEq = (uid) => !!uid && Object.values((A.char && A.char.equip) || {}).includes(uid); // 끼고 있는지(10칸)
   const isGear = (k) => !!SLOT_NAMES[(A.items[k] || {}).kind];
   function statText(it) { const I = A.items[it.key], m = 1 + (it.plus || 0) * 0.1, s = []; if (I.atk) s.push("공격 " + Math.round(I.atk * m)); if (I.def) s.push("방어 " + Math.round(I.def * m)); if (I.hp) s.push("체력 " + Math.round(I.hp * m));
-    if (I.kind === "potion") s.push(I.heal >= 1 ? "체력 가득 · 3초 무적" : I.heal ? "체력 " + Math.round(I.heal * 100) + "% 회복" : I.regen ? "6초 동안 체력 " + Math.round(I.regen * 100) + "%" : "스킬 기다림 없앰");
+    if (I.kind === "potion") s.push(I.mana ? "마력 " + Math.round(I.mana * 100) + "% 회복" : I.heal >= 1 && I.guard ? "체력 가득 · 3초 무적" : I.heal >= 1 ? "체력 가득 회복" : I.heal ? "체력 " + Math.round(I.heal * 100) + "% 회복" : I.regen ? "6초 동안 체력 " + Math.round(I.regen * 100) + "%" : "스킬 기다림 없앰");
     return (SLOT_NAMES[I.kind] ? SLOT_NAMES[I.kind] + " · " : "") + (s.join(" · ") || "재료 · 상인에게 팔 수 있어요"); }
   const bagUI = { tab: "bag", sort: "kind", shut: {}, sel: null };
   function icon(key, size) {
@@ -373,8 +380,9 @@ const APP = (() => {
     const left = el("div", "eqv-col"); ["weapon", "armor", "pants", "greave", "shoes"].forEach((k) => left.appendChild(eqSlot(k, SLOT_NAMES[k])));
     const pv = preview(C.look, 150, "idle"); pv.gear = C.gear; pv.op = !!(A.me && A.me.op); const mid = el("div", "eqv-mid"); mid.appendChild(pv);
     const right = el("div", "eqv-col"); ["gloves", "ring", "earring", "bracelet", "necklace"].forEach((k) => right.appendChild(eqSlot(k, SLOT_NAMES[k])));
+    const skinRow = el("div", "eqv-skin"); skinRow.append(el("small", null, "스킨"), eqSlot("skin", "스킨"));
     const body = el("div", "eqv-body"); body.append(left, mid, right);
-    w.append(head, stat, body, el("p", "sub", "가방(오른쪽)에서 두 번 누르면 끼고, 여기서 두 번 누르면 빠져요. 몸 장비 등급에 따라 몸 둘레 빛, 무기 등급에 따라 칼 빛, 장신구는 금빛 구슬, +7 이상은 불꽃이 보여요(다른 사람에게도)."));
+    w.append(head, stat, skinRow, body, el("p", "sub", "가방(오른쪽)에서 두 번 누르면 끼고, 여기서 두 번 누르면 빠져요. 몸 장비 등급에 따라 몸 둘레 빛, 무기 등급에 따라 칼 빛, 장신구는 금빛 구슬, +7 이상은 불꽃이 보여요(다른 사람에게도)."));
     return w;
   }
   /* 장비 — 왼쪽 창(가방과 따로, 같이 열 수 있음). 칸을 누르면 아래 정보 · 두 번 누르면 빼기 */
@@ -427,17 +435,36 @@ const APP = (() => {
 
   /* ── 거래 창 ── */
   let pick = new Set(), offerGold = 0;
+  /* 교환창 — 부장님 그림 참고: 왼쪽 내가 줄 것 · 오른쪽 상대가 줄 것 · 아래 골드 주머니 · 확인 / 추가 / 취소. 확인은 「교환하시겠습니까?」 를 한 번 더 */
+  let tradeView = "main";
+  function xRow(o) { const I = A.items[o.key] || {}, r = el("div", "x-item"); const ic = el("span", "slot ico g" + (I.grade || 0)); ic.appendChild(icon(o.key, 32)); r.append(ic, el("span", null, (I.name || "?") + (o.plus ? " +" + o.plus : "") + (o.n > 1 ? " × " + o.n : ""))); r.style.color = GRADE[I.grade || 0]; return r; }
   function tradePanel() {
     const T = A.trade; if (!T) return;
-    const mine = el("div", "tcol"), theirs = el("div", "tcol");
     if (!pick.size && T.mine.uids.length) pick = new Set(T.mine.uids);
-    const gold = el("input"); gold.type = "number"; gold.min = 0; gold.value = offerGold || T.mine.gold || 0; gold.oninput = () => { offerGold = Math.max(0, parseInt(gold.value, 10) || 0); }; gold.onchange = () => send({ t: "toffer", uids: [...pick], gold: offerGold }); // 칸을 벗어나면 바로 올림
-    mine.append(el("b", null, "내가 줄 것"), bagList("trade", pick), el("label", null, "골드 "), gold, btn("골드 올리기", () => send({ t: "toffer", uids: [...pick], gold: offerGold }), "tiny"));
-    theirs.append(el("b", null, T.otherNick + " 님이 줄 것"), ...(T.theirs.items || []).map((n) => el("div", "item", n)), el("p", null, "골드 " + T.theirs.gold));
-    const w = el("div", "trade"); w.append(mine, theirs);
-    panel([el("h2", null, "거래 — " + T.otherNick), w, el("p", "sub", (T.okMe ? "나: 확인함" : "나: 아직") + " · " + (T.okThem ? "상대: 확인함" : "상대: 아직") + " — 둘 다 확인하면 바로 바뀌어요. 올린 것을 바꾸면 확인이 풀려요."),
-      row(btn(T.okMe ? "확인함" : "확인", () => { if (offerGold !== (T.mine.gold || 0) || pick.size !== T.mine.uids.length) send({ t: "toffer", uids: [...pick], gold: offerGold }); send({ t: "tok" }); }), btn("거래 취소", () => { send({ t: "tcancel" }); pick = new Set(); offerGold = 0; }, "ghost"))], true);
+    const offer = () => send({ t: "toffer", uids: [...pick], gold: offerGold });
+    if (tradeView === "add") { // 추가 — 내 가방에서 고르기 · 골드
+      const list = el("div", "x-pick"); A.char.inv.filter((it) => !isEq(it.uid)).forEach((it) => { const on = pick.has(it.uid), b = el("button", "slot g" + (A.items[it.key].grade || 0) + (on ? " sel" : "")); b.type = "button"; b.appendChild(icon(it.key, 48)); if (it.plus) b.appendChild(el("span", "pl", "+" + it.plus)); if (it.n > 1) b.appendChild(el("span", "ct", String(it.n))); b.title = itemName(it);
+        b.onclick = () => { if (pick.has(it.uid)) pick.delete(it.uid); else if (pick.size < 8) pick.add(it.uid); tradePanel(); }; list.appendChild(b); });
+      const gold = el("input"); gold.type = "number"; gold.min = 0; gold.value = offerGold || T.mine.gold || 0; gold.oninput = () => { offerGold = Math.max(0, Math.min(A.char.gold, parseInt(gold.value, 10) || 0)); };
+      return panel([el("h2", "x-title", "올릴 것 고르기"), el("p", "sub", "누르면 올리고 다시 누르면 빼요(8개까지). 끼고 있는 장비는 못 올려요."), list, (() => { const g2 = el("div", "x-gold"); g2.append(el("span", null, "💰 골드"), gold, el("small", null, "가진 돈 " + A.char.gold.toLocaleString())); return g2; })(),
+        row(btn("다 골랐어요", () => { offerGold = Math.max(0, Math.min(A.char.gold, parseInt(gold.value, 10) || 0)); offer(); tradeView = "main"; tradePanel(); }), btn("돌아가기", () => { tradeView = "main"; tradePanel(); }, "ghost"))], true);
+    }
+    if (tradeView === "ask") { // 교환하시겠습니까?
+      const give = (T.mine.list || []), get = (T.theirs.list || []);
+      return panel([el("h2", "x-title", "교환하시겠습니까?"), (() => { const w = el("div", "x-cols"); const L = el("div", "x-col"), R = el("div", "x-col"); L.append(el("div", "x-head", "내가 줄 것"), ...(give.length ? give.map(xRow) : [el("p", "sub", "없음")]), el("div", "x-gold", "💰 " + (T.mine.gold || 0).toLocaleString())); R.append(el("div", "x-head", T.otherNick + " 님이 줄 것"), ...(get.length ? get.map(xRow) : [el("p", "sub", "없음")]), el("div", "x-gold", "💰 " + (T.theirs.gold || 0).toLocaleString())); w.append(L, R); return w; })(),
+        row(btn("예, 교환", () => { tradeView = "main"; send({ t: "tok" }); }), btn("아니오", () => { tradeView = "main"; tradePanel(); }, "ghost"))], true);
+    }
+    const L = el("div", "x-col"), R = el("div", "x-col");
+    const mineList = el("div", "x-list"); (T.mine.list || []).forEach((o) => mineList.appendChild(xRow(o))); if (!(T.mine.list || []).length) mineList.appendChild(el("p", "sub", "「추가」 로 올려요"));
+    const theirList = el("div", "x-list"); (T.theirs.list || []).forEach((o) => theirList.appendChild(xRow(o))); if (!(T.theirs.list || []).length) theirList.appendChild(el("p", "sub", "아직 없음"));
+    L.append(el("div", "x-head", "내가 줄 것" + (T.okMe ? " ✔" : "")), mineList, el("div", "x-gold", "💰 " + (T.mine.gold || 0).toLocaleString()));
+    R.append(el("div", "x-head", T.otherNick + " 님이 줄 것" + (T.okThem ? " ✔" : "")), theirList, el("div", "x-gold", "💰 " + (T.theirs.gold || 0).toLocaleString()));
+    const cols = el("div", "x-cols"); cols.append(L, R);
+    const box = el("div", "xchg"); box.append(el("h2", "x-title", "교 환"), cols, el("p", "sub", (T.okMe ? "나: 확인함" : "나: 아직") + " · " + (T.okThem ? "상대: 확인함" : "상대: 아직") + " — 둘 다 확인하면 바로 바뀌어요. 올린 것을 바꾸면 확인이 풀려요."),
+      (() => { const b = el("div", "x-btns"); b.append(btn(T.okMe ? "확인함" : "확인", () => { tradeView = "ask"; tradePanel(); }), btn("추가", () => { tradeView = "add"; tradePanel(); }, "ghost"), btn("취소", () => { send({ t: "tcancel" }); pick = new Set(); offerGold = 0; tradeView = "main"; }, "ghost danger")); return b; })());
+    panel([box], true);
   }
+
 
   /* ── 던전 ── */
   function exitBar(on) {
@@ -456,14 +483,15 @@ const APP = (() => {
     b.replaceChildren(btn("👁 다른 판 보기", () => send({ t: "op", a: "list" }), "tiny"), btn("관전 나가기", () => { watchBar(false); backToTown(); }, "tiny ghost"));
   }
   function goDungeon(m, watch, gm) {
-    $("bagSide").hidden = true; $("equipSide").hidden = true;
+    $("bagSide").hidden = true; $("equipSide").hidden = true; A.duelRes = null;
     watchBar(!!watch); exitBar(!watch); A.run = watch ? null : m.run;
-    closePanel(); A.scene = "dungeon"; A.reward = null; A.watch = !!watch; $("hud").hidden = true; $("partyBox").hidden = true; setPad(watch ? "none" : "dungeon");
-    const C = A.char, party = watch || gm || (m.members && m.members.length > 1) ? { host: m.host, members: m.members } : null;
-    const pots = {}; ["p1", "p2", "p3", "p4", "p5"].forEach((k) => { const p = (C.inv || []).find((x) => x.key === k); pots[k] = p ? p.n : 0; });
-    Dungeon.start({ d: m.d, me: A.me.id, look: C.look, nick: C.name, stats: { hpMax: C.hpMax, atk: C.atk, def: C.def }, potions: pots, gear: C.gear, party,
-      send: (data, to) => send({ t: "relay", data, to }), usePotion: (key) => send({ t: "usePotion", key }), axis, dash, watch: !!watch, gm: !!gm, op: !!(A.me && A.me.op),
-      onEnd: (res) => { if (res.tower) { A.result = res; send({ t: "twrDone", floor: res.floor, kills: res.kills }); return panel([el("h2", null, "무한의 탑 — " + res.floor + "층"), el("p", null, "기록 확인 중…")]); }
+    closePanel(); A.scene = "dungeon"; A.reward = null; A.cardRes = null; A.cardSent = null; A.watch = !!watch; $("hud").hidden = true; $("partyBox").hidden = true; setPad(watch ? "none" : "dungeon");
+    const C = A.char, party = watch || gm || m.pvp || (m.members && m.members.length > 1) ? { host: m.host, members: m.members } : null;
+    const pots = {}; ["p1", "p2", "p3", "p4", "p5", "p6", "mp1", "mp2", "mp3"].forEach((k) => { const p = (C.inv || []).find((x) => x.key === k); pots[k] = p ? p.n : 0; });
+    Dungeon.start({ d: m.d, me: A.me.id, look: C.look, nick: C.name, stats: { hpMax: C.hpMax, mpMax: C.mpMax, atk: C.atk, def: C.def }, potions: pots, gear: C.gear, party,
+      send: (data, to) => send({ t: "relay", data, to }), usePotion: (key) => send({ t: "usePotion", key }), loot: () => send({ t: "loot" }), learned: C.learned, slots: C.skillSlots, axis, dash, duelLose: () => send({ t: "duelLose" }), watch: !!watch, gm: !!gm, op: !!(A.me && A.me.op),
+      onEnd: (res) => { if (m.pvp) { exitBar(false); const R = A.duelRes || {}; const pv = R.pvp || {}; return panel([el("h1", null, res.win ? "승리!" : "패배…"), el("p", null, "결투 — " + (R.nick || "") + (R.left ? " 님이 나갔어요" : "")), el("p", "reward", "내 결투 전적 " + (pv.w || 0) + "승 " + (pv.l || 0) + "패"), row(btn("마을로", backToTown))]); }
+        if (res.tower) { A.result = res; send({ t: "twrDone", floor: res.floor, kills: res.kills }); return panel([el("h2", null, "무한의 탑 — " + res.floor + "층"), el("p", null, "기록 확인 중…")]); }
         if (watch) return panel([el("h2", null, "관전 끝 — " + (res.win ? "클리어" : "실패")), el("p", null, Math.floor(res.sec / 60) + "분 " + (res.sec % 60) + "초"), row(btn("마을로", backToTown))]); A.result = res; if (res.win && !A.solo) send({ t: "dclear" }); showResult(); } });
   }
   function showResult() { exitBar(false);
@@ -471,6 +499,15 @@ const APP = (() => {
     const grade = !R.win ? "-" : R.hits <= 3 && sec < 150 ? "S" : R.hits <= 8 ? "A" : R.hits <= 16 ? "B" : "C";
     const lines = [el("h1", null, R.win ? "클리어!" : "실패…"), el("div", "grade", grade), el("p", null, Math.floor(sec / 60) + ":" + String(sec % 60).padStart(2, "0") + " · 최대 " + R.maxCombo + " 연속 · 맞은 횟수 " + R.hits)];
     if (R.win && !A.solo) lines.push(el("p", "reward", W ? "보상 " + W.gold + " G · 경험치 " + W.exp + (W.items.length ? " · " + W.items.join(", ") : "") + (W.lvUp ? " · 레벨 업! Lv " + W.lv : "") : "보상 받는 중…"));
+    if (R.win && W && W.cards) { // 보스 카드 — 4장 중 하나
+      const CR = A.cardRes, box = el("div", "cards");
+      for (let i = 0; i < 4; i++) { // 뒷면으로 덮어 두고 한 장만 — 누르면 나머지는 못 누르고, 결과가 오면 뒤집힘
+        const c = el("button", "card" + (CR ? (CR.pick === i ? " pick" : " open") : " back" + (A.cardSent != null ? (A.cardSent === i ? " wait" : " off") : ""))); c.type = "button";
+        if (CR) c.append(el("b", null, CR.cards[i]), el("small", null, CR.pick === i ? "획득!" : ""));
+        else c.onclick = () => { if (A.cardSent != null) return; A.cardSent = i; send({ t: "card", i }); showResult(); };
+        box.appendChild(c); }
+      lines.push(el("p", "sub", CR ? "🎉 " + CR.got + " 을(를) 얻었어요" : "보상 카드 한 장을 고르세요"), box);
+    }
     lines.push(row(A.solo ? btn("다시 하기", soloPractice) : btn("마을로", backToTown), A.solo ? btn("처음으로", () => { A.solo = false; noLogin(); }, "ghost") : el("span")));
     panel(lines);
   }
@@ -514,6 +551,35 @@ const APP = (() => {
     lines.push(el("b", null, "순위표"), rankTable(m.top, A.me.id), row(btn("다시 도전", () => { Dungeon.quit(); send({ t: "twrStart" }); }), btn("마을로", backToTown, "ghost")));
     panel(lines, true);
   }
+  /* 스킬창 — 내 직업 스킬(6 + 궁극기)을 보고 배움. 1~3 기본, 나머지는 레벨 · 골드 */
+  const KIND_TXT = { shot: "날려 맞힘", aura: "몸 둘레 계속", zone: "자리에 계속", dash: "앞으로 돌진", strike: "가까운 적 여럿에게 바로", blink: "적 뒤로 순간이동", slam: "앞을 내려쳐 띄움", guard: "잠깐 무적 · 밀쳐냄", ult: "궁극기 — 여러 재주를 한 번에" };
+  function skillPanel() {
+    const C = A.char; if (!C) return; refreshFn = skillPanel;
+    const hero = (C.look && C.look.hero) || "kh", SK = Dungeon.SKILLS[hero] || [], L = C.learned || [0, 1, 2], REQ = C.skillReq || [];
+    const list = el("div", "bag");
+    SK.forEach((s, i) => { const r = el("div", "item"), ic = document.createElement("canvas"); ic.width = ic.height = 44; const f = FR.hsk[s.fr], im = new Image(); im.src = "img/hsk.webp" + (V ? "?v=" + V : ""); im.onload = () => { const k = 40 / Math.max(f[2], f[3]); ic.getContext("2d").drawImage(im, f[0], f[1], f[2], f[3], 22 - f[2] * k / 2, 22 - f[3] * k / 2, f[2] * k, f[3] * k); };
+      ic.style.cssText = "width:44px;height:44px;border-radius:8px;background:" + (i === 6 ? "#5a3a0a" : "#1b1e2a"); const got = L.includes(i), q = REQ[i] || { lv: 1, cost: 0 };
+      const txt = el("div"); txt.style.flex = "1"; txt.append(el("b", null, (i === 6 ? "궁극기 · " : i + 1 + ". ") + s.name), el("small", null, " " + (KIND_TXT[s.kind] || "") + " · 기다림 " + s.cd + "초 · 키 " + KEYS.label(["s1", "s2", "s3", "s4", "s5", "s6", "ult"][i])));
+      r.append(ic, txt, got ? el("small", "reward", "배움 ✔") : btn("배우기 · Lv " + q.lv + (q.cost ? " · " + q.cost.toLocaleString() + "G" : ""), () => send({ t: "learn", i }), "tiny" + (C.lv < q.lv || C.gold < q.cost ? " ghost" : ""))); list.appendChild(r); });
+    /* 스킬 칸 — 아래 스킬을 끌어다 칸에 놓기 · 칸에서 밖으로 끌면 빼기 · 눌러 고르고 칸 누르기(휴대폰도) */
+    const SL = (C.skillSlots || [0, 1, 2, 3, 4, 5, 6]).slice(), save = () => send({ t: "setSlots", s: SL });
+    const iconOf = (i, sz) => { const c = document.createElement("canvas"); c.width = c.height = sz; const f = FR.hsk[SK[i].fr], im = new Image(); im.src = "img/hsk.webp" + (V ? "?v=" + V : ""); im.onload = () => { const k = (sz - 4) / Math.max(f[2], f[3]); c.getContext("2d").drawImage(im, f[0], f[1], f[2], f[3], sz / 2 - f[2] * k / 2, sz / 2 - f[3] * k / 2, f[2] * k, f[3] * k); }; return c; };
+    const bar = el("div", "sbar"), rows2 = [[0, 1, 2, 6], [3, 4, 5]];
+    rows2.forEach((rr) => { const rw = el("div", "sbar-row"); rr.forEach((slot) => { const s = el("div", "sslot" + (slot === 6 ? " ult" : "")); s.dataset.slot = slot; const si = SL[slot]; if (si >= 0 && SK[si]) { const ic = iconOf(si, 52); ic.dataset.skill = si; ic.dataset.from = slot; ic.className = "sdrag"; s.appendChild(ic); } s.appendChild(el("span", "skey", KEYS.label(["s1", "s2", "s3", "s4", "s5", "s6", "ult"][slot]))); rw.appendChild(s); }); bar.appendChild(rw); });
+    let picked = null;
+    const place = (si, slot, from) => { if (slot === 6 && si !== 6) return toast("궁극기 칸에는 궁극기만", "bad"); if (slot !== 6 && si === 6) return toast("궁극기는 금빛 칸에", "bad"); for (let k = 0; k < 7; k++) if (SL[k] === si) SL[k] = -1; if (from != null && from >= 0 && SL[slot] >= 0 && from !== slot) SL[from] = SL[slot]; SL[slot] = si; save(); };
+    const drag = (e) => { const src = e.target.closest(".sdrag"); if (!src) return; const si = +src.dataset.skill, from = src.dataset.from != null ? +src.dataset.from : null; if (!L.includes(si)) return toast("아직 안 배운 스킬이에요", "bad");
+      e.preventDefault(); const gh = src.cloneNode(true); gh.getContext && gh.getContext("2d").drawImage(src, 0, 0); gh.style.cssText = "position:fixed;pointer-events:none;z-index:99;width:52px;height:52px;border-radius:50%;opacity:.85"; document.body.appendChild(gh);
+      const mv = (ev) => { gh.style.left = ev.clientX - 26 + "px"; gh.style.top = ev.clientY - 26 + "px"; }; mv(e); let moved = false;
+      const up = (ev) => { removeEventListener("pointermove", mv2); removeEventListener("pointerup", up); gh.remove(); const tgt = document.elementFromPoint(ev.clientX, ev.clientY), sl = tgt && tgt.closest(".sslot");
+        if (!moved) { picked = { si, from }; document.querySelectorAll(".sdrag.sel").forEach((x) => x.classList.remove("sel")); src.classList.add("sel"); return; } // 눌러 고르기
+        if (sl) place(si, +sl.dataset.slot, from); else if (from != null) { SL[from] = -1; save(); } }; // 칸 밖으로 = 빼기
+      const mv2 = (ev) => { moved = moved || Math.hypot(ev.movementX, ev.movementY) > 0; mv(ev); }; addEventListener("pointermove", mv2); addEventListener("pointerup", up); };
+    bar.addEventListener("pointerdown", drag); bar.addEventListener("click", (e) => { const sl = e.target.closest(".sslot"); if (sl && picked) { place(picked.si, +sl.dataset.slot, picked.from); picked = null; } });
+    list.addEventListener("pointerdown", (e) => { const ic = e.target.closest("canvas"); if (ic && ic.dataset.skill != null) { ic.classList.add("sdrag"); drag(e); } });
+    list.querySelectorAll("canvas").forEach((c, i) => { c.dataset.skill = i; c.style.touchAction = "none"; c.style.cursor = "grab"; });
+    panel([el("h2", null, "스킬 — " + ({ kh: "강혁(무사)", hr: "혜린(도사)", ds: "대성(수호자)", je: "지은(사수)", mj: "무진(자객)" }[hero] || "")), el("p", "sub", "1~3 은 처음부터. 4 · 5 · 6 · 궁극기는 레벨이 되면 골드를 내고 배워요. Lv " + C.lv + " · " + C.gold.toLocaleString() + " G"), el("b", null, "스킬 칸 — 배운 스킬을 끌어다 넣고, 밖으로 끌면 빠져요(눌러 고른 뒤 칸을 눌러도 돼요)"), bar, list, row(btn("닫기", () => { refreshFn = null; closePanel(); }, "ghost"))], true);
+  }
   function backToTown() { watchBar(false); exitBar(false); A.watch = false; Dungeon.quit(); send({ t: "back" }); enterTown(); }
 
   /* ── 움직임 입력 — 키(설정한 키) · 휴대폰 막대. 같은 쪽 두 번 = 달리기 ── */
@@ -531,16 +597,17 @@ const APP = (() => {
   const lift = (e) => { if (stick && stick.id === e.pointerId) stick = null; };
   cv.addEventListener("pointerup", lift); cv.addEventListener("pointercancel", lift);
   /* 휴대폰 단추 — 마을: 말걸기 · 가방 · 채팅 / 던전: 공격 · 점프 · 회피 · 스킬 3 · 물약 */
-  const PADS = { none: [], town: [["말걸기", "talk", "right:4%;bottom:10%;width:13%;height:23%"], ["가방", "bag", "right:19%;bottom:6%;width:9%;height:16%"], ["채팅", "chat", "right:4%;bottom:38%;width:9%;height:16%"]],
-    dungeon: [["공격", "atk", "right:4%;bottom:8%;width:17%;height:30.2%;font-size:17px"], ["점프", "jump", "right:23%;bottom:5%;width:10%;height:17.8%"], ["회피", "roll", "right:4%;bottom:42%;width:10%;height:17.8%"], ["백스텝", "back", "right:34%;bottom:5%;width:8%;height:14%"], ["검기", "s1", "right:24%;bottom:26%;width:9%;height:16%"], ["검진", "s2", "right:16%;bottom:43%;width:9%;height:16%"], ["돌진", "s3", "right:15%;bottom:62%;width:9%;height:16%"], ["물약", "potion", "right:26%;bottom:46%;width:8%;height:14%"]] };
+  /* 휴대폰 단추 — 공격을 가운데로 둥글게(겹치지 않게, 2026-10-27 휴대폰 점검) */
+  const PADS = { none: [], town: [["말걸기", "talk", "right:3%;bottom:6%;width:13%;height:23.1%"], ["점프", "jump", "right:18%;bottom:5%;width:9%;height:16.0%"], ["가방", "bag", "right:3%;bottom:33%;width:8%;height:14.2%"], ["장비", "equip", "right:12%;bottom:33%;width:8%;height:14.2%"], ["스킬", "skills", "right:12%;bottom:52%;width:7%;height:12.4%"], ["채팅", "chat", "right:3%;bottom:52%;width:7%;height:12.4%"]],
+    dungeon: [["공격", "atk", "right:3%;bottom:5%;width:14%;height:24.9%;font-size:17px"], ["점프", "jump", "right:19%;bottom:4%;width:8%;height:14.2%"], ["백스텝", "back", "right:28%;bottom:4%;width:7%;height:12.4%"], ["물약", "potion", "right:36%;bottom:4%;width:7%;height:12.4%"], ["마력", "mpot", "right:44%;bottom:4%;width:7%;height:12.4%;border-color:#4a7ac8"], ["회피", "roll", "right:3%;bottom:33%;width:8%;height:14.2%"], ["1", "s1", "right:19%;bottom:21%;width:7%;height:12.4%"], ["2", "s2", "right:12%;bottom:33%;width:7%;height:12.4%"], ["3", "s3", "right:3%;bottom:50%;width:7%;height:12.4%"], ["4", "s4", "right:27%;bottom:19%;width:7%;height:12.4%"], ["5", "s5", "right:20%;bottom:37%;width:7%;height:12.4%"], ["6", "s6", "right:12%;bottom:52%;width:7%;height:12.4%"], ["궁극", "ult", "right:3%;bottom:66%;width:8%;height:14.2%;border-color:#ffd36b"]] };
   function setPad(which) {
-    if (which === "dungeon") { const sk = Dungeon.SKILLS[(A.char && A.char.look && A.char.look.hero) || "kh"] || Dungeon.SKILLS.kh; PADS.dungeon.forEach((p) => { const i = ["s1", "s2", "s3"].indexOf(p[1]); if (i >= 0) p[0] = sk[i].short; }); }
+    if (which === "dungeon") { const sk = Dungeon.SKILLS[(A.char && A.char.look && A.char.look.hero) || "kh"] || Dungeon.SKILLS.kh; const SL = (A.char && A.char.skillSlots) || [0, 1, 2, 3, 4, 5, 6]; PADS.dungeon.forEach((p) => { const slot = ["s1", "s2", "s3", "s4", "s5", "s6", "ult"].indexOf(p[1]); if (slot >= 0) p[0] = sk[SL[slot]] ? sk[SL[slot]].short : "—"; }); }
     const pad = $("pad"); pad.hidden = !touch; if (!touch) return;
     pad.replaceChildren(...PADS[which].map(([t, a, css]) => { const b = el("div", "tb", t); b.style.cssText = css; b.dataset.a = a;
       b.addEventListener("pointerdown", (e) => { e.preventDefault(); e.stopPropagation(); if (a === "chat") { $("chatIn").focus(); return; } KEYS.press(a, true); b.classList.add("on"); });
       const up = () => { KEYS.press(a, false); b.classList.remove("on"); }; b.addEventListener("pointerup", up); b.addEventListener("pointercancel", up); b.addEventListener("pointerleave", up); return b; }));
   }
-  $("hudOp").onclick = () => opPanel(null); $("hudBag").onclick = () => { const S = $("bagSide"); if (S.hidden) bagPanel(); else S.hidden = true; }; $("hudEquip").onclick = () => { const E = $("equipSide"); if (E.hidden) equipPanel(); else E.hidden = true; }; $("hudKeys").onclick = keyPanel; $("hudOut").onclick = () => { send({ t: "back" }); charScreen(); };
+  $("hudOp").onclick = () => opPanel(null); $("hudSkill").onclick = skillPanel; $("hudBag").onclick = () => { const S = $("bagSide"); if (S.hidden) bagPanel(); else S.hidden = true; }; $("hudEquip").onclick = () => { const E = $("equipSide"); if (E.hidden) equipPanel(); else E.hidden = true; }; $("hudKeys").onclick = keyPanel; $("hudOut").onclick = () => { send({ t: "back" }); charScreen(); };
 
   /* ── 한 틀 ── */
   let last = 0;
