@@ -49,8 +49,8 @@ const APP = (() => {
       N.hidden = false; show(); A.noticeT = setInterval(show, 1000); if (!m.sec) setTimeout(() => { N.hidden = true; clearInterval(A.noticeT); }, 15000); return;
     }
     if (m.t === "info") return toast(m.text);
-    if (m.t === "others") { A.others = {}; m.list.forEach(addOther); return; }
-    if (m.t === "join") return addOther(m.p);
+    if (m.t === "others") { A.others = {}; m.list.filter((p) => p.id !== A.me.id).forEach(addOther); return; }
+    if (m.t === "join") return m.p.id === A.me.id ? null : addOther(m.p); // 나 자신은 다른 사람 목록에 안 넣음
     if (m.t === "leave") { delete A.others[m.id]; return; }
     if (m.t === "mv") { const o = A.others[m.id]; if (o) { o.tx = m.x; o.tz = m.z; o.face = m.face; o.st = m.st; } return; }
     if (m.t === "chat") { chatLine(m.nick, m.text); A.bubbles[m.id] = { text: m.text, t: 4 }; return; }
