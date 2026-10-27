@@ -183,7 +183,7 @@ const Dungeon = (() => {
     S.foes.push({ id: nextId++, kind, D, x, z: rnd(Z0 + 10, Z1 - 10), h: D.boss ? 400 : 0, vx: 0, vh: 0, face: -side, hp, max: hp, st: D.boss ? "air" : "walk", t: 0, cd: rnd(0.6, 1.6), jug: 0, inv: 0, flash: 0, poise: 260 * S.hpK, hitDone: false, ph: Math.random() * 5 });
     if (D.boss) shake = 0.5;
   }
-  function addFx(o) { if (S.fx.length < 120) S.fx.push(o); }
+  function addFx(o) { if (o.k === "hsk" && o.ic && FR.sfx && FR.sfx[o.ic]) o.t = o.d = Math.max(o.d || 0, o.big ? 2.2 : 1.1); if (S.fx.length < 120) S.fx.push(o); } // 스킬 영상은 끝까지 보이게(예전 0.4초 — "임팩트가 너무 빨리 사라진다")
   function num(x, y, v, c) { if (S.nums.length < 80) S.nums.push({ x, y, v, c: c || "#fff", t: 0.7 }); }
 
   /* 맞히기 — 파티원은 보이는 것만 하고 파티장에게 보낸다. remote = 파티원이 보낸 것 */
@@ -241,6 +241,10 @@ const Dungeon = (() => {
   /* ── 한 틀 ── */
   /* 궁극기 컷인 — 던파 각성기처럼: 화면 어두워짐 · 시간 멈춤 · 대각선 띠에 캐릭터가 미끄러져 들어옴 · 큰 이름 → 하얗게 번쩍 · 크게 흔들림 · 터짐 (2026-10-28) */
   const CUT_T = 1.15;
+  function ultAll(sk, m) { // 궁극기 — 화면 가득 큰 효과 + 지금 방의 모든 몬스터가 맞음
+    const H = S.hero; addFx({ k: "hsk", fr: sk.fr, ic: sk.ic, x: S.camX + VW / 2, y: VH * 0.5, s: 1150, flip: H.face < 0, big: true }); S.flash = Math.max(S.flash || 0, 0.7); shake = Math.max(shake, 0.9);
+    S.foes.forEach((f) => { if (f.st === "dead" || f.dying) return; f.inv = 0; hitFoe(f, Math.round((sk.allDmg || 150) * m), "launch", Math.sign(f.x - H.x) || H.face); addFx({ k: "hsk", fr: sk.fr, ic: sk.ic, x: f.x, y: f.z - (f.h || 0) - 60, s: 300 }); });
+  }
   function cutStep(dt) { const c = S.cut; c.t += dt; if (c.t >= CUT_T) { S.cut = null; S.flash = 0.9; shake = 1.1; stop = 0.12; cast(c.sk, true); } }
   function drawCut(g) {
     const c = S.cut; if (!c) return; const t = c.t, inA = Math.min(1, t / 0.18), out = t > CUT_T - 0.16 ? (CUT_T - t) / 0.16 : 1, e = 1 - Math.pow(1 - inA, 3);
@@ -261,6 +265,7 @@ const Dungeon = (() => {
   }
   function step(dt) {
     if (S && S.cut) { cutStep(dt); return; }
+    if (S && S.ultWave && (S.ultWave.t -= dt) <= 0) { const w = S.ultWave; S.ultWave = null; ultAll(w.sk, 0.7); } // 궁극기 두 번째 물결
     if (!S || S.ended) return;
     S.foes.forEach((f) => { if (f.shk > 0) f.shk -= dt; });
     if (stop > 0) { stop -= dt; return; }
@@ -332,7 +337,7 @@ const Dungeon = (() => {
   function cast(sk, sub) {
     if (!sub && !S.ghost && C.party) C.send({ k: "cast", i: ALL_SKILLS.indexOf(sk) });
     if (sk.kind === "ult" && !S.ghost && !sub && !S.cut) { S.cut = { t: 0, sk, hero: C.op && !(C.look && C.look.gm === 0) ? "chief" : heroOf(C.look) }; S.hero.inv = Math.max(S.hero.inv, 2.5); return; } // 각성 컷인(아래 cutStep)
-    if (sk.kind === "ult") { S.flash = 0.5; shake = 0.7; if (S.ghost) banner("궁극기 — " + sk.name + "!"); S.hero.inv = Math.max(S.hero.inv, 1); sk.multi.forEach((m) => cast(m, true)); return; } // 궁극기 — 여러 재주를 한 번에
+    if (sk.kind === "ult") { S.flash = 0.5; shake = 0.7; if (S.ghost) banner("궁극기 — " + sk.name + "!"); S.hero.inv = Math.max(S.hero.inv, 1); sk.multi.forEach((m) => cast(m, true)); if (!S.ghost) { ultAll(sk, 1); S.ultWave = { t: 0.9, sk }; } return; } // 궁극기 — 여러 재주를 한 번에 + 방 안 모든 몬스터 두 번(2026-10-28)
     const H = S.hero, near = (r) => S.foes.filter((f) => f.st !== "dead" && Math.abs(f.x - H.x) < r).concat(pvpFoes().filter((p) => Math.abs(p.x - H.x) < r)).sort((a, b) => Math.abs(a.x - H.x) - Math.abs(b.x - H.x));
     if (sk.kind === "shot") { H.st = "cast"; H.t = 0; const n = sk.n || 1; for (let k = 0; k < n; k++) S.shots.push({ x: H.x + H.face * 40, z: clamp(H.z + (k - (n - 1) / 2) * 34, Z0, Z1), vx: H.face * sk.spd, t: sk.life, hit: [], face: H.face, sk }); }
     else if (sk.kind === "aura") { S.zones.push({ follow: true, x: H.x, z: H.z, t: sk.dur, tt: 0, sk, face: H.face }); H.st = "cast"; H.t = 0.1; }
@@ -689,7 +694,7 @@ const Dungeon = (() => {
       else { g.beginPath(); g.ellipse(t.x - cx, t.z, t.r, t.r * 0.42, 0, 0, Math.PI * 2); g.fill(); g.stroke(); g.fillStyle = "rgba(255,50,40,.35)"; g.beginPath(); g.ellipse(t.x - cx, t.z, t.r * p, t.r * 0.42 * p, 0, 0, Math.PI * 2); g.fill(); }
     });
     const H = S.hero;
-    S.zones.forEach((zn) => drawHsk(g, zn.sk, zn.sk.fr, zn.x - cx, zn.z - 30 - (zn.follow ? (zn.who || H).h || 0 : 0), zn.sk.size, !zn.sk.spin && zn.face < 0, Math.min(1, zn.t / 0.3) * 0.95, zn.sk.spin ? S.t * zn.sk.spin : 0, (zn.sk.dur || 1) - zn.t, true));
+    S.zones.forEach((zn) => drawHsk(g, zn.sk, zn.sk.fr, zn.x - cx, zn.z - 30 - (zn.follow ? (zn.who || H).h || 0 : 0), zn.sk.size, !zn.sk.spin && zn.face < 0, Math.min(1, zn.t / 0.3), zn.sk.spin ? S.t * zn.sk.spin : 0, (zn.sk.dur || 1) - zn.t, true));
     const bodies = S.foes.map((f) => [f.z, () => drawFoe(g, f, cx)]);
     if (!C.watch) bodies.push([H.z + 0.1, () => drawPerson(g, H, C.look, cx, true, C.party ? C.nick : "")]);
     for (const id in S.remote) { const r = S.remote[id]; bodies.push([r.z, () => drawPerson(g, r, r.look, cx, false, r.nick)]); }
@@ -700,7 +705,7 @@ const Dungeon = (() => {
       const p = 1 - x.t / x.d;
       if (x.k === "spark") { const L = FR.mfx.spark; centered(g, IMG.mfx, L[Math.min(L.length - 1, Math.floor(p * L.length))], x.x - cx, x.y, x.s * (0.8 + p * 0.5), false, 1 - p * 0.6); }
       else if (x.k === "quake") { const L = FR.mfx.quake; centered(g, IMG.mfx, L[Math.min(L.length - 1, Math.floor(p * L.length))], x.x - cx, x.y - 20, x.s, false, 1 - p * 0.5); }
-      else if (x.k === "hsk") drawHsk(g, x, x.fr, x.x - cx, x.y, x.s, x.flip, 1 - p * p, 0, x.d - x.t, false);
+      else if (x.k === "hsk") drawHsk(g, x, x.fr, x.big ? x.x - S.camX : x.x - cx, x.y, x.s, x.flip, p < 0.7 ? 1 : 1 - (p - 0.7) / 0.3, 0, x.d - x.t, false, x.d); // 끝 30% 에서만 흐려짐
     });
     g.textAlign = "center"; g.textBaseline = "middle";
     S.nums.forEach((n) => { g.font = "900 22px 'Noto Sans KR', sans-serif"; g.lineWidth = 4; g.strokeStyle = "rgba(0,0,0,.85)"; g.globalAlpha = Math.min(1, n.t / 0.3); g.strokeText(n.v, n.x - cx, n.y); g.fillStyle = n.c; g.fillText(n.v, n.x - cx, n.y); g.globalAlpha = 1; });
@@ -724,14 +729,15 @@ const Dungeon = (() => {
   }
   /* 스킬 효과 — 영상에서 뽑은 칸(FR.sfx[아이콘 이름], 검은 바탕을 더해 그림)이 있으면 그것, 없으면 예전 그림 (2026-10-28 "스킬도 각각 영상으로"). age = 시작부터 흐른 초, loop = 끝나면 처음부터 */
   const SFX = {};
-  function drawHsk(g, o, fr, x, y, size, flip, alpha, rot, age, loop) {
+  function drawHsk(g, o, fr, x, y, size, flip, alpha, rot, age, loop, dur) {
     const ic = o && o.ic, V = ic && FR.sfx && FR.sfx[ic], I = V && (SFX[ic] || (SFX[ic] = img("img/sfx/" + ic + ".webp")));
     if (!V) return centered(g, IMG.hsk, FR.hsk[fr], x, y, size, flip, alpha, rot); if (!I.complete || !I.naturalWidth) return; // 새 영상이 아직이면 옛 그림 대신 안 그림
-    let k = Math.floor(Math.max(0, age || 0) * 10); k = loop ? k % V.n : Math.min(V.n - 1, k);
+    let k = loop || !dur ? Math.floor(Math.max(0, age || 0) * 10) : Math.floor(Math.max(0, age || 0) / dur * V.n); k = loop ? k % V.n : Math.min(V.n - 1, k); // 한 번 터지는 효과는 영상 전체를 그 시간에 맞춰
     const sc = size * 1.35 / Math.max(V.w, V.h), w = V.w * sc, h = V.h * sc;
     g.save(); g.globalCompositeOperation = "lighter"; g.globalAlpha *= clamp(alpha, 0, 1); g.translate(x, y); if (flip) g.scale(-1, 1);
     const ox = (FR.sfxOx && FR.sfxOx[ic]) || 0; // 영상 속 효과가 비켜난 만큼 되돌림
-    g.drawImage(I, (k % V.cols) * V.w, Math.floor(k / V.cols) * V.h, V.w, V.h, -w / 2 - ox * w, -h / 2, w, h); g.restore();
+    g.drawImage(I, (k % V.cols) * V.w, Math.floor(k / V.cols) * V.h, V.w, V.h, -w / 2 - ox * w, -h / 2, w, h);
+    g.globalAlpha *= 0.75; g.drawImage(I, (k % V.cols) * V.w, Math.floor(k / V.cols) * V.h, V.w, V.h, -w / 2 - ox * w, -h / 2, w, h); g.restore(); // 두 번 겹쳐 진하게("스킬이 너무 연하다")
   }
   function skIcon(g, sk, x, y, size, alpha) { // 스킬 아이콘 — 새 그림(ui2)이 있으면 그것, 없으면 예전 효과 그림
     const r = FR.ui2 && FR.ui2[sk.ic]; if (!r || !IMG.ui2.complete || !IMG.ui2.naturalWidth) return centered(g, IMG.hsk, FR.hsk[sk.fr], x, y, size, false, alpha);
