@@ -60,7 +60,8 @@
   #partyBox { position: absolute; top: 10px; left: 10px; z-index: 3; padding: 6px 10px; border-radius: 8px; background: rgba(10,6,8,.7); border: 1px solid #3a6b8a; font-size: 12px; display: grid; gap: 2px; }
   #partyBox[hidden] { display: none; }
   #chat { position: absolute; left: 10px; bottom: 10px; width: 36%; z-index: 3; font-size: 12px; pointer-events: none; }
-  #chatLog div { text-shadow: 0 1px 2px #000; }
+  body.in-dun #chat { width: 13%; min-width: 110px; } body.in-dun #chatLog { max-height: 30vh; overflow: hidden; } /* 던전 — 물약 칸과 안 겹치게 (2026-10-27) */
+  #chatLog div { text-shadow: 0 1px 2px #000; word-break: break-all; overflow-wrap: anywhere; } /* 긴 글이 한 줄로 넘치지 않게 */
   #chatLog b { color: #ffe08a; }
   #chatIn { pointer-events: auto; width: 100%; box-sizing: border-box; margin-top: 4px; font: inherit; font-size: 13px; padding: 5px 8px; border-radius: 6px; border: 1px solid #6b5a3a; background: rgba(10,6,8,.7); color: #fff; }
   #asks { position: absolute; top: 50px; left: 50%; transform: translateX(-50%); z-index: 6; display: grid; gap: 6px; }
@@ -184,10 +185,10 @@
   <div id="panel" hidden><div id="panelIn"></div></div>
 </div>
 <div id="rotate">휴대폰을 가로로 돌려 주세요</div>
-<script src="frames.js?v=202610271402"></script>
-<script src="keys.js?v=202610271402"></script>
-<script src="look.js?v=202610271402"></script>
-<script src="game.js?v=202610271402"></script>
-<script src="app.js?v=202610271402"></script>
+<script src="frames.js?v=202610271431"></script>
+<script src="keys.js?v=202610271431"></script>
+<script src="look.js?v=202610271431"></script>
+<script src="game.js?v=202610271431"></script>
+<script src="app.js?v=202610271431"></script>
 </body>
 </html>
