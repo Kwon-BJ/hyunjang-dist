@@ -8,7 +8,8 @@ const Dungeon = (() => {
   const VW = 960, VH = 540, Z0 = 368, Z1 = 512, ROOM = 1800, G = 1900;
   const V = ((document.currentScript && document.currentScript.src) || "").split("?v=")[1] || ""; // 판 번호 — 새 판이면 그림도 새로 받음
   const img = (src) => { const i = new Image(); i.src = src + (V ? "?v=" + V : ""); return i; };
-  const IMG = { items: img("img/items.png"), hero: img("img/heroes5.png"), mon: img("img/mon2.png"), mon3a: img("img/mon3a.png"), mon3b: img("img/mon3b.png"), mon3c: img("img/mon3c.png"), hsk: img("img/hsk.png"), mfx: img("img/mfx.png") };
+  const IMG = { items: img("img/items.webp"), mon3a: img("img/mon3a.webp"), mon3b: img("img/mon3b.webp"), mon3c: img("img/mon3c.webp"), hsk: img("img/hsk.webp"), mfx: img("img/mfx.webp") };
+  let monOld = null; Object.defineProperty(IMG, "mon", { get: () => monOld || (monOld = img("img/mon2.png")) }); // 예전 몬스터 그림 — 쓸 때만(지금은 안 씀)
   const rnd = (a, b) => a + Math.random() * (b - a);
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
@@ -569,7 +570,7 @@ const Dungeon = (() => {
 const BG = (() => {
   const V = ((document.currentScript && document.currentScript.src) || "").split("?v=")[1] || "";
   const pics = {}, GF = { town: 0.79, gate: 0.78, forest: 0.8, goblin: 0.72, wolf: 0.76, orc: 0.7, castle: 0.73 };
-  (window.MAPS || []).forEach((n) => { const i = new Image(); i.src = "img/maps/" + n + ".jpg" + (V ? "?v=" + V : ""); pics[n] = i; });
+  (window.MAPS || []).forEach((n) => { const i = new Image(); i.src = "img/maps/" + n + ".webp" + (V ? "?v=" + V : ""); pics[n] = i; });
   const ok = (P) => P && P.complete && P.naturalWidth;
   function tile(g, P, x, w, y, h, flip) {
     if (!flip) return g.drawImage(P, x, y, w + 1, h);
