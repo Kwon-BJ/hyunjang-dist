@@ -245,9 +245,9 @@ const APP = (() => {
     const H = A.hero; bodies.push([H.z + 0.1, () => drawPerson(H, A.char.look, cx, A.char.name, true, A.me.id)]);
     bodies.sort((a, b) => a[0] - b[0]).forEach((b) => b[1]());
     const gi = nearItem();
-    if (gi && $("panel").hidden) { const I = A.items[gi.key], t = (touch ? "말걸기 단추" : KEYS.label("talk")) + " — 줍기: " + I.name + (gi.plus ? " +" + gi.plus : "") + (gi.n > 1 ? " × " + gi.n : ""); g.textAlign = "center"; g.font = "700 14px 'Noto Sans KR', sans-serif"; g.lineWidth = 4; g.strokeStyle = "rgba(0,0,0,.8)"; g.strokeText(t, gi.x - cx, gi.z - 56); g.fillStyle = "#ffe08a"; g.fillText(t, gi.x - cx, gi.z - 56); }
+    if (gi && $("panel").hidden) { const I = A.items[gi.key], t = (touch ? "화면 누르기" : KEYS.label("talk")) + " — 줍기: " + I.name + (gi.plus ? " +" + gi.plus : "") + (gi.n > 1 ? " × " + gi.n : ""); g.textAlign = "center"; g.font = "700 14px 'Noto Sans KR', sans-serif"; g.lineWidth = 4; g.strokeStyle = "rgba(0,0,0,.8)"; g.strokeText(t, gi.x - cx, gi.z - 56); g.fillStyle = "#ffe08a"; g.fillText(t, gi.x - cx, gi.z - 56); }
     const n = gi ? null : nearNpc();
-    if (n && $("panel").hidden) { g.textAlign = "center"; g.font = "700 14px 'Noto Sans KR', sans-serif"; const t = (touch ? "말걸기 단추" : KEYS.label("talk")) + " — " + n.name + " 와(과) 이야기"; g.lineWidth = 4; g.strokeStyle = "rgba(0,0,0,.8)"; g.strokeText(t, n.x - cx, n.z - 150); g.fillStyle = "#ffe08a"; g.fillText(t, n.x - cx, n.z - 150); }
+    if (n && $("panel").hidden) { g.textAlign = "center"; g.font = "700 14px 'Noto Sans KR', sans-serif"; const t = (touch ? "화면 누르기" : KEYS.label("talk")) + " — " + n.name + " 와(과) 이야기"; g.lineWidth = 4; g.strokeStyle = "rgba(0,0,0,.8)"; g.strokeText(t, n.x - cx, n.z - 150); g.fillStyle = "#ffe08a"; g.fillText(t, n.x - cx, n.z - 150); }
     // 오른쪽 끝 — 던전 입구
     const gx = TOWN_W - 70 - cx, gate = BG.pics.town && BG.pics.town.naturalWidth; if (gx < VW + 100) { if (!gate) { g.fillStyle = "rgba(160,60,255,.25)"; g.beginPath(); g.ellipse(gx, 410, 60, 130, 0, 0, Math.PI * 2); g.fill(); g.strokeStyle = "#c58cff"; g.lineWidth = 4; g.stroke(); } g.fillStyle = "#fff"; g.font = "800 14px 'Noto Sans KR', sans-serif"; g.textAlign = "center"; g.lineWidth = 4; g.strokeStyle = "rgba(0,0,0,.8)"; g.strokeText("차원의 문 ↑ (던전)", gx, gate ? 120 : 260); g.fillText("차원의 문 ↑ (던전)", gx, gate ? 120 : 260); }
   }
@@ -664,15 +664,16 @@ const APP = (() => {
   cv.addEventListener("pointerdown", (e) => { const [x, y] = local(e);
     if (A.scene === "dungeon" && Dungeon.click(x, y)) { e.stopImmediatePropagation(); return; }
     if (A.scene === "town" && $("panel").hidden) { const gx = TOWN_W - 70 - A.camX; if (Math.abs(x - gx) < 110 && y > 140 && y < Z1 + 10) { e.stopImmediatePropagation(); gateTalk(); } } });
-  cv.addEventListener("pointerdown", (e) => { if (!touch && e.pointerType === "mouse") return; const [x, y] = local(e); if (x < VW * 0.5) { stick = { id: e.pointerId, ox: x, oy: y, x, y }; try { cv.setPointerCapture(e.pointerId); } catch (er) {} } });
+  cv.addEventListener("pointerdown", (e) => { if (!touch && e.pointerType === "mouse") return; const [x, y] = local(e); if (x < VW * 0.5) { stick = { id: e.pointerId, ox: x, oy: y, x, y }; try { cv.setPointerCapture(e.pointerId); } catch (er) {} } else if (A.scene === "town" && $("panel").hidden) { KEYS.press("talk", true); KEYS.press("talk", false); } });
   cv.addEventListener("pointermove", (e) => { if (stick && stick.id === e.pointerId) { const [x, y] = local(e); stick.x = x; stick.y = y; } });
   const lift = (e) => { if (stick && stick.id === e.pointerId) stick = null; };
   cv.addEventListener("pointerup", lift); cv.addEventListener("pointercancel", lift);
-  /* 휴대폰 단추 — 마을: 말걸기 · 가방 · 채팅 / 던전: 공격 · 점프 · 회피 · 스킬 3 · 물약 */
+  /* 휴대폰 단추 — 마을도 던전과 같게 / 던전: 공격 · 점프 · 회피 · 스킬 3 · 물약 */
   /* 휴대폰 단추 — 공격을 가운데로 둥글게(겹치지 않게, 2026-10-27 휴대폰 점검) */
-  const PADS = { none: [], town: [["말걸기", "talk", "right:3%;bottom:6%;width:13%;height:23.1%"], ["점프", "jump", "right:18%;bottom:5%;width:9%;height:16.0%"], ["가방", "bag", "right:3%;bottom:33%;width:8%;height:14.2%"], ["장비", "equip", "right:12%;bottom:33%;width:8%;height:14.2%"], ["스킬", "skills", "right:12%;bottom:52%;width:7%;height:12.4%"], ["채팅", "chat", "right:3%;bottom:52%;width:7%;height:12.4%"]],
+  const PADS = { none: [], town: null, // 마을도 던전과 같은 단추(2026-10-28 부장님) — 말걸기·줍기는 빈 화면 누르기, 가방·장비·스킬은 위 메뉴
     dungeon: [["공격", "atk", "right:3%;bottom:5%;width:14%;height:24.9%;font-size:17px"], ["점프", "jump", "right:19%;bottom:4%;width:8%;height:14.2%"], ["백스텝", "back", "right:28%;bottom:4%;width:7%;height:12.4%"], ["물약", "potion", "right:36%;bottom:4%;width:7%;height:12.4%"], ["마력", "mpot", "right:44%;bottom:4%;width:7%;height:12.4%;border-color:#4a7ac8"], ["회피", "roll", "right:3%;bottom:33%;width:8%;height:14.2%"], ["1", "s1", "right:19%;bottom:21%;width:7%;height:12.4%"], ["2", "s2", "right:12%;bottom:33%;width:7%;height:12.4%"], ["3", "s3", "right:3%;bottom:50%;width:7%;height:12.4%"], ["4", "s4", "right:27%;bottom:19%;width:7%;height:12.4%"], ["5", "s5", "right:20%;bottom:37%;width:7%;height:12.4%"], ["6", "s6", "right:12%;bottom:52%;width:7%;height:12.4%"], ["궁극", "ult", "right:3%;bottom:66%;width:8%;height:14.2%;border-color:#ffd36b"]] };
   function setPad(which) {
+    if (which === "town") which = "dungeon";
     if (which === "dungeon") { const sk = A.me && A.me.op ? Dungeon.ALL_SKILLS : Dungeon.SKILLS[(A.char && A.char.look && A.char.look.hero) || "kh"] || Dungeon.SKILLS.kh; /* 운영자는 35개 중에서 */ const SL = (A.char && A.char.skillSlots) || [0, 1, 2, 3, 4, 5, 6]; PADS.dungeon.forEach((p) => { const slot = ["s1", "s2", "s3", "s4", "s5", "s6", "ult"].indexOf(p[1]); if (slot >= 0) p[0] = sk[SL[slot]] ? sk[SL[slot]].short : "—"; }); }
     const pad = $("pad"); pad.hidden = !touch; if (!touch) return;
     pad.replaceChildren(...PADS[which].map(([t, a, css]) => { const b = el("div", "tb", t); b.style.cssText = css; b.dataset.a = a;
