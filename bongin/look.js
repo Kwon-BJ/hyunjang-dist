@@ -74,18 +74,19 @@ function motionFrame(st, pose) {
   if (st === "hit" || st === "backstep") return "hit"; if (st === "fall" || st === "down" || st === "dead") return "down";
   return "idle";
 }
-function seqFrame(M, pose) { // 이어지는 동작 — 동작마다 몇 장을 시간 · 걸음에 맞춰
+function seqFrame(M, pose, town) { // 이어지는 동작 — 동작마다 몇 장을 시간 · 걸음에 맞춰
   const C = FR[M.pic + "_meta"].counts, st = pose.st, t = pose.t || 0, at = (k, dur) => k + Math.min(C[k] - 1, Math.floor(Math.max(0, t) / dur * C[k]));
   if (st === "atk") return at(["atk1", "atk2", "atk3", "atk1"][pose.step | 0] || "atk1", 0.36);
   if (st === "airatk") return "air"; if (st === "cast" || st === "dash") return at("cast", 0.25);
   if (st === "walk") return "walk" + (Math.floor((pose.walk || 0) * 1.5) % C.walk);
   if (st === "run" || st === "sprint" || st === "roll") return "walk" + (Math.floor((pose.walk || t * 14) * 1.1) % C.walk);
   if (st === "jump") return "walk3"; if (st === "hit" || st === "backstep") return "hit"; if (st === "fall" || st === "down" || st === "dead") return "down";
+  if (town && C.peace) return "peace" + (Math.floor(t * 3) % C.peace); // 마을 · 캐릭터 화면은 칼을 칼집에(2026-10-28)
   return "idle" + (Math.floor(t * 6) % C.idle);
 }
 function drawMotion(g, hero, L, pose, sc, opt) {
   if (hero === "kh" && MOTION.kh2 && MOTION_IMG.kh2 && MOTION_IMG.kh2.complete && MOTION_IMG.kh2.naturalWidth && FR.m_kh2) { // 강혁은 영상 동작으로
-    const M = MOTION.kh2, Mm = FR.m_kh2_meta, r = FR.m_kh2[seqFrame(M, pose)] || FR.m_kh2.idle0, P = motionPic("kh2", (L && L.mc) | 0, (L && L.mh) | 0), k = sc * 124 / Mm.tall;
+    const M = MOTION.kh2, Mm = FR.m_kh2_meta, r = FR.m_kh2[seqFrame(M, pose, opt && opt.town)] || FR.m_kh2.idle0, P = motionPic("kh2", (L && L.mc) | 0, (L && L.mh) | 0), k = sc * 124 / Mm.tall;
     const st = pose.st, t = pose.t || 0; let bob = 0; if (st === "walk" || st === "run") bob = 0; else if (st === "idle") bob = Math.sin(t * 2.5) * 0.6;
     const G = opt && opt.gear, col = (opt && opt.glow && "rgba(255,230,140,1)") || (G && G.b && GEAR_COL[G.b]);
     g.save(); g.translate(0, -bob * sc); if (col) { g.shadowColor = col; g.shadowBlur = 14 * sc; }
