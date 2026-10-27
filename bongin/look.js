@@ -112,18 +112,24 @@ function drawMotion(g, hero, L, pose, sc, opt) {
   g.drawImage(P, r[0], r[1], r[2], r[3], -r[2] * k * ax, -r[3] * k + 2, r[2] * k, r[3] * k); g.restore();
   return true;
 }
-function motionPic(hero, mc, mh) { // 동작 그림 전체를 옷 · 머리 색 바꿔 한 번 만들어 둠(칸마다 위쪽이 머리)
+const MTJOB = new Set();
+function motionPic(hero, mc, mh) { // 동작 그림 전체를 옷 · 머리 색 바꿔 만들어 둠(칸마다 위쪽이 머리)
+  // 한 번에 다 바꾸면 휴대폰이 몇 초 멈춤(마을에서 처음 점프할 때 점프 그림을 바꾸느라, 2026-10-28) → 조금씩 나눠 바꾸고 끝날 때까지는 원래 색으로 그림
   const key = "M" + hero + ":" + mc + ":" + mh; let c = MTINT.get(key); if (c) return c; const I = MOTION_IMG[hero], F = FR[MOTION[hero].pic];
+  const TC = MASTER_MC[mc], TH = MASTER_MH[mh]; if (!TC && !TH) { MTINT.set(key, I); return I; }
+  if (/2$/.test(hero) && MOTION[hero.replace(/2$/, "3")]) { const h3 = hero.replace(/2$/, "3"), I3 = MOTION_IMG[h3]; if (I3 && I3.complete && I3.naturalWidth) motionPic(h3, mc, mh); } // 반응 그림도 미리
+  if (MTJOB.has(key)) return I; MTJOB.add(key);
   c = document.createElement("canvas"); c.width = I.naturalWidth; c.height = I.naturalHeight; const x = c.getContext("2d"); x.drawImage(I, 0, 0);
-  const TC = MASTER_MC[mc], TH = MASTER_MH[mh];
-  if (TC || TH) { const tc = TC && hexHsl(TC), th = TH && hexHsl(TH);
-    Object.entries(F).forEach(([n, r]) => { const D = x.getImageData(r[0], r[1], r[2], r[3]), p = D.data, W = r[2], H = r[3], mm0 = FR[MOTION[hero].pic + "_meta"], mm = mm0 && mm0.tall ? mm0 : null, hb = mm ? H - mm.tall * 1.02 : 0, hairY = n === "down" || /^(fall|dead)/.test(n) ? 0 : mm ? hb + (MASTER_HAIR[String(hero).replace(/^m_/, "").replace(/\d$/, "")] || 0) * mm.tall * 1.1 : (MASTER_HAIR[String(hero).replace(/^m_/, "").replace(/\d$/, "")] || 0) * H * 1.1;
+  const tc = TC && hexHsl(TC), th = TH && hexHsl(TH), list = Object.entries(F); let j = 0;
+  const step = () => { const t0 = performance.now();
+    while (j < list.length && performance.now() - t0 < 8) { const [n, r] = list[j++]; if (!Array.isArray(r)) continue; const D = x.getImageData(r[0], r[1], r[2], r[3]), p = D.data, W = r[2], H = r[3], mm0 = FR[MOTION[hero].pic + "_meta"], mm = mm0 && mm0.tall ? mm0 : null, hb = mm ? H - mm.tall * 1.02 : 0, hairY = n === "down" || /^(fall|dead)/.test(n) ? 0 : mm ? hb + (MASTER_HAIR[String(hero).replace(/^m_/, "").replace(/\d$/, "")] || 0) * mm.tall * 1.1 : (MASTER_HAIR[String(hero).replace(/^m_/, "").replace(/\d$/, "")] || 0) * H * 1.1;
       for (let i = 0; i < W * H; i++) { const o = i * 4; if (p[o + 3] < 20) continue; const y = (i / W) | 0, [h, s, l] = hsl(p[o], p[o + 1], p[o + 2]); let out = null;
         if (tc && (MASTER_CLOTH[String(hero).replace(/^m_/, "").replace(/\d$/, "")] || []).some(([a, b, sm]) => h >= a && h <= b && s >= sm) && y > (mm ? hb + mm.tall * 0.12 : H * 0.12)) out = rgb(tc[0], Math.max(0.15, tc[1] * 0.85), Math.min(0.92, Math.max(0.05, l + (tc[2] - 0.38) * 0.75)));
         else if (th && y < hairY && l > 0.07 && l < 0.4 && s < 0.6) out = rgb(th[0], th[1] * 0.8, Math.min(0.9, l + (th[2] - 0.15) * 0.85));
         if (out) { p[o] = out[0]; p[o + 1] = out[1]; p[o + 2] = out[2]; } }
-      x.putImageData(D, r[0], r[1]); }); }
-  MTINT.set(key, c); return c;
+      x.putImageData(D, r[0], r[1]); }
+    if (j < list.length) setTimeout(step, 16); else { MTINT.set(key, c); MTJOB.delete(key); } };
+  step(); return I;
 }
 function drawMaster(g, L, pose, sc, opt) {
   if (drawMotion(g, heroOf(L), L, pose, sc, opt)) return true;
