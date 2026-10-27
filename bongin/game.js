@@ -455,7 +455,7 @@ const BG = (() => {
     let stopX = Infinity, base = 0, we = 0, fw = 0;
     if (E) { we = E.naturalWidth * h / E.naturalHeight; fw = we * (o.end.fade == null ? 0.25 : o.end.fade); stopX = o.end.at - o.end.f * we; base = stopX + fw; } // 마지막 그림은 앞 그림과 fw 만큼 겹쳐 서서히 바뀜
     const n0 = Math.floor((sx - base) / w);
-    for (let n = n0; ; n++) { const wx = base + n * w; if (wx - sx > VW || wx >= base) break; tile(g, P, wx - sx, w, y, h, (n & 1) !== 0); }
+    for (let n = n0; ; n++) { const wx = base + n * w; if (wx - sx > VW || (E && wx >= base)) break; tile(g, P, wx - sx, w, y, h, (n & 1) !== 0); } // 끝 그림이 없으면 끝없이 이어 붙임
     if (E && stopX - sx < VW) g.drawImage(fw ? faded(E, o.end.fade == null ? 0.25 : o.end.fade) : E, stopX - sx, y, we + 1, h);
   }
   const fades = new Map();
