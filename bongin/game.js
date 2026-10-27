@@ -55,7 +55,28 @@ const Dungeon = (() => {
     { dur: 0.42, act: [0.1, 0.22], range: 120, dmg: 20, type: "launch", lunge: 110 },
   ];
   const AIR = { dur: 0.36, act: [0.04, 0.26], range: 100, dmg: 13, type: "stagger" };
-  const SKILL = [{ act: "s1", name: "화염 검기", cd: 3, fr: "kh_wave" }, { act: "s2", name: "화염검 진", cd: 8, fr: "kh_ring" }, { act: "s3", name: "화염 돌진", cd: 5, fr: "kh_dash" }];
+  /* 스킬 — 다섯 명마다 셋(연병장 스킬 그림 hsk). kind:
+     shot = 날아가는 것(n 개를 위아래로 벌려서), aura = 내 둘레 계속, zone = 앞쪽 자리에 계속, dash = 앞으로 돌진,
+     strike = 가까운 적 n 명에게 바로, blink = 가까운 적 뒤로 순간이동해 베기, slam = 앞쪽을 내려쳐 띄우기, guard = 잠깐 무적 + 둘레 밀쳐내기 */
+  const SKILLS = {
+    kh: [{ name: "화염 검기", short: "검기", cd: 3, fr: "kh_wave", kind: "shot", spd: 760, life: 0.75, dmg: 34, type: "knock", size: 170 },
+         { name: "화염검 진", short: "검진", cd: 8, fr: "kh_ring", kind: "aura", dur: 3, tick: 0.3, r: 120, dmg: 11, size: 270, spin: 5 },
+         { name: "화염 돌진", short: "돌진", cd: 5, fr: "kh_dash", kind: "dash", dmg: 28 }],
+    hr: [{ name: "부적 날리기", short: "부적", cd: 3, fr: "hr_tali", kind: "shot", n: 3, spd: 620, life: 0.9, dmg: 20, type: "stagger", size: 90 },
+         { name: "뇌전", short: "뇌전", cd: 7, fr: "hr_bolt", kind: "strike", n: 3, range: 560, dmg: 46, type: "launch", size: 190 },
+         { name: "팔괘진", short: "팔괘", cd: 9, fr: "hr_bagua", kind: "zone", at: 0, r: 160, dur: 4, tick: 0.35, dmg: 12, size: 300, spin: 1.5 }],
+    ds: [{ name: "금강종", short: "금강", cd: 9, fr: "ds_bell", kind: "guard", dur: 2.5, r: 110, dmg: 8, size: 220 },
+         { name: "대지 내려치기", short: "내려", cd: 5, fr: "ds_slam", kind: "slam", range: 300, dmg: 40, size: 320 },
+         { name: "투기", short: "투기", cd: 8, fr: "ds_aura", kind: "aura", dur: 4, tick: 0.4, r: 140, dmg: 13, size: 300, spin: 0 }],
+    je: [{ name: "바람 화살", short: "바람", cd: 2.5, fr: "je_wind", kind: "shot", spd: 1150, life: 0.6, dmg: 30, type: "stagger", size: 170 },
+         { name: "화살비", short: "화살비", cd: 7, fr: "je_rain", kind: "zone", at: 280, r: 150, dur: 1.6, tick: 0.2, dmg: 10, size: 300, spin: 0 },
+         { name: "폭풍 화살", short: "폭풍", cd: 6, fr: "je_storm", kind: "shot", spd: 520, life: 1.1, dmg: 58, type: "knock", size: 230 }],
+    mj: [{ name: "그림자 습격", short: "습격", cd: 4, fr: "mj_shadow", kind: "blink", range: 520, dmg: 44, size: 200 },
+         { name: "독안개", short: "독", cd: 8, fr: "mj_poison", kind: "zone", at: 170, r: 140, dur: 3.2, tick: 0.4, dmg: 12, size: 280, spin: 0 },
+         { name: "표창", short: "표창", cd: 2.5, fr: "mj_star", kind: "shot", n: 3, spd: 980, life: 0.6, dmg: 18, type: "stagger", size: 80 }],
+  };
+  const ACTS = ["s1", "s2", "s3"];
+  let SKILL = SKILLS.kh;
 
   let S = null, C = null, stop = 0, shake = 0, nextId = 1;
   const host = () => !C.party || C.party.host === C.me;
@@ -64,6 +85,7 @@ const Dungeon = (() => {
      watch = 운영자 투명 관전 — 내 캐릭터는 없고(몬스터가 안 노림 · 안 그림 · 안 보냄), 화면은 파티장을 따라간다 */
   function start(cfg) {
     C = cfg; const D = DUN[cfg.d] || DUN.forest;
+    SKILL = SKILLS[(cfg.look && cfg.look.hero) || "kh"] || SKILLS.kh; // 내 캐릭터(다섯 명 중) 스킬
     const n = cfg.party ? cfg.party.members.length : 1;
     stop = 0; shake = 0;
     S = {
@@ -71,7 +93,7 @@ const Dungeon = (() => {
       hero: { x: 220, z: 440, h: 0, vx: 0, vh: 0, face: 1, hp: cfg.stats.hpMax, max: cfg.stats.hpMax, st: "idle", t: 0, inv: 0, step: 0, queued: false, hit: [], walk: 0 },
       mult: cfg.stats.atk / 33, hpK: 1 + 0.6 * (n - 1), potions: cfg.potions || 0,
       combo: 0, comboT: 0, maxCombo: 0, hitsTaken: 0, cd: [0, 0, 0], ring: 0, over: false, win: false, lose: false, camX: 0, endT: 0, ended: false,
-      remote: {}, sendT: 0, syncT: 0,
+      remote: {}, sendT: 0, syncT: 0, zones: [],
     };
     if (cfg.watch) { S.hero.hp = 0; S.hero.x = -999; }
     if (cfg.party) cfg.party.members.forEach((m, i) => { if (m.id !== cfg.me) S.remote[m.id] = { id: m.id, nick: m.nick, look: m.look, x: 180 - i * 30, z: 420 + i * 25, h: 0, face: 1, st: "idle", t: 0, step: 0, walk: 0, hp: 1, max: 1, tx: 180 - i * 30, tz: 420 + i * 25, th: 0, alive: true, inv: 0 }; });
@@ -157,13 +179,14 @@ const Dungeon = (() => {
     }
     S.shots.forEach((s) => {
       s.x += s.vx * dt; s.t -= dt;
-      S.foes.forEach((f) => { if (!s.hit.includes(f) && Math.abs(f.x - s.x) < 60 + f.D.w && Math.abs(f.z - s.z) < 45 + (f.D.boss ? 30 : 0)) { s.hit.push(f); hitFoe(f, 34, "knock", Math.sign(s.vx)); } });
+      S.foes.forEach((f) => { if (!s.hit.includes(f) && Math.abs(f.x - s.x) < 60 + f.D.w && Math.abs(f.z - s.z) < 45 + (f.D.boss ? 30 : 0)) { s.hit.push(f); hitFoe(f, s.sk ? s.sk.dmg : 34, s.sk ? s.sk.type : "knock", Math.sign(s.vx)); } });
     });
     S.shots = S.shots.filter((s) => s.t > 0 && s.x > -100 && s.x < ROOM + 100);
-    if (S.ring > 0) {
-      S.ring -= dt; S.ringT = (S.ringT || 0) - dt;
-      if (S.ringT <= 0) { S.ringT = 0.3; S.foes.forEach((f) => { if (Math.abs(f.x - H.x) < 120 + f.D.w * 0.5 && Math.abs(f.z - H.z) < 55) hitFoe(f, 11, "stagger", Math.sign(f.x - H.x) || 1); }); }
-    }
+    S.zones.forEach((zn) => { // 둘레 · 자리 스킬 — tick 마다 안에 있는 적을 침
+      zn.t -= dt; if (zn.follow) { zn.x = H.x; zn.z = H.z; }
+      if ((zn.tt -= dt) <= 0) { zn.tt = zn.sk.tick; S.foes.forEach((f) => { if (Math.abs(f.x - zn.x) < zn.sk.r + f.D.w * 0.5 && Math.abs(f.z - zn.z) < 60) hitFoe(f, zn.sk.dmg, zn.sk.type || "stagger", Math.sign(f.x - zn.x) || 1); }); }
+    });
+    S.zones = S.zones.filter((zn) => zn.t > 0);
     for (const id in S.remote) { const r = S.remote[id]; r.x += (r.tx - r.x) * Math.min(1, dt * 12); r.z += (r.tz - r.z) * Math.min(1, dt * 12); r.h += (r.th - r.h) * Math.min(1, dt * 14); r.t += dt; if (r.st === "walk" || r.st === "run") r.walk += dt * 10; }
     S.fx.forEach((x) => { x.t -= dt; }); S.fx = S.fx.filter((x) => x.t > 0);
     S.nums.forEach((n) => { n.t -= dt; n.y -= 60 * dt; }); S.nums = S.nums.filter((n) => n.t > 0);
@@ -179,6 +202,20 @@ const Dungeon = (() => {
     if (S.over && !S.ended && (S.endT -= dt) <= 0) { S.ended = true; C.onEnd({ win: S.win, sec: Math.floor(S.t), maxCombo: S.maxCombo, hits: S.hitsTaken }); }
   }
 
+  function cast(sk) {
+    const H = S.hero, near = (r) => S.foes.filter((f) => f.st !== "dead" && Math.abs(f.x - H.x) < r).sort((a, b) => Math.abs(a.x - H.x) - Math.abs(b.x - H.x));
+    if (sk.kind === "shot") { H.st = "cast"; H.t = 0; const n = sk.n || 1; for (let k = 0; k < n; k++) S.shots.push({ x: H.x + H.face * 40, z: clamp(H.z + (k - (n - 1) / 2) * 34, Z0, Z1), vx: H.face * sk.spd, t: sk.life, hit: [], face: H.face, sk }); }
+    else if (sk.kind === "aura") { S.zones.push({ follow: true, x: H.x, z: H.z, t: sk.dur, tt: 0, sk }); H.st = "cast"; H.t = 0.1; }
+    else if (sk.kind === "zone") { S.zones.push({ x: H.x + H.face * sk.at, z: H.z, t: sk.dur, tt: 0, sk }); H.st = "cast"; H.t = 0; }
+    else if (sk.kind === "dash") { H.st = "dash"; H.t = 0; H.inv = 0.4; H.hit = []; H.dashDmg = sk.dmg; addFx({ k: "hsk", fr: sk.fr, x: H.x + H.face * 150, y: H.z - 30, t: 0.5, d: 0.5, s: 330, flip: H.face < 0 }); }
+    else if (sk.kind === "strike") { H.st = "cast"; H.t = 0; near(sk.range).slice(0, sk.n).forEach((f) => { addFx({ k: "hsk", fr: sk.fr, x: f.x, y: f.z - f.h - 70, t: 0.45, d: 0.45, s: sk.size }); hitFoe(f, sk.dmg, sk.type, Math.sign(f.x - H.x) || H.face); }); }
+    else if (sk.kind === "blink") { const f = near(sk.range)[0]; addFx({ k: "hsk", fr: sk.fr, x: H.x, y: H.z - 50, t: 0.4, d: 0.4, s: sk.size, flip: H.face < 0 });
+      if (f) { const side = f.x >= H.x ? 1 : -1; H.x = clamp(f.x + side * (f.D.w + 40), 30, ROOM - 30); H.z = f.z; H.face = -side; hitFoe(f, sk.dmg, "launch", -side); addFx({ k: "hsk", fr: sk.fr, x: H.x, y: H.z - 50, t: 0.4, d: 0.4, s: sk.size, flip: H.face < 0 }); }
+      H.st = "atk"; H.step = 2; H.t = 0; H.inv = 0.35; }
+    else if (sk.kind === "slam") { H.st = "cast"; H.t = 0; shake = 0.35; addFx({ k: "hsk", fr: sk.fr, x: H.x + H.face * 150, y: H.z - 20, t: 0.5, d: 0.5, s: sk.size, flip: H.face < 0 }); addFx({ k: "quake", x: H.x + H.face * 150, y: H.z, t: 0.5, d: 0.5, s: 300 });
+      S.foes.forEach((f) => { const d = (f.x - H.x) * H.face; if (d > -20 && d < sk.range + f.D.w && Math.abs(f.z - H.z) < 60) hitFoe(f, sk.dmg, "launch", H.face); }); }
+    else if (sk.kind === "guard") { H.inv = sk.dur; H.st = "cast"; H.t = 0; S.zones.push({ follow: true, x: H.x, z: H.z, t: sk.dur, tt: 0, sk: Object.assign({}, sk, { tick: 0.5, type: "knock" }) }); }
+  }
   function heroStep(dt) {
     const H = S.hero, [ax, az, run] = C.axis();
     H.inv = Math.max(0, H.inv - dt); H.t += dt;
@@ -187,15 +224,12 @@ const Dungeon = (() => {
     if (S.over && S.win) { if (grounded) H.st = "idle"; return; }
     if (KEYS.take("potion") && S.potions > 0 && H.hp < H.max) { S.potions--; const heal = Math.round(H.max * 0.4); H.hp = Math.min(H.max, H.hp + heal); num(H.x, H.z - 130, "+" + heal, "#5eea7a"); C.usePotion(); }
     SKILL.forEach((sk, i) => {
-      if (!KEYS.take(sk.act) || S.cd[i] > 0 || !(free || H.st === "atk") || !grounded) return;
-      S.cd[i] = sk.cd; H.queued = false;
-      if (i === 0) { H.st = "cast"; H.t = 0; S.shots.push({ x: H.x + H.face * 40, z: H.z, vx: H.face * 760, t: 0.75, hit: [], face: H.face }); }
-      if (i === 1) { S.ring = 3; S.ringT = 0; H.st = "cast"; H.t = 0.1; }
-      if (i === 2) { H.st = "dash"; H.t = 0; H.inv = 0.4; H.hit = []; addFx({ k: "kh_dash", x: H.x + H.face * 150, y: H.z - 30, t: 0.5, d: 0.5, s: 330, flip: H.face < 0 }); }
+      if (!KEYS.take(ACTS[i]) || S.cd[i] > 0 || !(free || H.st === "atk") || !grounded) return;
+      S.cd[i] = sk.cd; H.queued = false; cast(sk);
     });
     if (H.st === "dash") {
       H.x += H.face * 1150 * dt;
-      S.foes.forEach((f) => { if (!H.hit.includes(f) && Math.abs(f.x - H.x) < 60 + f.D.w * 0.5 && Math.abs(f.z - H.z) < 45) { H.hit.push(f); hitFoe(f, 28, "launch", H.face); } });
+      S.foes.forEach((f) => { if (!H.hit.includes(f) && Math.abs(f.x - H.x) < 60 + f.D.w * 0.5 && Math.abs(f.z - H.z) < 45) { H.hit.push(f); hitFoe(f, H.dashDmg || 28, "launch", H.face); } });
       if (H.t >= 0.28) { H.st = "idle"; H.vx = 0; }
     } else if (H.st === "cast") { if (H.t >= 0.22) H.st = "idle"; }
     else if (H.st === "roll") { H.x += H.face * 560 * dt; if (H.t >= 0.34) H.st = "idle"; }
@@ -395,17 +429,17 @@ const Dungeon = (() => {
       else { g.beginPath(); g.ellipse(t.x - cx, t.z, t.r, t.r * 0.42, 0, 0, Math.PI * 2); g.fill(); g.stroke(); g.fillStyle = "rgba(255,50,40,.35)"; g.beginPath(); g.ellipse(t.x - cx, t.z, t.r * p, t.r * 0.42 * p, 0, 0, Math.PI * 2); g.fill(); }
     });
     const H = S.hero;
-    if (S.ring > 0) centered(g, IMG.hsk, FR.hsk.kh_ring, H.x - cx, H.z - 30 - H.h, 270, false, Math.min(1, S.ring / 0.3) * 0.95, S.t * 5);
+    S.zones.forEach((zn) => centered(g, IMG.hsk, FR.hsk[zn.sk.fr], zn.x - cx, zn.z - 30 - (zn.follow ? H.h : 0), zn.sk.size, false, Math.min(1, zn.t / 0.3) * 0.95, zn.sk.spin ? S.t * zn.sk.spin : 0));
     const bodies = S.foes.map((f) => [f.z, () => drawFoe(g, f, cx)]);
     if (!C.watch) bodies.push([H.z + 0.1, () => drawPerson(g, H, C.look, cx, true, C.party ? C.nick : "")]);
     for (const id in S.remote) { const r = S.remote[id]; bodies.push([r.z, () => drawPerson(g, r, r.look, cx, false, r.nick)]); }
     bodies.sort((a, b) => a[0] - b[0]).forEach((b) => b[1]());
-    S.shots.forEach((s) => centered(g, IMG.hsk, FR.hsk.kh_wave, s.x - cx, s.z - 60, 170, s.face < 0, Math.min(1, s.t / 0.15)));
+    S.shots.forEach((s) => centered(g, IMG.hsk, FR.hsk[s.sk ? s.sk.fr : "kh_wave"], s.x - cx, s.z - 60, s.sk ? s.sk.size : 170, s.face < 0, Math.min(1, s.t / 0.15)));
     S.fx.forEach((x) => {
       const p = 1 - x.t / x.d;
       if (x.k === "spark") { const L = FR.mfx.spark; centered(g, IMG.mfx, L[Math.min(L.length - 1, Math.floor(p * L.length))], x.x - cx, x.y, x.s * (0.8 + p * 0.5), false, 1 - p * 0.6); }
       else if (x.k === "quake") { const L = FR.mfx.quake; centered(g, IMG.mfx, L[Math.min(L.length - 1, Math.floor(p * L.length))], x.x - cx, x.y - 20, x.s, false, 1 - p * 0.5); }
-      else if (x.k === "kh_dash") centered(g, IMG.hsk, FR.hsk.kh_dash, x.x - cx, x.y, x.s, x.flip, 1 - p);
+      else if (x.k === "hsk") centered(g, IMG.hsk, FR.hsk[x.fr], x.x - cx, x.y, x.s, x.flip, 1 - p);
     });
     g.textAlign = "center"; g.textBaseline = "middle";
     S.nums.forEach((n) => { g.font = "900 22px 'Noto Sans KR', sans-serif"; g.lineWidth = 4; g.strokeStyle = "rgba(0,0,0,.85)"; g.globalAlpha = Math.min(1, n.t / 0.3); g.strokeText(n.v, n.x - cx, n.y); g.fillStyle = n.c; g.fillText(n.v, n.x - cx, n.y); g.globalAlpha = 1; });
@@ -432,7 +466,7 @@ const Dungeon = (() => {
       if (S.cd[i] > 0) { g.fillStyle = "rgba(0,0,0,.55)"; g.fillRect(x, y + 56 * (1 - S.cd[i] / sk.cd), 56, 56 * S.cd[i] / sk.cd); g.fillStyle = "#fff"; g.textAlign = "center"; g.font = "800 16px sans-serif"; g.fillText(Math.ceil(S.cd[i]), x + 28, y + 34); }
       g.fillStyle = "#f6d27a"; g.textAlign = "left"; g.font = "700 11px sans-serif"; g.fillText(KEYS.label(sk.act), x + 4, y + 13); });
   }
-  return { start, step, draw, net, MON, DUN, SKILL, get S() { return S; }, quit() { if (S) S.ended = true; S = null; }, watched() { if (S) S.spec = true; } };
+  return { start, step, draw, net, MON, DUN, SKILLS, get SKILL() { return SKILL; }, get S() { return S; }, quit() { if (S) S.ended = true; S = null; }, watched() { if (S) S.spec = true; } };
 })();
 
 /* ── 배경 — 마을 · 던전마다. 제미나이 맵 그림(img/maps/<이름>.jpg, frames.js 의 MAPS 에 적힌 것)이 있으면 그것을, 없으면 코드로 그린다
