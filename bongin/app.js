@@ -94,29 +94,25 @@ const APP = (() => {
   }
 
   /* ── 캐릭터 만들기 ── */
-  function createScreen() {
+  function createScreen() { // 다섯 명 중 하나 — 옷 · 모자는 장비로 입힘(준비 중)
     A.scene = "menu"; let L = LOOK.base("m");
-    const pv = preview(L, 220, "walk"), rows = el("div", "parts");
-    const job = el("div", "jobs"); [["무사", true], ["도사", false], ["수호자", false], ["사수", false], ["자객", false]].forEach(([n, ok]) => { const b = el("button", "chip" + (ok ? " on" : ""), n + (ok ? "" : " · 준비 중")); b.type = "button"; b.disabled = !ok; job.appendChild(b); });
-    const sex = el("div", "jobs"), mk = (gg, n) => { const b = el("button", "chip" + (L.g === gg ? " on" : ""), n); b.type = "button"; b.onclick = () => { L.g = gg; L.hair = Math.min(L.hair, 5); draw(); }; return b; };
+    const pv = preview(L, 220, "walk"), cards = el("div", "heroes");
     const draw = () => {
       pv.look = L;
-      sex.replaceChildren(mk("m", "남자"), mk("f", "여자"));
-      rows.replaceChildren(...LOOK.parts.map(([k, name]) => {
-        const r = el("div", "prow"), n = LOOK.count(k, L.g), col = LOOK.color(k, L[k]);
-        const val = el("span", "pval", LOOK.label(k, L[k], L.g) || ""); if (col) { const sw = el("i", "sw"); sw.style.background = col; val.prepend(sw); }
-        const left = btn("◀", () => { L[k] = (L[k] + n - 1) % n; draw(); }, "tiny"), right = btn("▶", () => { L[k] = (L[k] + 1) % n; draw(); }, "tiny");
-        left.dataset.k = k; right.dataset.k = k; right.classList.add("next");
-        r.append(el("b", null, name), left, val, el("small", null, (L[k] + 1) + "/" + n), right); return r;
+      cards.replaceChildren(...HEROES.map(([k, name, job, g]) => {
+        const b = el("button", "hero-card" + (L.hero === k ? " on" : "")); b.type = "button"; b.dataset.h = k;
+        b.append(preview({ g, hero: k }, 70, "idle"), el("b", null, name), el("small", null, job));
+        b.onclick = () => { L = Object.assign(LOOK.base(g), { hero: k }); draw(); }; return b;
       }));
     };
     draw();
-    const make = btn("이 모습으로 만들기", () => { make.disabled = true; send({ t: "create", look: L }); });
+    const make = btn("이 캐릭터로 만들기", () => { make.disabled = true; send({ t: "create", look: L }); });
     make.id = "makeBtn";
     panel([el("h2", null, "캐릭터 만들기"), el("p", "sub", (A.me ? A.me.nick : "") + " 님의 캐릭터 — 한 사람에 하나, 이름은 홈페이지 닉네임"),
-      (() => { const w = el("div", "create"); const left = el("div", "cleft"); left.append(pv, sex, btn("무작위", () => { L = LOOK.random(); draw(); }, "ghost")); const right = el("div", "cright"); right.append(rows, el("p", "sub", "직업(스승)"), job); w.append(left, right); return w; })(),
+      (() => { const w = el("div", "create"); const left = el("div", "cleft"); left.append(pv, btn("무작위", () => { L = LOOK.random(); draw(); }, "ghost")); const right = el("div", "cright"); right.append(el("p", "sub", "모습 고르기 — 연병장 다섯 명 중 하나. 옷 · 모자는 장비를 끼면 바뀌게 할 거예요(준비 중). 베타 동안 싸우는 법은 모두 무사(화염검)"), cards); w.append(left, right); return w; })(),
       row(make)], true);
   }
+
 
   /* ── 캐릭터 화면 ── */
   function charScreen() {
@@ -136,13 +132,14 @@ const APP = (() => {
     if (!C.inv.length) box.appendChild(el("p", "sub", "가방이 비었어요"));
     C.inv.forEach((it) => {
       const I = A.items[it.key], r = el("div", "item"), eq = it.uid === C.equip.weapon || it.uid === C.equip.armor;
+      { const ic = el("span", "slot ico g" + (I.grade || 0)); ic.appendChild(icon(it.key, 40)); r.appendChild(ic); } // 아이콘
       const nm = el("span", null, itemName(it) + (eq ? " (끼는 중)" : "")); nm.style.color = GRADE[I.grade];
       const stat = el("small", null, I.atk ? "공격 " + Math.round(I.atk * (1 + (it.plus || 0) * 0.1)) : I.def ? "방어 " + Math.round(I.def * (1 + (it.plus || 0) * 0.1)) : I.heal ? "체력 40% 회복" : "재료");
       r.append(nm, stat);
       if (where === "char" && (I.kind === "weapon" || I.kind === "armor")) r.appendChild(btn(eq ? "빼기" : "끼기", () => send({ t: "equip", uid: it.uid }), "tiny"));
       if (where === "shop" && !eq) r.appendChild(btn("팔기 " + Math.floor(I.price / 2) * (it.n || 1) + "G", () => send({ t: "sell", uid: it.uid }), "tiny"));
       if (where === "smith" && !I.stack) r.appendChild(btn(it.plus >= 10 ? "최대" : "강화 " + 100 * (it.plus + 1) + "G · " + Math.round([1, 1, 1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3][it.plus] * 100) + "%", () => send({ t: "enhance", uid: it.uid }), "tiny"));
-      if (where === "trade" && !eq) { const on = pick.has(it.uid); const b = btn(on ? "빼기" : "올리기", () => { if (on) pick.delete(it.uid); else pick.add(it.uid); tradePanel(); }, "tiny" + (on ? " on" : "")); r.appendChild(b); }
+      if (where === "trade" && !eq) { const on = pick.has(it.uid); const b = btn(on ? "빼기" : "올리기", () => { if (on) pick.delete(it.uid); else pick.add(it.uid); send({ t: "toffer", uids: [...pick], gold: offerGold }); }, "tiny" + (on ? " on" : "")); r.appendChild(b); } // 누르면 바로 서버에 올림
       box.appendChild(r);
     });
     return box;
@@ -280,7 +277,7 @@ const APP = (() => {
   }
   function shopTalk() {
     refreshFn = shopTalk;
-    const buy = el("div", "bag"); A.shop.forEach((k) => { const I = A.items[k], r = el("div", "item"); const nm = el("span", null, I.name); nm.style.color = GRADE[I.grade]; r.append(nm, el("small", null, I.price + " G"), btn("1개", () => send({ t: "buy", key: k, n: 1 }), "tiny")); if (I.stack) r.appendChild(btn("10개", () => send({ t: "buy", key: k, n: 10 }), "tiny")); buy.appendChild(r); });
+    const buy = el("div", "bag"); A.shop.forEach((k) => { const I = A.items[k], r = el("div", "item"); { const ic = el("span", "slot ico g" + (I.grade || 0)); ic.appendChild(icon(k, 40)); r.appendChild(ic); } const nm = el("span", null, I.name); nm.style.color = GRADE[I.grade]; r.append(nm, el("small", null, I.price + " G"), btn("1개", () => send({ t: "buy", key: k, n: 1 }), "tiny")); if (I.stack) r.appendChild(btn("10개", () => send({ t: "buy", key: k, n: 10 }), "tiny")); buy.appendChild(r); });
     panel([el("h2", null, "상인 만복 — 「싸게 드립니다요!」"), el("p", "sub", "가진 돈 " + A.char.gold.toLocaleString() + " G"), el("b", null, "사기"), buy, el("b", null, "팔기(산 값의 절반)"), bagList("shop"), row(btn("닫기", () => { refreshFn = null; closePanel(); }, "ghost"))], true);
   }
   function smithTalk() {
@@ -379,12 +376,12 @@ const APP = (() => {
     const T = A.trade; if (!T) return;
     const mine = el("div", "tcol"), theirs = el("div", "tcol");
     if (!pick.size && T.mine.uids.length) pick = new Set(T.mine.uids);
-    const gold = el("input"); gold.type = "number"; gold.min = 0; gold.value = offerGold || T.mine.gold || 0; gold.oninput = () => { offerGold = Math.max(0, parseInt(gold.value, 10) || 0); };
-    mine.append(el("b", null, "내가 줄 것"), bagList("trade", pick), el("label", null, "골드 "), gold, btn("올리기", () => send({ t: "toffer", uids: [...pick], gold: offerGold }), "tiny"));
+    const gold = el("input"); gold.type = "number"; gold.min = 0; gold.value = offerGold || T.mine.gold || 0; gold.oninput = () => { offerGold = Math.max(0, parseInt(gold.value, 10) || 0); }; gold.onchange = () => send({ t: "toffer", uids: [...pick], gold: offerGold }); // 칸을 벗어나면 바로 올림
+    mine.append(el("b", null, "내가 줄 것"), bagList("trade", pick), el("label", null, "골드 "), gold, btn("골드 올리기", () => send({ t: "toffer", uids: [...pick], gold: offerGold }), "tiny"));
     theirs.append(el("b", null, T.otherNick + " 님이 줄 것"), ...(T.theirs.items || []).map((n) => el("div", "item", n)), el("p", null, "골드 " + T.theirs.gold));
     const w = el("div", "trade"); w.append(mine, theirs);
     panel([el("h2", null, "거래 — " + T.otherNick), w, el("p", "sub", (T.okMe ? "나: 확인함" : "나: 아직") + " · " + (T.okThem ? "상대: 확인함" : "상대: 아직") + " — 둘 다 확인하면 바로 바뀌어요. 올린 것을 바꾸면 확인이 풀려요."),
-      row(btn(T.okMe ? "확인함" : "확인", () => send({ t: "tok" })), btn("거래 취소", () => { send({ t: "tcancel" }); pick = new Set(); offerGold = 0; }, "ghost"))], true);
+      row(btn(T.okMe ? "확인함" : "확인", () => { if (offerGold !== (T.mine.gold || 0) || pick.size !== T.mine.uids.length) send({ t: "toffer", uids: [...pick], gold: offerGold }); send({ t: "tok" }); }), btn("거래 취소", () => { send({ t: "tcancel" }); pick = new Set(); offerGold = 0; }, "ghost"))], true);
   }
 
   /* ── 던전 ── */
@@ -458,7 +455,7 @@ const APP = (() => {
   let last = 0;
   function loop(ts) {
     const dt = Math.min(0.033, (ts - last) / 1000 || 0); last = ts;
-    g.setTransform(DPR, 0, 0, DPR, 0, 0);
+    g.setTransform(DPR, 0, 0, DPR, 0, 0); g.fillStyle = "#0c0708"; g.fillRect(0, 0, VW, VH); // 매번 지움 — 배경 그림이 늦게 와도 겹쳐 쌓이지 않게
     if (A.scene === "town" && A.char) { townStep(dt); townDraw(); }
     else if (A.scene === "dungeon") { Dungeon.step(dt); Dungeon.draw(g, touch); }
     else { BG.draw(g, "town", performance.now() / 50, VW, VH, Z0); g.fillStyle = "rgba(8,4,6,.55)"; g.fillRect(0, 0, VW, VH); }
