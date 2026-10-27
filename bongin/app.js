@@ -38,7 +38,7 @@ const APP = (() => {
   /* 새 판 확인 — 올린 판 번호(index.html 의 ?v=)가 지금 것과 다르면 새로고침 */
   function newBuild() { if (!V) return; fetch("./?nb=" + Date.now(), { cache: "no-store" }).then((r) => r.text()).then((h) => { const m2 = h.match(/app.js?v=(d+)/); if (m2 && m2[1] !== V) { toast("새 판으로 바꾸는 중…", "good"); setTimeout(() => location.reload(), 600); } }).catch(() => {}); }
   function send(m) { if (ws && wsOpen) ws.send(JSON.stringify(m)); }
-  function fail(text) { panel([el("h2", null, "연결"), el("p", null, text), row(btn("다시 연결", () => { panel([el("p", null, "연결하는 중…")]); connect(); }), btn("병무청 홈페이지", () => { location.href = "../byeongmu/"; }, "ghost"))]); A.scene = "menu"; }
+  function fail(text) { panel([el("h2", null, "연결"), el("p", null, text), row(btn("다시 연결", () => { panel([el("p", null, "연결하는 중…")]); connect(); }), btn("병무청 홈페이지", () => { location.href = "../byeongmu/"; }, "ghost"))]); A.scene = "menu"; document.body.classList.remove("in-dun"); }
   function on(m) {
     if (m.t === "hello" && A.re) newBuild(); // 다시 이었는데 새 판이 올라와 있으면 저절로 새로고침(업데이트)
     if (m.t === "hello" && A.re && A.char && m.char) { // 다시 이음 — 하던 곳으로
@@ -86,7 +86,7 @@ const APP = (() => {
     if (m.t === "relay") return Dungeon.net(m.from, m.data);
     if (m.t === "reward") { A.reward = m; showReward(); return; }
     if (m.t === "dabort") { Dungeon.quit(); toast(m.text, "bad"); backToTown(); return; }
-    if (m.t === "who") { const p = m.p; panel([el("h2", null, p.nick), el("p", null, "Lv " + p.lv + " · " + p.job + " · 던전 클리어 " + p.clears + "번 · 결투 " + ((p.pvp && p.pvp.w) || 0) + "승 " + ((p.pvp && p.pvp.l) || 0) + "패"), preview(p.look, 160), row(btn("닫기", closePanel, "ghost"))]); return; }
+    if (m.t === "who") return whoPanel(m.p);
   }
   function addOther(p) { A.others[p.id] = Object.assign({ tx: p.x, tz: p.z, walk: 0, t: 0 }, p); }
 
@@ -117,7 +117,7 @@ const APP = (() => {
 
   /* ── 캐릭터 만들기 ── */
   function createScreen() { // 다섯 명 중 하나 — 옷 · 모자는 장비로 입힘(준비 중)
-    A.scene = "menu"; let L = LOOK.base("m");
+    A.scene = "menu"; document.body.classList.remove("in-dun"); let L = LOOK.base("m");
     const pv = preview(L, 220, "walk"), cards = el("div", "heroes");
     const draw = () => {
       pv.look = L;
@@ -138,12 +138,13 @@ const APP = (() => {
 
   /* ── 캐릭터 화면 ── */
   function charScreen() {
-    A.scene = "menu"; Dungeon.quit(); const C = A.char;
+    A.scene = "menu"; document.body.classList.remove("in-dun"); Dungeon.quit(); const C = A.char;
     const info = el("div", "cinfo");
     info.append(el("h2", null, C.name), el("p", null, "Lv " + C.lv + " · " + C.job + " · 경험치 " + C.exp + " / " + C.need), el("p", null, "공격 " + C.atk + " · 방어 " + C.def + " · 체력 " + C.hpMax + " · " + C.gold.toLocaleString() + " 골드"), equipList(), bagList("char"));
     const keys = btn("키 설정", keyPanel, "ghost"), remake = btn("캐릭터 다시 만들기", () => { if (remake.dataset.sure) { send({ t: "remake" }); return; } remake.dataset.sure = 1; remake.textContent = "정말 지울까요? (Lv · 가방이 모두 사라져요)"; }, "ghost danger");
     const w = el("div", "create"); const left = el("div", "cleft"); const pvC = preview(C.look, 220, "idle"); pvC.op = !!(A.me && A.me.op); pvC.gear = C.gear; left.append(pvC); w.append(left, info);
-    panel([w, row(btn("마을로 들어가기", enterTown), keys, remake)], true);
+    const opSw = A.me && A.me.op ? btn("캐릭터 바꾸기", lookPanel, "ghost") : el("span"); /* 운영자 — 다시 만들기 없이 다섯 명 · 문주로 바로 */
+    panel([w, row(btn("마을로 들어가기", enterTown), opSw, keys, remake)], true);
     $("hud").hidden = true;
   }
   function itemName(it) { const I = A.items[it.key]; return I.name + (it.plus ? " +" + it.plus : "") + (it.n > 1 ? " × " + it.n : ""); }
@@ -197,7 +198,7 @@ const APP = (() => {
   const NPCIMG = new Image(); NPCIMG.src = "img/npc.webp" + (V ? "?v=" + V : ""); // 제미나이 마을 사람 그림
   const MASTERIMG = new Image(); MASTERIMG.src = "img/masters.webp" + (V ? "?v=" + V : ""); // 스승 다섯 — 마을 사람과 같은 그림체
   function enterTown() {
-    closePanel(); A.scene = "town"; A.hero = A.hero || { x: 260, z: 440, face: 1, st: "idle", walk: 0, t: 0 };
+    closePanel(); A.scene = "town"; document.body.classList.remove("in-dun"); A.hero = A.hero || { x: 260, z: 440, face: 1, st: "idle", walk: 0, t: 0 };
     A.hero.x = Math.min(A.hero.x, TOWN_W - 300);
     send({ t: "town", x: Math.round(A.hero.x), z: Math.round(A.hero.z) });
     $("hud").hidden = false; hudText(); drawParty(); setPad("town");
@@ -285,7 +286,7 @@ const APP = (() => {
     drawChar(g, look, { st: P.st === "run" ? "run" : P.st === "walk" ? "walk" : P.st === "sprint" ? "sprint" : "idle", t: P.t, walk: P.walk }, 1, { gear: me ? A.char.gear : P.gear, op: isOp }); g.restore();
     const party = A.party && A.party.members.some((m) => m.id === id);
     g.font = "700 12px 'Noto Sans KR', sans-serif"; g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.85)"; const label = (isOp ? "⚜운영자 " : "") + nick + (P.lv ? " Lv" + P.lv : ""); g.strokeText(label, x, P.z - 128); g.fillStyle = me ? "#ffe08a" : party ? "#7fe3ff" : "#fff"; g.fillText(label, x, P.z - 128);
-    const B = A.bubbles[id]; if (B) { g.font = "600 13px 'Noto Sans KR', sans-serif"; const w = Math.min(260, g.measureText(B.text).width + 20); g.fillStyle = "rgba(255,255,255,.95)"; g.beginPath(); if (g.roundRect) g.roundRect(x - w / 2, P.z - 176, w, 28, 10); else g.rect(x - w / 2, P.z - 176, w, 28); g.fill(); g.fillStyle = "#1a1012"; g.fillText(B.text.slice(0, 30), x, P.z - 157); }
+    const B = A.bubbles[id]; if (B) drawBubble(g, B.text, x, P.z - 150);
   }
   /* 다른 사람 누르기 — 정보 · 파티 · 거래 */
   cv.addEventListener("click", (e) => {
@@ -403,10 +404,11 @@ const APP = (() => {
   /* 장비 — 왼쪽 창(가방과 따로, 같이 열 수 있음). 칸을 누르면 아래 정보 · 두 번 누르면 빼기 */
   /* 모습 바꾸기 — 스승 모습에 옷 색 · 머리 색 (2026-10-27 "캐릭터마다 옷 · 무기 · 머리를 바꿀 수 있게"). 0 = 원래 색 */
   function lookPanel() {
-    const C = A.char; if (!C) return; refreshFn = null; const L = Object.assign({}, C.look), pv = preview(L, 200, "idle");
+    const C = A.char; if (!C) return; refreshFn = null; const L = Object.assign({}, C.look), pv = preview(L, 200, "walk"); pv.op = !!(A.me && A.me.op); /* 걷는 모습으로 미리 보기 */
     const sw = (key, cols, names) => { const r = el("div", "row"); cols.forEach((c, i) => { const b = btn(names[i], () => { L[key] = i; pv.look = L; draw(); }, "tiny" + ((L[key] | 0) === i ? "" : " ghost")); if (c) b.style.boxShadow = "inset 0 -5px 0 " + c; r.appendChild(b); }); return r; };
-    const draw = () => { const w = el("div", "create"), left = el("div", "cleft"), right = el("div", "cright"); left.appendChild(pv); right.append(el("b", null, "옷 색"), sw("mc", MASTER_MC, ["원래", "붉은", "푸른", "초록", "검정", "보라", "흰", "금빛"]), el("b", null, "머리 색"), sw("mh", MASTER_MH, ["원래", "갈색", "밤색", "금발", "은발", "붉은", "푸른", "보라"]), el("p", "sub", "스승 모습에 색만 바꿔요. 무기 모양은 끼는 무기에 따라 빛이 달라져요.")); w.append(left, right);
-      panel([el("h2", null, "모습 바꾸기 — " + C.name), w, row(btn("저장", () => { send({ t: "look", mc: L.mc | 0, mh: L.mh | 0 }); closePanel(); }), btn("닫기", closePanel, "ghost"))], true); };
+    const draw = () => { const w = el("div", "create"), left = el("div", "cleft"), right = el("div", "cright"); left.appendChild(pv); if (A.me && A.me.op) { const hr = el("div", "row"); [["gm", "문주"], ["kh", "강혁"], ["hr", "혜린"], ["ds", "대성"], ["je", "지은"], ["mj", "무진"]].forEach(([k, nm]) => { const on = k === "gm" ? L.gm !== 0 : L.gm === 0 && L.hero === k; hr.appendChild(btn(nm, () => { if (k === "gm") L.gm = 1; else { L.gm = 0; L.hero = k; } pv.look = L; draw(); }, "tiny" + (on ? "" : " ghost"))); }); right.append(el("b", null, "캐릭터 바꾸기 (운영자)"), hr); }
+      right.append(el("b", null, "옷 색"), sw("mc", MASTER_MC, ["원래", "붉은", "푸른", "초록", "검정", "보라", "흰", "금빛"]), el("b", null, "머리 색"), sw("mh", MASTER_MH, ["원래", "갈색", "밤색", "금발", "은발", "붉은", "푸른", "보라"]), el("p", "sub", "스승 모습에 색만 바꿔요. 무기 모양은 끼는 무기에 따라 빛이 달라져요.")); w.append(left, right);
+      panel([el("h2", null, "모습 바꾸기 — " + C.name), w, row(btn("저장", () => { send({ t: "look", mc: L.mc | 0, mh: L.mh | 0, hero: L.hero, gm: L.gm === 0 ? 0 : 1 }); closePanel(); }), btn("닫기", closePanel, "ghost"))], true); };
     draw();
   }
   function equipPanel() {
@@ -508,7 +510,7 @@ const APP = (() => {
   function goDungeon(m, watch, gm) {
     $("bagSide").hidden = true; $("equipSide").hidden = true; A.duelRes = null;
     watchBar(!!watch); exitBar(!watch); A.run = watch ? null : m.run;
-    closePanel(); A.scene = "dungeon"; A.reward = null; A.cardRes = null; A.cardSent = null; A.watch = !!watch; $("hud").hidden = true; $("partyBox").hidden = true; setPad(watch ? "none" : "dungeon");
+    closePanel(); A.scene = "dungeon"; document.body.classList.add("in-dun"); A.reward = null; A.cardRes = null; A.cardSent = null; A.watch = !!watch; $("hud").hidden = true; $("partyBox").hidden = true; setPad(watch ? "none" : "dungeon");
     const C = A.char, party = watch || gm || m.pvp || (m.members && m.members.length > 1) ? { host: m.host, members: m.members } : null;
     const pots = {}; ["p1", "p2", "p3", "p4", "p5", "p6", "mp1", "mp2", "mp3"].forEach((k) => { const p = (C.inv || []).find((x) => x.key === k); pots[k] = p ? p.n : 0; });
     Dungeon.start({ d: m.d, me: A.me.id, look: C.look, nick: C.name, stats: { hpMax: C.hpMax, mpMax: C.mpMax, atk: C.atk, def: C.def }, potions: pots, gear: C.gear, party,
@@ -606,6 +608,15 @@ const APP = (() => {
     panel([el("h2", null, "스킬 — " + ({ kh: "강혁(무사)", hr: "혜린(도사)", ds: "대성(수호자)", je: "지은(사수)", mj: "무진(자객)" }[hero] || "")), op ? (() => { const tabs = el("div", "row sk-tabs"); Dungeon.HERO_ORDER.forEach((h) => tabs.appendChild(btn({ kh: "강혁", hr: "혜린", ds: "대성", je: "지은", mj: "무진" }[h], () => { A.skTab = h; skillPanel(); }, "tiny" + (h === hero ? "" : " ghost")))); const w = el("div"); w.append(el("p", "sub", "⚜ 운영자 — 다섯 직업 스킬을 모두 배운 것으로, 탭에서 골라 아무 칸에나 넣어 써 볼 수 있어요(궁극기는 금빛 칸)."), tabs); return w; })() : el("p", "sub", "1~3 은 처음부터. 4 · 5 · 6 · 궁극기는 레벨이 되면 골드를 내고 배워요. Lv " + C.lv + " · " + C.gold.toLocaleString() + " G"), el("b", null, "스킬 칸 — 배운 스킬을 끌어다 넣고, 밖으로 끌면 빠져요(눌러 고른 뒤 칸을 눌러도 돼요)"), bar, list, row(btn("닫기", () => { refreshFn = null; closePanel(); }, "ghost"))], true);
   }
   /* 접속한 사람 — 이름 · Lv · 직업 · 어디. 다른 사람은 「정보」 (2026-10-27) */
+  /* 다른 사람 자세히 — 모습(장비 빛) · 능력치 · 끼고 있는 장비 (2026-10-27 "유저들 클릭해서 상세보기, 장비 착용 상태") */
+  function whoPanel(p) {
+    const pv = preview(p.look, 170, "idle"); pv.gear = p.gear; pv.op = !!p.op;
+    const eq = el("div", "bag"); (p.eq || []).forEach((e) => { const I = A.items[e.key] || {}, r = el("div", "item"), ic = el("div", "slot g" + (I.grade || 0)); ic.style.width = "40px"; ic.appendChild(icon(e.key, 40)); const nm = el("span", null, (SLOT_NAMES[e.slot] || e.slot) + " · " + (I.name || e.key) + (e.plus ? " +" + e.plus : "")); nm.style.color = GRADE[I.grade] || ""; r.append(ic, nm, el("small", null, statText(e))); eq.appendChild(r); });
+    if (!(p.eq || []).length) eq.appendChild(el("p", "sub", "끼고 있는 장비가 없어요"));
+    const w = el("div", "create"), left = el("div", "cleft"), right = el("div", "cright"); left.appendChild(pv);
+    right.append(el("p", null, "Lv " + p.lv + " · " + p.job + (p.op ? " · ⚜운영자" : "")), el("p", "sub", "공격 " + (p.atk || 0) + " · 방어 " + (p.def || 0) + " · 체력 " + (p.hpMax || 0)), el("p", "sub", "던전 클리어 " + p.clears + "번 · 결투 " + ((p.pvp && p.pvp.w) || 0) + "승 " + ((p.pvp && p.pvp.l) || 0) + "패"), el("b", null, "끼고 있는 장비"), eq); w.append(left, right);
+    panel([el("h2", null, p.nick), w, row(btn("닫기", closePanel, "ghost"))], true);
+  }
   function onlinePanel(list) {
     const J = { kh: "무사", hr: "도사", ds: "수호자", je: "사수", mj: "자객" }, box = el("div", "bag");
     list.forEach((o) => { const r = el("div", "item"); r.append(el("span", null, (o.op ? "⚜ " : "") + o.nick + (o.id === A.me.id ? " (나)" : "")), el("small", null, "Lv " + o.lv + (J[o.hero] ? " · " + J[o.hero] : "") + " · " + o.where + (o.party ? " · 파티" : ""))); if (o.id !== A.me.id) r.appendChild(btn("정보", () => send({ t: "who", id: o.id }), "tiny ghost")); box.appendChild(r); });
