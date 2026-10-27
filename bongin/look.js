@@ -49,7 +49,10 @@ function drawHero(g, L, pose, sc, opt) {
   const glow = (col, blur, alpha) => { const c = glowFrame(r, col, blur), p = c.pad * k; g.save(); g.globalAlpha *= alpha; g.drawImage(c, X - p, Y - p, c.width * k, c.height * k); g.restore(); };
   if (G && G.plus >= 7) glow(G.plus >= 10 ? "rgba(255,60,30,1)" : "rgba(255,120,40,.9)", G.plus >= 10 ? 16 : 10, 0.75 + 0.25 * Math.sin(now * 6)); // 강화 불꽃(깜빡임은 밝기로)
   if (G && GEAR_COL[G.b]) glow(GEAR_COL[G.b], 4 + G.b * 3, 1); // 몸 장비 빛
-  g.drawImage(HERO_IMG, r[0], r[1], r[2], r[3], X, Y, r[2] * k, r[3] * k);
+  const SKIN = { red: "hue-rotate(-25deg) saturate(1.5) brightness(1.05)", blue: "hue-rotate(180deg) saturate(1.3)", dark: "brightness(.62) contrast(1.3) saturate(.8)", gold: "sepia(.85) saturate(2.4) hue-rotate(-12deg) brightness(1.12)" }; // 스킨
+  if (G && SKIN[G.skin]) { g.save(); g.filter = SKIN[G.skin]; g.drawImage(HERO_IMG, r[0], r[1], r[2], r[3], X, Y, r[2] * k, r[3] * k); g.restore(); }
+  else g.drawImage(HERO_IMG, r[0], r[1], r[2], r[3], X, Y, r[2] * k, r[3] * k);
+  if (G && G.skin === "gold") { g.save(); g.globalAlpha *= 0.35 + 0.15 * Math.sin(now * 4); g.globalCompositeOperation = "lighter"; g.filter = SKIN.gold; g.drawImage(HERO_IMG, r[0], r[1], r[2], r[3], X, Y, r[2] * k, r[3] * k); g.restore(); }
   if (G && G.acc) for (let i = 0; i < G.acc; i++) { // 장신구 — 몸 둘레를 도는 금빛 구슬
     const a = now * 2.2 + i * Math.PI * 2 / G.acc, px = Math.cos(a) * 30 * sc, py = (-62 + Math.sin(a) * 9) * sc, front = Math.sin(a) > 0;
     g.save(); g.globalAlpha = front ? 1 : 0.5; g.fillStyle = "rgba(255,225,120,.95)"; g.shadowColor = "rgba(255,200,60,1)"; g.shadowBlur = 8 * sc; g.beginPath(); g.arc(px, py, 3.2 * sc, 0, Math.PI * 2); g.fill(); g.restore(); }
