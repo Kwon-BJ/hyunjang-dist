@@ -12,3 +12,6 @@ FR.items = {"w1":[4,4,89,96],"w2":[97,4,92,96],"w3":[193,4,91,96],"w4":[288,4,87
 /* 제미나이 맵 그림 — web/img/maps/<이름>.png 를 넣고 여기 이름을 적으면 그 그림으로 그린다(town · forest · goblin …). 없으면 코드로 그림 */
 /* 제미나이 맵 그림 — img/maps/<이름>.jpg (원본은 ../보관/맵원본). orc · temple · lava · castle 은 그 던전 몬스터 그림이 오면 연다 */
 window.MAPS = ["town", "forest", "goblin", "wolf", "orc", "castle", "temple", "lava"]; // temple · lava = 보스룸 · 깊은 방 (2026-10-27)
+
+/* 위 단추 그림 — img/ui.png (제미나이, 도구/설명/ui.json, 2026-10-27) */
+FR.ui = {"op":[4,4,69,64],"skill":[77,4,61,64],"equip":[142,4,59,64],"bag":[205,4,56,64],"keys":[265,4,64,64],"online":[333,4,76,64]};
