@@ -57,6 +57,7 @@ const APP = (() => {
     if (m.t === "twr") return towerPanel(m);
     if (m.t === "loot") { Dungeon.lootText(m.gold ? "+" + m.gold + " G" : "+ " + m.name); return; }
     if (m.t === "cardRes") { A.cardRes = m; if (A.result) showResult(); return; }
+    if (m.t === "look") { const o = A.others[m.id]; if (o) o.look = m.look; return; }
     if (m.t === "gear") { const o = A.others[m.id]; if (o) o.gear = m.gear; return; }
     if (m.t === "ground") { A.ground = m.list || []; return; }
     if (m.t === "gadd") { A.ground = (A.ground || []).concat(m.g); return; }
@@ -71,6 +72,7 @@ const APP = (() => {
     if (m.t === "join") return m.p.id === A.me.id ? null : addOther(m.p); // 나 자신은 다른 사람 목록에 안 넣음
     if (m.t === "leave") { delete A.others[m.id]; return; }
     if (m.t === "mv") { const o = A.others[m.id]; if (o) { o.tx = m.x; o.tz = m.z; o.face = m.face; o.st = m.st; o.th = m.h || 0; } return; }
+    if (m.t === "online") return onlinePanel(m.list);
     if (m.t === "chat") { chatLine(m.nick, m.text); A.bubbles[m.id] = { text: m.text, t: 4 }; return; }
     if (m.t === "pinv") return ask(m.nick + " 님이 파티를 신청했어요.", () => send({ t: "pacc", from: m.from }));
     if (m.t === "duelReq") return ask("⚔ " + m.nick + " 님이 결투를 신청했어요.", () => send({ t: "duelAcc", from: m.from }));
@@ -399,10 +401,18 @@ const APP = (() => {
     return w;
   }
   /* 장비 — 왼쪽 창(가방과 따로, 같이 열 수 있음). 칸을 누르면 아래 정보 · 두 번 누르면 빼기 */
+  /* 모습 바꾸기 — 스승 모습에 옷 색 · 머리 색 (2026-10-27 "캐릭터마다 옷 · 무기 · 머리를 바꿀 수 있게"). 0 = 원래 색 */
+  function lookPanel() {
+    const C = A.char; if (!C) return; refreshFn = null; const L = Object.assign({}, C.look), pv = preview(L, 200, "idle");
+    const sw = (key, cols, names) => { const r = el("div", "row"); cols.forEach((c, i) => { const b = btn(names[i], () => { L[key] = i; pv.look = L; draw(); }, "tiny" + ((L[key] | 0) === i ? "" : " ghost")); if (c) b.style.boxShadow = "inset 0 -5px 0 " + c; r.appendChild(b); }); return r; };
+    const draw = () => { const w = el("div", "create"), left = el("div", "cleft"), right = el("div", "cright"); left.appendChild(pv); right.append(el("b", null, "옷 색"), sw("mc", MASTER_MC, ["원래", "붉은", "푸른", "초록", "검정", "보라", "흰", "금빛"]), el("b", null, "머리 색"), sw("mh", MASTER_MH, ["원래", "갈색", "밤색", "금발", "은발", "붉은", "푸른", "보라"]), el("p", "sub", "스승 모습에 색만 바꿔요. 무기 모양은 끼는 무기에 따라 빛이 달라져요.")); w.append(left, right);
+      panel([el("h2", null, "모습 바꾸기 — " + C.name), w, row(btn("저장", () => { send({ t: "look", mc: L.mc | 0, mh: L.mh | 0 }); closePanel(); }), btn("닫기", closePanel, "ghost"))], true); };
+    draw();
+  }
   function equipPanel() {
     const C = A.char, E = $("equipSide"); if (!C) return;
     const top = el("div", "bs-top"); top.appendChild(el("div", "bs-title", "🗡 장비"));
-    const x = el("button", "bs-x", "✕"); x.onclick = () => { E.hidden = true; }; top.appendChild(x);
+    const x = el("button", "bs-x", "✕"); x.onclick = () => { E.hidden = true; }; top.append(btn("모습", lookPanel, "tiny ghost"), x);
     const body = el("div", "bs-list"); body.appendChild(equipView());
     const info = el("div", "bs-info"), it = C.inv.find((o) => o.uid === bagUI.sel && isEq(o.uid));
     if (it) { const I = A.items[it.key], txt = el("div"); txt.style.flex = "1"; const nm = el("div", "nm", itemName(it)); nm.style.color = GRADE[I.grade]; txt.append(nm, el("small", null, statText(it) + " · 두 번 누르면 빼기"));
@@ -502,7 +512,7 @@ const APP = (() => {
     const C = A.char, party = watch || gm || m.pvp || (m.members && m.members.length > 1) ? { host: m.host, members: m.members } : null;
     const pots = {}; ["p1", "p2", "p3", "p4", "p5", "p6", "mp1", "mp2", "mp3"].forEach((k) => { const p = (C.inv || []).find((x) => x.key === k); pots[k] = p ? p.n : 0; });
     Dungeon.start({ d: m.d, me: A.me.id, look: C.look, nick: C.name, stats: { hpMax: C.hpMax, mpMax: C.mpMax, atk: C.atk, def: C.def }, potions: pots, gear: C.gear, party,
-      send: (data, to) => send({ t: "relay", data, to }), usePotion: (key) => send({ t: "usePotion", key }), loot: () => send({ t: "loot" }), learned: C.learned, slots: C.skillSlots, axis, dash, duelLose: () => send({ t: "duelLose" }), watch: !!watch, gm: !!gm, op: !!(A.me && A.me.op),
+      bubbles: A.bubbles, send: (data, to) => send({ t: "relay", data, to }), usePotion: (key) => send({ t: "usePotion", key }), loot: () => send({ t: "loot" }), learned: C.learned, slots: C.skillSlots, axis, dash, duelLose: () => send({ t: "duelLose" }), watch: !!watch, gm: !!gm, op: !!(A.me && A.me.op),
       onEnd: (res) => { if (m.pvp) { exitBar(false); const R = A.duelRes || {}; const pv = R.pvp || {}; return panel([el("h1", null, res.win ? "승리!" : "패배…"), el("p", null, "결투 — " + (R.nick || "") + (R.left ? " 님이 나갔어요" : "")), el("p", "reward", "내 결투 전적 " + (pv.w || 0) + "승 " + (pv.l || 0) + "패"), row(btn("마을로", backToTown))]); }
         if (res.tower) { A.result = res; send({ t: "twrDone", floor: res.floor, kills: res.kills }); return panel([el("h2", null, "무한의 탑 — " + res.floor + "층"), el("p", null, "기록 확인 중…")]); }
         if (watch) return panel([el("h2", null, "관전 끝 — " + (res.win ? "클리어" : "실패")), el("p", null, Math.floor(res.sec / 60) + "분 " + (res.sec % 60) + "초"), row(btn("마을로", backToTown))]); A.result = res; if (res.win && !A.solo) send({ t: "dclear" }); showResult(); } });
@@ -595,6 +605,12 @@ const APP = (() => {
     list.querySelectorAll("canvas").forEach((c, i) => { c.dataset.skill = base + i; c.style.touchAction = "none"; c.style.cursor = "grab"; });
     panel([el("h2", null, "스킬 — " + ({ kh: "강혁(무사)", hr: "혜린(도사)", ds: "대성(수호자)", je: "지은(사수)", mj: "무진(자객)" }[hero] || "")), op ? (() => { const tabs = el("div", "row sk-tabs"); Dungeon.HERO_ORDER.forEach((h) => tabs.appendChild(btn({ kh: "강혁", hr: "혜린", ds: "대성", je: "지은", mj: "무진" }[h], () => { A.skTab = h; skillPanel(); }, "tiny" + (h === hero ? "" : " ghost")))); const w = el("div"); w.append(el("p", "sub", "⚜ 운영자 — 다섯 직업 스킬을 모두 배운 것으로, 탭에서 골라 아무 칸에나 넣어 써 볼 수 있어요(궁극기는 금빛 칸)."), tabs); return w; })() : el("p", "sub", "1~3 은 처음부터. 4 · 5 · 6 · 궁극기는 레벨이 되면 골드를 내고 배워요. Lv " + C.lv + " · " + C.gold.toLocaleString() + " G"), el("b", null, "스킬 칸 — 배운 스킬을 끌어다 넣고, 밖으로 끌면 빠져요(눌러 고른 뒤 칸을 눌러도 돼요)"), bar, list, row(btn("닫기", () => { refreshFn = null; closePanel(); }, "ghost"))], true);
   }
+  /* 접속한 사람 — 이름 · Lv · 직업 · 어디. 다른 사람은 「정보」 (2026-10-27) */
+  function onlinePanel(list) {
+    const J = { kh: "무사", hr: "도사", ds: "수호자", je: "사수", mj: "자객" }, box = el("div", "bag");
+    list.forEach((o) => { const r = el("div", "item"); r.append(el("span", null, (o.op ? "⚜ " : "") + o.nick + (o.id === A.me.id ? " (나)" : "")), el("small", null, "Lv " + o.lv + (J[o.hero] ? " · " + J[o.hero] : "") + " · " + o.where + (o.party ? " · 파티" : ""))); if (o.id !== A.me.id) r.appendChild(btn("정보", () => send({ t: "who", id: o.id }), "tiny ghost")); box.appendChild(r); });
+    panel([el("h2", null, "접속한 사람 — " + list.length + "명"), box, row(btn("새로 보기", () => send({ t: "online" }), "ghost"), btn("닫기", closePanel, "ghost"))]);
+  }
   function backToTown() { watchBar(false); exitBar(false); A.watch = false; Dungeon.quit(); send({ t: "back" }); enterTown(); }
 
   /* ── 움직임 입력 — 키(설정한 키) · 휴대폰 막대. 같은 쪽 두 번 = 달리기 ── */
@@ -626,7 +642,9 @@ const APP = (() => {
       b.addEventListener("pointerdown", (e) => { e.preventDefault(); e.stopPropagation(); if (a === "chat") { $("chatIn").focus(); return; } KEYS.press(a, true); b.classList.add("on"); });
       const up = () => { KEYS.press(a, false); b.classList.remove("on"); }; b.addEventListener("pointerup", up); b.addEventListener("pointercancel", up); b.addEventListener("pointerleave", up); return b; }));
   }
-  $("hudOp").onclick = () => opPanel(null); $("hudSkill").onclick = skillPanel; $("hudBag").onclick = () => { const S = $("bagSide"); if (S.hidden) bagPanel(); else S.hidden = true; }; $("hudEquip").onclick = () => { const E = $("equipSide"); if (E.hidden) equipPanel(); else E.hidden = true; }; $("hudKeys").onclick = keyPanel; $("hudOut").onclick = () => { send({ t: "back" }); charScreen(); };
+  $("hudOp").onclick = () => opPanel(null); /* 위 단추에 그림 — 운영 · 접속 · 스킬 · 장비 · 가방 · 키 설정 (제미나이 그림, 2026-10-27) */
+  [["hudOp", "op"], ["hudOnline", "online"], ["hudSkill", "skill"], ["hudEquip", "equip"], ["hudBag", "bag"], ["hudKeys", "keys"]].forEach(([id, k]) => { const b = $(id), r = FR.ui && FR.ui[k]; if (!b || !r) return; const s = 26 / 64, i = document.createElement("i"); i.className = "hic"; i.style.cssText = "width:" + Math.round(r[2] * s) + "px;background-position:-" + r[0] * s + "px -" + r[1] * s + "px;background-size:" + 2048 * s + "px auto"; b.prepend(i); b.title = b.textContent; });
+  $("hudSkill").onclick = skillPanel; $("hudOnline").onclick = () => send({ t: "online" }); $("hudBag").onclick = () => { const S = $("bagSide"); if (S.hidden) bagPanel(); else S.hidden = true; }; $("hudEquip").onclick = () => { const E = $("equipSide"); if (E.hidden) equipPanel(); else E.hidden = true; }; $("hudKeys").onclick = keyPanel; $("hudOut").onclick = () => { send({ t: "back" }); charScreen(); };
 
   /* ── 한 틀 ── */
   let last = 0;
