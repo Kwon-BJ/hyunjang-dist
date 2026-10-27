@@ -193,7 +193,7 @@ const APP = (() => {
   function talkNear() { const n = nearNpc(); if (n) n.talk(); }
   function townDraw() {
     const cx = A.camX;
-    BG.draw(g, "town", cx, VW, VH, Z0);
+    BG.draw(g, "town", cx, VW, VH, Z0, { par: 1, end: { pic: "gate", at: TOWN_W - 70, f: 0.8 } }); // 오른쪽 끝은 던전 문 그림
     if (!BG.pics.town || !BG.pics.town.naturalWidth) townHouses(cx);
     const bodies = [];
     NPC.forEach((n) => bodies.push([n.z, () => drawNpc(n, cx)]));
@@ -203,7 +203,7 @@ const APP = (() => {
     const n = nearNpc();
     if (n && $("panel").hidden) { g.textAlign = "center"; g.font = "700 14px 'Noto Sans KR', sans-serif"; const t = (touch ? "말걸기 단추" : KEYS.label("talk")) + " — " + n.name + " 와(과) 이야기"; g.lineWidth = 4; g.strokeStyle = "rgba(0,0,0,.8)"; g.strokeText(t, n.x - cx, n.z - 150); g.fillStyle = "#ffe08a"; g.fillText(t, n.x - cx, n.z - 150); }
     // 오른쪽 끝 — 던전 입구
-    const gx = TOWN_W - 70 - cx; if (gx < VW + 100) { g.fillStyle = "rgba(160,60,255,.25)"; g.beginPath(); g.ellipse(gx, 410, 60, 130, 0, 0, Math.PI * 2); g.fill(); g.strokeStyle = "#c58cff"; g.lineWidth = 4; g.stroke(); g.fillStyle = "#fff"; g.font = "800 14px 'Noto Sans KR', sans-serif"; g.textAlign = "center"; g.fillText("던전 입구 →", gx, 260); }
+    const gx = TOWN_W - 70 - cx, gate = BG.pics.gate && BG.pics.gate.naturalWidth; if (gx < VW + 100) { if (!gate) { g.fillStyle = "rgba(160,60,255,.25)"; g.beginPath(); g.ellipse(gx, 410, 60, 130, 0, 0, Math.PI * 2); g.fill(); g.strokeStyle = "#c58cff"; g.lineWidth = 4; g.stroke(); } g.fillStyle = "#fff"; g.font = "800 14px 'Noto Sans KR', sans-serif"; g.textAlign = "center"; g.lineWidth = 4; g.strokeStyle = "rgba(0,0,0,.8)"; g.strokeText("던전 입구", gx, gate ? 120 : 260); g.fillText("던전 입구", gx, gate ? 120 : 260); }
   }
   /* 집 · 가게 — 기와지붕(제미나이 마을 그림이 오면 그것으로) */
   function townHouses(cx) {
