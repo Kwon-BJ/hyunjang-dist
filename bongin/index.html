@@ -52,7 +52,7 @@
   .krow { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13px; padding: 3px 0; border-bottom: 1px solid #2a1c18; }
   .kbtn { font: inherit; font-size: 13px; font-weight: 700; min-width: 86px; padding: 4px 10px; border-radius: 6px; border: 1px solid #b8893a; background: #241612; color: #f6d27a; cursor: pointer; }
   .kbtn.wait { background: #8a2a1c; color: #fff; }
-  #hud { position: absolute; top: 8px; right: 10px; display: flex; gap: 6px; align-items: center; z-index: 3; }
+  #hud { position: absolute; top: 8px; right: 10px; display: flex; gap: 6px; align-items: center; z-index: 6; } /* 가방 · 장비 창(42px 아래부터) 위에 늘 보이게 */
   #hud[hidden] { display: none; }
   #hud .who { font-size: 13px; font-weight: 700; color: #ffe08a; text-shadow: 0 1px 2px #000; margin-right: 6px; }
   #partyBox { position: absolute; top: 10px; left: 10px; z-index: 3; padding: 6px 10px; border-radius: 8px; background: rgba(10,6,8,.7); border: 1px solid #3a6b8a; font-size: 12px; display: grid; gap: 2px; }
@@ -70,8 +70,11 @@
   .tb { position: absolute; pointer-events: auto; border-radius: 50%; border: 2px solid rgba(246,210,122,.7); background: rgba(40,16,14,.55); color: #fff4dc; font: 700 13px "Noto Sans KR", sans-serif; display: flex; align-items: center; justify-content: center; text-align: center; touch-action: none; }
   .tb.on { background: rgba(160,60,30,.75); }
   /* 가방 — 오른쪽에서 열리는 창(부장님이 보내 준 그림처럼): 종류별 칸 · 등급 색 · 강화 · 개수 · 끼는 중(E) */
-  #bagSide { position: absolute; top: 0; right: 0; bottom: 0; width: min(380px, 46%); z-index: 4; display: flex; flex-direction: column; background: rgba(28,30,40,.97); border-left: 1px solid #4a4f66; box-shadow: -8px 0 30px rgba(0,0,0,.5); font-size: 13px; }
+  #bagSide { position: absolute; top: 42px; right: 0; bottom: 0; width: min(380px, 46%); z-index: 4; display: flex; flex-direction: column; background: rgba(28,30,40,.97); border-left: 1px solid #4a4f66; box-shadow: -8px 0 30px rgba(0,0,0,.5); font-size: 13px; }
   #bagSide[hidden] { display: none; }
+  #equipSide { position: absolute; top: 42px; left: 0; bottom: 0; width: min(380px, 46%); z-index: 4; display: flex; flex-direction: column; background: rgba(28,30,40,.97); border-right: 1px solid #4a4f66; box-shadow: 8px 0 30px rgba(0,0,0,.5); font-size: 13px; }
+  #equipSide[hidden] { display: none; }
+  .bs-title { flex: 1; padding: 9px 12px 7px; color: #fff; font-weight: 800; }
   .bs-top { display: flex; align-items: stretch; border-bottom: 1px solid #3a3f55; }
   .bs-tab { flex: 1; padding: 8px 0 6px; text-align: center; color: #8a90a8; font-weight: 700; border: 0; background: none; font: inherit; cursor: pointer; border-bottom: 2px solid transparent; }
   .bs-tab.on { color: #fff; border-bottom-color: #f6d27a; }
@@ -132,9 +135,10 @@
 <div id="stage">
   <canvas id="cv" aria-label="봉인검록 게임 화면"></canvas>
   <div class="pad" id="pad" hidden></div>
-  <div id="hud" hidden><span class="who"><span id="hudName"></span> · <span id="hudGold"></span></span><button class="btn tiny danger" id="hudOp" type="button" hidden>운영</button><button class="btn tiny" id="hudBag" type="button">가방</button><button class="btn tiny ghost" id="hudKeys" type="button">키 설정</button><button class="btn tiny ghost" id="hudOut" type="button">캐릭터</button></div>
+  <div id="hud" hidden><span class="who"><span id="hudName"></span> · <span id="hudGold"></span></span><button class="btn tiny danger" id="hudOp" type="button" hidden>운영</button><button class="btn tiny" id="hudEquip" type="button">장비</button><button class="btn tiny" id="hudBag" type="button">가방</button><button class="btn tiny ghost" id="hudKeys" type="button">키 설정</button><button class="btn tiny ghost" id="hudOut" type="button">캐릭터</button></div>
   <div id="partyBox" hidden></div>
   <div id="bagSide" hidden></div>
+  <div id="equipSide" hidden></div>
   <div id="chat"><div id="chatLog"></div><input id="chatIn" maxlength="80" placeholder="채팅 (Enter)" autocomplete="off"></div>
   <div id="notice" hidden></div>
   <div id="asks"></div>
@@ -142,10 +146,10 @@
   <div id="panel" hidden><div id="panelIn"></div></div>
 </div>
 <div id="rotate">휴대폰을 가로로 돌려 주세요</div>
-<script src="frames.js?v=202610270841"></script>
-<script src="keys.js?v=202610270841"></script>
-<script src="look.js?v=202610270841"></script>
-<script src="game.js?v=202610270841"></script>
-<script src="app.js?v=202610270841"></script>
+<script src="frames.js?v=202610270932"></script>
+<script src="keys.js?v=202610270932"></script>
+<script src="look.js?v=202610270932"></script>
+<script src="game.js?v=202610270932"></script>
+<script src="app.js?v=202610270932"></script>
 </body>
 </html>
