@@ -248,6 +248,7 @@ const Dungeon = (() => {
       if (C.party && !heroes().length) { S.lose = true; S.over = true; S.endT = 1.6; banner("모두 쓰러졌다…"); }
     }
     if (S.fadeT > 0) S.fadeT -= dt;
+    if (C.bubbles) for (const id in C.bubbles) if ((C.bubbles[id].t -= dt) <= 0) delete C.bubbles[id];
     if (S.door && !S.over && !C.watch) { const up = C.axis()[1] < -0.6; if (up && !S.upWas && Math.abs(H.x - DOOR_X) < 120) useDoor(); S.upWas = up; } else S.upWas = false;
     if (S.bannerT > 0) S.bannerT -= dt;
     if (S.comboT > 0 && (S.comboT -= dt) <= 0) S.combo = 0;
@@ -318,6 +319,7 @@ const Dungeon = (() => {
     if (k === "p4") { H.hp = H.max; H.inv = 3; num(H.x, H.z - 130, "금단!", "#ffd36b"); }
     if (k === "p5") { S.cd = S.cd.map(() => 0); num(H.x, H.z - 130, "기력!", "#7fc8ff"); }
   }
+  const DASH_MAX = 2, DASH_CD = 8;
   function heroStep(dt) {
     const H = S.hero, [ax, az, run] = C.axis();
     H.inv = Math.max(0, H.inv - dt); H.t += dt;
@@ -331,7 +333,10 @@ const Dungeon = (() => {
     POTS.forEach((k, i) => { if (KEYS.take("q" + (i + 1))) usePot(k); });
     S.dashCd = Math.max(0, (S.dashCd || 0) - dt);
     const dd = C.dash ? C.dash() : 0;
-    if (dd && S.dashCd <= 0 && (free || H.st === "atk") && grounded) { H.st = "sprint"; H.t = 0; H.face = dd; H.inv = Math.max(H.inv, 0.22); S.dashCd = 0.45; H.queued = false; }
+    /* 대시 2번 충전식 — 하나 쓰면 8초 뒤 하나 참 (2026-10-27 "대쉬도 2회 연달아 쓸 수 있게, 충전식, 1개당 8초") */
+    if (S.dashN == null) { S.dashN = DASH_MAX; S.dashRe = 0; }
+    if (S.dashN < DASH_MAX) { S.dashRe += dt; if (S.dashRe >= DASH_CD) { S.dashN++; S.dashRe = 0; } } else S.dashRe = 0;
+    if (dd && S.dashCd <= 0 && (free || H.st === "atk") && grounded) { if (S.dashN > 0) { H.st = "sprint"; H.t = 0; H.face = dd; H.inv = Math.max(H.inv, 0.22); S.dashCd = 0.25; S.dashN--; H.queued = false; } else if (!(S.cdSay > 0)) { num(H.x, H.z - H.h - 140, "대시 충전 중 " + Math.ceil(DASH_CD - S.dashRe) + "초", "#c9c2b0"); S.cdSay = 0.6; } }
     /* 스킬 — 누른 것을 0.4초 기억했다가 움직일 수 있게 되면 바로(다른 동작 중에 누르면 버려져 '먹통' 같던 것). 기다림 중이면 머리 위에 알려 줌 */
     S.slots.forEach((si, slot) => { const i = si, sk = SKILL[si]; if (KEYS.take(ACTS[slot]) && sk) { if (S.learned && !S.learned.includes(i)) { if (!(S.cdSay > 0)) { num(H.x, H.z - H.h - 140, sk.short + " — 아직 안 배움", "#c9c2b0"); S.cdSay = 0.6; } } else if (S.cd[i] > 0) { if (!(S.cdSay > 0)) { num(H.x, H.z - H.h - 140, sk.short + " " + Math.ceil(S.cd[i]) + "초", "#c9c2b0"); S.cdSay = 0.4; } } else if (!grounded) { if (!(S.cdSay > 0)) { num(H.x, H.z - H.h - 140, "점프 중엔 스킬 못 써요", "#c9c2b0"); S.cdSay = 0.6; } } else S.skBuf = { i, t: 0.4 }; } }); // 점프 중엔 스킬 못 씀 (2026-10-27)
     S.cdSay = Math.max(0, (S.cdSay || 0) - dt); S.flash = Math.max(0, (S.flash || 0) - dt);
@@ -540,6 +545,8 @@ const Dungeon = (() => {
     if (nick && (me ? C.op : P.op)) nick = "⚜운영자 " + nick;
     if (nick) { g.font = "700 12px 'Noto Sans KR', sans-serif"; g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.8)"; g.strokeText(nick, x, y - 128); g.fillStyle = me ? "#ffe08a" : "#bfe3ff"; g.fillText(nick, x, y - 128);
       if (!me) { g.fillStyle = "rgba(0,0,0,.6)"; g.fillRect(x - 22, y - 122, 44, 4); g.fillStyle = "#3ccf6a"; g.fillRect(x - 22, y - 122, 44 * clamp(P.hp / (P.max || 1), 0, 1), 4); } }
+    /* 채팅 말풍선 — 사냥터에서도 머리 위에 (2026-10-27). C.bubbles 는 마을과 같은 것(id → { text, t }) */
+    const B = C.bubbles && C.bubbles[me ? C.me : P.id]; if (B) { g.font = "600 13px 'Noto Sans KR', sans-serif"; g.textAlign = "center"; const w = Math.min(260, g.measureText(B.text.slice(0, 30)).width + 20); g.fillStyle = "rgba(255,255,255,.95)"; g.beginPath(); if (g.roundRect) g.roundRect(x - w / 2, y - 176, w, 28, 10); else g.rect(x - w / 2, y - 176, w, 28); g.fill(); g.fillStyle = "#1a1012"; g.fillText(B.text.slice(0, 30), x, y - 157); }
   }
   function drawFoe(g, f, cx) {
     const x = f.x - cx, y = f.z - f.h, D = f.D, A = FR.mon[D.sprite || f.kind], IM = IMG[A.img || "mon"];
@@ -619,7 +626,7 @@ const Dungeon = (() => {
     bar(g, 22, 40, 260, 14, H.hp / H.max, H.hp / H.max > 0.3 ? "#3ccf6a" : "#e5484d");
     g.font = "600 12px 'Noto Sans KR', sans-serif"; g.fillStyle = "#fff"; g.fillText(Math.ceil(H.hp) + " / " + H.max, 28, 52);
     bar(g, 22, 57, 260, 8, H.mp / H.mpMax, "#3f8cff"); // 마력
-    g.fillStyle = "#c9b48a"; g.fillText((S.D.rooms ? "방 " + (S.room + 1) + " / " + S.D.rooms.length + "   " : "무리 " + Math.min(S.wave + 1, S.D.waves.length) + " / " + S.D.waves.length + "   ") + Math.floor(S.t / 60) + ":" + String(Math.floor(S.t % 60)).padStart(2, "0") + "   물약 " + Object.values(S.potions).reduce((a, b) => a + b, 0) + (touch ? "" : " (" + KEYS.label("potion") + ")"), 22, 74);
+    g.fillStyle = "#c9b48a"; g.fillText((S.D.rooms ? "방 " + (S.room + 1) + " / " + S.D.rooms.length + "   " : "무리 " + Math.min(S.wave + 1, S.D.waves.length) + " / " + S.D.waves.length + "   ") + Math.floor(S.t / 60) + ":" + String(Math.floor(S.t % 60)).padStart(2, "0") + "   대시 " + "●".repeat(S.dashN == null ? DASH_MAX : S.dashN) + "○".repeat(DASH_MAX - (S.dashN == null ? DASH_MAX : S.dashN)) + "   물약 " + Object.values(S.potions).reduce((a, b) => a + b, 0) + (touch ? "" : " (" + KEYS.label("potion") + ")"), 22, 74);
     let py = 96; for (const id in S.remote) { const r = S.remote[id]; g.fillStyle = "#bfe3ff"; g.fillText(r.nick, 22, py); bar(g, 110, py - 9, 90, 7, r.hp / (r.max || 1), "#3ccf6a"); py += 18; }
     if (S.D.tower) { g.textAlign = "right"; g.font = "900 22px 'Noto Sans KR', sans-serif"; g.lineWidth = 4; g.strokeStyle = "rgba(0,0,0,.8)"; const tt = "무한의 탑 " + (S.floor || 1) + "층"; g.strokeText(tt, VW - 22, 70); g.fillStyle = "#ffd36b"; g.fillText(tt, VW - 22, 70);
       if (S.rest > 0 && !S.over) { g.textAlign = "center"; g.font = "800 20px 'Noto Sans KR', sans-serif"; const r = "쉬는 시간 " + Math.ceil(S.rest) + "초 — " + (touch ? "화면을 누르면" : KEYS.label("talk") + " 또는 화면 클릭으로") + " 바로 " + (S.floor + 1) + "층"; g.strokeText(r, VW / 2, 120); g.fillStyle = "#9df59a"; g.fillText(r, VW / 2, 120); } }
