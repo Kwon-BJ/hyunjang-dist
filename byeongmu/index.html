@@ -623,7 +623,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
 #gameView { display: flex; flex-direction: column; gap: 14px; }
 .game-hint { margin: 0; color: var(--muted); font-size: 13px; }
 .game-box { position: relative; border: 1px solid var(--gold-lo); border-radius: 6px; overflow: hidden; background: #07060a; }
-.game-box canvas { display: block; width: 100%; height: min(68vh, 620px); min-height: 360px; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.game-box canvas { display: block; width: 100%; height: min(80vh, 760px); min-height: 420px; /* 2026-10-27 "화면을 조금 더 키워서" 68vh · 620 → 80vh · 760 */ touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 .game-hud { position: absolute; inset: 0; pointer-events: none; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--gold-hi); text-shadow: 0 1px 2px #000; }
 .game-hud .hpbar { flex: 1 1 120px; max-width: 220px; height: 10px; border: 1px solid var(--gold-lo); border-radius: 999px; background: rgba(0,0,0,.6); overflow: hidden; }
 .game-hud .hpbar i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, var(--red), #ff6a4a); }
@@ -677,7 +677,8 @@ body.game-full { overflow: hidden; }
 .gskill small { display: block; font-size: 10px; font-weight: 700; color: var(--muted); }
 .gskill.ready { border-color: var(--gold); box-shadow: 0 0 12px rgba(214,176,98,.6); }
 @media (max-width: 480px) { .gskill { width: 56px; height: 56px; } }
-.game-over { position: absolute; inset: 0; display: flex; padding: 16px; background: rgba(5,4,3,.82); overflow-y: auto; }
+.game-over { position: absolute; inset: 0; display: flex; padding: 16px; background: rgba(5,4,3,.82); overflow-y: auto; scrollbar-width: none; } /* 오른쪽 스크롤바는 숨김(휠 · 손가락으로는 내려감) — 2026-10-27 */
+.game-over::-webkit-scrollbar { display: none; }
 .game-over[hidden] { display: none; }
 .game-over > div { margin: auto; width: min(100%, 440px); display: grid; gap: 12px; justify-items: center; text-align: center; }
 .game-over h3 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 26px; color: var(--gold-hi); }
@@ -686,10 +687,14 @@ body.game-full { overflow: hidden; }
 .game-over .btn { font-size: 16px; padding: 10px 22px; }
 .game-picks { display: grid; gap: 8px; width: 100%; }
 /* 캐릭터 고르기 */
-.hero-pick { display: grid; grid-template-columns: repeat(auto-fit, minmax(62px, 1fr)); gap: 8px; width: 100%; }
+/* 캐릭터 다섯 명은 늘 한 줄 — "캐릭터 선택창이 일렬로 서야 하는데 자객 무진이 밑으로" (2026-10-27). 스킬 이름 줄을 붙이며 감싼 상자가 줄어들어 넘어갔다 */
+.hero-pick-box { width: 100%; display: grid; gap: 6px; }
+.hero-pick { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; width: 100%; }
 .hero-pick button { display: grid; justify-items: center; gap: 2px; padding: 6px 4px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-hi); color: var(--ink); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
 .hero-pick button[aria-pressed="true"] { border-color: var(--gold); color: var(--gold-hi); box-shadow: 0 0 0 1px #000, 0 0 12px rgba(214,176,98,.35); }
 .game-box .hero-pick canvas { width: 60px; height: 70px; min-height: 0; flex: none; } /* 게임판 canvas 규칙(min-height 360px)을 받지 않게 */
+/* 휴대폰 — 다섯 이름이 한 줄에 들어가게 글씨 · 그림을 조금 작게 (2026-10-27) */
+@media (max-width: 480px) { .hero-pick button { font-size: 11px; padding: 4px 1px 6px; letter-spacing: -.3px; word-break: keep-all; } .game-box .hero-pick canvas { width: 46px; height: 54px; } }
 .game-picks button { display: grid; grid-template-columns: 46px 1fr; column-gap: 12px; row-gap: 2px; align-items: center; text-align: left; padding: 12px 14px; border: 1px solid var(--gold-lo); border-radius: 6px; background: var(--panel-hi); color: var(--ink); cursor: pointer; font: inherit; }
 .game-picks button:hover, .game-picks button:focus-visible { border-color: var(--gold); }
 .game-picks button:disabled { opacity: .55; cursor: wait; }
@@ -1195,7 +1200,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610270422";
+  const BUILD = "202610270513";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -4421,7 +4426,7 @@ body.game-full { overflow: hidden; }
         row.appendChild(b);
       });
       const sk = el("p", "best hero-skills"); sk.id = "gHeroSkills"; // 고른 캐릭터의 스킬 3가지 (2026-10-27)
-      const box = el("div"); box.append(row, sk); return box;
+      const box = el("div", "hero-pick-box"); box.append(row, sk); return box;
     }
     function drawPick() {
       const hs = $("gHeroSkills"); if (hs) hs.textContent = HEROES[heroKey].name + " 스킬 — " + UPS.filter((u) => u.hero === heroKey).map((u) => u.n).join(" · ");
