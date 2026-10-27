@@ -1200,7 +1200,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610271122";
+  const BUILD = "202610272224";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -3719,7 +3719,7 @@ body.game-full { overflow: hidden; }
         spawn: 0, fire: 0, rate: 0.7, dmg: 10, multi: 1, pierce: 0, fan: 0, crit: 0, boom: 0, bounce: 0, bossPick: false, orbs: 0, orbA: 0, aura: 0, magnet: 60, regen: 0, hurt: 0,
         stage: 1, stageT: 0, boxes: [], boxT: 12, pools: [], advance: "", bossN: 0, bossNow: null, aim: Math.PI / 2, mvA: Math.PI / 2, dashT: 0, dashCd: 0, dashX: 0, dashY: 1, trail: [], lock: null, hitFx: 0, fields: [], homs: [], hz: [], walk: 0, moving: false, items: [], flash: 0, shotT: 0, bossKills: 0, up: {}, skills: [], cd: {}, cool: 1, ward: 0, msgT: 0, over: false,
         range: AIM_R, tors: [], wardR: 0, wardSpr: "", ring: null, gaura: null, stealth: 0, rest: 0, cleanT: 0, bossDone: false, god: false, cheat: false };
-      s.test = testOn(); $("gTest").hidden = !s.test; opTools();
+      s.test = testOn(); $("gTest").hidden = !s.test; opTools(); setMap(0);
       renderSkills(); resume(); msg("1단계 — 죽을 때까지 버텨라!");
     }
     function resume() {
@@ -3855,9 +3855,16 @@ body.game-full { overflow: hidden; }
        물 · 절벽은 그림일 뿐 막지 않는다. 그림을 못 읽으면 예전처럼 끝없는 격자 */
     /* "맵이 너무 해상도가 안좋다" (2026-10-26) — Carat(Topaz)로 4배 키운 것을 3배(3198px)로 줄여 쓴다(보관/그림/맵-4배.png · 시험/맵-줄이기.cjs).
        세계 크기는 그대로(원본 1066px 의 2배) — 그림 크기가 바뀌어도 MAP_K · MAP_O 를 그림 폭으로 맞춘다 */
-    const MAP = new Image(), MAP_PAD = 50;
+    let MAP = new Image(); const MAP_PAD = 50;
     let mapOk = false, MAP_K = 2, MAP_O = [588, 338];
-    MAP.onload = () => { const r = MAP.width / 1066; MAP_K = 2 / r; MAP_O = /map2./.test(MAP.src) ? [MAP.width / 2, MAP.height * 0.49] : [588 * r, 338 * r]; mapOk = true; draw(); };
+    function mapFit() { const r = MAP.width / 1066; MAP_K = 2 / r; MAP_O = /map.jpg/.test(MAP.src) ? [588 * r, 338 * r] : [MAP.width / 2, MAP.height * 0.49]; mapOk = true; if (s) inMap(s); draw(); }
+    MAP.onload = mapFit;
+    /* 10단계마다 맵이 바뀜 — "연병장도 맵이 1개 밖에 없다, 10단계 넘어갈 때마다 맵이 바뀌게, 10개 정도" (2026-10-28). 1~10단계 돌바닥 법진, 11단계부터 img/maps/m1~m10 (Flow 그림) */
+    const MAPS = ["img/map2.jpg"].concat(Array.from({ length: 10 }, (_, i) => "img/maps/m" + (i + 1) + ".jpg"));
+    let mapIdx = 0;
+    function mapFor(n) { return Math.floor(Math.max(0, (n || 1) - 1) / 10) % MAPS.length; }
+    function setMap(i) { if (i === mapIdx) return; mapIdx = i; const N = new Image(); N.onload = () => { MAP = N; mapFit(); }; N.src = MAPS[i] + "?v=" + BUILD; }
+
     /* "좀더 어두운 용암맵으로 바꿔라 몹이 잘안보인다" (2026-10-26) — 숲 맵 색만 바꾼 용암 맵(무료, 시험/용암맵-만들기.cjs). 숲 맵(map.jpg)은 남겨 둠 */
     /* 맵 바꿈 — 부장님이 주신 어두운 돌바닥 법진 맵 (2026-10-26, img/map2.jpg · 시험/맵2-만들기.cjs). 크기 · 시작 자리는 MAP.onload 에서 그림에 맞춘다 */
     /* 게임 그림 주소에 판 번호(BUILD)를 붙인다 — 깃허브가 그림을 10분 동안 브라우저에 남겨 두어, 새 판 홈페이지에 예전 그림이 섞여 캐릭터가 안 보였다 (2026-10-26) */
@@ -3934,7 +3941,7 @@ body.game-full { overflow: hidden; }
       s.gems.forEach((m) => { m.pull = true; });
       s.rest = REST; msg(s.stage + "단계 통과! " + REST + "초 쉬어요");
     }
-    function startStage() { s.rest = 0; s.stage++; s.stageT = 0; s.cleanT = 0; s.bossDone = false; horde(); msg(s.stage + "단계 (" + stageLen(s.stage) + "초) — 잡귀가 몰려온다!"); }
+    function startStage() { s.rest = 0; s.stage++; setMap(mapFor(s.stage)); s.stageT = 0; s.cleanT = 0; s.bossDone = false; horde(); msg(s.stage + "단계 (" + stageLen(s.stage) + "초) — 잡귀가 몰려온다!"); }
     function arenaClamp(p) { const A = s.arena; if (!A) return; p.x = Math.min(A.x + A.h, Math.max(A.x - A.h, p.x)); p.y = Math.min(A.y + A.h, Math.max(A.y - A.h, p.y)); }
     function spawnBoss(i) {
       const B = BOSSES[i % BOSSES.length], lap = Math.floor(i / BOSSES.length), k = 1 + lap * 1.0, name = B.name + (lap ? " " + (lap + 1) : "");
@@ -4026,7 +4033,7 @@ body.game-full { overflow: hidden; }
       if (!running || !k || !s.up[k] || s.cd[k] > 0) return;
       const l = s.up[k];
       s.cd[k] = SK[k].cd(l) * s.cool;
-      if (HSKF[k]) return heroCast(k, l);
+      if (HSKF[k]) { s.castT = 0.3; return heroCast(k, l); }
       if (k === "thunder") {
         s.foes.filter((f) => Math.abs(f.x - s.x) < W / 2 + 20 && Math.abs(f.y - s.y) < H / 2 + 20)
           .sort((p, q) => ((p.x - s.x) ** 2 + (p.y - s.y) ** 2) - ((q.x - s.x) ** 2 + (q.y - s.y) ** 2)).slice(0, 3 + l)
@@ -4132,7 +4139,7 @@ body.game-full { overflow: hidden; }
           s.shots.push({ x: s.x + Math.cos(aa) * 20, y: s.y - 2 + Math.sin(aa) * 20, vx: Math.cos(aa) * 430, vy: Math.sin(aa) * 430, a: aa, life: 1.1 * s.range / AIM_R, p: s.pierce, bn: s.bounce, hit: [], c: s.pierce >= 3 ? 2 : s.pierce >= 1 ? 1 : 0 }); }
         if (!i) s.aim = a;
       }
-      s.flash = 0.07; s.shotT = 0.5;
+      s.flash = 0.07; s.shotT = 0.5; s.shotC = (s.shotC || 0) + 1;
     }
     function step(dt) {
       s.t += dt;
@@ -4149,7 +4156,7 @@ body.game-full { overflow: hidden; }
       /* 숨 고르기 — 맞은 뒤 2초 동안은 안 찬다. 예전엔 맞는 중에도 초당 4까지 차서 안 죽었다 (2026-10-26) */
       s.calm = Math.max(0, (s.calm || 0) - dt); s.pain = Math.max(0, (s.pain || 0) - s.max * PAIN_RATE * dt);
       if (s.regen && !s.calm) s.hp = Math.min(s.max, s.hp + s.regen * dt);
-      s.hurt = Math.max(0, s.hurt - dt); s.ward = Math.max(0, s.ward - dt); if (!s.ward) { s.wardR = 0; s.wardSpr = ""; }
+      s.hurt = Math.max(0, s.hurt - dt); s.castT = Math.max(0, (s.castT || 0) - dt); s.ward = Math.max(0, s.ward - dt); if (!s.ward) { s.wardR = 0; s.wardSpr = ""; }
       /* 피격 효과 (2026-10-26 "주인공이 데미지 받으면 피격 효과") — 화면 가장자리 붉게 · 살짝 흔들림 · 붉은 불꽃 */
       if (s.hitFx > 0) { s.hitFx = Math.max(0, s.hitFx - dt); if (Math.random() < 0.35 && s.fx.length < 160) s.fx.push({ spark: true, x: s.x + (Math.random() - 0.5) * 24, y: s.y - 8 + (Math.random() - 0.5) * 24, c: 3, life: 0.15 }); }
       s.skills.forEach((k) => { s.cd[k] = Math.max(0, s.cd[k] - dt); });
@@ -4341,6 +4348,7 @@ body.game-full { overflow: hidden; }
     function sprOf(name) { return HSKF[name] ? (hskOk ? [HSK, [HSKF[name]]] : null) : FXF[name] ? (fxOk ? [FXI, FXF[name]] : null) : MFXF[name] && mfxOk ? [MFX, MFXF[name]] : null; }
     function fxDraw(name, fi, x, y, size, o) {
       o = o || {};
+      if (BGSFX[name] && bgSfx(BGSFX[name], x, y, size, o)) return; // 봉인검록 스킬 영상
       const S = sprOf(name); if (!S) return;
       const fr = S[1][Math.max(0, Math.min(S[1].length - 1, fi))], k = size / Math.max(fr[2], fr[3]), w = fr[2] * k, h = fr[3] * k;
       g.save(); g.translate(x, y); if (o.rot != null) g.rotate(o.rot);
@@ -4356,6 +4364,7 @@ body.game-full { overflow: hidden; }
     const SKIN = "#f3cba5", HAIR = "#161a22", HAIR_HI = "#2c3a55", SUIT = "#1c2230", VEST = "#11151d", BLUE = "#2f7bff", GUN = "#2a2e35", DARK = "#0c0e13";
     /* 검객 — 은빛 초승달 검기, 여검객 — 금빛 부적(붉은 글씨 줄 · 주황 빛). 꿰뚫기 단계 색(파랑 · 보라)은 빛으로 */
     function shotArt(kind, x, y, a, c) {
+      if (BGSHOT[kind] && bgSfx(BGSHOT[kind], x, y, 46 + c * 8, { rot: a, fly: true, once: true, ph: x * 0.01 })) return; // 평타도 스킬 영상 작게
       const glow = ["255,190,80", "96,165,250", "192,132,252"][c];
       g.save(); g.translate(x, y); g.rotate(a);
       g.fillStyle = "rgba(" + glow + ",.3)"; g.beginPath(); g.arc(0, 0, 9, 0, Math.PI * 2); g.fill();
@@ -4399,6 +4408,68 @@ body.game-full { overflow: hidden; }
     Object.keys(ROSTER).forEach((k) => { HEROES[k] = Object.assign({}, ROSTER[k], { img: H5, F: H5F[k], K: ROSTER[k].F }); }); // F = 그림 칸 자리, K = 동작 → 칸 이름
     H5.onload = () => { Object.keys(HEROES).forEach((k) => { HEROES[k].ok = true; }); draw(); drawPick(); };
     H5.src = "img/heroes5.png?v=" + BUILD;
+    /* ── 봉인검록 영상 그림 (2026-10-28 부장님 "연병장도 봉인검록처럼 몬스터 · 캐릭터가 자연스럽게 움직이고 총 쏘고 스킬 쏘게") ──
+       img/bg/ = 봉인검록에서 가져온 것(시험/봉인그림-가져오기.cjs): m_<사람>2(서기 · 걷기 · 평타 · 스킬) · m_<사람>3(대시 · 맞기 · 쓰러짐) ·
+       mm_<몬스터>(걷기 · 힘 모으기 · 공격 · 맞기 · 쓰러짐) · sfx/sk_*(스킬 영상, 검은 바탕이라 더해 그림). 못 읽으면 예전 그림 그대로 */
+    const BGF = {}, BGI = {};
+    fetch("img/bg/frames.json?v=" + BUILD).then((r) => r.json()).then((j) => { Object.assign(BGF, j); }).catch(() => {});
+    function bgImg(n) { let i = BGI[n]; if (!i) { i = BGI[n] = new Image(); i.src = "img/bg/" + n + ".webp?v=" + BUILD; } return i.complete && i.naturalWidth ? i : null; }
+    function bgPut(I, r, x, y, k, flip, ax, a) { const w = r[2] * k, h = r[3] * k; g.save(); g.translate(x, y); if (flip) g.scale(-1, 1); if (a != null) g.globalAlpha *= a; g.drawImage(I, r[0], r[1], r[2], r[3], -w * ax, -h, w, h); g.restore(); }
+    /* 주인공 — 겨누는 쪽(왼 · 오)을 보고, 쏘면 평타 동작 · 스킬은 기술 동작 · 대시 · 맞기 · 쓰러짐 */
+    function bgHero(cx, cy, flip, dead) {
+      const b = "m_" + heroKey + "2", rx = "m_" + heroKey + "3", F = BGF[b], M = BGF[b + "_meta"]; if (!F || !M) return false;
+      const I = bgImg(b); if (!I) return false; const R = BGF[rx], RM = BGF[rx + "_meta"], I3 = R && bgImg(rx);
+      const C = Object.assign({}, M.counts, I3 ? RM.counts : {}), at = (k, q) => k + Math.min(C[k] - 1, Math.max(0, Math.floor(q * C[k])));
+      let nm;
+      if (dead) nm = I3 ? "dead" + (C.dead - 1) : "down";
+      else if (s && s.hurt > 0.02 && I3) nm = at("hit", 1 - s.hurt / 0.15);
+      else if (s && s.dashT > 0 && I3) nm = at("dash", 1 - s.dashT / 0.2);
+      else if (s && s.castT > 0) nm = at("cast", 1 - s.castT / 0.3);
+      else if (s && s.shotT > 0.14) nm = at(["atk1", "atk2", "atk3"][(s.shotC || 0) % 3], (0.5 - s.shotT) / 0.36);
+      else if (s && s.moving && running) nm = "walk" + (Math.floor(s.walk * 1.5) % C.walk);
+      else nm = "idle" + (Math.floor((s ? s.t : performance.now() / 1000) * 6) % C.idle);
+      let img = I, r = F[nm], ax = M.ax2 ? M.ax2[nm] : 0.5;
+      if (I3 && R[nm]) { img = I3; r = R[nm]; ax = RM.ax2[nm]; }
+      if (!r) { r = F.idle0; ax = M.ax2 ? M.ax2.idle0 : 0.5; }
+      if (ax == null) ax = 0.5;
+      const k = 84 / M.tall;
+      bgPut(img, r, cx, cy + 19, k, flip < 0, ax);
+      if (s && s.hurt > 0.02 && !dead) { g.save(); g.globalCompositeOperation = "lighter"; bgPut(img, r, cx, cy + 19, k, flip < 0, ax, 0.35); g.restore(); }
+      return true;
+    }
+    /* 몬스터 — 봉인검록 영상 몬스터로(박쥐 · 식충 식물은 예전 그림). BGFACE = 영상 속에서 보는 쪽 */
+    const BGMON = { slime: "slime", goblin: "goblin", wolf: "wolf", stone_golem: "golem", skeleton_warrior: "orc", skeleton_archer: "orcArcher", demon_mage: "orcShaman", red_demon: "orcChief" };
+    const BGBOSS = { stone_golem: "golem", wolf: "wchief", red_demon: "orcChief" }, BGFACE = { slime: 1, goblin: 1, wolf: -1, golem: 1, orc: 1, orcArcher: -1, orcShaman: -1, orcChief: -1, wchief: -1 };
+    function bgMon(f, x, y, m, dead) {
+      const vk = (f.k === "boss" ? BGBOSS[f.skin] : null) || BGMON[f.skin], R = vk && BGF["mm_" + vk], M = R && BGF["mm_" + vk + "_meta"]; if (!M) return false;
+      const I = bgImg("mm_" + vk); if (!I) return false; const C = M.counts, t = s.t + (f.ph || 0);
+      let nm;
+      if (dead != null) nm = "dead" + Math.min(C.dead - 1, Math.floor(dead * C.dead));
+      else if (f.hit > 0) nm = "hit" + Math.min(C.hit - 1, Math.floor((1 - Math.min(1, f.hit / 0.12)) * C.hit));
+      else if (f.near) { const n = C.wind + C.atk, i = Math.floor(t * 10) % n; nm = i < C.wind ? "wind" + i : "atk" + (i - C.wind); }
+      else nm = "move" + (Math.floor(t * (vk === "wolf" ? 12 : 8)) % C.move);
+      const r = R[nm] || R.move0, ax = M.ax2 && M.ax2[nm] != null ? M.ax2[nm] : 0.5, hgt = f.r * (f.k === "boss" ? 3.2 : 2.7), k = hgt / M.tall, dir = s.x < f.x ? -1 : 1, flip = dir !== BGFACE[vk];
+      g.fillStyle = "rgba(0,0,0,.35)"; g.beginPath(); g.ellipse(x, y + hgt * 0.45, hgt * 0.32, hgt * 0.09, 0, 0, Math.PI * 2); g.fill();
+      g.save(); g.translate(x, y + hgt * 0.45); g.scale(m ? m.sx : 1, m ? m.sy : 1); g.globalAlpha = m ? m.a : 1;
+      bgPut(I, r, 0, 0, k, flip, ax);
+      if (f.hit > 0 || (f.near && /^wind/.test(nm))) { g.globalCompositeOperation = "lighter"; bgPut(I, r, 0, 0, k, flip, ax, f.hit > 0 ? 0.5 : 0.25); }
+      g.restore(); g.globalAlpha = 1;
+      return true;
+    }
+    /* 스킬 · 평타 그림 → 봉인검록 스킬 영상 */
+    const BGSFX = { kh_wave: "sk_kh0", kh_ring: "sk_kh1", kh_dash: "sk_kh2", hr_tali: "sk_hr0", hr_bolt: "sk_hr1", hr_bagua: "sk_hr2", ds_bell: "sk_ds0", ds_slam: "sk_ds1", ds_aura: "sk_ds2", je_wind: "sk_je0", je_rain: "sk_je1", je_storm: "sk_je2", mj_shadow: "sk_mj0", mj_poison: "sk_mj1", mj_star: "sk_mj2" };
+    const BGSHOT = { blade: "sk_kh0", talisman: "sk_hr0", shock: "sk_ds1", arrow: "sk_je0", dagger: "sk_mj2" };
+    function bgSfx(ic, x, y, size, o) {
+      const V = BGF.sfx && BGF.sfx[ic]; if (!V) return false; const I = bgImg("sfx/" + ic); if (!I) return false;
+      o = o || {}; let k = o.p != null ? Math.floor(o.p * V.n) : Math.floor((s ? s.t : 0) * 10 + (o.ph || 0)) % V.n; k = Math.max(0, Math.min(V.n - 1, k));
+      const sc = size * 1.35 / Math.max(V.w, V.h), w = V.w * sc, h = V.h * sc, ox = ((BGF.sfxOx || {})[ic] || 0) * w;
+      g.save(); g.translate(x, y); g.globalCompositeOperation = "lighter"; if (o.alpha != null) g.globalAlpha *= o.alpha;
+      if (o.fly) g.rotate(o.rot || 0); else if (o.rot != null && Math.cos(o.rot) < 0) g.scale(-1, 1);
+      const sx = (k % V.cols) * V.w, sy = Math.floor(k / V.cols) * V.h, dy = o.base ? -h * 0.8 : -h / 2;
+      g.drawImage(I, sx, sy, V.w, V.h, -w / 2 - ox, dy, w, h);
+      if (!o.once) { g.globalAlpha *= 0.7; g.drawImage(I, sx, sy, V.w, V.h, -w / 2 - ox, dy, w, h); } // 두 번 겹쳐 진하게
+      g.restore(); return true;
+    }
     let heroKey = "kh";
     try { const k = localStorage.getItem("bmc-game-hero"); if (HEROES[k]) heroKey = k; } catch (e) {}
     function h5key(C, act, view) {
@@ -4485,6 +4556,7 @@ body.game-full { overflow: hidden; }
       return { y: y * grow, rot: rot, sx: sx * (0.4 + grow * 0.6), sy: sy * (0.2 + grow * 0.8), a: 0.3 + grow * 0.7, lean: f.near ? 0.22 : 0 };
     }
     function monster(f, x, y) {
+      if (bgMon(f, x, y, motion(f))) { if (f.k === "boss") { const hh = f.r * 3.2 * 0.45; g.fillStyle = "rgba(0,0,0,.6)"; g.fillRect(x - 30, y + hh + 4, 60, 5); g.fillStyle = "#ff6a4a"; g.fillRect(x - 30, y + hh + 4, 60 * Math.max(0, f.hp) / f.full, 5); } return; }
       const f2 = frame2(f), IMG = f2 ? MON2 : MON, fr = f2 || MF[f.skin], base = f2 ? MF2[SKIN2[f.skin]].move[0] : fr;
       const k = f.r * 2.8 / Math.max(base[2], base[3]), w = fr[2] * k, h = fr[3] * k, m = motion(f), dir = s.x < f.x ? -1 : 1, face = f2 ? FACE2[SKIN2[f.skin]] : FACE_R[f.skin];
       g.fillStyle = "rgba(0,0,0,.35)"; g.beginPath(); g.ellipse(x, y + h * 0.42, w * 0.32 * (1 + m.y / 40), h * 0.1, 0, 0, Math.PI * 2); g.fill();
@@ -4508,6 +4580,7 @@ body.game-full { overflow: hidden; }
       if (HEROES[heroKey].ok) {
         g.restore();
         const act = dead ? "dead" : s && s.hurt > 0.05 ? "hit" : s && s.shotT > 0.25 ? "shot" : mv && Math.sin(s.walk) > 0 ? "move" : "idle";
+        if (bgHero(cx, cy, Math.cos(a) < 0 ? -1 : 1, dead)) return; // 봉인검록 영상 동작
         heroImg(cx, cy, view, side ? flip : 1, act);
         return;
       }
@@ -4637,6 +4710,7 @@ body.game-full { overflow: hidden; }
         });
         s.fx.forEach((x) => {
           if (x.corpse) {
+            if (bgMon({ skin: x.skin, k: x.boss ? "boss" : "", r: x.r, x: x.x, ph: 0 }, x.x + ox, x.y + oy, { sx: 1, sy: 1, a: Math.min(1, x.life / (x.dur * 0.4)) }, 1 - x.life / x.dur)) return;
             const A2 = mon2Ok && MF2[SKIN2[x.skin]];
             if (A2) {
               const p = 1 - x.life / x.dur, fr = A2.dead[Math.min(A2.dead.length - 1, Math.floor(p * A2.dead.length))], b0 = A2.move[0], k = x.r * 2.8 / Math.max(b0[2], b0[3]), w = fr[2] * k, h = fr[3] * k;
@@ -4651,7 +4725,7 @@ body.game-full { overflow: hidden; }
           if (x.spr && sprOf(x.spr)) {
             const fi = Math.floor((1 - x.life / x.dur) * sprOf(x.spr)[1].length);
             g.globalAlpha = Math.min(1, x.life / (x.dur * 0.35));
-            fxDraw(x.spr, fi, x.x + ox, x.y + oy, x.size, { base: x.base, add: x.add, rot: x.rot });
+            fxDraw(x.spr, fi, x.x + ox, x.y + oy, x.size, { base: x.base, add: x.add, rot: x.rot, p: 1 - x.life / x.dur });
             g.globalAlpha = 1; return;
           }
           g.globalAlpha = Math.min(1, x.life / (x.spark ? 0.15 : x.num ? 0.3 : x.frost ? 0.45 : 0.3));
@@ -4755,7 +4829,7 @@ body.game-full { overflow: hidden; }
         s.tors.forEach((t) => { // 회오리 — 날아가는 그림
           const x = t.x + ox, y = t.y + oy, a = Math.min(1, t.life / 0.3);
           if (t.spr === "arrow") { g.save(); g.translate(x, y); g.scale(1.6, 1.6); shotArt("arrow", 0, 0, t.a, 1); g.restore(); return; }
-          if (t.spr) { fxDraw(t.spr, 0, x, y, t.size || 100, { rot: t.spin ? s.t * 14 : t.still ? 0 : t.a, alpha: t.back ? 1 : Math.min(1, t.life / 0.2) }); return; } // 그림이 오른쪽을 보고 있어 날아가는 쪽으로 돌림
+          if (t.spr) { fxDraw(t.spr, 0, x, y, t.size || 100, { rot: t.spin ? s.t * 14 : t.still ? 0 : t.a, fly: !t.spin && !t.still, alpha: t.back ? 1 : Math.min(1, t.life / 0.2) }); return; } // 그림이 오른쪽을 보고 있어 날아가는 쪽으로 돌림
 
           g.fillStyle = "rgba(246,226,164," + (0.12 * a).toFixed(2) + ")"; g.beginPath(); g.arc(x, y, t.R, 0, Math.PI * 2); g.fill();
           if (fxOk) fxDraw("whirl", Math.floor(s.t * 12) % 4, x, y + t.R * 0.8, t.R * 2.2, { base: true, alpha: a });
@@ -4898,7 +4972,7 @@ body.game-full { overflow: hidden; }
       if (!sv || Date.now() - sv.at > 120000) return false;
       try { s = JSON.parse(sv.s); } catch (e) { return false; }
       s.bossNow = sv.boss >= 0 ? s.foes[sv.boss] || null : null; s.lock = null;
-      if (HEROES[sv.hero]) heroKey = sv.hero;
+      if (HEROES[sv.hero]) heroKey = sv.hero; setMap(mapFor(s.stage));
       s.ward = Math.max(s.ward || 0, 2); $("gTest").hidden = !s.test;
       // 2026-10-27 전 판에서 저장된 게임 — 새로 생긴 값 채움(사거리 · 회오리 · 휴식 · 상자 체력)
       s.range = s.range || AIM_R; s.tors = s.tors || []; s.wardR = s.wardR || 0; s.rest = s.rest || 0; s.cleanT = s.cleanT || 0;
@@ -4911,7 +4985,7 @@ body.game-full { overflow: hidden; }
       renderSkills(); resume(); msg("업데이트 적용 — 이어서!");
       return true;
     }
-    if (/[?&]bmctest=1/.test(location.search)) window.__bmcGame = { get s() { return s; }, cast: cast, startStage: startStage, stageLen: stageLen, W: () => W, H: () => H, UPS: UPS, SK: SK, TEST_MUL: TEST_MUL, openBox: openBox, useItem: useItem, dash: dash, spawn: spawn, bullet: bullet, hazard: hazard, showPicks: showPicks };
+    if (/[?&]bmctest=1/.test(location.search)) window.__bmcGame = { get s() { return s; }, begin: begin, step: step, spawnBoss: spawnBoss, take: take, cast: cast, startStage: startStage, stageLen: stageLen, W: () => W, H: () => H, UPS: UPS, SK: SK, TEST_MUL: TEST_MUL, openBox: openBox, useItem: useItem, dash: dash, spawn: spawn, bullet: bullet, hazard: hazard, showPicks: showPicks };
     return {
       /* 다른 메뉴로 가면 멈춘다. 처음 들어오면(또는 다른 사람이 들어오면) 시작 안내 */
       render() {
