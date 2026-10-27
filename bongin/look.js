@@ -33,6 +33,45 @@ function drawChief(g, pose, sc) {
   g.drawImage(CHIEF_IMG, r[0], r[1], r[2], r[3], -r[2] * k / 2, -r[3] * k + 2, r[2] * k, r[3] * k); g.restore();
   return true;
 }
+/* 스승 모습 — 모든 사람의 기본 캐릭터 (2026-10-27 "모든 유저들 캐릭터를 스승 강혁 · 혜린 · 대성 · 지은 · 무진처럼, 저게 기본 캐릭터다").
+   마을 스승 그림 한 장(img/masters)을 문주처럼 몸짓으로 움직이고, 옷 색(look.mc) · 머리 색(look.mh)을 바꿔 칠한다(0 = 원래 색).
+   옷 · 머리 자리는 그 사람 그림의 색 범위로 찾음: hue 범위(도) · 채도 최소 · 그림 높이 중 어디(0~1) */
+const MASTER_IMG = (() => { const V = ((document.currentScript && document.currentScript.src) || "").split("?v=")[1] || ""; const i = new Image(); i.src = "img/masters.webp" + (V ? "?v=" + V : ""); return i; })();
+const MASTER_CLOTH = { kh: [[195, 255, 0.12, 0.2, 1]], hr: [[185, 235, 0.12, 0.25, 1]], ds: [[18, 48, 0.55, 0.4, 0.85]], je: [[85, 185, 0.12, 0.22, 1]], mj: [[245, 305, 0.12, 0.15, 1]] };
+const MASTER_HAIR = { kh: 0.13, hr: 0.2, ds: 0, je: 0.12, mj: 0.09 }; // 머리카락이 있는 높이(위에서부터, 대성은 민머리)
+const MASTER_MC = [null, "#a8321f", "#2a5aa8", "#2e7a45", "#2a2a33", "#7a4ab0", "#e8e0cc", "#c89a2a"]; // 원래 · 붉은 · 푸른 · 초록 · 검정 · 보라 · 흰 · 금빛
+const MASTER_MH = [null, "#4a2e1c", "#8a5a2b", "#d4a85a", "#e8e4dc", "#b2322a", "#2f5fa8", "#7a4ab0"]; // 원래 · 갈색 · 밤색 · 금발 · 은발 · 붉은 · 푸른 · 보라
+const MTINT = new Map();
+function hsl(r, g, b) { r /= 255; g /= 255; b /= 255; const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2; if (mx === mn) return [0, 0, l]; const d = mx - mn, s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn); let h = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return [h * 60, s, l]; }
+function rgb(h, s, l) { h /= 360; const q = l < 0.5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q, f = (t) => { t = (t + 1) % 1; return t < 1 / 6 ? p + (q - p) * 6 * t : t < 0.5 ? q : t < 2 / 3 ? p + (q - p) * (2 / 3 - t) * 6 : p; }; return s ? [f(h + 1 / 3) * 255, f(h) * 255, f(h - 1 / 3) * 255] : [l * 255, l * 255, l * 255]; }
+function hexHsl(c) { return hsl(parseInt(c.slice(1, 3), 16), parseInt(c.slice(3, 5), 16), parseInt(c.slice(5, 7), 16)); }
+function masterPic(hero, mc, mh) { // 그 사람 그림을 잘라 옷 · 머리 색을 바꿔 칠한 캔버스(한 번 만들어 둠)
+  const r = FR.masters[hero], key = hero + ":" + mc + ":" + mh; let c = MTINT.get(key); if (c) return c;
+  c = document.createElement("canvas"); c.width = r[2]; c.height = r[3]; const x = c.getContext("2d"); x.drawImage(MASTER_IMG, r[0], r[1], r[2], r[3], 0, 0, r[2], r[3]);
+  const TC = MASTER_MC[mc], TH = MASTER_MH[mh];
+  if (TC || TH) { const D = x.getImageData(0, 0, r[2], r[3]), p = D.data, W = r[2], H = r[3], tc = TC && hexHsl(TC), th = TH && hexHsl(TH), hairY = (MASTER_HAIR[hero] || 0) * H;
+    for (let i = 0; i < W * H; i++) { const o = i * 4; if (p[o + 3] < 20) continue; const y = (i / W) | 0, [h, s, l] = hsl(p[o], p[o + 1], p[o + 2]); let out = null;
+      if (tc && (MASTER_CLOTH[hero] || []).some(([a, b, sm, y0, y1]) => h >= a && h <= b && s >= sm && y >= y0 * H && y <= y1 * H)) out = rgb(tc[0], Math.max(0.15, tc[1] * 0.85), Math.min(0.92, Math.max(0.05, l + (tc[2] - 0.38) * 0.75)));
+      else if (th && y < hairY && l > 0.07 && l < 0.4 && s < 0.6) out = rgb(th[0], th[1] * 0.8, Math.min(0.9, l + (th[2] - 0.15) * 0.85));
+      if (out) { p[o] = out[0]; p[o + 1] = out[1]; p[o + 2] = out[2]; } }
+    x.putImageData(D, 0, 0); }
+  MTINT.set(key, c); return c;
+}
+function drawMaster(g, L, pose, sc, opt) {
+  const hero = heroOf(L), r = FR.masters && FR.masters[hero]; if (!r || !MASTER_IMG.complete || !MASTER_IMG.naturalWidth) return false;
+  const P = masterPic(hero, (L && L.mc) | 0, (L && L.mh) | 0), st = pose.st, t = pose.t || 0, k = sc * 124 / r[3]; let rot = 0, bob = 0, sx = 1, lx = 0;
+  if (st === "walk" || st === "run" || st === "sprint") { const s = Math.sin(pose.walk || t * 9); bob = Math.abs(s) * 3; rot = 0.05 * s; }
+  else if (st === "idle") bob = Math.sin(t * 2.5) * 1.2;
+  else if (st === "atk" || st === "airatk") { rot = 0.22 * Math.min(1, t / 0.1); lx = 10; sx = 1.05; }
+  else if (st === "cast" || st === "dash") { rot = -0.12; sx = 1.06; }
+  else if (st === "jump") rot = -0.08;
+  else if (st === "hit" || st === "backstep") rot = -0.2;
+  else if (st === "fall" || st === "down" || st === "dead") rot = -1.4;
+  const G = opt && opt.gear, col = (opt && opt.glow && "rgba(255,230,140,1)") || (G && G.b && GEAR_COL[G.b]);
+  g.save(); g.translate(lx * sc, -bob * sc); g.rotate(rot); g.scale(sx, 1); if (col) { g.shadowColor = col; g.shadowBlur = 14 * sc; }
+  g.drawImage(P, -r[2] * k / 2, -r[3] * k + 2, r[2] * k, r[3] * k); g.restore();
+  return true;
+}
 const GLOW = new Map();
 function glowFrame(r, col, blur) { // 캐릭터 한 칸의 빛 테두리를 캔버스로 만들어 둠
   const key = r.join() + col + blur; let c = GLOW.get(key); if (c) return c;
@@ -98,6 +137,7 @@ function shade(hex, k) { // k < 0 어둡게, > 0 밝게
 function drawChar(g, L, pose, sc, opt) {
   L = L || LOOK.base("m"); pose = pose || { st: "idle", t: 0 }; opt = opt || {};
   if (opt && opt.op && drawChief(g, pose, sc)) return; // 운영자 = 문주 모습
+  if (drawMaster(g, L, pose, sc, opt)) return; // 스승 모습(기본 캐릭터, 2026-10-27)
   if (drawHero(g, L, pose, sc, opt)) return; // 기본 캐릭터 그림(없으면 아래 코드 그림)
   if (!HERO_IMG.complete) return; // 그림 받는 중 — 잠깐 기다림(코드 그림 · 부위 그림을 괜히 받지 않게)
   const st = pose.st, t = pose.t || 0, fem = L.g === "f", OUT = "#1a1012";
