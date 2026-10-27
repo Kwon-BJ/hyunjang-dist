@@ -155,8 +155,9 @@ const Dungeon = (() => {
 
   /* cfg = { d, me, look, nick, stats:{hpMax, atk, def}, potions, party:{host, members:[{id,nick,look,lv}]} | null, send(data, to), usePotion(), onEnd(res), axis(), watch }
      watch = 운영자 투명 관전 — 내 캐릭터는 없고(몬스터가 안 노림 · 안 그림 · 안 보냄), 화면은 파티장을 따라간다 */
+  function preload(hero, op) { (op ? ALL_SKILLS : SKILLS[hero] || SKILLS.kh).forEach((s) => { if (s.ic && FR.sfx && FR.sfx[s.ic] && !SFX[s.ic]) SFX[s.ic] = img("img/sfx/" + s.ic + ".webp"); }); } // 스킬 효과 영상 미리 받기(처음 쓸 때 옛 그림이 보이지 않게)
   function start(cfg) {
-    C = cfg; const D = DUN[cfg.d] || DUN.forest;
+    C = cfg; const D = DUN[cfg.d] || DUN.forest; preload(heroOf(cfg.look), cfg.op);
     POTS = Array.isArray(cfg.potSlots) && cfg.potSlots.length === 8 ? cfg.potSlots.slice() : POTS_DEF.slice();
     SKILL = cfg.op ? ALL_SKILLS : SKILLS[heroOf(cfg.look)] || SKILLS.kh; MYATK = ATKS[heroOf(cfg.look)] || ATK; // 직업 평타 // 내 캐릭터(다섯 명 중) 스킬
     const n = cfg.party ? cfg.party.members.length : 1;
@@ -379,7 +380,7 @@ const Dungeon = (() => {
     if (S.dashN < DASH_MAX) { S.dashRe += dt; if (S.dashRe >= DASH_CD) { S.dashN++; S.dashRe = 0; } } else S.dashRe = 0;
     if (dd && S.dashCd <= 0 && (free || H.st === "atk") && grounded) { if (S.dashN > 0) { H.st = "sprint"; H.t = 0; H.face = dd; H.inv = Math.max(H.inv, 0.22); S.dashCd = 0.25; S.dashN--; H.queued = false; } } // 모자라면 그냥 안 나감 — 남은 횟수 · 차는 중은 오른쪽 대시 칸에 (2026-10-28)
     /* 스킬 — 누른 것을 0.4초 기억했다가 움직일 수 있게 되면 바로(다른 동작 중에 누르면 버려져 '먹통' 같던 것). 기다림 중이면 머리 위에 알려 줌 */
-    S.slots.forEach((si, slot) => { const i = si, sk = SKILL[si]; if (KEYS.take(ACTS[slot]) && sk) { if (S.learned && !S.learned.includes(i)) { if (!(S.cdSay > 0)) { num(H.x, H.z - H.h - 140, sk.short + " — 아직 안 배움", "#c9c2b0"); S.cdSay = 0.6; } } else if (S.cd[i] > 0) { if (!(S.cdSay > 0)) { num(H.x, H.z - H.h - 140, sk.short + " " + Math.ceil(S.cd[i]) + "초", "#c9c2b0"); S.cdSay = 0.4; } } else if (!grounded) { if (!(S.cdSay > 0)) { num(H.x, H.z - H.h - 140, "점프 중엔 스킬 못 써요", "#c9c2b0"); S.cdSay = 0.6; } } else S.skBuf = { i, t: 0.4 }; } }); // 점프 중엔 스킬 못 씀 (2026-10-27)
+    S.slots.forEach((si, slot) => { const i = si, sk = SKILL[si]; if (KEYS.take(ACTS[slot]) && sk) { if (S.learned && !S.learned.includes(i)) { if (!(S.cdSay > 0)) { num(H.x, H.z - H.h - 140, sk.short + " — 아직 안 배움", "#c9c2b0"); S.cdSay = 0.6; } } else if (S.cd[i] > 0) { /* 쿨타임은 단추에 숫자로만(캐릭터 위엔 안 띄움, 2026-10-28) */ } else if (!grounded) { if (!(S.cdSay > 0)) { num(H.x, H.z - H.h - 140, "점프 중엔 스킬 못 써요", "#c9c2b0"); S.cdSay = 0.6; } } else S.skBuf = { i, t: 0.4 }; } }); // 점프 중엔 스킬 못 씀 (2026-10-27)
     S.cdSay = Math.max(0, (S.cdSay || 0) - dt); S.flash = Math.max(0, (S.flash || 0) - dt);
     if (S.skBuf) { const i = S.skBuf.i, sk = SKILL[i], ready = free || H.st === "atk" || (H.st === "cast" && H.t >= 0.12) || H.st === "sprint";
       if (ready && grounded && S.cd[i] <= 0) { if (H.mp < mpOf(i)) { S.skBuf = null; if (!(S.cdSay > 0)) { num(H.x, H.z - H.h - 140, "마력 부족", "#7fb7ff"); S.cdSay = 0.6; } } else { H.mp -= mpOf(i); S.cd[i] = sk.cd; H.queued = false; S.skBuf = null; cast(sk); } } else if ((S.skBuf.t -= dt) <= 0) S.skBuf = null; }
@@ -725,7 +726,7 @@ const Dungeon = (() => {
   const SFX = {};
   function drawHsk(g, o, fr, x, y, size, flip, alpha, rot, age, loop) {
     const ic = o && o.ic, V = ic && FR.sfx && FR.sfx[ic], I = V && (SFX[ic] || (SFX[ic] = img("img/sfx/" + ic + ".webp")));
-    if (!V || !I.complete || !I.naturalWidth) return centered(g, IMG.hsk, FR.hsk[fr], x, y, size, flip, alpha, rot);
+    if (!V) return centered(g, IMG.hsk, FR.hsk[fr], x, y, size, flip, alpha, rot); if (!I.complete || !I.naturalWidth) return; // 새 영상이 아직이면 옛 그림 대신 안 그림
     let k = Math.floor(Math.max(0, age || 0) * 10); k = loop ? k % V.n : Math.min(V.n - 1, k);
     const sc = size * 1.35 / Math.max(V.w, V.h), w = V.w * sc, h = V.h * sc;
     g.save(); g.globalCompositeOperation = "lighter"; g.globalAlpha *= clamp(alpha, 0, 1); g.translate(x, y); if (flip) g.scale(-1, 1);
@@ -745,7 +746,7 @@ const Dungeon = (() => {
       g.save(); g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fillStyle = a === "atk" ? "rgba(70,24,16,.55)" : "rgba(15,12,20,.6)"; g.fill();
       g.lineWidth = ult ? 3 : 2; g.strokeStyle = ult ? "#ffcf4a" : a === "mpot" ? "rgba(90,140,220,.85)" : a === "potion" ? "rgba(220,80,80,.85)" : "rgba(232,200,140,.65)"; if (ult) { g.shadowColor = "rgba(255,200,60,.9)"; g.shadowBlur = 12; } g.stroke(); g.shadowBlur = 0;
       if (slot >= 0) { const i = slots[slot], sk = skill[i]; g.clip(); if (sk) { const c = cd ? cd[i] || 0 : 0, lock = learned && !learned.includes(i); skIcon(g, sk, x, y, r * 2, lock ? 0.15 : c > 0 ? 0.4 : 1);
-          if (c > 0) { const h = 2 * r * Math.min(1, c / sk.cd); g.fillStyle = "rgba(0,0,0,.55)"; g.fillRect(x - r, y + r - h, 2 * r, h); g.fillStyle = "#fff"; g.textAlign = "center"; g.font = "800 18px sans-serif"; g.fillText(Math.ceil(c), x, y + 6); } } }
+          if (c > 0) { const h = 2 * r * Math.min(1, c / sk.cd); g.fillStyle = "rgba(0,0,0,.55)"; g.fillRect(x - r, y + r - h, 2 * r, h); g.textAlign = "center"; g.font = "900 " + Math.round(r * 0.75) + "px sans-serif"; g.lineWidth = 4; g.strokeStyle = "rgba(0,0,0,.85)"; const cs = c < 1 ? c.toFixed(1) : String(Math.ceil(c)); g.strokeText(cs, x, y + r * 0.27); g.fillStyle = "#fff"; g.fillText(cs, x, y + r * 0.27); } } }
       else { g.textAlign = "center"; g.font = (a === "atk" ? "800 20px" : "700 13px") + " 'Noto Sans KR', sans-serif"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.6)"; g.strokeText(t, x, y + 5); g.fillStyle = "#fff4dc"; g.fillText(t, x, y + 5); }
       g.restore(); });
   }
@@ -797,7 +798,7 @@ const Dungeon = (() => {
       const lab = KEYS.label(ACTS[slot]); g.fillStyle = "rgba(0,0,0,.75)"; g.fillRect(x + 36, y + 42, 18, 15); g.fillStyle = "#e8e2d0"; g.textAlign = "center"; g.font = "800 11px sans-serif"; g.fillText(lab.length > 2 ? lab.slice(0, 2) : lab, x + 45, y + 54);
     }
   }
-  return { HERO_ORDER, ALL_SKILLS, TPAD, drawPad: (g, skill, slots) => drawPad(g, skill, slots), /* 화면을 눌렀을 때 — 차원의 문을 누르면 들어감(화면 좌표 x, y) */ click(x, y) { if (S && S.D.tower && S.rest > 0 && !S.spawned && !S.over && !C.watch) { S.rest = 0; return true; } /* 무한의 탑 쉬는 시간 — 화면을 누르면 바로 다음 층(휴대폰엔 말걸기 단추가 없어 30초를 다 쉬어야 했다, 2026-10-27) */ if (!S || !S.door || S.over || C.watch) return false; const dx = DOOR_X - S.camX; if (Math.abs(x - dx) < 90 && y > Z0 - 230 && y < Z0 + 60) { useDoor(); return true; } return false; }, get room() { return S && S.room; }, lootText(t2) { if (S) num(S.hero.x, S.hero.z - S.hero.h - 125, t2, "#ffe08a"); }, duelWon() { if (S && !S.over) { S.over = true; S.win = true; S.endT = 1.6; banner("승리!"); } }, gmAura: (g, x, y) => gmAura(g, x, y, performance.now() / 1000), start, step, draw, net, MON, DUN, SKILLS, get SKILL() { return SKILL; }, get S() { return S; }, quit() { if (S) S.ended = true; S = null; }, addRemote(p) { if (!S || S.remote[p.id]) return; if (!C.party) C.party = { host: C.me, members: [] }; S.spec = true; /* 혼자 하던 판에 운영자가 들어오면 그때부터 주고받음 */ S.remote[p.id] = { id: p.id, nick: p.nick, look: p.look, gear: p.gear, op: !!p.op, x: S.hero.x - 60, z: S.hero.z, h: 0, face: 1, st: "idle", t: 0, step: 0, walk: 0, hp: 1, max: 1, tx: S.hero.x - 60, tz: S.hero.z, th: 0, alive: true, inv: 0 }; }, watched() { if (S) S.spec = true; } };
+  return { HERO_ORDER, ALL_SKILLS, TPAD, preload, drawPad: (g, skill, slots) => drawPad(g, skill, slots), /* 화면을 눌렀을 때 — 차원의 문을 누르면 들어감(화면 좌표 x, y) */ click(x, y) { if (S && S.D.tower && S.rest > 0 && !S.spawned && !S.over && !C.watch) { S.rest = 0; return true; } /* 무한의 탑 쉬는 시간 — 화면을 누르면 바로 다음 층(휴대폰엔 말걸기 단추가 없어 30초를 다 쉬어야 했다, 2026-10-27) */ if (!S || !S.door || S.over || C.watch) return false; const dx = DOOR_X - S.camX; if (Math.abs(x - dx) < 90 && y > Z0 - 230 && y < Z0 + 60) { useDoor(); return true; } return false; }, get room() { return S && S.room; }, lootText(t2) { if (S) num(S.hero.x, S.hero.z - S.hero.h - 125, t2, "#ffe08a"); }, duelWon() { if (S && !S.over) { S.over = true; S.win = true; S.endT = 1.6; banner("승리!"); } }, gmAura: (g, x, y) => gmAura(g, x, y, performance.now() / 1000), start, step, draw, net, MON, DUN, SKILLS, get SKILL() { return SKILL; }, get S() { return S; }, quit() { if (S) S.ended = true; S = null; }, addRemote(p) { if (!S || S.remote[p.id]) return; if (!C.party) C.party = { host: C.me, members: [] }; S.spec = true; /* 혼자 하던 판에 운영자가 들어오면 그때부터 주고받음 */ S.remote[p.id] = { id: p.id, nick: p.nick, look: p.look, gear: p.gear, op: !!p.op, x: S.hero.x - 60, z: S.hero.z, h: 0, face: 1, st: "idle", t: 0, step: 0, walk: 0, hp: 1, max: 1, tx: S.hero.x - 60, tz: S.hero.z, th: 0, alive: true, inv: 0 }; }, watched() { if (S) S.spec = true; } };
 })();
 
 /* ── 배경 — 마을 · 던전마다. 제미나이 맵 그림(img/maps/<이름>.jpg, frames.js 의 MAPS 에 적힌 것)이 있으면 그것을, 없으면 코드로 그린다
