@@ -90,7 +90,7 @@ const APP = (() => {
 
   /* ── 안내판(가운데 창) ── */
   function panel(nodes, wide) { const P = $("panel"); $("panelIn").replaceChildren(...nodes); $("panelIn").classList.toggle("wide", !!wide); P.hidden = false; }
-  function closePanel() { $("panel").hidden = true; $("panelIn").replaceChildren(); }
+  function closePanel() { $("panel").hidden = true; $("panelIn").replaceChildren(); refreshFn = null; } // 닫으면 다시 그리기도 멈춤 — Esc 로 닫은 스킬창 · 상점이 가방이 바뀔 때 저절로 다시 열리던 것 (2026-10-27)
   function row(...b) { const r = el("div", "btns"); r.append(...b); return r; }
   let toastT = 0;
   function toast(text, kind) { const t = $("toast"); t.textContent = text; t.className = "toast on " + (kind || ""); clearTimeout(toastT); toastT = setTimeout(() => { t.className = "toast"; }, 2600); }
@@ -165,6 +165,8 @@ const APP = (() => {
     return box;
   }
   let refreshFn = null;
+  /* Esc(메뉴 · 닫기) — 열린 창을 닫음. 키 이름만 있고 닫히지 않던 것 (2026-10-27) */
+  addEventListener("keydown", (e) => { if (e.code !== KEYS.key("menu") || /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return; if (!$("panel").hidden && A.scene === "town" && !A.trade) closePanel(); /* 마을에서만 — 거래 중 · 던전 결과 · 캐릭터 화면은 그대로 */ else if (!$("bagSide").hidden || !$("equipSide").hidden) { $("bagSide").hidden = true; $("equipSide").hidden = true; } });
   function refresh() { if (A.scene === "menu" && A.char && !$("panel").hidden && $("panelIn").querySelector(".cinfo")) return charScreen(); if (refreshFn) refreshFn(); if (!$("bagSide").hidden) bagPanel(); if (!$("equipSide").hidden) equipPanel(); hudText(); }
 
   /* ── 키 설정 ── */
@@ -217,7 +219,7 @@ const APP = (() => {
       if (KEYS.take("bag")) { const S = $("bagSide"); if (S.hidden) bagPanel(); else S.hidden = true; }
       if (KEYS.take("skills")) skillPanel();
       if (KEYS.take("equip")) { const E = $("equipSide"); if (E.hidden) equipPanel(); else E.hidden = true; }
-      if (H.x > TOWN_W - 60) { H.x = TOWN_W - 140; gateTalk(); }
+      { const up = axis()[1] < -0.6; if (up && !A.upWas && Math.abs(H.x - (TOWN_W - 70)) < 140) gateTalk(); A.upWas = up; } // 던전 입구 = 차원의 문 — 앞에서 ↑ (끝까지 걸어가면 열리던 것 없앰)
     }
     if (KEYS.take("chat")) $("chatIn").focus();
     if (KEYS.take("menu")) { if (!$("panel").hidden) closePanel(); }
@@ -244,7 +246,7 @@ const APP = (() => {
     const n = gi ? null : nearNpc();
     if (n && $("panel").hidden) { g.textAlign = "center"; g.font = "700 14px 'Noto Sans KR', sans-serif"; const t = (touch ? "말걸기 단추" : KEYS.label("talk")) + " — " + n.name + " 와(과) 이야기"; g.lineWidth = 4; g.strokeStyle = "rgba(0,0,0,.8)"; g.strokeText(t, n.x - cx, n.z - 150); g.fillStyle = "#ffe08a"; g.fillText(t, n.x - cx, n.z - 150); }
     // 오른쪽 끝 — 던전 입구
-    const gx = TOWN_W - 70 - cx, gate = BG.pics.town && BG.pics.town.naturalWidth; if (gx < VW + 100) { if (!gate) { g.fillStyle = "rgba(160,60,255,.25)"; g.beginPath(); g.ellipse(gx, 410, 60, 130, 0, 0, Math.PI * 2); g.fill(); g.strokeStyle = "#c58cff"; g.lineWidth = 4; g.stroke(); } g.fillStyle = "#fff"; g.font = "800 14px 'Noto Sans KR', sans-serif"; g.textAlign = "center"; g.lineWidth = 4; g.strokeStyle = "rgba(0,0,0,.8)"; g.strokeText("던전 입구", gx, gate ? 120 : 260); g.fillText("던전 입구", gx, gate ? 120 : 260); }
+    const gx = TOWN_W - 70 - cx, gate = BG.pics.town && BG.pics.town.naturalWidth; if (gx < VW + 100) { if (!gate) { g.fillStyle = "rgba(160,60,255,.25)"; g.beginPath(); g.ellipse(gx, 410, 60, 130, 0, 0, Math.PI * 2); g.fill(); g.strokeStyle = "#c58cff"; g.lineWidth = 4; g.stroke(); } g.fillStyle = "#fff"; g.font = "800 14px 'Noto Sans KR', sans-serif"; g.textAlign = "center"; g.lineWidth = 4; g.strokeStyle = "rgba(0,0,0,.8)"; g.strokeText("차원의 문 ↑ (던전)", gx, gate ? 120 : 260); g.fillText("차원의 문 ↑ (던전)", gx, gate ? 120 : 260); }
   }
   /* 집 · 가게 — 기와지붕(제미나이 마을 그림이 오면 그것으로) */
   function townHouses(cx) {
@@ -336,7 +338,7 @@ const APP = (() => {
   function gateTalk() {
     const list = el("div", "bag"), P = A.party, leader = !P || P.leader === A.me.id;
     Object.keys(A.dungeons).forEach((k) => { const D = A.dungeons[k], r = el("div", "item"), locked = D.lv && A.char.lv < D.lv;
-      r.append(el("span", null, D.name), el("small", null, locked ? "Lv " + D.lv + " 부터" : "보상 " + D.gold[0] + "~" + D.gold[1] + " G · 경험치 " + D.exp));
+      r.append(el("span", null, D.name), el("small", null, "Lv " + (D.lv || 1) + "~" + (D.lvMax || "") + (D.rooms ? " · 방 " + D.rooms + " + 보스룸" : "") + " · " + (locked ? "Lv " + D.lv + " 부터 들어가요" : "보상 " + D.gold[0] + "~" + D.gold[1] + " G · 경험치 " + D.exp)));
       const b = btn(P ? (leader ? "파티로 들어가기" : "파티장이 들어가요") : "들어가기", () => { send({ t: "dstart", d: k }); }, "tiny"); b.disabled = locked || !leader; r.appendChild(b); list.appendChild(r); });
     const tw = el("div", "item"); tw.append(el("span", null, "🗼 무한의 탑 — 랭킹전(1~99층)"), el("small", null, "혼자 · 층마다 강해짐 · 30초 쉼"), btn("순위표", () => send({ t: "twrRank" }), "tiny ghost"), btn(P ? "혼자만" : "도전", () => send({ t: "twrStart" }), "tiny")); list.appendChild(tw);
     panel([el("h2", null, "수문장 — 「어디로 가겠나?」"), list, el("p", "sub", P ? "파티장이 들어가면 마을에 있는 파티원이 모두 같이 들어가요." : "파티를 맺으면 같이 들어갈 수 있어요(다른 사람을 눌러 파티 신청)."), row(btn("닫기", closePanel, "ghost"))], true);
@@ -358,6 +360,12 @@ const APP = (() => {
     if (ITEM_IMG.complete) put(); else ITEM_IMG.addEventListener("load", put, { once: true });
     return c;
   }
+  function dropAsk(it) {
+    refreshFn = null;
+    if (isEq(it.uid)) return toast("끼고 있는 장비는 먼저 빼 주세요.", "bad");
+    if (A.scene !== "town") return toast("마을에서만 버릴 수 있어요.", "bad");
+    const I = A.items[it.key]; panel([el("h2", null, "버릴까요?"), el("p", null, itemName(it) + (it.n > 1 ? " × " + it.n : "")), el("p", "sub", "발밑에 떨어져요 — 다른 사람도 주울 수 있어요."), row(btn("버리기", () => { send({ t: "drop", uid: it.uid }); bagUI.sel = null; closePanel(); }, "danger"), btn("취소", closePanel, "ghost"))]);
+  }
   function slot(it) {
     const I = A.items[it.key], C = A.char, b = el("button", "slot g" + (I.grade || 0)); b.type = "button"; b.dataset.uid = it.uid;
     b.appendChild(icon(it.key, 64));
@@ -366,6 +374,11 @@ const APP = (() => {
     if (it.n > 1) b.appendChild(el("span", "ct", String(it.n)));
     if (bagUI.sel === it.uid) b.classList.add("sel");
     b.onclick = () => { bagUI.sel = it.uid; if (!$("bagSide").hidden) bagPanel(); if (!$("equipSide").hidden) equipPanel(); };
+    /* 끌어서 버리기 — 가방 · 장비 창 밖(게임 화면)에 놓으면 「버릴까요?」 (2026-10-27 "아이템은 마우스로 드래그해서 버릴 수 있게") */
+    b.addEventListener("pointerdown", (e) => { if (e.button) return; const x0 = e.clientX, y0 = e.clientY; let gh = null;
+      const mv = (ev) => { if (!gh && Math.hypot(ev.clientX - x0, ev.clientY - y0) > 10) { gh = b.cloneNode(true); gh.style.cssText = "position:fixed;pointer-events:none;z-index:99;width:56px;height:56px;opacity:.85"; document.body.appendChild(gh); } if (gh) { gh.style.left = ev.clientX - 28 + "px"; gh.style.top = ev.clientY - 28 + "px"; } };
+      const up = (ev) => { removeEventListener("pointermove", mv); removeEventListener("pointerup", up); if (!gh) return; gh.remove(); const tg = document.elementFromPoint(ev.clientX, ev.clientY); if (tg && tg.closest("#bagSide, #equipSide, #panel")) return; dropAsk(it); };
+      addEventListener("pointermove", mv); addEventListener("pointerup", up); });
     b.ondblclick = () => { if (isGear(it.key)) send({ t: "equip", uid: it.uid }); }; // 두 번 누르면 끼기 · 빼기
     return b;
   }
@@ -555,19 +568,21 @@ const APP = (() => {
   const KIND_TXT = { shot: "날려 맞힘", aura: "몸 둘레 계속", zone: "자리에 계속", dash: "앞으로 돌진", strike: "가까운 적 여럿에게 바로", blink: "적 뒤로 순간이동", slam: "앞을 내려쳐 띄움", guard: "잠깐 무적 · 밀쳐냄", ult: "궁극기 — 여러 재주를 한 번에" };
   function skillPanel() {
     const C = A.char; if (!C) return; refreshFn = skillPanel;
-    const hero = (C.look && C.look.hero) || "kh", SK = Dungeon.SKILLS[hero] || [], L = C.learned || [0, 1, 2], REQ = C.skillReq || [];
+    const op = !!(A.me && A.me.op), myHero = (C.look && C.look.hero) || "kh", hero = op ? A.skTab || myHero : myHero, SK = Dungeon.SKILLS[hero] || [], REQ = C.skillReq || [];
+    /* 운영자는 다섯 직업 스킬을 모두 배운 것으로 · 탭으로 골라 아무 칸에나 (2026-10-27). base = 이 탭 스킬의 번호 시작(직업 순서 × 7) */
+    const base = op ? Dungeon.HERO_ORDER.indexOf(hero) * 7 : 0, ALL = op ? Dungeon.ALL_SKILLS : SK, L = op ? ALL.map((_, i) => i) : C.learned || [0, 1, 2], isUlt = (si) => si % 7 === 6;
     const list = el("div", "bag");
     SK.forEach((s, i) => { const r = el("div", "item"), ic = document.createElement("canvas"); ic.width = ic.height = 44; const f = FR.hsk[s.fr], im = new Image(); im.src = "img/hsk.webp" + (V ? "?v=" + V : ""); im.onload = () => { const k = 40 / Math.max(f[2], f[3]); ic.getContext("2d").drawImage(im, f[0], f[1], f[2], f[3], 22 - f[2] * k / 2, 22 - f[3] * k / 2, f[2] * k, f[3] * k); };
-      ic.style.cssText = "width:44px;height:44px;border-radius:8px;background:" + (i === 6 ? "#5a3a0a" : "#1b1e2a"); const got = L.includes(i), q = REQ[i] || { lv: 1, cost: 0 };
+      ic.style.cssText = "width:44px;height:44px;border-radius:8px;background:" + (i === 6 ? "#5a3a0a" : "#1b1e2a"); const got = op || L.includes(i), q = REQ[i] || { lv: 1, cost: 0 };
       const txt = el("div"); txt.style.flex = "1"; txt.append(el("b", null, (i === 6 ? "궁극기 · " : i + 1 + ". ") + s.name), el("small", null, " " + (KIND_TXT[s.kind] || "") + " · 기다림 " + s.cd + "초 · 키 " + KEYS.label(["s1", "s2", "s3", "s4", "s5", "s6", "ult"][i])));
-      r.append(ic, txt, got ? el("small", "reward", "배움 ✔") : btn("배우기 · Lv " + q.lv + (q.cost ? " · " + q.cost.toLocaleString() + "G" : ""), () => send({ t: "learn", i }), "tiny" + (C.lv < q.lv || C.gold < q.cost ? " ghost" : ""))); list.appendChild(r); });
+      r.append(ic, txt, got ? el("small", "reward", op ? "운영자 ✔" : "배움 ✔") : btn("배우기 · Lv " + q.lv + (q.cost ? " · " + q.cost.toLocaleString() + "G" : ""), () => send({ t: "learn", i }), "tiny" + (C.lv < q.lv || C.gold < q.cost ? " ghost" : ""))); list.appendChild(r); });
     /* 스킬 칸 — 아래 스킬을 끌어다 칸에 놓기 · 칸에서 밖으로 끌면 빼기 · 눌러 고르고 칸 누르기(휴대폰도) */
     const SL = (C.skillSlots || [0, 1, 2, 3, 4, 5, 6]).slice(), save = () => send({ t: "setSlots", s: SL });
-    const iconOf = (i, sz) => { const c = document.createElement("canvas"); c.width = c.height = sz; const f = FR.hsk[SK[i].fr], im = new Image(); im.src = "img/hsk.webp" + (V ? "?v=" + V : ""); im.onload = () => { const k = (sz - 4) / Math.max(f[2], f[3]); c.getContext("2d").drawImage(im, f[0], f[1], f[2], f[3], sz / 2 - f[2] * k / 2, sz / 2 - f[3] * k / 2, f[2] * k, f[3] * k); }; return c; };
+    const iconOf = (i, sz) => { const c = document.createElement("canvas"); c.width = c.height = sz; const f = FR.hsk[ALL[i].fr], im = new Image(); im.src = "img/hsk.webp" + (V ? "?v=" + V : ""); im.onload = () => { const k = (sz - 4) / Math.max(f[2], f[3]); c.getContext("2d").drawImage(im, f[0], f[1], f[2], f[3], sz / 2 - f[2] * k / 2, sz / 2 - f[3] * k / 2, f[2] * k, f[3] * k); }; return c; };
     const bar = el("div", "sbar"), rows2 = [[0, 1, 2, 6], [3, 4, 5]];
-    rows2.forEach((rr) => { const rw = el("div", "sbar-row"); rr.forEach((slot) => { const s = el("div", "sslot" + (slot === 6 ? " ult" : "")); s.dataset.slot = slot; const si = SL[slot]; if (si >= 0 && SK[si]) { const ic = iconOf(si, 52); ic.dataset.skill = si; ic.dataset.from = slot; ic.className = "sdrag"; s.appendChild(ic); } s.appendChild(el("span", "skey", KEYS.label(["s1", "s2", "s3", "s4", "s5", "s6", "ult"][slot]))); rw.appendChild(s); }); bar.appendChild(rw); });
+    rows2.forEach((rr) => { const rw = el("div", "sbar-row"); rr.forEach((slot) => { const s = el("div", "sslot" + (slot === 6 ? " ult" : "")); s.dataset.slot = slot; const si = SL[slot]; if (si >= 0 && ALL[si]) { const ic = iconOf(si, 52); ic.dataset.skill = si; ic.dataset.from = slot; ic.className = "sdrag"; s.appendChild(ic); } s.appendChild(el("span", "skey", KEYS.label(["s1", "s2", "s3", "s4", "s5", "s6", "ult"][slot]))); rw.appendChild(s); }); bar.appendChild(rw); });
     let picked = null;
-    const place = (si, slot, from) => { if (slot === 6 && si !== 6) return toast("궁극기 칸에는 궁극기만", "bad"); if (slot !== 6 && si === 6) return toast("궁극기는 금빛 칸에", "bad"); for (let k = 0; k < 7; k++) if (SL[k] === si) SL[k] = -1; if (from != null && from >= 0 && SL[slot] >= 0 && from !== slot) SL[from] = SL[slot]; SL[slot] = si; save(); };
+    const place = (si, slot, from) => { if (slot === 6 && !isUlt(si)) return toast("궁극기 칸에는 궁극기만", "bad"); if (slot !== 6 && isUlt(si)) return toast("궁극기는 금빛 칸에", "bad"); for (let k = 0; k < 7; k++) if (SL[k] === si) SL[k] = -1; if (from != null && from >= 0 && SL[slot] >= 0 && from !== slot) SL[from] = SL[slot]; SL[slot] = si; save(); };
     const drag = (e) => { const src = e.target.closest(".sdrag"); if (!src) return; const si = +src.dataset.skill, from = src.dataset.from != null ? +src.dataset.from : null; if (!L.includes(si)) return toast("아직 안 배운 스킬이에요", "bad");
       e.preventDefault(); const gh = src.cloneNode(true); gh.getContext && gh.getContext("2d").drawImage(src, 0, 0); gh.style.cssText = "position:fixed;pointer-events:none;z-index:99;width:52px;height:52px;border-radius:50%;opacity:.85"; document.body.appendChild(gh);
       const mv = (ev) => { gh.style.left = ev.clientX - 26 + "px"; gh.style.top = ev.clientY - 26 + "px"; }; mv(e); let moved = false;
@@ -577,8 +592,8 @@ const APP = (() => {
       const mv2 = (ev) => { moved = moved || Math.hypot(ev.movementX, ev.movementY) > 0; mv(ev); }; addEventListener("pointermove", mv2); addEventListener("pointerup", up); };
     bar.addEventListener("pointerdown", drag); bar.addEventListener("click", (e) => { const sl = e.target.closest(".sslot"); if (sl && picked) { place(picked.si, +sl.dataset.slot, picked.from); picked = null; } });
     list.addEventListener("pointerdown", (e) => { const ic = e.target.closest("canvas"); if (ic && ic.dataset.skill != null) { ic.classList.add("sdrag"); drag(e); } });
-    list.querySelectorAll("canvas").forEach((c, i) => { c.dataset.skill = i; c.style.touchAction = "none"; c.style.cursor = "grab"; });
-    panel([el("h2", null, "스킬 — " + ({ kh: "강혁(무사)", hr: "혜린(도사)", ds: "대성(수호자)", je: "지은(사수)", mj: "무진(자객)" }[hero] || "")), el("p", "sub", "1~3 은 처음부터. 4 · 5 · 6 · 궁극기는 레벨이 되면 골드를 내고 배워요. Lv " + C.lv + " · " + C.gold.toLocaleString() + " G"), el("b", null, "스킬 칸 — 배운 스킬을 끌어다 넣고, 밖으로 끌면 빠져요(눌러 고른 뒤 칸을 눌러도 돼요)"), bar, list, row(btn("닫기", () => { refreshFn = null; closePanel(); }, "ghost"))], true);
+    list.querySelectorAll("canvas").forEach((c, i) => { c.dataset.skill = base + i; c.style.touchAction = "none"; c.style.cursor = "grab"; });
+    panel([el("h2", null, "스킬 — " + ({ kh: "강혁(무사)", hr: "혜린(도사)", ds: "대성(수호자)", je: "지은(사수)", mj: "무진(자객)" }[hero] || "")), op ? (() => { const tabs = el("div", "row sk-tabs"); Dungeon.HERO_ORDER.forEach((h) => tabs.appendChild(btn({ kh: "강혁", hr: "혜린", ds: "대성", je: "지은", mj: "무진" }[h], () => { A.skTab = h; skillPanel(); }, "tiny" + (h === hero ? "" : " ghost")))); const w = el("div"); w.append(el("p", "sub", "⚜ 운영자 — 다섯 직업 스킬을 모두 배운 것으로, 탭에서 골라 아무 칸에나 넣어 써 볼 수 있어요(궁극기는 금빛 칸)."), tabs); return w; })() : el("p", "sub", "1~3 은 처음부터. 4 · 5 · 6 · 궁극기는 레벨이 되면 골드를 내고 배워요. Lv " + C.lv + " · " + C.gold.toLocaleString() + " G"), el("b", null, "스킬 칸 — 배운 스킬을 끌어다 넣고, 밖으로 끌면 빠져요(눌러 고른 뒤 칸을 눌러도 돼요)"), bar, list, row(btn("닫기", () => { refreshFn = null; closePanel(); }, "ghost"))], true);
   }
   function backToTown() { watchBar(false); exitBar(false); A.watch = false; Dungeon.quit(); send({ t: "back" }); enterTown(); }
 
@@ -592,6 +607,10 @@ const APP = (() => {
     const D = KEYS.down; return [(D.right ? 1 : 0) - (D.left ? 1 : 0), (D.down ? 1 : 0) - (D.up ? 1 : 0), false];
   }
   function local(e) { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * VW, (e.clientY - r.top) / r.height * VH]; }
+  /* 차원의 문 누르기 — 던전 방 끝 문 · 마을 오른쪽 끝 던전 입구 (2026-10-27 "우측으로 완전히 가는 게 아니라 차원의 문을 ↑ 로 들어가거나 클릭해서") */
+  cv.addEventListener("pointerdown", (e) => { const [x, y] = local(e);
+    if (A.scene === "dungeon" && Dungeon.click(x, y)) { e.stopImmediatePropagation(); return; }
+    if (A.scene === "town" && $("panel").hidden) { const gx = TOWN_W - 70 - A.camX; if (Math.abs(x - gx) < 110 && y > 140 && y < Z1 + 10) { e.stopImmediatePropagation(); gateTalk(); } } });
   cv.addEventListener("pointerdown", (e) => { if (!touch && e.pointerType === "mouse") return; const [x, y] = local(e); if (x < VW * 0.5) { stick = { id: e.pointerId, ox: x, oy: y, x, y }; try { cv.setPointerCapture(e.pointerId); } catch (er) {} } });
   cv.addEventListener("pointermove", (e) => { if (stick && stick.id === e.pointerId) { const [x, y] = local(e); stick.x = x; stick.y = y; } });
   const lift = (e) => { if (stick && stick.id === e.pointerId) stick = null; };
@@ -601,7 +620,7 @@ const APP = (() => {
   const PADS = { none: [], town: [["말걸기", "talk", "right:3%;bottom:6%;width:13%;height:23.1%"], ["점프", "jump", "right:18%;bottom:5%;width:9%;height:16.0%"], ["가방", "bag", "right:3%;bottom:33%;width:8%;height:14.2%"], ["장비", "equip", "right:12%;bottom:33%;width:8%;height:14.2%"], ["스킬", "skills", "right:12%;bottom:52%;width:7%;height:12.4%"], ["채팅", "chat", "right:3%;bottom:52%;width:7%;height:12.4%"]],
     dungeon: [["공격", "atk", "right:3%;bottom:5%;width:14%;height:24.9%;font-size:17px"], ["점프", "jump", "right:19%;bottom:4%;width:8%;height:14.2%"], ["백스텝", "back", "right:28%;bottom:4%;width:7%;height:12.4%"], ["물약", "potion", "right:36%;bottom:4%;width:7%;height:12.4%"], ["마력", "mpot", "right:44%;bottom:4%;width:7%;height:12.4%;border-color:#4a7ac8"], ["회피", "roll", "right:3%;bottom:33%;width:8%;height:14.2%"], ["1", "s1", "right:19%;bottom:21%;width:7%;height:12.4%"], ["2", "s2", "right:12%;bottom:33%;width:7%;height:12.4%"], ["3", "s3", "right:3%;bottom:50%;width:7%;height:12.4%"], ["4", "s4", "right:27%;bottom:19%;width:7%;height:12.4%"], ["5", "s5", "right:20%;bottom:37%;width:7%;height:12.4%"], ["6", "s6", "right:12%;bottom:52%;width:7%;height:12.4%"], ["궁극", "ult", "right:3%;bottom:66%;width:8%;height:14.2%;border-color:#ffd36b"]] };
   function setPad(which) {
-    if (which === "dungeon") { const sk = Dungeon.SKILLS[(A.char && A.char.look && A.char.look.hero) || "kh"] || Dungeon.SKILLS.kh; const SL = (A.char && A.char.skillSlots) || [0, 1, 2, 3, 4, 5, 6]; PADS.dungeon.forEach((p) => { const slot = ["s1", "s2", "s3", "s4", "s5", "s6", "ult"].indexOf(p[1]); if (slot >= 0) p[0] = sk[SL[slot]] ? sk[SL[slot]].short : "—"; }); }
+    if (which === "dungeon") { const sk = A.me && A.me.op ? Dungeon.ALL_SKILLS : Dungeon.SKILLS[(A.char && A.char.look && A.char.look.hero) || "kh"] || Dungeon.SKILLS.kh; /* 운영자는 35개 중에서 */ const SL = (A.char && A.char.skillSlots) || [0, 1, 2, 3, 4, 5, 6]; PADS.dungeon.forEach((p) => { const slot = ["s1", "s2", "s3", "s4", "s5", "s6", "ult"].indexOf(p[1]); if (slot >= 0) p[0] = sk[SL[slot]] ? sk[SL[slot]].short : "—"; }); }
     const pad = $("pad"); pad.hidden = !touch; if (!touch) return;
     pad.replaceChildren(...PADS[which].map(([t, a, css]) => { const b = el("div", "tb", t); b.style.cssText = css; b.dataset.a = a;
       b.addEventListener("pointerdown", (e) => { e.preventDefault(); e.stopPropagation(); if (a === "chat") { $("chatIn").focus(); return; } KEYS.press(a, true); b.classList.add("on"); });
