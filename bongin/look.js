@@ -6,21 +6,29 @@
 const HEROES = [["kh", "강혁", "무사", "m"], ["hr", "혜린", "도사", "f"], ["ds", "대성", "수호자", "m"], ["je", "지은", "사수", "f"], ["mj", "무진", "자객", "m"]];
 const HERO_IMG = (() => { const V = ((document.currentScript && document.currentScript.src) || "").split("?v=")[1] || ""; const i = new Image(); i.src = "img/heroes5.png" + (V ? "?v=" + V : ""); return i; })();
 /* 동작 → 그림 칸 · 몸 가운데 자리(칼 · 활이 앞으로 뻗은 칸은 몸이 왼쪽에 있음) */
-const HERO_AX = { atk1: 0.38, atk2: 0.42, atk3: 0.34, fall: 0.5, dead: 0.5 };
+const HERO_AX = { atk1: 0.38, atk2: 0.42, atk3: 0.34, fall: 0.5, dead: 0.5, pUp: 0.5, pDown: 0.5 };
 function heroFrame(st, pose) {
-  if (st === "atk") return ["atk1", "atk2", "atk3"][pose.step | 0] || "atk1";
-  if (st === "airatk") return "atk2"; if (st === "cast" || st === "dash") return "atk3";
+  if (st === "atk") return ["atk1", "atk2", "atk3", "atk1"][pose.step | 0] || "atk1";
+  if (st === "airatk") return "atk2"; if (st === "cast") return "pUp"; if (st === "dash") return "pDown"; if (st === "backstep") return "hit"; // 스킬은 그 사람 기술 자세
   if (st === "walk" || st === "run") return Math.floor((pose.walk || 0) / Math.PI) % 2 ? "side2" : "side";
-  if (st === "jump") return "side2"; if (st === "hit") return "hit"; if (st === "fall" || st === "roll") return "fall";
+  if (st === "jump" || st === "sprint") return "side2"; if (st === "hit") return "hit"; if (st === "fall" || st === "roll") return "fall";
   if (st === "down" || st === "dead") return "dead"; if (st === "front") return "front";
   return "idle";
 }
 function heroOf(L) { const h = L && L.hero; return HEROES.some((x) => x[0] === h) ? h : (L && L.g === "f" ? "hr" : "kh"); }
-function drawHero(g, L, pose, sc) {
+/* 착용 모습 — gear = { w 무기 등급+1, b 몸 장비 최고 등급+1, acc 장신구 수, plus 강화 최고 } */
+const GEAR_COL = [null, "rgba(235,235,245,.85)", "rgba(90,165,255,.95)", "rgba(185,120,255,.95)", "rgba(255,205,70,1)"];
+function drawHero(g, L, pose, sc, opt) {
   const F = FR.heroes && FR.heroes[heroOf(L)]; if (!F || !HERO_IMG.complete || !HERO_IMG.naturalWidth) return false;
   const n = heroFrame(pose.st, pose), r = F[n] || F.idle || F.front, k = sc * 0.95, ax = HERO_AX[n] || 0.5;
   const bob = pose.st === "idle" ? Math.sin((pose.t || 0) * 3) * 1.2 : (pose.st === "walk" || pose.st === "run") ? -Math.abs(Math.sin(pose.walk || 0)) * 2 : 0;
-  g.drawImage(HERO_IMG, r[0], r[1], r[2], r[3], -r[2] * k * ax, -r[3] * k + 2 + bob, r[2] * k, r[3] * k);
+  const G = (opt && opt.gear) || null, X = -r[2] * k * ax, Y = -r[3] * k + 2 + bob, now = performance.now() / 1000;
+  if (G && G.plus >= 7) { g.save(); g.shadowColor = G.plus >= 10 ? "rgba(255,60,30,1)" : "rgba(255,120,40,.9)"; g.shadowBlur = (10 + Math.sin(now * 6) * 3) * sc * (G.plus >= 10 ? 1.6 : 1); g.drawImage(HERO_IMG, r[0], r[1], r[2], r[3], X, Y, r[2] * k, r[3] * k); g.restore(); } // 강화 불꽃
+  if (G && GEAR_COL[G.b]) { g.save(); g.shadowColor = GEAR_COL[G.b]; g.shadowBlur = (4 + G.b * 3) * sc; g.drawImage(HERO_IMG, r[0], r[1], r[2], r[3], X, Y, r[2] * k, r[3] * k); g.restore(); } // 몸 장비 빛
+  g.drawImage(HERO_IMG, r[0], r[1], r[2], r[3], X, Y, r[2] * k, r[3] * k);
+  if (G && G.acc) for (let i = 0; i < G.acc; i++) { // 장신구 — 몸 둘레를 도는 금빛 구슬
+    const a = now * 2.2 + i * Math.PI * 2 / G.acc, px = Math.cos(a) * 30 * sc, py = (-62 + Math.sin(a) * 9) * sc, front = Math.sin(a) > 0;
+    g.save(); g.globalAlpha = front ? 1 : 0.5; g.fillStyle = "rgba(255,225,120,.95)"; g.shadowColor = "rgba(255,200,60,1)"; g.shadowBlur = 8 * sc; g.beginPath(); g.arc(px, py, 3.2 * sc, 0, Math.PI * 2); g.fill(); g.restore(); }
   return true;
 }
 
@@ -62,7 +70,7 @@ function shade(hex, k) { // k < 0 어둡게, > 0 밝게
 
 function drawChar(g, L, pose, sc, opt) {
   L = L || LOOK.base("m"); pose = pose || { st: "idle", t: 0 }; opt = opt || {};
-  if (drawHero(g, L, pose, sc)) return; // 기본 캐릭터 그림(없으면 아래 코드 그림)
+  if (drawHero(g, L, pose, sc, opt)) return; // 기본 캐릭터 그림(없으면 아래 코드 그림)
   const st = pose.st, t = pose.t || 0, fem = L.g === "f", OUT = "#1a1012";
   const skin = LOOK.SKIN[L.skin] || LOOK.SKIN[0], hair = LOOK.HC[L.hc] || LOOK.HC[0], cloth = LOOK.OC[L.oc] || LOOK.OC[0], eyeC = LOOK.EC[L.ec] || LOOK.EC[0];
   const pants = "#2a2430", boot = "#3a2a1e";
