@@ -94,7 +94,7 @@ const APP = (() => {
   function preview(look, h, pose) { // 작은 캔버스에 캐릭터 — 걷는 모습을 계속 돌림
     const c = el("canvas", "pv"); c.width = h * 0.9 * 2; c.height = h * 1.15 * 2; c.style.width = h * 0.9 + "px"; c.style.height = h * 1.15 + "px";
     const x = c.getContext("2d"); let t = 0, alive = true;
-    const tick = () => { if (!c.isConnected) { if (alive && t > 1) return; } t += 1 / 60; x.setTransform(2, 0, 0, 2, 0, 0); x.clearRect(0, 0, c.width, c.height); x.save(); x.translate(h * 0.45, h * 1.1); drawChar(x, c.look || look, { st: pose || "idle", t, walk: t * 8 }, h / 120, { gear: c.gear }); x.restore(); requestAnimationFrame(tick); };
+    const tick = () => { if (!c.isConnected) { if (alive && t > 1) return; } t += 1 / 60; x.setTransform(2, 0, 0, 2, 0, 0); x.clearRect(0, 0, c.width, c.height); x.save(); x.translate(h * 0.45, h * 1.1); drawChar(x, c.look || look, { st: pose || "idle", t, walk: t * 8 }, h / 120, { gear: c.gear, op: c.op }); x.restore(); requestAnimationFrame(tick); };
     c.look = look; requestAnimationFrame(tick); return c;
   }
 
@@ -271,7 +271,7 @@ const APP = (() => {
     g.fillStyle = "rgba(0,0,0,.35)"; g.beginPath(); g.ellipse(x, P.z, 24, 7, 0, 0, Math.PI * 2); g.fill();
     const isOp = me ? A.me && A.me.op : P.op; if (isOp) Dungeon.gmAura(g, x, P.z + 2);
     g.save(); g.translate(x, P.z + 2); if (P.face < 0) g.scale(-1, 1); if (P.st === "sprint") { g.save(); g.globalAlpha = 0.3; g.translate(-34, 0); drawChar(g, look, { st: "sprint", t: P.t }, 1); g.restore(); }
-    drawChar(g, look, { st: P.st === "run" ? "run" : P.st === "walk" ? "walk" : P.st === "sprint" ? "sprint" : "idle", t: P.t, walk: P.walk }, 1, { gear: me ? A.char.gear : P.gear }); g.restore();
+    drawChar(g, look, { st: P.st === "run" ? "run" : P.st === "walk" ? "walk" : P.st === "sprint" ? "sprint" : "idle", t: P.t, walk: P.walk }, 1, { gear: me ? A.char.gear : P.gear, op: isOp }); g.restore();
     const party = A.party && A.party.members.some((m) => m.id === id);
     g.font = "700 12px 'Noto Sans KR', sans-serif"; g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.85)"; const label = (isOp ? "⚜운영자 " : "") + nick + (P.lv ? " Lv" + P.lv : ""); g.strokeText(label, x, P.z - 128); g.fillStyle = me ? "#ffe08a" : party ? "#7fe3ff" : "#fff"; g.fillText(label, x, P.z - 128);
     const B = A.bubbles[id]; if (B) { g.font = "600 13px 'Noto Sans KR', sans-serif"; const w = Math.min(260, g.measureText(B.text).width + 20); g.fillStyle = "rgba(255,255,255,.95)"; g.beginPath(); if (g.roundRect) g.roundRect(x - w / 2, P.z - 176, w, 28, 10); else g.rect(x - w / 2, P.z - 176, w, 28); g.fill(); g.fillStyle = "#1a1012"; g.fillText(B.text.slice(0, 30), x, P.z - 157); }
@@ -371,7 +371,7 @@ const APP = (() => {
     const eqSlot = (k, name) => { const it = C.inv.find((x) => x.uid === (C.equip || {})[k]); if (!it) { const e = el("div", "slot eqv-empty", name); return e; } return slot(it); };
     const lock = (name) => el("div", "slot eqv-lock", "🔒\n" + name);
     const left = el("div", "eqv-col"); ["weapon", "armor", "pants", "greave", "shoes"].forEach((k) => left.appendChild(eqSlot(k, SLOT_NAMES[k])));
-    const pv = preview(C.look, 150, "idle"); pv.gear = C.gear; const mid = el("div", "eqv-mid"); mid.appendChild(pv);
+    const pv = preview(C.look, 150, "idle"); pv.gear = C.gear; pv.op = !!(A.me && A.me.op); const mid = el("div", "eqv-mid"); mid.appendChild(pv);
     const right = el("div", "eqv-col"); ["gloves", "ring", "earring", "bracelet", "necklace"].forEach((k) => right.appendChild(eqSlot(k, SLOT_NAMES[k])));
     const body = el("div", "eqv-body"); body.append(left, mid, right);
     w.append(head, stat, body, el("p", "sub", "가방(오른쪽)에서 두 번 누르면 끼고, 여기서 두 번 누르면 빠져요. 몸 장비 등급에 따라 몸 둘레 빛, 무기 등급에 따라 칼 빛, 장신구는 금빛 구슬, +7 이상은 불꽃이 보여요(다른 사람에게도)."));
