@@ -1188,7 +1188,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610270248";
+  const BUILD = "202610270325";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -3894,13 +3894,18 @@ body.game-full { overflow: hidden; }
         s.fx.push({ boom: true, spr: "smoke", x: b.x, y: b.y, r: 20, c: "#7a3", size: 70, life: 0.4, dur: 0.4 });
         return;
       }
+      /* 상자를 깨면 아이템이 떨어진다 — "상자는 깨부수면 아이템이 드랍 되게" (2026-10-27). 주우면(닿거나 구슬 끌기 범위 + 40 안이면 끌려옴) 쓰인다 */
       const k = Math.floor(Math.random() * 3);
-      if (k === 0) { s.gems.forEach((m) => { m.pull = true; }); msg("자석 — 경험치를 다 끌어온다!"); }
-      else if (k === 1) {
+      s.items.push({ k: ["magnet", "bomb", "heal"][k], x: b.x, y: b.y, pop: 0.35 });
+      s.fx.push({ x: b.x, y: b.y, r: 30, c: "#ffe08a", life: 0.3 });
+      msg("상자에서 " + ["자석", "폭탄", "회복 물약"][k] + "이 떨어졌다 — 주워라!");
+    }
+    function useItem(m) {
+      if (m.k === "magnet") { s.gems.forEach((g0) => { g0.pull = true; }); msg("자석 — 경험치를 다 끌어온다!"); }
+      else if (m.k === "bomb") {
         s.foes.forEach((f) => { if (Math.abs(f.x - s.x) < W / 2 + 40 && Math.abs(f.y - s.y) < H / 2 + 40) { if (f.k === "boss") f.hp -= f.full * 0.15; else f.hp = 0; } });
         s.fx.push({ x: s.x, y: s.y, r: 140, c: "#ffd36b", life: 0.3 }, { x: s.x, y: s.y, r: 80, c: "#fff", life: 0.3 }); msg("폭탄 — 화면 안 잡귀를 모두 처치!");
-      } else { const heal = Math.round(s.max * 0.5); s.hp = Math.min(s.max, s.hp + heal); s.fx.push({ num: "+" + heal, heal: true, x: s.x, y: s.y - 30, life: 0.6 }); msg("회복 — 체력 " + heal + "!"); }
-      s.fx.push({ x: b.x, y: b.y, r: 30, c: "#ffe08a", life: 0.3 });
+      } else if (m.k === "heal") { const heal = Math.round(s.max * 0.5); s.hp = Math.min(s.max, s.hp + heal); s.fx.push({ num: "+" + heal, heal: true, x: s.x, y: s.y - 30, life: 0.6 }); msg("회복 — 체력 " + heal + "!"); }
     }
     /* 단계 통과 → 30초 휴식(남은 잡귀는 물러가고 구슬은 다 끌려옴) → 다음 단계 */
     function stageClear() {
@@ -4245,6 +4250,8 @@ body.game-full { overflow: hidden; }
       /* HP 포션 — 주우면 최대 체력의 40% 회복. 구슬 끌기 범위 + 40 안이면 끌려온다 */
       s.items = s.items.filter((m) => {
         const dx = s.x - m.x, dy = s.y - m.y, L = Math.hypot(dx, dy) || 1;
+        if (m.pop > 0) { m.pop -= dt; return true; } // 상자에서 막 튀어나옴
+        if (L < 24 && m.k && m.k !== "hp") { useItem(m); return false; }
         if (L < 24) { const heal = Math.round(s.max * 0.4); s.hp = Math.min(s.max, s.hp + heal); s.fx.push({ num: "+" + heal, heal: true, x: s.x, y: s.y - 30, life: 0.6 }); msg("HP 포션 — 체력 " + heal + " 회복!"); return false; }
         if (L < s.magnet + 40) { m.x += dx / L * 300 * dt; m.y += dy / L * 300 * dt; }
         return true;
@@ -4581,14 +4588,28 @@ body.game-full { overflow: hidden; }
           s.gems.forEach((m) => { if (gemTier(m.v) !== ti) return; const x = m.x + ox, y = m.y + oy, r = G[2]; if (x < -12 || y < -12 || x > W + 12 || y > H + 12) return; g.moveTo(x, y - r); g.lineTo(x + r, y); g.lineTo(x, y + r); g.lineTo(x - r, y); g.closePath(); });
           g.fill(); g.strokeStyle = G[1]; g.lineWidth = 1.6; g.stroke(); g.lineWidth = 1;
         });
-        s.items.forEach((m) => { // HP 포션 — 빨간 물약병, 둥실둥실 · 빛
-          const x = m.x + ox, y = m.y + oy + Math.sin(s.t * 4 + m.x) * 3;
-          g.fillStyle = "rgba(255,60,60,.25)"; g.beginPath(); g.arc(x, y, 18, 0, Math.PI * 2); g.fill();
+        s.items.forEach((m) => { // HP 포션 — 빨간 물약병, 둥실둥실 · 빛 / 상자 아이템 — 자석 · 폭탄 · 회복 물약
+          const x = m.x + ox, y = m.y + oy + Math.sin(s.t * 4 + m.x) * 3 - (m.pop > 0 ? Math.sin(m.pop / 0.35 * Math.PI) * 24 : 0);
+          if (m.k === "magnet" || m.k === "bomb") {
+            g.fillStyle = m.k === "magnet" ? "rgba(90,160,255,.28)" : "rgba(255,140,40,.28)"; g.beginPath(); g.arc(x, y, 18, 0, Math.PI * 2); g.fill();
+            g.lineCap = "round";
+            if (m.k === "magnet") { // 말굽 자석 — 빨강 몸 · 은빛 끝
+              g.strokeStyle = "#e0242c"; g.lineWidth = 6; g.beginPath(); g.arc(x, y - 1, 7, Math.PI, 0); g.moveTo(x - 7, y - 1); g.lineTo(x - 7, y + 6); g.moveTo(x + 7, y - 1); g.lineTo(x + 7, y + 6); g.stroke();
+              g.strokeStyle = "#e9eef5"; g.beginPath(); g.moveTo(x - 7, y + 6); g.lineTo(x - 7, y + 10); g.moveTo(x + 7, y + 6); g.lineTo(x + 7, y + 10); g.stroke();
+            } else { // 폭탄 — 검은 공 · 심지 불꽃
+              g.fillStyle = "#1b1e24"; g.strokeStyle = "#fff"; g.lineWidth = 1.5; g.beginPath(); g.arc(x, y + 2, 9, 0, Math.PI * 2); g.fill(); g.stroke();
+              g.strokeStyle = "#c9a24a"; g.lineWidth = 2; g.beginPath(); g.moveTo(x + 5, y - 5); g.quadraticCurveTo(x + 9, y - 12, x + 4, y - 14); g.stroke();
+              g.fillStyle = Math.sin(s.t * 20) > 0 ? "#ffd36b" : "#ff7a2a"; g.beginPath(); g.arc(x + 4, y - 15, 3, 0, Math.PI * 2); g.fill();
+              g.fillStyle = "rgba(255,255,255,.6)"; g.beginPath(); g.arc(x - 3, y - 1, 2.4, 0, Math.PI * 2); g.fill();
+            }
+            g.lineCap = "butt"; g.lineWidth = 1; return;
+          }
+          g.fillStyle = m.k === "heal" ? "rgba(60,220,120,.25)" : "rgba(255,60,60,.25)"; g.beginPath(); g.arc(x, y, 18, 0, Math.PI * 2); g.fill();
           g.fillStyle = "#e9eef5"; g.fillRect(x - 3.5, y - 15, 7, 7);
           g.fillStyle = "#8a5a2b"; g.fillRect(x - 4.5, y - 18, 9, 4);
-          g.fillStyle = "#e0242c"; g.strokeStyle = "#fff"; g.lineWidth = 1.5; g.beginPath(); g.arc(x, y, 9, 0, Math.PI * 2); g.fill(); g.stroke(); g.lineWidth = 1;
+          g.fillStyle = m.k === "heal" ? "#1fa35a" : "#e0242c"; g.strokeStyle = "#fff"; g.lineWidth = 1.5; g.beginPath(); g.arc(x, y, 9, 0, Math.PI * 2); g.fill(); g.stroke(); g.lineWidth = 1;
           g.fillStyle = "rgba(255,255,255,.75)"; g.beginPath(); g.arc(x - 3, y - 3, 2.6, 0, Math.PI * 2); g.fill();
-          g.fillStyle = "#fff"; g.font = "800 9px sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("HP", x, y + 2);
+          g.fillStyle = "#fff"; g.font = "800 9px sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(m.k === "heal" ? "+" : "HP", x, y + 2);
         });
         s.fx.forEach((x) => {
           if (x.corpse) {
@@ -4864,7 +4885,7 @@ body.game-full { overflow: hidden; }
       renderSkills(); resume(); msg("업데이트 적용 — 이어서!");
       return true;
     }
-    if (/[?&]bmctest=1/.test(location.search)) window.__bmcGame = { get s() { return s; }, cast: cast, startStage: startStage, stageLen: stageLen, W: () => W, H: () => H, UPS: UPS, SK: SK, TEST_MUL: TEST_MUL, openBox: openBox, dash: dash, spawn: spawn, bullet: bullet, hazard: hazard, showPicks: showPicks };
+    if (/[?&]bmctest=1/.test(location.search)) window.__bmcGame = { get s() { return s; }, cast: cast, startStage: startStage, stageLen: stageLen, W: () => W, H: () => H, UPS: UPS, SK: SK, TEST_MUL: TEST_MUL, openBox: openBox, useItem: useItem, dash: dash, spawn: spawn, bullet: bullet, hazard: hazard, showPicks: showPicks };
     return {
       /* 다른 메뉴로 가면 멈춘다. 처음 들어오면(또는 다른 사람이 들어오면) 시작 안내 */
       render() {
