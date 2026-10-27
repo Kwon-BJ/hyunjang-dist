@@ -35,9 +35,12 @@ const APP = (() => {
       if (A.me && A.char && !A.solo && (A.re || 0) < 8) { // 잠깐 끊김(휴대폰 화면 꺼짐 · 망 · 업데이트) — 저절로 다시 이음
         A.re = (A.re || 0) + 1; toast("연결이 잠깐 끊겨 다시 잇는 중… (" + A.re + ")", "bad"); setTimeout(connect, Math.min(8000, 800 * 2 ** (A.re - 1))); return; } if (!A.solo) fail(A.me ? "서버와 연결이 끊겼어요." : "로그인을 확인하지 못했어요. 병무청 홈페이지에 다시 로그인해 주세요."); };
   }
+  /* 새 판 확인 — 올린 판 번호(index.html 의 ?v=)가 지금 것과 다르면 새로고침 */
+  function newBuild() { if (!V) return; fetch("./?nb=" + Date.now(), { cache: "no-store" }).then((r) => r.text()).then((h) => { const m2 = h.match(/app.js?v=(d+)/); if (m2 && m2[1] !== V) { toast("새 판으로 바꾸는 중…", "good"); setTimeout(() => location.reload(), 600); } }).catch(() => {}); }
   function send(m) { if (ws && wsOpen) ws.send(JSON.stringify(m)); }
   function fail(text) { panel([el("h2", null, "연결"), el("p", null, text), row(btn("다시 연결", () => { panel([el("p", null, "연결하는 중…")]); connect(); }), btn("병무청 홈페이지", () => { location.href = "../byeongmu/"; }, "ghost"))]); A.scene = "menu"; }
   function on(m) {
+    if (m.t === "hello" && A.re) newBuild(); // 다시 이었는데 새 판이 올라와 있으면 저절로 새로고침(업데이트)
     if (m.t === "hello" && A.re && A.char && m.char) { // 다시 이음 — 하던 곳으로
       A.re = 0; A.me = m.me; A.char = m.char; $("hudOp").hidden = !m.me.op; toast("다시 연결됐어요.", "good");
       if (A.scene === "town") { A.others = {}; enterTown(); } else if (A.scene === "dungeon" && A.run && !A.watch) send({ t: "dresume", run: A.run }); else if (A.scene !== "dungeon") charScreen();
@@ -158,7 +161,7 @@ const APP = (() => {
     return box;
   }
   let refreshFn = null;
-  function refresh() { if (A.scene === "menu" && A.char && !$("panel").hidden && $("panelIn").querySelector(".cinfo")) return charScreen(); if (refreshFn) refreshFn(); hudText(); }
+  function refresh() { if (A.scene === "menu" && A.char && !$("panel").hidden && $("panelIn").querySelector(".cinfo")) return charScreen(); if (refreshFn) refreshFn(); if (!$("bagSide").hidden) bagPanel(); if (!$("equipSide").hidden) equipPanel(); hudText(); }
 
   /* ── 키 설정 ── */
   function keyPanel() {
@@ -205,7 +208,8 @@ const APP = (() => {
       if (ax) H.face = Math.sign(ax);
       H.st = H.dashT > 0 ? "sprint" : ax || az ? (run ? "run" : "walk") : "idle"; if (ax || az) H.walk += dt * (run ? 14 : 9);
       if (KEYS.take("talk")) talkNear();
-      if (KEYS.take("bag")) bagPanel();
+      if (KEYS.take("bag")) { const S = $("bagSide"); if (S.hidden) bagPanel(); else S.hidden = true; }
+      if (KEYS.take("equip")) { const E = $("equipSide"); if (E.hidden) equipPanel(); else E.hidden = true; }
       if (H.x > TOWN_W - 60) { H.x = TOWN_W - 140; gateTalk(); }
     }
     if (KEYS.take("chat")) $("chatIn").focus();
@@ -354,7 +358,7 @@ const APP = (() => {
     if (it.plus) b.appendChild(el("span", "pl", "+" + it.plus));
     if (it.n > 1) b.appendChild(el("span", "ct", String(it.n)));
     if (bagUI.sel === it.uid) b.classList.add("sel");
-    b.onclick = () => { bagUI.sel = it.uid; bagPanel(); };
+    b.onclick = () => { bagUI.sel = it.uid; if (!$("bagSide").hidden) bagPanel(); if (!$("equipSide").hidden) equipPanel(); };
     b.ondblclick = () => { if (isGear(it.key)) send({ t: "equip", uid: it.uid }); }; // 두 번 누르면 끼기 · 빼기
     return b;
   }
@@ -370,22 +374,32 @@ const APP = (() => {
     const pv = preview(C.look, 150, "idle"); pv.gear = C.gear; const mid = el("div", "eqv-mid"); mid.appendChild(pv);
     const right = el("div", "eqv-col"); ["gloves", "ring", "earring", "bracelet", "necklace"].forEach((k) => right.appendChild(eqSlot(k, SLOT_NAMES[k])));
     const body = el("div", "eqv-body"); body.append(left, mid, right);
-    w.append(head, stat, body, el("p", "sub", "장비는 「가방」 탭에서 두 번 누르면 끼고 빠져요. 몸 장비 등급에 따라 몸 둘레 빛, 무기 등급에 따라 칼 빛, 장신구는 금빛 구슬, +7 이상은 불꽃이 보여요(다른 사람에게도)."));
+    w.append(head, stat, body, el("p", "sub", "가방(오른쪽)에서 두 번 누르면 끼고, 여기서 두 번 누르면 빠져요. 몸 장비 등급에 따라 몸 둘레 빛, 무기 등급에 따라 칼 빛, 장신구는 금빛 구슬, +7 이상은 불꽃이 보여요(다른 사람에게도)."));
     return w;
   }
+  /* 장비 — 왼쪽 창(가방과 따로, 같이 열 수 있음). 칸을 누르면 아래 정보 · 두 번 누르면 빼기 */
+  function equipPanel() {
+    const C = A.char, E = $("equipSide"); if (!C) return;
+    const top = el("div", "bs-top"); top.appendChild(el("div", "bs-title", "🗡 장비"));
+    const x = el("button", "bs-x", "✕"); x.onclick = () => { E.hidden = true; }; top.appendChild(x);
+    const body = el("div", "bs-list"); body.appendChild(equipView());
+    const info = el("div", "bs-info"), it = C.inv.find((o) => o.uid === bagUI.sel && isEq(o.uid));
+    if (it) { const I = A.items[it.key], txt = el("div"); txt.style.flex = "1"; const nm = el("div", "nm", itemName(it)); nm.style.color = GRADE[I.grade]; txt.append(nm, el("small", null, statText(it) + " · 두 번 누르면 빼기"));
+      const s2 = el("div", "slot g" + (I.grade || 0)); s2.style.width = "48px"; s2.appendChild(icon(it.key, 48)); info.append(s2, txt, btn("빼기", () => send({ t: "equip", uid: it.uid }), "tiny")); }
+    else info.appendChild(el("small", null, "칸을 누르면 정보 · 두 번 누르면 빼기 · 가방에서 두 번 누르면 끼기"));
+    E.replaceChildren(top, body, info); E.hidden = false;
+  }
   function bagPanel() {
-    refreshFn = bagPanel; const C = A.char, S = $("bagSide"); if (!C) return;
+    const C = A.char, S = $("bagSide"); if (!C) return;
     const sortK = { kind: () => 0, grade: (a, b) => A.items[b.key].grade - A.items[a.key].grade, plus: (a, b) => (b.plus || 0) - (a.plus || 0) }[bagUI.sort];
-    const tabs = el("div", "bs-top");
-    [["bag", "🎒 가방"], ["equip", "🗡 장비"]].forEach(([k, n]) => { const b = el("button", "bs-tab" + (bagUI.tab === k ? " on" : ""), n); b.onclick = () => { bagUI.tab = k; bagPanel(); }; tabs.appendChild(b); });
-    const x = el("button", "bs-x", "✕"); x.onclick = () => { refreshFn = null; S.hidden = true; }; tabs.appendChild(x);
+    bagUI.tab = "bag"; const tabs = el("div", "bs-top"); tabs.appendChild(el("div", "bs-title", "🎒 가방"));
+    const x = el("button", "bs-x", "✕"); x.onclick = () => { S.hidden = true; }; tabs.appendChild(x);
     const sel = document.createElement("select");
     [["kind", "종류순"], ["grade", "등급순"], ["plus", "강화순"]].forEach(([v, n]) => { const o = document.createElement("option"); o.value = v; o.textContent = n; sel.appendChild(o); });
     sel.value = bagUI.sort; sel.onchange = () => { bagUI.sort = sel.value; bagPanel(); };
     const bar = el("div", "bs-bar"); bar.append(el("span", "bs-cnt", "▦ " + C.inv.length + " / " + BAG_MAX + "   ·   " + C.gold.toLocaleString() + " G"), sel);
     const list = el("div", "bs-list"), rail = el("div", "bs-rail");
-    const show = bagUI.tab === "equip" ? [] : C.inv;
-    if (bagUI.tab === "equip") list.appendChild(equipView());
+    const show = C.inv;
     const all = el("button"); all.innerHTML = "<b>▦</b>" + show.length; all.onclick = () => { list.scrollTop = 0; }; rail.appendChild(all);
     KINDS.forEach(([k, name, ic]) => {
       const items = show.filter((it) => (GROUP[A.items[it.key].kind] || A.items[it.key].kind) === k).sort(sortK); if (!items.length) return;
@@ -396,8 +410,7 @@ const APP = (() => {
       sec.append(head, grid); list.appendChild(sec);
       const rb = el("button"); rb.innerHTML = "<b>" + ic + "</b>" + items.length; rb.onclick = () => sec.scrollIntoView({ behavior: "smooth", block: "start" }); rail.appendChild(rb);
     });
-    if (!show.length && bagUI.tab !== "equip") list.appendChild(el("p", "sub", "가방이 비었어요"));
-    if (bagUI.tab === "equip") rail.hidden = true;
+    if (!show.length) list.appendChild(el("p", "sub", "가방이 비었어요"));
     const info = el("div", "bs-info"), it = C.inv.find((o) => o.uid === bagUI.sel);
     if (it) {
       const I = A.items[it.key], eq = isEq(it.uid), txt = el("div"); txt.style.flex = "1";
@@ -443,6 +456,7 @@ const APP = (() => {
     b.replaceChildren(btn("👁 다른 판 보기", () => send({ t: "op", a: "list" }), "tiny"), btn("관전 나가기", () => { watchBar(false); backToTown(); }, "tiny ghost"));
   }
   function goDungeon(m, watch, gm) {
+    $("bagSide").hidden = true; $("equipSide").hidden = true;
     watchBar(!!watch); exitBar(!watch); A.run = watch ? null : m.run;
     closePanel(); A.scene = "dungeon"; A.reward = null; A.watch = !!watch; $("hud").hidden = true; $("partyBox").hidden = true; setPad(watch ? "none" : "dungeon");
     const C = A.char, party = watch || gm || (m.members && m.members.length > 1) ? { host: m.host, members: m.members } : null;
@@ -494,9 +508,9 @@ const APP = (() => {
   }
   function towerPanel(m) { exitBar(false);
     if (m.view) return panel([el("h2", null, "무한의 탑 순위표"), m.my ? el("p", null, "내 최고 — " + m.my.floor + "층 · " + m.my.score.toLocaleString() + "점") : el("p", "sub", "아직 도전 기록이 없어요"), rankTable(m.top, A.me.id), row(btn("도전하기", () => send({ t: "twrStart" })), btn("닫기", closePanel, "ghost"))], true);
-    const lines = [el("h1", null, (m.floor || 0) + "층"), el("p", "sub", "무한의 탑 — 1층부터 99층까지, 층마다 몬스터가 강해져요")];
+    const lines = [el("h1", null, (m.floor || 0) + "층"), el("p", "sub", "무한의 탑 — 1층부터 99층까지, 층마다 몬스터가 강해지고 보상(골드 · 경험치)도 커져요 · 10층마다 상자")];
     if (m.err) lines.push(el("p", "reward", m.err));
-    else { lines.push(el("div", "grade", (m.score || 0).toLocaleString() + "점")); lines.push(el("p", "reward", "처치 " + m.kills + " · " + Math.floor(m.sec / 60) + "분 " + (m.sec % 60) + "초 · 보상 " + m.gold + " G · 경험치 " + m.exp + (m.best ? " · 🎉 내 최고 기록!" : "") + (m.rank ? " · 순위 " + m.rank + "위" : ""))); }
+    else { lines.push(el("div", "grade", (m.score || 0).toLocaleString() + "점")); lines.push(el("p", "reward", "처치 " + m.kills + " · " + Math.floor(m.sec / 60) + "분 " + (m.sec % 60) + "초 · 보상 " + m.gold.toLocaleString() + " G · 경험치 " + m.exp.toLocaleString() + (m.box && m.box.length ? " · 🎁 " + m.box.join(", ") : "") + (m.best ? " · 🎉 내 최고 기록!" : "") + (m.rank ? " · 순위 " + m.rank + "위" : ""))); }
     lines.push(el("b", null, "순위표"), rankTable(m.top, A.me.id), row(btn("다시 도전", () => { Dungeon.quit(); send({ t: "twrStart" }); }), btn("마을로", backToTown, "ghost")));
     panel(lines, true);
   }
@@ -526,7 +540,7 @@ const APP = (() => {
       b.addEventListener("pointerdown", (e) => { e.preventDefault(); e.stopPropagation(); if (a === "chat") { $("chatIn").focus(); return; } KEYS.press(a, true); b.classList.add("on"); });
       const up = () => { KEYS.press(a, false); b.classList.remove("on"); }; b.addEventListener("pointerup", up); b.addEventListener("pointercancel", up); b.addEventListener("pointerleave", up); return b; }));
   }
-  $("hudOp").onclick = () => opPanel(null); $("hudBag").onclick = bagPanel; $("hudKeys").onclick = keyPanel; $("hudOut").onclick = () => { send({ t: "back" }); charScreen(); };
+  $("hudOp").onclick = () => opPanel(null); $("hudBag").onclick = () => { const S = $("bagSide"); if (S.hidden) bagPanel(); else S.hidden = true; }; $("hudEquip").onclick = () => { const E = $("equipSide"); if (E.hidden) equipPanel(); else E.hidden = true; }; $("hudKeys").onclick = keyPanel; $("hudOut").onclick = () => { send({ t: "back" }); charScreen(); };
 
   /* ── 한 틀 ── */
   let last = 0;
