@@ -111,7 +111,7 @@ const Dungeon = (() => {
          { name: "화염 회오리", short: "회오리", cd: 9, fr: "kh_ring", kind: "aura", dur: 2, tick: 0.2, r: 140, dmg: 9, size: 320, spin: 9 },
          { name: "올려베기", short: "올려", cd: 5, fr: "kh_wave", kind: "slam", range: 230, dmg: 36, size: 260 },
          { name: "검기 난무", short: "난무", cd: 6, fr: "kh_wave", kind: "shot", n: 3, spd: 900, life: 0.55, dmg: 22, type: "stagger", size: 120 },
-         { name: "적염 강림", short: "궁극", cd: 45, fr: "kh_ring", kind: "ult", multi: [{ kind: "zone", fr: "kh_ring", at: 0, r: 620, dur: 2.5, tick: 0.25, dmg: 30, size: 900, spin: 4 }, { kind: "slam", fr: "kh_wave", range: 500, dmg: 80, size: 420 }] }],
+         { name: "적염 강림", short: "궁극", cd: 45, fr: "kh_ring", kind: "ult", multi: [{ kind: "zone", fr: "kh_ring", at: 260, r: 620, dur: 2.5, tick: 0.25, dmg: 30, size: 900, spin: 4 }, { kind: "slam", fr: "kh_wave", range: 500, dmg: 80, size: 420 }] }],
     hr: [{ name: "부적 날리기", short: "부적", cd: 3, fr: "hr_tali", kind: "shot", n: 3, spd: 620, life: 0.9, dmg: 20, type: "stagger", size: 90 },
          { name: "뇌전", short: "뇌전", cd: 7, fr: "hr_bolt", kind: "strike", n: 3, range: 560, dmg: 46, type: "launch", size: 190 },
          { name: "팔괘진", short: "팔괘", cd: 9, fr: "hr_bagua", kind: "zone", at: 0, r: 160, dur: 4, tick: 0.35, dmg: 12, size: 300, spin: 1.5 },
@@ -139,7 +139,7 @@ const Dungeon = (() => {
          { name: "연환 습격", short: "연환", cd: 3, fr: "mj_shadow", kind: "blink", range: 420, dmg: 30, size: 180 },
          { name: "그림자 분신", short: "분신", cd: 9, fr: "mj_shadow", kind: "aura", dur: 3, tick: 0.25, r: 120, dmg: 10, size: 240, spin: 0 },
          { name: "독 표창", short: "독표", cd: 5, fr: "mj_star", kind: "shot", n: 5, spd: 900, life: 0.6, dmg: 14, type: "stagger", size: 70 },
-         { name: "흑룡 난무", short: "궁극", cd: 45, fr: "mj_shadow", kind: "ult", multi: [{ kind: "strike", fr: "mj_shadow", n: 10, range: 950, dmg: 65, type: "launch", size: 230 }, { kind: "zone", fr: "mj_poison", at: 0, r: 480, dur: 2.5, tick: 0.3, dmg: 16, size: 700, spin: 0 }] }],
+         { name: "흑룡 난무", short: "궁극", cd: 45, fr: "mj_shadow", kind: "ult", multi: [{ kind: "strike", fr: "mj_shadow", n: 10, range: 950, dmg: 65, type: "launch", size: 230 }, { kind: "zone", fr: "mj_poison", at: 240, r: 480, dur: 2.5, tick: 0.3, dmg: 16, size: 700, spin: 0 }] }],
   };
   const ACTS = ["s1", "s2", "s3", "s4", "s5", "s6", "ult"];
   /* 운영자는 다섯 직업 스킬을 모두 — "나는 모든 스킬을 배울 수 있고 쓸 수 있게, 모든 캐릭터의 스킬을 써 봐야 어떤 문제가 있는지 안다" (2026-10-27).
@@ -334,9 +334,9 @@ const Dungeon = (() => {
     if (sk.kind === "ult") { S.flash = 0.5; shake = 0.7; if (S.ghost) banner("궁극기 — " + sk.name + "!"); S.hero.inv = Math.max(S.hero.inv, 1); sk.multi.forEach((m) => cast(m, true)); return; } // 궁극기 — 여러 재주를 한 번에
     const H = S.hero, near = (r) => S.foes.filter((f) => f.st !== "dead" && Math.abs(f.x - H.x) < r).concat(pvpFoes().filter((p) => Math.abs(p.x - H.x) < r)).sort((a, b) => Math.abs(a.x - H.x) - Math.abs(b.x - H.x));
     if (sk.kind === "shot") { H.st = "cast"; H.t = 0; const n = sk.n || 1; for (let k = 0; k < n; k++) S.shots.push({ x: H.x + H.face * 40, z: clamp(H.z + (k - (n - 1) / 2) * 34, Z0, Z1), vx: H.face * sk.spd, t: sk.life, hit: [], face: H.face, sk }); }
-    else if (sk.kind === "aura") { S.zones.push({ follow: true, x: H.x, z: H.z, t: sk.dur, tt: 0, sk }); H.st = "cast"; H.t = 0.1; }
-    else if (sk.kind === "zone") { S.zones.push({ x: H.x + H.face * sk.at, z: H.z, t: sk.dur, tt: 0, sk }); H.st = "cast"; H.t = 0; }
-    else if (sk.kind === "dash") { H.st = "dash"; H.t = 0; H.inv = 0.4; H.hit = []; H.dashDmg = sk.dmg; addFx({ k: "hsk", fr: sk.fr, ic: sk.ic, x: H.x + H.face * 150, y: H.z - 30, t: 0.5, d: 0.5, s: 330, flip: H.face < 0 }); }
+    else if (sk.kind === "aura") { S.zones.push({ follow: true, x: H.x, z: H.z, t: sk.dur, tt: 0, sk, face: H.face }); H.st = "cast"; H.t = 0.1; }
+    else if (sk.kind === "zone") { S.zones.push({ x: H.x + H.face * sk.at, z: H.z, t: sk.dur, tt: 0, sk, face: H.face }); H.st = "cast"; H.t = 0; }
+    else if (sk.kind === "dash") { H.st = "dash"; H.t = 0; H.inv = 0.4; H.hit = []; H.dashDmg = sk.dmg; H.dashFx = { k: "hsk", fr: sk.fr, ic: sk.ic, x: H.x + H.face * 60, y: H.z - 30, t: 0.5, d: 0.5, s: 330, flip: H.face < 0 }; addFx(H.dashFx); } // 돌진 불꽃은 캐릭터를 따라감(예전엔 처음 자리에 남아 뒤에 보임)
     else if (sk.kind === "strike") { H.st = "cast"; H.t = 0; near(sk.range).slice(0, sk.n).forEach((f) => { addFx({ k: "hsk", fr: sk.fr, ic: sk.ic, x: f.x, y: f.z - f.h - 70, t: 0.45, d: 0.45, s: sk.size }); hitFoe(f, sk.dmg, sk.type, Math.sign(f.x - H.x) || H.face); }); }
     else if (sk.kind === "blink") { const f = near(sk.range)[0]; addFx({ k: "hsk", fr: sk.fr, ic: sk.ic, x: H.x, y: H.z - 50, t: 0.4, d: 0.4, s: sk.size, flip: H.face < 0 });
       if (f) { const side = f.x >= H.x ? 1 : -1; H.x = clamp(f.x + side * (f.D.w + 40), 30, ROOM - 30); H.z = f.z; H.face = -side; hitFoe(f, sk.dmg, "launch", -side); addFx({ k: "hsk", fr: sk.fr, ic: sk.ic, x: H.x, y: H.z - 50, t: 0.4, d: 0.4, s: sk.size, flip: H.face < 0 }); }
@@ -384,7 +384,7 @@ const Dungeon = (() => {
     if (S.skBuf) { const i = S.skBuf.i, sk = SKILL[i], ready = free || H.st === "atk" || (H.st === "cast" && H.t >= 0.12) || H.st === "sprint";
       if (ready && grounded && S.cd[i] <= 0) { if (H.mp < mpOf(i)) { S.skBuf = null; if (!(S.cdSay > 0)) { num(H.x, H.z - H.h - 140, "마력 부족", "#7fb7ff"); S.cdSay = 0.6; } } else { H.mp -= mpOf(i); S.cd[i] = sk.cd; H.queued = false; S.skBuf = null; cast(sk); } } else if ((S.skBuf.t -= dt) <= 0) S.skBuf = null; }
     if (H.st === "dash") {
-      H.x += H.face * 1150 * dt;
+      H.x += H.face * 1150 * dt; if (H.dashFx) H.dashFx.x = H.x + H.face * 60;
       S.foes.forEach((f) => { if (!H.hit.includes(f) && Math.abs(f.x - H.x) < 60 + f.D.w * 0.5 && Math.abs(f.z - H.z) < 45) { H.hit.push(f); hitFoe(f, H.dashDmg || 28, "launch", H.face); } });
       pvpFoes().forEach((r) => { if (!H.hit.includes(r) && Math.abs(r.x - H.x) < 75 && Math.abs(r.z - H.z) < 45) { H.hit.push(r); hitPlayer(r, H.dashDmg || 28, "launch", H.face); } });
       if (H.t >= 0.28) { H.st = "idle"; H.vx = 0; }
@@ -688,7 +688,7 @@ const Dungeon = (() => {
       else { g.beginPath(); g.ellipse(t.x - cx, t.z, t.r, t.r * 0.42, 0, 0, Math.PI * 2); g.fill(); g.stroke(); g.fillStyle = "rgba(255,50,40,.35)"; g.beginPath(); g.ellipse(t.x - cx, t.z, t.r * p, t.r * 0.42 * p, 0, 0, Math.PI * 2); g.fill(); }
     });
     const H = S.hero;
-    S.zones.forEach((zn) => drawHsk(g, zn.sk, zn.sk.fr, zn.x - cx, zn.z - 30 - (zn.follow ? (zn.who || H).h || 0 : 0), zn.sk.size, false, Math.min(1, zn.t / 0.3) * 0.95, zn.sk.spin ? S.t * zn.sk.spin : 0, (zn.sk.dur || 1) - zn.t, true));
+    S.zones.forEach((zn) => drawHsk(g, zn.sk, zn.sk.fr, zn.x - cx, zn.z - 30 - (zn.follow ? (zn.who || H).h || 0 : 0), zn.sk.size, !zn.sk.spin && zn.face < 0, Math.min(1, zn.t / 0.3) * 0.95, zn.sk.spin ? S.t * zn.sk.spin : 0, (zn.sk.dur || 1) - zn.t, true));
     const bodies = S.foes.map((f) => [f.z, () => drawFoe(g, f, cx)]);
     if (!C.watch) bodies.push([H.z + 0.1, () => drawPerson(g, H, C.look, cx, true, C.party ? C.nick : "")]);
     for (const id in S.remote) { const r = S.remote[id]; bodies.push([r.z, () => drawPerson(g, r, r.look, cx, false, r.nick)]); }
@@ -729,7 +729,8 @@ const Dungeon = (() => {
     let k = Math.floor(Math.max(0, age || 0) * 10); k = loop ? k % V.n : Math.min(V.n - 1, k);
     const sc = size * 1.35 / Math.max(V.w, V.h), w = V.w * sc, h = V.h * sc;
     g.save(); g.globalCompositeOperation = "lighter"; g.globalAlpha *= clamp(alpha, 0, 1); g.translate(x, y); if (flip) g.scale(-1, 1);
-    g.drawImage(I, (k % V.cols) * V.w, Math.floor(k / V.cols) * V.h, V.w, V.h, -w / 2, -h / 2, w, h); g.restore();
+    const ox = (FR.sfxOx && FR.sfxOx[ic]) || 0; // 영상 속 효과가 비켜난 만큼 되돌림
+    g.drawImage(I, (k % V.cols) * V.w, Math.floor(k / V.cols) * V.h, V.w, V.h, -w / 2 - ox * w, -h / 2, w, h); g.restore();
   }
   function skIcon(g, sk, x, y, size, alpha) { // 스킬 아이콘 — 새 그림(ui2)이 있으면 그것, 없으면 예전 효과 그림
     const r = FR.ui2 && FR.ui2[sk.ic]; if (!r || !IMG.ui2.complete || !IMG.ui2.naturalWidth) return centered(g, IMG.hsk, FR.hsk[sk.fr], x, y, size, false, alpha);
