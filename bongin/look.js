@@ -4,7 +4,7 @@
 "use strict";
 /* 기본 캐릭터 — 연병장 다섯 명. 내 캐릭터는 이 중 하나의 모습(look.hero) */
 const HEROES = [["kh", "강혁", "무사", "m"], ["hr", "혜린", "도사", "f"], ["ds", "대성", "수호자", "m"], ["je", "지은", "사수", "f"], ["mj", "무진", "자객", "m"]];
-const HERO_IMG = (() => { const V = ((document.currentScript && document.currentScript.src) || "").split("?v=")[1] || ""; const i = new Image(); i.src = "img/heroes5.png" + (V ? "?v=" + V : ""); return i; })();
+const HERO_IMG = (() => { const V = ((document.currentScript && document.currentScript.src) || "").split("?v=")[1] || ""; const i = new Image(); i.src = "img/heroes5.webp" + (V ? "?v=" + V : ""); return i; })();
 /* 동작 → 그림 칸 · 몸 가운데 자리(칼 · 활이 앞으로 뻗은 칸은 몸이 왼쪽에 있음) */
 const HERO_AX = { atk1: 0.38, atk2: 0.42, atk3: 0.34, fall: 0.5, dead: 0.5, pUp: 0.5, pDown: 0.5 };
 function heroFrame(st, pose) {
@@ -18,13 +18,22 @@ function heroFrame(st, pose) {
 function heroOf(L) { const h = L && L.hero; return HEROES.some((x) => x[0] === h) ? h : (L && L.g === "f" ? "hr" : "kh"); }
 /* 착용 모습 — gear = { w 무기 등급+1, b 몸 장비 최고 등급+1, acc 장신구 수, plus 강화 최고 } */
 const GEAR_COL = [null, "rgba(235,235,245,.85)", "rgba(90,165,255,.95)", "rgba(185,120,255,.95)", "rgba(255,205,70,1)"];
+const GLOW = new Map();
+function glowFrame(r, col, blur) { // 캐릭터 한 칸의 빛 테두리를 캔버스로 만들어 둠
+  const key = r.join() + col + blur; let c = GLOW.get(key); if (c) return c;
+  const pad = Math.ceil(blur * 2); c = document.createElement("canvas"); c.width = r[2] + pad * 2; c.height = r[3] + pad * 2;
+  const x = c.getContext("2d"); x.shadowColor = col; x.shadowBlur = blur; x.drawImage(HERO_IMG, r[0], r[1], r[2], r[3], pad, pad, r[2], r[3]);
+  x.globalCompositeOperation = "destination-out"; x.shadowBlur = 0; x.drawImage(HERO_IMG, r[0], r[1], r[2], r[3], pad, pad, r[2], r[3]); // 몸은 빼고 빛만
+  c.pad = pad; if (GLOW.size > 300) GLOW.clear(); GLOW.set(key, c); return c;
+}
 function drawHero(g, L, pose, sc, opt) {
   const F = FR.heroes && FR.heroes[heroOf(L)]; if (!F || !HERO_IMG.complete || !HERO_IMG.naturalWidth) return false;
   const n = heroFrame(pose.st, pose), r = F[n] || F.idle || F.front, k = sc * 0.95, ax = HERO_AX[n] || 0.5;
   const bob = pose.st === "idle" ? Math.sin((pose.t || 0) * 3) * 1.2 : (pose.st === "walk" || pose.st === "run") ? -Math.abs(Math.sin(pose.walk || 0)) * 2 : 0;
   const G = (opt && opt.gear) || null, X = -r[2] * k * ax, Y = -r[3] * k + 2 + bob, now = performance.now() / 1000;
-  if (G && G.plus >= 7) { g.save(); g.shadowColor = G.plus >= 10 ? "rgba(255,60,30,1)" : "rgba(255,120,40,.9)"; g.shadowBlur = (10 + Math.sin(now * 6) * 3) * sc * (G.plus >= 10 ? 1.6 : 1); g.drawImage(HERO_IMG, r[0], r[1], r[2], r[3], X, Y, r[2] * k, r[3] * k); g.restore(); } // 강화 불꽃
-  if (G && GEAR_COL[G.b]) { g.save(); g.shadowColor = GEAR_COL[G.b]; g.shadowBlur = (4 + G.b * 3) * sc; g.drawImage(HERO_IMG, r[0], r[1], r[2], r[3], X, Y, r[2] * k, r[3] * k); g.restore(); } // 몸 장비 빛
+  const glow = (col, blur, alpha) => { const c = glowFrame(r, col, blur), p = c.pad * k; g.save(); g.globalAlpha *= alpha; g.drawImage(c, X - p, Y - p, c.width * k, c.height * k); g.restore(); };
+  if (G && G.plus >= 7) glow(G.plus >= 10 ? "rgba(255,60,30,1)" : "rgba(255,120,40,.9)", G.plus >= 10 ? 16 : 10, 0.75 + 0.25 * Math.sin(now * 6)); // 강화 불꽃(깜빡임은 밝기로)
+  if (G && GEAR_COL[G.b]) glow(GEAR_COL[G.b], 4 + G.b * 3, 1); // 몸 장비 빛
   g.drawImage(HERO_IMG, r[0], r[1], r[2], r[3], X, Y, r[2] * k, r[3] * k);
   if (G && G.acc) for (let i = 0; i < G.acc; i++) { // 장신구 — 몸 둘레를 도는 금빛 구슬
     const a = now * 2.2 + i * Math.PI * 2 / G.acc, px = Math.cos(a) * 30 * sc, py = (-62 + Math.sin(a) * 9) * sc, front = Math.sin(a) > 0;
@@ -71,6 +80,7 @@ function shade(hex, k) { // k < 0 어둡게, > 0 밝게
 function drawChar(g, L, pose, sc, opt) {
   L = L || LOOK.base("m"); pose = pose || { st: "idle", t: 0 }; opt = opt || {};
   if (drawHero(g, L, pose, sc, opt)) return; // 기본 캐릭터 그림(없으면 아래 코드 그림)
+  if (!HERO_IMG.complete) return; // 그림 받는 중 — 잠깐 기다림(코드 그림 · 부위 그림을 괜히 받지 않게)
   const st = pose.st, t = pose.t || 0, fem = L.g === "f", OUT = "#1a1012";
   const skin = LOOK.SKIN[L.skin] || LOOK.SKIN[0], hair = LOOK.HC[L.hc] || LOOK.HC[0], cloth = LOOK.OC[L.oc] || LOOK.OC[0], eyeC = LOOK.EC[L.ec] || LOOK.EC[0];
   const pants = "#2a2430", boot = "#3a2a1e";
@@ -158,7 +168,9 @@ function drawChar(g, L, pose, sc, opt) {
 const PIC = (() => {
   const V = ((document.currentScript && document.currentScript.src) || "").split("?v=")[1] || "";
   const im = (s) => { const i = new Image(); i.src = s + (V ? "?v=" + V : ""); return i; };
-  return { m: im("img/hair-m.png"), f: im("img/hair-f.png"), face: im("img/face.png"), cache: new Map() };
+  const lazy = {}, P = { cache: new Map() };
+  [["m", "img/hair-m.png"], ["f", "img/hair-f.png"], ["face", "img/face.png"]].forEach(([k, s]) => Object.defineProperty(P, k, { get: () => lazy[k] || (lazy[k] = im(s)) }));
+  return P;
 })();
 function tinted(img, r, col) { // 겹 하나를 col 색으로 — 캔버스를 만들어 둠
   const key = img.src + r.join() + col; let c = PIC.cache.get(key); if (c) return c;
