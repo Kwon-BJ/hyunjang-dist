@@ -52,6 +52,8 @@
   .krow { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13px; padding: 3px 0; border-bottom: 1px solid #2a1c18; }
   .kbtn { font: inherit; font-size: 13px; font-weight: 700; min-width: 86px; padding: 4px 10px; border-radius: 6px; border: 1px solid #b8893a; background: #241612; color: #f6d27a; cursor: pointer; }
   .kbtn.wait { background: #8a2a1c; color: #fff; }
+  #hud .hic { display: inline-block; height: 26px; vertical-align: middle; margin-right: 3px; background: url(img/ui.png) no-repeat; } #hud .btn.tiny { display: inline-flex; align-items: center; padding: 2px 8px 2px 5px; } #hud [hidden] { display: none !important; } /* 운영 단추 숨김이 덮이지 않게 */
+  @media (max-width: 900px) { #hud .btn.tiny:not(#hudOut) { font-size: 0; padding: 3px 5px; } #hud .hic { margin: 0; } } /* 휴대폰은 그림만 */
   #hud { position: absolute; top: 8px; right: 10px; display: flex; gap: 6px; align-items: center; z-index: 6; } /* 가방 · 장비 창(42px 아래부터) 위에 늘 보이게 */
   #hud[hidden] { display: none; }
   #hud .who { font-size: 13px; font-weight: 700; color: #ffe08a; text-shadow: 0 1px 2px #000; margin-right: 6px; }
@@ -171,7 +173,7 @@
 <div id="stage">
   <canvas id="cv" aria-label="봉인검록 게임 화면"></canvas>
   <div class="pad" id="pad" hidden></div>
-  <div id="hud" hidden><span class="who"><span id="hudName"></span> · <span id="hudGold"></span></span><button class="btn tiny danger" id="hudOp" type="button" hidden>운영</button><button class="btn tiny" id="hudSkill" type="button">스킬</button><button class="btn tiny" id="hudEquip" type="button">장비</button><button class="btn tiny" id="hudBag" type="button">가방</button><button class="btn tiny ghost" id="hudKeys" type="button">키 설정</button><button class="btn tiny ghost" id="hudOut" type="button">캐릭터</button></div>
+  <div id="hud" hidden><span class="who"><span id="hudName"></span><span id="hudGold" hidden></span></span><button class="btn tiny danger" id="hudOp" type="button" hidden>운영</button><button class="btn tiny" id="hudOnline" type="button">접속</button><button class="btn tiny" id="hudSkill" type="button">스킬</button><button class="btn tiny" id="hudEquip" type="button">장비</button><button class="btn tiny" id="hudBag" type="button">가방</button><button class="btn tiny ghost" id="hudKeys" type="button">키 설정</button><button class="btn tiny ghost" id="hudOut" type="button">캐릭터</button></div>
   <div id="partyBox" hidden></div>
   <div id="bagSide" hidden></div>
   <div id="equipSide" hidden></div>
@@ -182,10 +184,10 @@
   <div id="panel" hidden><div id="panelIn"></div></div>
 </div>
 <div id="rotate">휴대폰을 가로로 돌려 주세요</div>
-<script src="frames.js?v=202610271215"></script>
-<script src="keys.js?v=202610271215"></script>
-<script src="look.js?v=202610271215"></script>
-<script src="game.js?v=202610271215"></script>
-<script src="app.js?v=202610271215"></script>
+<script src="frames.js?v=202610271249"></script>
+<script src="keys.js?v=202610271249"></script>
+<script src="look.js?v=202610271249"></script>
+<script src="game.js?v=202610271249"></script>
+<script src="app.js?v=202610271249"></script>
 </body>
 </html>
