@@ -111,6 +111,8 @@
   .eqv-stat { display: grid; grid-template-columns: auto 1fr; gap: 0 10px; align-items: baseline; padding: 8px 12px; border-radius: 10px; background: #151722; border: 1px solid #2c3042; }
   .eqv-stat div:first-child { font-size: 20px; font-weight: 800; color: #ffb86a; }
   .eqv-stat small { color: #a9afc4; } .eqv-stat div:last-child { grid-column: 1 / -1; color: #c9cee0; margin-top: 2px; }
+  .eqv-skin { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; color: #c9cee0; }
+  .eqv-skin .slot { width: 56px; }
   .eqv-body { display: grid; grid-template-columns: 64px 1fr 64px; gap: 8px; align-items: center; margin-top: 10px; }
   .eqv-col { display: grid; gap: 8px; } .eqv-col2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .eqv-mid { display: flex; justify-content: center; align-items: center; min-height: 190px; background: radial-gradient(circle at 50% 60%, rgba(255,255,255,.08), transparent 65%); }
@@ -126,6 +128,40 @@
   #exitBar[hidden] { display: none; }
   #watchBar { position: absolute; top: 8px; right: 10px; z-index: 6; display: flex; gap: 6px; }
   #watchBar[hidden] { display: none; }
+  .xchg { margin: -6px -10px; padding: 14px 14px 10px; border-radius: 10px; background: radial-gradient(ellipse at 30% 20%, #e8cf98, #c9a463 60%, #a9803f); border: 3px solid #5a3a1c; box-shadow: inset 0 0 30px rgba(90,55,20,.55); color: #3a2410; }
+  .xchg .sub { color: #5a3a1c !important; }
+  .x-title { font-family: serif; letter-spacing: 6px; color: #4a2a10 !important; text-shadow: 0 1px 0 rgba(255,240,200,.6); }
+  .x-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left; }
+  .x-col { display: grid; gap: 6px; align-content: start; }
+  .x-head { padding: 4px 10px; border-radius: 999px; background: linear-gradient(#a8783a, #7a5224); color: #fff4dc; font-weight: 800; font-size: 13px; border: 1px solid #4a2a10; }
+  .x-list { min-height: 170px; max-height: 220px; overflow: auto; padding: 6px; border-radius: 6px; background: #1b1714; border: 2px solid #4a2a10; display: grid; gap: 4px; align-content: start; }
+  .x-list .sub { color: #8a7a6a !important; }
+  .x-item { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 13px; }
+  .x-item .slot.ico { width: 32px; flex: 0 0 32px; }
+  .x-gold { display: flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 999px; background: linear-gradient(#cfa868, #a8803f); border: 1px solid #5a3a1c; color: #2a1808; font-weight: 800; }
+  .x-gold input { width: 120px; font: inherit; padding: 3px 6px; border-radius: 6px; border: 1px solid #5a3a1c; }
+  .x-btns { display: flex; justify-content: space-between; gap: 8px; margin-top: 10px; }
+  .x-pick { display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); gap: 6px; max-height: 300px; overflow: auto; margin: 8px 0; }
+  .sbar { display: grid; gap: 8px; justify-content: center; margin: 8px 0 12px; }
+  .sbar-row { display: flex; gap: 10px; justify-content: center; }
+  .sslot { position: relative; width: 56px; height: 56px; border-radius: 50%; border: 2px solid rgba(220,210,190,.55); background: rgba(15,12,20,.85); display: grid; place-items: center; touch-action: none; }
+  .sslot.ult { border-radius: 14px; border: 3px solid #ffcf4a; box-shadow: 0 0 12px rgba(255,200,60,.7); }
+  .sslot canvas { width: 52px; height: 52px; border-radius: 50%; cursor: grab; touch-action: none; }
+  .sslot .skey { position: absolute; right: -4px; bottom: -4px; padding: 0 4px; border-radius: 4px; background: #000; color: #eee; font: 800 10px sans-serif; }
+  .sdrag.sel { outline: 3px solid #ffe08a; border-radius: 50%; }
+  .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 8px 0; }
+  .card { aspect-ratio: 3 / 4; border-radius: 12px; border: 2px solid #b8893a; background: linear-gradient(160deg, #5a2a1c, #241612 60%, #120a0c); color: #f6d27a; font: inherit; cursor: pointer; display: grid; place-items: center; align-content: center; gap: 6px; box-shadow: 0 6px 16px rgba(0,0,0,.5); transition: transform .15s; }
+  @media (max-height: 520px) { .cards { max-width: 380px; margin: 6px auto; gap: 8px; } .card b { font-size: 13px; } } /* 휴대폰 가로 — 카드가 마을로 단추를 밀어내지 않게 */
+  .card:hover { transform: translateY(-4px); }
+  .card b { font-size: 15px; } .card small { color: #c9b48a; font-size: 11px; }
+  .card.back { background: url(img/cardback.webp) center / cover no-repeat, #3a1a14; border-color: #e3b45a; }
+  .card.back.off { opacity: .45; cursor: default; transform: none; }
+  .card.back.wait { transform: translateY(-6px) scale(1.04); box-shadow: 0 0 18px rgba(246,210,122,.8); cursor: default; }
+  .card.pick, .card.open { animation: cardFlip .45s ease-out; }
+  @keyframes cardFlip { from { transform: rotateY(90deg); } to { transform: rotateY(0); } }
+  .card.open { opacity: .55; background: #1a1012; cursor: default; }
+  .card.pick small { color: #5a2a0a; font-weight: 800; }
+  .card.pick { background: linear-gradient(160deg, #f6d27a, #b8893a); color: #2a1808; border-color: #fff; cursor: default; transform: scale(1.05); }
   #rotate { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: #0c0708; font-size: 18px; text-align: center; padding: 20px; z-index: 9; }
   @media (orientation: portrait) and (pointer: coarse) { #rotate { display: flex; } }
   @media (max-height: 500px) { #panelIn { padding: 10px 14px; } .create { gap: 10px; } }
@@ -135,7 +171,7 @@
 <div id="stage">
   <canvas id="cv" aria-label="봉인검록 게임 화면"></canvas>
   <div class="pad" id="pad" hidden></div>
-  <div id="hud" hidden><span class="who"><span id="hudName"></span> · <span id="hudGold"></span></span><button class="btn tiny danger" id="hudOp" type="button" hidden>운영</button><button class="btn tiny" id="hudEquip" type="button">장비</button><button class="btn tiny" id="hudBag" type="button">가방</button><button class="btn tiny ghost" id="hudKeys" type="button">키 설정</button><button class="btn tiny ghost" id="hudOut" type="button">캐릭터</button></div>
+  <div id="hud" hidden><span class="who"><span id="hudName"></span> · <span id="hudGold"></span></span><button class="btn tiny danger" id="hudOp" type="button" hidden>운영</button><button class="btn tiny" id="hudSkill" type="button">스킬</button><button class="btn tiny" id="hudEquip" type="button">장비</button><button class="btn tiny" id="hudBag" type="button">가방</button><button class="btn tiny ghost" id="hudKeys" type="button">키 설정</button><button class="btn tiny ghost" id="hudOut" type="button">캐릭터</button></div>
   <div id="partyBox" hidden></div>
   <div id="bagSide" hidden></div>
   <div id="equipSide" hidden></div>
@@ -146,10 +182,10 @@
   <div id="panel" hidden><div id="panelIn"></div></div>
 </div>
 <div id="rotate">휴대폰을 가로로 돌려 주세요</div>
-<script src="frames.js?v=202610270947"></script>
-<script src="keys.js?v=202610270947"></script>
-<script src="look.js?v=202610270947"></script>
-<script src="game.js?v=202610270947"></script>
-<script src="app.js?v=202610270947"></script>
+<script src="frames.js?v=202610271044"></script>
+<script src="keys.js?v=202610271044"></script>
+<script src="look.js?v=202610271044"></script>
+<script src="game.js?v=202610271044"></script>
+<script src="app.js?v=202610271044"></script>
 </body>
 </html>
