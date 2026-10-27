@@ -7,22 +7,22 @@ const LOOK = {
     ["face", "얼굴형", ["둥근", "갸름한", "각진"]],
     ["hair", "머리 모양", null],
     ["hc", "머리색", null],
-    ["eye", "눈", ["둥근 눈", "날카로운 눈", "큰 눈", "졸린 눈", "치켜뜬 눈", "웃는 눈"]],
+    ["eye", "눈", ["둥근 눈", "날카로운 눈", "큰 눈", "졸린 눈", "치켜뜬 눈", "감은 눈"]],
     ["ec", "눈동자", null],
     ["brow", "눈썹", ["일자", "짙은", "둥근", "치켜올린"]],
-    ["nose", "코", ["점", "작은", "오똑한", "매부리"]],
-    ["mouth", "입", ["미소", "다문 입", "활짝", "오", "씩", "삐죽"]],
+    ["nose", "코", ["작은", "둥근", "오똑한", "매부리"]],
+    ["mouth", "입", ["미소", "다문 입", "활짝", "외침", "굳은 입", "삐죽"]],
     ["skin", "피부", null],
     ["mark", "얼굴 장식", null],
     ["oc", "옷 색", null],
   ],
-  HAIR: { m: ["상투", "짧은 머리", "꽁지머리", "더벅머리", "머리띠", "넘긴 긴머리"], f: ["땋은 댕기머리", "단발", "올림머리", "긴 생머리", "양갈래", "포니테일"] },
-  MARK: { m: ["없음", "흉터", "점", "수염"], f: ["없음", "흉터", "점", "볼터치"] },
+  HAIR: { m: ["상투", "짧은 머리", "꽁지머리", "더벅머리", "머리띠", "넘긴 긴머리"], f: ["땋은 머리", "단발", "쪽진 머리", "긴 생머리", "양갈래", "포니테일"] },
+  MARK: { m: ["없음", "흉터", "점", "수염", "붉은 문신", "반창고"], f: ["없음", "흉터", "점", "볼터치", "붉은 문신", "반창고"] },
   SKIN: ["#f6d7b8", "#efc39b", "#d9a274", "#b97a4f", "#8d5a3b"],
   HC: ["#1b1b22", "#4a2e1c", "#8a5a2b", "#c99a4e", "#e8e4dc", "#b2322a", "#2f4f8a", "#6a3d8a"],
   EC: ["#1d2433", "#5a3a1c", "#2f6db0", "#2e8a52", "#a3262c"],
   OC: ["#8a2a1c", "#1f3f6b", "#2e5a3a", "#3a3a44", "#6b4a8a", "#d8d0c0"],
-  count(k, g) { return { face: 3, hair: 6, hc: 8, eye: 6, ec: 5, brow: 4, nose: 4, mouth: 6, skin: 5, mark: 4, oc: 6 }[k]; },
+  count(k, g) { return { face: 3, hair: 6, hc: 8, eye: 6, ec: 5, brow: 4, nose: 4, mouth: 6, skin: 5, mark: 6, oc: 6 }[k]; },
   label(k, i, g) {
     if (k === "hair") return LOOK.HAIR[g][i];
     if (k === "mark") return LOOK.MARK[g][i];
@@ -105,7 +105,9 @@ function drawChar(g, L, pose, sc, opt) {
   g.strokeStyle = shade(cloth, 0.35); g.lineWidth = 2; g.beginPath(); g.moveTo(-3, shY + 2); g.lineTo(5, shY + 14); g.stroke(); // 깃
   g.fillStyle = "#1c1418"; g.fillRect(-sw + 1, hipY - 8, sw * 2 - 2, 4); g.fillStyle = "#c9a24a"; g.fillRect(-1, hipY - 8, 3, 4); // 띠
   leg(4, legR, false);
-  /* 머리 */
+  /* 머리 — 제미나이 그림이 있으면 그것(머리 모양 그림 위에 눈 · 눈썹 · 코 · 입 · 장식 그림), 없으면 코드 그림 */
+  const dead = st === "dead" || st === "down";
+  if (headPic(g, L, hx, hy, skin, hair, eyeC, dead || st === "hit")) { arm(front, false, true); g.restore(); return; }
   hairDraw(g, L, hx, hy, hair, OUT, "back");
   g.fillStyle = skin; g.strokeStyle = OUT; g.lineWidth = 2.5; g.fillRect(-3, shY - 6, 7, 8); // 목
   g.beginPath();
@@ -114,11 +116,53 @@ function drawChar(g, L, pose, sc, opt) {
   else g.arc(hx, hy, 21, 0, Math.PI * 2);
   g.fill(); g.stroke();
   g.fillStyle = shade(skin, -0.1); g.beginPath(); g.ellipse(hx - 9, hy + 4, 3.5, 5, 0, 0, Math.PI * 2); g.fill(); // 귀
-  const dead = st === "dead" || st === "down";
   face(g, L, hx + 3, hy, eyeC, skin, OUT, dead || st === "hit");
   hairDraw(g, L, hx, hy, hair, OUT, "front");
   arm(front, false, true);
   g.restore();
+}
+
+/* ── 그림 머리 ── 회색 그림을 겹(s 피부 · h 두 번째 색 · l 그대로)으로 나눠 두었다가 색을 곱해 칠한다(색마다 한 번 만들어 둠).
+   자리는 얼굴 칸의 앞 · 아래(코끝 · 턱) 를 기준으로 — 머리 모양마다 앞머리가 이마를 덮는 정도가 달라도 턱 · 코는 같은 자리 */
+const PIC = (() => {
+  const V = ((document.currentScript && document.currentScript.src) || "").split("?v=")[1] || "";
+  const im = (s) => { const i = new Image(); i.src = s + (V ? "?v=" + V : ""); return i; };
+  return { m: im("img/hair-m.png"), f: im("img/hair-f.png"), face: im("img/face.png"), cache: new Map() };
+})();
+function tinted(img, r, col) { // 겹 하나를 col 색으로 — 캔버스를 만들어 둠
+  const key = img.src + r.join() + col; let c = PIC.cache.get(key); if (c) return c;
+  c = document.createElement("canvas"); c.width = r[2]; c.height = r[3]; const t = c.getContext("2d");
+  t.drawImage(img, r[0], r[1], r[2], r[3], 0, 0, r[2], r[3]);
+  if (col) { t.globalCompositeOperation = "multiply"; t.fillStyle = col; t.fillRect(0, 0, r[2], r[3]); t.globalCompositeOperation = "destination-in"; t.drawImage(img, r[0], r[1], r[2], r[3], 0, 0, r[2], r[3]); }
+  if (PIC.cache.size > 400) PIC.cache.clear();
+  PIC.cache.set(key, c); return c;
+}
+function layers(g, img, R, name, s, h, x, y, k, ax, ay) { // ax · ay = 그림의 어느 비율 자리를 (x, y) 에 둘지
+  const r = R[name + "_l"]; if (!r) return; const w = r[2] * k, hh = r[3] * k, X = x - w * ax, Y = y - hh * ay;
+  if (s) g.drawImage(tinted(img, R[name + "_s"], s), X, Y, w, hh);
+  if (h) g.drawImage(tinted(img, R[name + "_h"], h), X, Y, w, hh);
+  g.drawImage(tinted(img, r, null), X, Y, w, hh);
+}
+const HEAD_K = 0.3, FEAT_K = 0.42; // 머리 그림 → 화면 비율, 얼굴 부위 그림 → 머리 그림 비율
+function headPic(g, L, hx, hy, skin, hair, eyeC, shut) {
+  const sex = L.g === "f" ? "f" : "m", P = FR.parts && FR.parts["h" + sex], img = PIC[sex];
+  if (!P || !img.complete || !img.naturalWidth || !PIC.face.complete || !PIC.face.naturalWidth) return false;
+  const name = sex + (L.hair || 0), fb = P.meta[name], hr = P.rects[name + "_l"]; if (!fb || !hr) return false;
+  const k = HEAD_K, fx = hx + 20, fy = hy + 27;              // 코끝 · 턱이 올 자리(코드 머리 둘레와 맞춤)
+  const ox = fx - (fb[0] + fb[2]) * k, oy = fy - (fb[1] + fb[3]) * k;  // 머리 그림 왼쪽 위
+  g.save(); g.translate(fx, fy); g.scale([1, 0.93, 1.06][L.face] || 1, 1); g.translate(-fx, -fy); // 얼굴형 — 폭만 조금
+  layers(g, img, P.rects, name, skin, hair, ox, oy, k, 0, 0);
+  const F = FR.parts.face.rects, fk = k * FEAT_K, at = (dx, dy) => [fx + dx * k, fy + dy * k];  // dx · dy = 머리 그림 픽셀(코끝 · 턱 기준)
+  const brow = shade(hair, -0.15), mark = L.mark | 0;
+  let [x, y] = at(-36, -70); layers(g, PIC.face, F, "eye" + (shut ? 5 : L.eye | 0), skin, eyeC, x, y, fk, 0.5, 0.5);
+  [x, y] = at(-36, -95); layers(g, PIC.face, F, "brow" + (L.brow | 0), null, brow, x, y, fk, 0.5, 0.5);
+  [x, y] = at(-2, -50); layers(g, PIC.face, F, "nose" + (L.nose | 0), skin, null, x, y, fk * 0.8, 0.85, 0.6);
+  [x, y] = at(-26, -34); layers(g, PIC.face, F, "mouth" + (L.mouth | 0), null, L.mouth === 3 ? null : "#f4ece2", x, y, fk * (L.mouth === 3 ? 0.5 : 0.8), 0.55, 0.5);
+  if (mark === 1 || mark === 2 || mark >= 4) { const n = { 1: 0, 2: 1, 4: 2, 5: 3 }[mark]; [x, y] = at(-62, -42); layers(g, PIC.face, F, "mark" + n, null, n === 3 ? "#ead2ae" : "#9a3a36", x, y, fk, 0.5, 0.5); }
+  if (mark === 3 && sex === "m") { [x, y] = at(-30, -6); g.fillStyle = hair; g.strokeStyle = "#1a1012"; g.lineWidth = 1.5; g.beginPath(); g.moveTo(x - 14, y - 10); g.quadraticCurveTo(x - 2, y + 14, x + 10, y - 6); g.quadraticCurveTo(x - 2, y + 2, x - 14, y - 10); g.fill(); g.stroke(); }
+  if (mark === 3 && sex === "f") { [x, y] = at(-48, -36); g.fillStyle = "rgba(240,110,120,.45)"; g.beginPath(); g.ellipse(x, y, 5, 3, 0, 0, Math.PI * 2); g.fill(); }
+  g.restore();
+  return true;
 }
 
 function face(g, L, x, y, eyeC, skin, OUT, shut) {
