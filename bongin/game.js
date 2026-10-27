@@ -8,7 +8,7 @@ const Dungeon = (() => {
   const VW = 960, VH = 540, Z0 = 368, Z1 = 512, ROOM = 1800, G = 1900;
   const V = ((document.currentScript && document.currentScript.src) || "").split("?v=")[1] || ""; // 판 번호 — 새 판이면 그림도 새로 받음
   const img = (src) => { const i = new Image(); i.src = src + (V ? "?v=" + V : ""); return i; };
-  const IMG = { items: img("img/items.webp"), mon3a: img("img/mon3a.webp"), mon3b: img("img/mon3b.webp"), mon3c: img("img/mon3c.webp"), hsk: img("img/hsk.webp"), mfx: img("img/mfx.webp") };
+  const IMG = { items: img("img/items.webp"), mon3a: img("img/mon3a.webp"), mon3b: img("img/mon3b.webp"), mon3c: img("img/mon3c.webp"), hsk: img("img/hsk.webp"), mfx: img("img/mfx.webp"), ui2: img("img/ui2.webp") };
   let monOld = null; Object.defineProperty(IMG, "mon", { get: () => monOld || (monOld = img("img/mon2.png")) }); // 예전 몬스터 그림 — 쓸 때만(지금은 안 씀)
   const rnd = (a, b) => a + Math.random() * (b - a);
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -145,6 +145,7 @@ const Dungeon = (() => {
   /* 운영자는 다섯 직업 스킬을 모두 — "나는 모든 스킬을 배울 수 있고 쓸 수 있게, 모든 캐릭터의 스킬을 써 봐야 어떤 문제가 있는지 안다" (2026-10-27).
      한 줄로 이어 35개(직업 순서 × 7 + 스킬 번호, 7번째마다 궁극기) */
   const HERO_ORDER = ["kh", "hr", "ds", "je", "mj"], ALL_SKILLS = HERO_ORDER.flatMap((h) => SKILLS[h]);
+  HERO_ORDER.forEach((h) => SKILLS[h].forEach((s, i) => { s.ic = "sk_" + h + i; })); // 스킬마다 제 아이콘(ui2) — "스킬 칸 아이콘이 재탕" (2026-10-28)
   const MPCOST = [8, 12, 15, 18, 22, 25, 50]; // 스킬 칸 번호(스킬 순서)마다 마력
   const mpOf = (i) => (SKILL[i] && SKILL[i].mp) || MPCOST[i % 7] || 15;
   let SKILL = SKILLS.kh;
@@ -608,9 +609,35 @@ const Dungeon = (() => {
     /* 채팅 말풍선 — 사냥터에서도 머리 위에 (2026-10-27). C.bubbles 는 마을과 같은 것(id → { text, t }) */
     const B = C.bubbles && C.bubbles[me ? C.me : P.id]; if (B) drawBubble(g, B.text, x, y - 150);
   }
+  /* 영상에서 뽑은 몬스터 동작(2026-10-28 "몬스터, 보스몬스터도 다 영상으로") — mm_<종류>: move · wind · atk · hit · dead. 값 = 영상 속에서 보는 쪽(1 오른쪽, -1 왼쪽) */
+  const MVID = { slime: 1, goblin: 1, wolf: -1, golem: 1, gchief: 1, orc: 1, orcArcher: -1, orcShaman: -1, orcChief: -1, wchief: -1 }, VIDIMG = {};
+  const vidMon = (k) => { if (MVID[k] == null || !FR["mm_" + k]) return null; const i = VIDIMG[k] || (VIDIMG[k] = img("img/mm_" + k + ".webp")); return i.complete && i.naturalWidth ? i : null; };
+  const VDUR = { wind: 0.6, atk: 0.4, hit: 0.4, dead: 0.9 }; // 같이 하는 사람(방장이 아님)은 남은 시간을 모름 — 바뀐 뒤 흐른 시간으로
+  function drawFoeVid(g, f, x, y, D, A, VI, vk) {
+    const R = FR["mm_" + vk], M = FR["mm_" + vk + "_meta"], C = M.counts;
+    if (f.vst !== f.st) { f.vst = f.st; f.vt0 = Math.max(0.01, f.t || 0); f.vs = S.t; } else if ((f.t || 0) > f.vt0) f.vt0 = f.t;
+    const p = host() ? clamp(1 - (f.t || 0) / f.vt0, 0, 1) : clamp((S.t - f.vs) / (VDUR[f.st] || 1), 0, 1), at = (k, q) => k + Math.min(C[k] - 1, Math.floor(q * C[k]));
+    let nm, rot = 0;
+    if (f.st === "wind") nm = at("wind", p);
+    else if (f.st === "atk") nm = at("atk", p);
+    else if (f.st === "hit") nm = at("hit", p);
+    else if (f.st === "air") { nm = "hit" + (C.hit - 1); if (!D.boss) rot = -f.face * Math.min(1.2, f.h / 200); }
+    else if (f.st === "down") nm = "dead" + Math.min(C.dead - 1, 3);
+    else if (f.st === "dead") nm = at("dead", clamp(p * 1.6, 0, 1));
+    else nm = "move" + (f.moving || vk === "slime" ? Math.floor((S.t + f.ph) * (D.spd > 150 ? 12 : 8)) % C.move : 0);
+    const r = R[nm] || R.move0, ax = M.ax2[nm] != null ? M.ax2[nm] : 0.5, k = (A.move[0][3] * D.sc) / M.tall, flip = f.face !== MVID[vk], a = f.st === "dead" ? clamp(f.t / 0.5, 0, 1) : 1;
+    g.save();
+    if (D.tint && vk !== f.kind) g.filter = D.tint; // 늑대 우두머리 — 제 영상이 생기면 빛깔 바꾸기 없이
+    frame(g, VI, r, x, y + 2, k, flip, ax, a, rot);
+    g.filter = "none";
+    if (f.flash > 0 || f.st === "wind") { g.globalCompositeOperation = "lighter"; frame(g, VI, r, x, y + 2, k, flip, ax, (f.st === "wind" ? 0.2 + 0.15 * Math.sin(S.t * 30) : 0.6) * a, rot); }
+    g.restore();
+    if (!D.boss && f.st !== "dead" && f.hp < f.max) { const w = 50, by = y - R.move0[3] * k - 10; g.fillStyle = "rgba(0,0,0,.6)"; g.fillRect(x - w / 2, by, w, 5); g.fillStyle = "#e5484d"; g.fillRect(x - w / 2, by, w * clamp(f.hp / f.max, 0, 1), 5); }
+  }
   function drawFoe(g, f, cx) {
     const x = f.x - cx + (f.shk > 0 ? (Math.random() - 0.5) * 9 : 0), y = f.z - f.h, D = f.D, A = FR.mon[D.sprite || f.kind], IM = IMG[A.img || "mon"]; // 히트스톱 동안 부르르
     shadow(g, x, f.z, D.w * 0.9 * Math.max(0.5, 1 - f.h / 400));
+    const vk = FR["mm_" + f.kind] ? f.kind : D.sprite || f.kind, VI = vidMon(vk); if (VI) return drawFoeVid(g, f, x, y, D, A, VI, vk);
     let list = A.move, rot = 0;
     if (f.st === "hit" || f.st === "air") list = A.hit;
     if (f.st === "wind" || f.st === "atk") list = A.attack;
@@ -677,30 +704,46 @@ const Dungeon = (() => {
     hud(g, touch);
   }
   function bar(g, x, y, w, h, p, c) { g.fillStyle = "rgba(0,0,0,.65)"; g.fillRect(x - 2, y - 2, w + 4, h + 4); g.fillStyle = c; g.fillRect(x, y, w * clamp(p, 0, 1), h); }
+  /* 체력 · 마력 게이지 — 금속 틀 그림(ui2 hpbar · mpbar) 안을 유리 같은 빛깔로 채움 (2026-10-28 "초등학생 같다, 진짜 RPG 처럼"). 돌려줌 = 틀 높이 */
+  const GAUGE_COL = { hp: ["#ff7a6a", "#d4202a", "#6a0a10"], low: ["#ffb36a", "#e0501a", "#6a1a08"], mp: ["#7ab8ff", "#2a62e0", "#0a1e6a"] };
+  function gauge(g, kind, x, y, w, p, text, col) {
+    const F = FR.ui2 && FR.ui2[kind + "bar"], M = FR.ui2_meta && FR.ui2_meta[kind + "bar"], c = GAUGE_COL[col || kind];
+    if (!F || !IMG.ui2.complete || !IMG.ui2.naturalWidth) { const h = kind === "hp" ? 14 : 8; bar(g, x, y, w, h, p, c[1]); return h + 4; }
+    const fh = F[3] * w / F[2], ix = x + M[0] * w, iy = y + M[1] * fh, iw = M[2] * w, ih = M[3] * fh, pw = iw * clamp(p, 0, 1);
+    g.fillStyle = "#08060a"; g.fillRect(ix - 1, iy - 1, iw + 2, ih + 2);
+    if (pw > 0) { const gr = g.createLinearGradient(0, iy, 0, iy + ih); gr.addColorStop(0, c[0]); gr.addColorStop(0.45, c[1]); gr.addColorStop(1, c[2]); g.fillStyle = gr; g.fillRect(ix, iy, pw, ih);
+      g.fillStyle = "rgba(255,255,255,.28)"; g.fillRect(ix, iy + 1, pw, Math.max(1, ih * 0.22)); // 윗면 반짝임
+      const sx = ix + ((S.t * 0.35) % 1) * iw; if (sx < ix + pw) { const sg = g.createLinearGradient(sx - 18, 0, sx + 18, 0); sg.addColorStop(0, "rgba(255,255,255,0)"); sg.addColorStop(0.5, "rgba(255,255,255,.22)"); sg.addColorStop(1, "rgba(255,255,255,0)"); g.fillStyle = sg; g.fillRect(Math.max(ix, sx - 18), iy, Math.min(36, ix + pw - sx + 18), ih); } } // 흐르는 빛
+    g.drawImage(IMG.ui2, F[0], F[1], F[2], F[3], x, y, w, fh);
+    if (text) { g.textAlign = "center"; g.font = "800 " + Math.max(9, Math.round(ih * 0.72)) + "px 'Noto Sans KR', sans-serif"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.85)"; g.strokeText(text, ix + iw / 2, iy + ih * 0.78); g.fillStyle = "#fff"; g.fillText(text, ix + iw / 2, iy + ih * 0.78); g.textAlign = "left"; }
+    return fh;
+  }
+  function skIcon(g, sk, x, y, size, alpha) { // 스킬 아이콘 — 새 그림(ui2)이 있으면 그것, 없으면 예전 효과 그림
+    const r = FR.ui2 && FR.ui2[sk.ic]; if (!r || !IMG.ui2.complete || !IMG.ui2.naturalWidth) return centered(g, IMG.hsk, FR.hsk[sk.fr], x, y, size, false, alpha);
+    g.save(); g.globalAlpha *= alpha; g.drawImage(IMG.ui2, r[0], r[1], r[2], r[3], x - size / 2, y - size / 2, size, size); g.restore();
+  }
   function hud(g, touch) {
     const H = S.hero; if (S.cut) { drawCut(g); return; }
     if (S.fadeT > 0) { g.fillStyle = "rgba(0,0,0," + Math.min(1, S.fadeT / 0.5) + ")"; g.fillRect(0, 0, VW, VH); } // 방을 넘어갈 때 잠깐 어둡게
     g.textAlign = "left";
     if (C.watch) { g.font = "800 15px 'Noto Sans KR', sans-serif"; g.fillStyle = "#c58cff"; g.fillText("👁 투명 관전 중 · " + S.D.name + " — 이 판 사람들에게는 안 보여요", 22, 30); g.font = "600 12px 'Noto Sans KR', sans-serif"; let py = 56; for (const id in S.remote) { const r = S.remote[id]; g.fillStyle = "#bfe3ff"; g.fillText(r.nick, 22, py); bar(g, 110, py - 9, 90, 7, r.hp / (r.max || 1), "#3ccf6a"); py += 18; } return; }
     g.font = "700 15px 'Noto Sans KR', sans-serif"; g.fillStyle = "#f6d27a"; g.fillText(C.nick + "  ·  " + S.D.name, 22, 30);
-    bar(g, 22, 40, 260, 14, H.hp / H.max, H.hp / H.max > 0.3 ? "#3ccf6a" : "#e5484d");
-    g.font = "600 12px 'Noto Sans KR', sans-serif"; g.fillStyle = "#fff"; g.fillText(Math.ceil(H.hp) + " / " + H.max, 28, 52);
-    bar(g, 22, 57, 260, 8, H.mp / H.mpMax, "#3f8cff"); // 마력
-    g.fillStyle = "#c9b48a"; g.fillText((S.D.rooms ? "방 " + (S.room + 1) + " / " + S.D.rooms.length + "   " : "무리 " + Math.min(S.wave + 1, S.D.waves.length) + " / " + S.D.waves.length + "   ") + Math.floor(S.t / 60) + ":" + String(Math.floor(S.t % 60)).padStart(2, "0")  + "   물약 " + Object.values(S.potions).reduce((a, b) => a + b, 0) + (touch ? "" : " (" + KEYS.label("potion") + ")"), 22, 74);
-    let py = 96; for (const id in S.remote) { const r = S.remote[id]; g.fillStyle = "#bfe3ff"; g.fillText(r.nick, 22, py); bar(g, 110, py - 9, 90, 7, r.hp / (r.max || 1), "#3ccf6a"); py += 18; }
+    const gh = gauge(g, "hp", 12, 36, 300, H.hp / H.max, Math.ceil(H.hp) + " / " + H.max, H.hp / H.max > 0.3 ? "hp" : "low");
+    gauge(g, "mp", 12, 36 + gh - 6, 250, H.mp / H.mpMax, Math.floor(H.mp) + " / " + H.mpMax); // 마력
+    g.font = "600 12px 'Noto Sans KR', sans-serif"; g.fillStyle = "#c9b48a"; g.textAlign = "left"; g.fillText((S.D.rooms ? "방 " + (S.room + 1) + " / " + S.D.rooms.length + "   " : "무리 " + Math.min(S.wave + 1, S.D.waves.length) + " / " + S.D.waves.length + "   ") + Math.floor(S.t / 60) + ":" + String(Math.floor(S.t % 60)).padStart(2, "0")  + "   물약 " + Object.values(S.potions).reduce((a, b) => a + b, 0) + (touch ? "" : " (" + KEYS.label("potion") + ")"), 22, 112);
+    let py = 134; for (const id in S.remote) { const r = S.remote[id]; g.fillStyle = "#bfe3ff"; g.fillText(r.nick, 22, py); bar(g, 110, py - 9, 90, 7, r.hp / (r.max || 1), "#3ccf6a"); py += 18; }
     if (S.D.tower) { g.textAlign = "right"; g.font = "900 22px 'Noto Sans KR', sans-serif"; g.lineWidth = 4; g.strokeStyle = "rgba(0,0,0,.8)"; const tt = "무한의 탑 " + (S.floor || 1) + "층"; g.strokeText(tt, VW - 22, 70); g.fillStyle = "#ffd36b"; g.fillText(tt, VW - 22, 70);
       if (S.rest > 0 && !S.over) { g.textAlign = "center"; g.font = "800 20px 'Noto Sans KR', sans-serif"; const r = "쉬는 시간 " + Math.ceil(S.rest) + "초 — " + (touch ? "화면을 누르면" : KEYS.label("talk") + " 또는 화면 클릭으로") + " 바로 " + (S.floor + 1) + "층"; g.strokeText(r, VW / 2, 120); g.fillStyle = "#9df59a"; g.fillText(r, VW / 2, 120); } }
     if (S.flash > 0) { g.fillStyle = "rgba(255,240,200," + Math.min(0.5, S.flash) + ")"; g.fillRect(0, 0, VW, VH); }
     const B = S.foes.find((f) => f.D.boss && f.st !== "dead");
-    if (B) { g.textAlign = "center"; g.font = "800 15px 'Noto Sans KR', sans-serif"; g.fillStyle = "#ffb08a"; g.fillText(B.D.name, VW / 2, 28); bar(g, VW / 2 - 220, 36, 440, 12, B.hp / B.max, "#e0662a"); }
+    if (B) gauge(g, "hp", VW / 2 - 230, 4, 460, B.hp / B.max, B.D.name + "  " + Math.max(0, Math.round(B.hp / B.max * 100)) + "%", "low"); // 보스 — 같은 금속 틀, 이름을 안에
     if (S.combo >= 2) { g.textAlign = "right"; g.font = "900 " + (30 + Math.min(20, S.combo)) + "px 'Noto Sans KR', sans-serif"; g.lineWidth = 5; g.strokeStyle = "rgba(0,0,0,.8)"; const t = S.combo + " 연속!"; g.strokeText(t, VW - 24, 120); g.fillStyle = "#ffd36b"; g.fillText(t, VW - 24, 120); }
     if (S.bannerT > 0) { g.textAlign = "center"; g.font = "800 26px 'Noto Sans KR', sans-serif"; g.globalAlpha = Math.min(1, S.bannerT / 0.4); g.lineWidth = 5; g.strokeStyle = "rgba(0,0,0,.8)"; g.strokeText(S.banner, VW / 2, 170); g.fillStyle = "#fff1d0"; g.fillText(S.banner, VW / 2, 170); g.globalAlpha = 1; }
     if (H.hp <= 0 && C.party && !S.over) { g.textAlign = "center"; g.font = "800 20px 'Noto Sans KR', sans-serif"; g.fillStyle = "#ff8a7a"; g.fillText("쓰러졌어요 — 파티원이 이기면 같이 보상을 받아요", VW / 2, 220); }
     if (!touch) { // 물약 빠른 칸 — 가운데 아래(휴대폰은 「물약」 단추 하나로)
       const x0 = 150, y0 = VH - 58, W8 = POTS.length * 50 - 4, cxm = x0 + W8 / 2;
       g.fillStyle = "rgba(10,8,8,.55)"; if (g.roundRect) { g.beginPath(); g.roundRect(x0 - 8, y0 - 36, W8 + 16, 94, 10); g.fill(); } else g.fillRect(x0 - 8, y0 - 36, W8 + 16, 94);
-      bar(g, x0, y0 - 30, W8, 11, H.hp / H.max, H.hp / H.max > 0.3 ? "#5fd36a" : "#e5484d"); bar(g, x0, y0 - 16, W8, 9, H.mp / H.mpMax, "#3f8cff");
-      g.textAlign = "center"; g.font = "800 10px 'Noto Sans KR', sans-serif"; g.fillStyle = "#fff"; g.fillText(Math.ceil(H.hp) + " / " + H.max, cxm, y0 - 21); g.fillText(Math.floor(H.mp) + " / " + H.mpMax, cxm, y0 - 8.5);
+      gauge(g, "hp", x0 - 8, y0 - 37, W8 / 2 + 12, H.hp / H.max, Math.ceil(H.hp) + " / " + H.max, H.hp / H.max > 0.3 ? "hp" : "low"); gauge(g, "mp", x0 + W8 / 2 - 4, y0 - 37, W8 / 2 + 12, H.mp / H.mpMax, Math.floor(H.mp) + " / " + H.mpMax); // 체력 · 마력 나란히
       POTS.forEach((k, i) => { const x = x0 + i * 50, y = y0, r = FR.items && FR.items[k], n = S.potions[k] || 0;
         g.fillStyle = "rgba(30,26,30,.85)"; g.fillRect(x, y, 46, 40); g.strokeStyle = n ? (k.startsWith("mp") ? "#4a7ac8" : "#8a7a5a") : "#3a3434"; g.lineWidth = 1; g.strokeRect(x, y, 46, 40);
         if (r && IMG.items.complete) { const kk = 32 / Math.max(r[2], r[3]); g.globalAlpha = n ? 1 : 0.3; g.drawImage(IMG.items, r[0], r[1], r[2], r[3], x + 23 - r[2] * kk / 2, y + 20 - r[3] * kk / 2, r[2] * kk, r[3] * kk); g.globalAlpha = 1; }
@@ -720,7 +763,7 @@ const Dungeon = (() => {
       const i = S.slots[slot], sk = SKILL[i], ult = slot === 6, x = VW - 300 + (slot < 3 ? slot * 62 + 31 : ult ? 3 * 62 + 31 : (slot - 3) * 62), y = slot < 3 || ult ? VH - 128 : VH - 66, R = ult ? 28 : 26;
       g.save(); g.beginPath(); if (ult) { for (let k = 0; k < 6; k++) { const a = Math.PI / 6 + k * Math.PI / 3; g.lineTo(x + 28 + Math.cos(a) * (R + 3), y + 28 + Math.sin(a) * (R + 3)); } g.closePath(); } else g.arc(x + 28, y + 28, R, 0, Math.PI * 2);
       g.fillStyle = "rgba(15,12,20,.8)"; g.fill(); g.lineWidth = ult ? 3 : 2; g.strokeStyle = ult ? "#ffcf4a" : "rgba(220,210,190,.55)"; if (ult) { g.shadowColor = "rgba(255,200,60,.9)"; g.shadowBlur = 12; } g.stroke(); g.shadowBlur = 0; g.clip();
-      if (sk) { const lock = S.learned && !S.learned.includes(i); centered(g, IMG.hsk, FR.hsk[sk.fr], x + 28, y + 28, 50, false, lock ? 0.15 : S.cd[i] > 0 ? 0.4 : 1);
+      if (sk) { const lock = S.learned && !S.learned.includes(i); skIcon(g, sk, x + 28, y + 28, 56, lock ? 0.15 : S.cd[i] > 0 ? 0.4 : 1);
         if (S.cd[i] > 0) { g.fillStyle = "rgba(0,0,0,.55)"; g.fillRect(x, y + 56 * (1 - S.cd[i] / sk.cd), 56, 56 * S.cd[i] / sk.cd); g.fillStyle = "#fff"; g.textAlign = "center"; g.font = "800 16px sans-serif"; g.fillText(Math.ceil(S.cd[i]), x + 28, y + 34); } }
       g.restore();
       const lab = KEYS.label(ACTS[slot]); g.fillStyle = "rgba(0,0,0,.75)"; g.fillRect(x + 36, y + 42, 18, 15); g.fillStyle = "#e8e2d0"; g.textAlign = "center"; g.font = "800 11px sans-serif"; g.fillText(lab.length > 2 ? lab.slice(0, 2) : lab, x + 45, y + 54);
