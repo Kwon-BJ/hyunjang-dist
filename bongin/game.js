@@ -19,6 +19,7 @@ const Dungeon = (() => {
     wolf: { name: "늑대", hp: 95, spd: 200, sc: 0.8, dmg: 9, act: "pounce", range: 230, wind: 0.38, native: 1, w: 38 },
     golem: { name: "바위 거인", hp: 2600, spd: 70, sc: 1.75, dmg: 24, act: "boss", range: 150, wind: 0.8, native: 0, w: 70, boss: true },
     gchief: { name: "고블린 족장", hp: 3400, spd: 105, sc: 1.5, dmg: 26, act: "boss", range: 150, wind: 0.7, native: 1, w: 60, boss: true, sprite: "goblin", tint: "hue-rotate(-70deg) saturate(1.5) brightness(.9)" },
+    wchief: { name: "늑대 우두머리", hp: 3800, spd: 170, sc: 1.4, dmg: 28, act: "boss", range: 160, wind: 0.6, native: 1, w: 64, boss: true, sprite: "wolf", tint: "grayscale(.6) brightness(1.25) contrast(1.2)" },
   };
   /* ── 던전 — 서버 DUNGEONS 와 같은 열쇠 ── */
   const DUN = {
@@ -32,6 +33,11 @@ const Dungeon = (() => {
       { text: "늑대를 탄 고블린 무리!", list: ["wolf", "wolf", "wolf", "goblin", "goblin", "goblin"] },
       { text: "숲 깊은 곳 — 모두 몰려온다!", list: ["goblin", "goblin", "wolf", "wolf", "slime", "slime", "goblin"] },
       { text: "대장 고블린 족장 등장!", list: ["gchief"] } ] },
+    wolf: { name: "늑대 골짜기", theme: "wolf", waves: [
+      { text: "늑대 골짜기 — 울음소리가 사방에서!", list: ["wolf", "wolf", "wolf", "wolf"] },
+      { text: "늑대와 고블린 사냥꾼!", list: ["wolf", "wolf", "wolf", "goblin", "goblin", "goblin"] },
+      { text: "골짜기 깊은 곳 — 무리가 몰려온다!", list: ["wolf", "wolf", "wolf", "wolf", "wolf", "goblin", "goblin"] },
+      { text: "대장 늑대 우두머리 등장!", list: ["wchief"] } ] },
   };
   const ATK = [
     { dur: 0.3, act: [0.06, 0.16], range: 100, dmg: 12, type: "stagger", lunge: 70 },
@@ -406,11 +412,28 @@ const Dungeon = (() => {
   return { start, step, draw, net, MON, DUN, SKILL, get S() { return S; }, quit() { if (S) S.ended = true; S = null; } };
 })();
 
-/* ── 배경 — 마을 · 던전마다. 제미나이 맵 그림(img/maps/<이름>.png, frames.js 의 MAPS 에 적힌 것)이 있으면 그것을, 없으면 코드로 그린다 ── */
+/* ── 배경 — 마을 · 던전마다. 제미나이 맵 그림(img/maps/<이름>.jpg, frames.js 의 MAPS 에 적힌 것)이 있으면 그것을, 없으면 코드로 그린다
+   그림은 끝이 서로 안 맞으므로 한 번은 그대로, 한 번은 좌우를 뒤집어 번갈아 붙인다(뒤집으면 끝끼리 똑같이 맞닿음).
+   GF = 그림에서 땅이 시작하는 높이(0~1) — 그 줄이 게임 바닥(Z0)쯤 오게 그림을 위로 올리고 키운다 ── */
 const BG = (() => {
   const V = ((document.currentScript && document.currentScript.src) || "").split("?v=")[1] || "";
-  const pics = {};
-  (window.MAPS || []).forEach((n) => { const i = new Image(); i.src = "img/maps/" + n + ".png" + (V ? "?v=" + V : ""); pics[n] = i; });
+  const pics = {}, GF = { town: 0.79, gate: 0.78, forest: 0.8, goblin: 0.72, wolf: 0.76 };
+  (window.MAPS || []).forEach((n) => { const i = new Image(); i.src = "img/maps/" + n + ".jpg" + (V ? "?v=" + V : ""); pics[n] = i; });
+  const ok = (P) => P && P.complete && P.naturalWidth;
+  function tile(g, P, x, w, y, h, flip) {
+    if (!flip) return g.drawImage(P, x, y, w + 1, h);
+    g.save(); g.translate(x + w, y); g.scale(-1, 1); g.drawImage(P, 0, 0, w + 1, h); g.restore();
+  }
+  /* o.par = 따라 움직이는 빠르기(마을 1 — 문이 땅에 붙어 있게), o.end = { pic, at, f } — 세계 at 자리에 그림의 f 지점이 오게 마지막 판을 붙임 */
+  function drawPic(g, theme, P, cx, VW, VH, Z0, o) {
+    const gf = GF[theme] || 0.75, yo = Math.max(0, Math.min(140, (gf * VH - Z0 - 16) / (1 - gf)));
+    const h = VH + yo, w = P.naturalWidth * h / P.naturalHeight, y = -yo, sx = cx * (o.par || 0.6);
+    const E = o.end && ok(pics[o.end.pic]) ? pics[o.end.pic] : null;
+    let stopX = Infinity, base = 0;
+    if (E) { const we = E.naturalWidth * h / E.naturalHeight; stopX = o.end.at - o.end.f * we; base = stopX; tile(g, E, stopX - sx, we, y, h, false); }
+    const n0 = Math.floor((sx - base) / w);
+    for (let n = n0; ; n++) { const wx = base + n * w; if (wx - sx > VW || wx >= stopX) break; tile(g, P, wx - sx, w, y, h, (n & 1) !== 0); }
+  }
   const HILLS = Array.from({ length: 40 }, (_, i) => [i * 120, 150 + Math.sin(i * 1.7) * 40 + Math.sin(i * 0.6) * 30]);
   const TREES = Array.from({ length: 70 }, (_, i) => [i * 55 + Math.sin(i * 3.1) * 20, 60 + (i * 37 % 50), 0.8 + (i * 13 % 7) / 10]);
   const TH = {
@@ -418,13 +441,9 @@ const BG = (() => {
     goblin: { sky: ["#07100a", "#14301c", "#2a4a1e"], moon: "#d6c25a", hill: "#0e1f10", tree: "#08140a", ground: ["#23281a", "#11140c"] },
     town: { sky: ["#1a1030", "#4a2a4a", "#c86a4a"], moon: "#ffd9a0", hill: "#2a1a2e", tree: "#1e1424", ground: ["#4a3a2a", "#2a2018"] },
   };
-  function draw(g, theme, cx, VW, VH, Z0) {
+  function draw(g, theme, cx, VW, VH, Z0, o) {
     const P = pics[theme];
-    if (P && P.complete && P.naturalWidth) { // 그림 — 높이에 맞춰 가로로 이어 붙임
-      const k = VH / P.naturalHeight, w = P.naturalWidth * k, off = -((cx * 0.6) % w);
-      for (let x = off - w; x < VW; x += w) g.drawImage(P, x, 0, w + 1, VH);
-      return;
-    }
+    if (ok(P)) return drawPic(g, theme, P, cx, VW, VH, Z0, o || {});
     const T = TH[theme] || TH.forest;
     const sky = g.createLinearGradient(0, 0, 0, Z0); sky.addColorStop(0, T.sky[0]); sky.addColorStop(0.6, T.sky[1]); sky.addColorStop(1, T.sky[2]);
     g.fillStyle = sky; g.fillRect(0, 0, VW, Z0);
