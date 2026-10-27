@@ -28,27 +28,39 @@ const Dungeon = (() => {
     wchief: { name: "늑대 우두머리", hp: 3800, spd: 170, sc: 0.62, dmg: 28, act: "boss", range: 160, wind: 0.6, native: 1, w: 64, boss: true, sprite: "wolf", tint: "grayscale(.6) brightness(1.25) contrast(1.2)" },
   };
   /* ── 던전 — 서버 DUNGEONS 와 같은 열쇠 ── */
+  /* 던전 = 방 여러 개 + 보스룸 — "맵이 너무 단조롭다. 최소 · 최대 레벨 표시하고 맵을 3개~20개씩, 검은 숲 어귀 3 · 고블린의 숲 4 · 늑대 골짜기 5 · 오크족의 성지 6, 이어서 보스룸까지" (2026-10-27).
+     방을 다 비우면 오른쪽 끝에 「차원의 문」 — 문 앞에서 ↑(또는 문을 눌러) 다음 방. 방마다 그림 · 시간대(빛깔) · 안개를 바꿔 같은 맵이 이어지지 않게.
+     look = { pic: 그림, off: 그림의 어느 부분부터, tint: 덮는 빛깔, fog } · waves = 그 방에서 차례로 나오는 무리 */
+  const room = (name, look, ...waves) => ({ name, look, waves });
+  const W = (text, list) => ({ text, list });
+  const mkDun = (name, theme, lv, rooms) => ({ name, theme, lv, rooms, waves: rooms.flatMap((r, ri) => r.waves.map((w) => Object.assign({ room: ri }, w))) });
   const DUN = {
-    forest: { name: "검은 숲 어귀", theme: "forest", waves: [
-      { text: "검은 숲 어귀 — 슬라임이 몰려온다!", list: ["slime", "slime", "slime", "slime", "slime"] },
-      { text: "고블린 무리!", list: ["goblin", "goblin", "goblin", "slime", "slime"] },
-      { text: "늑대가 달려든다 — 구르기로 피해!", list: ["wolf", "wolf", "wolf", "goblin", "goblin"] },
-      { text: "대장 바위 거인 등장!", list: ["golem"] } ] },
-    goblin: { name: "고블린의 숲", theme: "goblin", waves: [
-      { text: "고블린의 숲 — 고블린 정찰대!", list: ["goblin", "goblin", "goblin", "goblin", "wolf"] },
-      { text: "늑대를 탄 고블린 무리!", list: ["wolf", "wolf", "wolf", "goblin", "goblin", "goblin"] },
-      { text: "숲 깊은 곳 — 모두 몰려온다!", list: ["goblin", "goblin", "wolf", "wolf", "slime", "slime", "goblin"] },
-      { text: "대장 고블린 족장 등장!", list: ["gchief"] } ] },
-    wolf: { name: "늑대 골짜기", theme: "wolf", waves: [
-      { text: "늑대 골짜기 — 울음소리가 사방에서!", list: ["wolf", "wolf", "wolf", "wolf"] },
-      { text: "늑대와 고블린 사냥꾼!", list: ["wolf", "wolf", "wolf", "goblin", "goblin", "goblin"] },
-      { text: "골짜기 깊은 곳 — 무리가 몰려온다!", list: ["wolf", "wolf", "wolf", "wolf", "wolf", "goblin", "goblin"] },
-      { text: "대장 늑대 우두머리 등장!", list: ["wchief"] } ] },
-    orc: { name: "오크족의 성지", theme: "orc", waves: [
-      { text: "오크족의 성지 — 전사들이 막아선다!", list: ["orc", "orc", "orc", "orcArcher"] },
-      { text: "화살이 날아온다 — 붉은 줄을 피해!", list: ["orc", "orc", "orcArcher", "orcArcher", "orcShaman"] },
-      { text: "주술사의 저주 — 발밑 붉은 원을 피해!", list: ["orc", "orc", "orc", "orcArcher", "orcShaman", "orcShaman"] },
-      { text: "대장 오크 우르각 등장!", list: ["orcChief", "orcArcher", "orcShaman"] } ] },
+    forest: mkDun("검은 숲 어귀", "forest", [1, 3], [
+      room("숲 어귀", { pic: "forest" }, W("검은 숲 어귀 — 슬라임이 몰려온다!", ["slime", "slime", "slime", "slime", "slime"])),
+      room("이끼 낀 오솔길", { pic: "forest", off: 900, tint: "rgba(20,60,30,.28)", fog: 0.25 }, W("고블린 무리!", ["goblin", "goblin", "goblin", "slime", "slime"]), W("뒤에서 슬라임이!", ["slime", "slime", "slime", "goblin"])),
+      room("붉은 달 공터", { pic: "forest", off: 1800, tint: "rgba(120,10,10,.25)" }, W("늑대가 달려든다 — 구르기로 피해!", ["wolf", "wolf", "wolf", "goblin", "goblin"])),
+      room("보스룸 — 바위 제단", { pic: "temple", boss: true, tint: "rgba(30,0,40,.25)" }, W("대장 바위 거인 등장!", ["golem"])) ]),
+    goblin: mkDun("고블린의 숲", "goblin", [3, 5], [
+      room("고블린 초소", { pic: "goblin" }, W("고블린의 숲 — 고블린 정찰대!", ["goblin", "goblin", "goblin", "goblin", "wolf"])),
+      room("덫이 깔린 길", { pic: "goblin", off: 800, tint: "rgba(60,40,0,.25)", fog: 0.2 }, W("늑대를 탄 고블린 무리!", ["wolf", "wolf", "wolf", "goblin", "goblin", "goblin"])),
+      room("버섯 늪", { pic: "forest", off: 400, tint: "rgba(40,90,40,.32)", fog: 0.35 }, W("늪에서 슬라임이 솟는다!", ["slime", "slime", "slime", "slime", "goblin", "goblin"]), W("고블린 매복!", ["goblin", "goblin", "goblin", "wolf"])),
+      room("고블린 마을", { pic: "goblin", off: 1700, tint: "rgba(90,40,0,.22)" }, W("숲 깊은 곳 — 모두 몰려온다!", ["goblin", "goblin", "wolf", "wolf", "slime", "slime", "goblin"])),
+      room("보스룸 — 족장의 막사", { pic: "castle", boss: true, tint: "rgba(60,30,0,.3)" }, W("대장 고블린 족장 등장!", ["gchief", "goblin", "goblin"])) ]),
+    wolf: mkDun("늑대 골짜기", "wolf", [5, 7], [
+      room("골짜기 입구", { pic: "wolf" }, W("늑대 골짜기 — 울음소리가 사방에서!", ["wolf", "wolf", "wolf", "wolf"])),
+      room("달빛 바위길", { pic: "wolf", off: 900, tint: "rgba(20,30,90,.3)" }, W("늑대와 고블린 사냥꾼!", ["wolf", "wolf", "wolf", "goblin", "goblin", "goblin"])),
+      room("안개 계곡", { pic: "wolf", off: 300, tint: "rgba(120,130,150,.18)", fog: 0.45 }, W("안개 속에서 늑대가!", ["wolf", "wolf", "wolf", "wolf", "wolf"]), W("바위 거인이 깨어난다!", ["golem", "wolf", "wolf"])),
+      room("뼈 무덤", { pic: "forest", off: 1300, tint: "rgba(70,70,90,.35)", fog: 0.2 }, W("무덤을 지키는 무리!", ["wolf", "wolf", "goblin", "goblin", "slime", "slime", "slime"])),
+      room("늑대 굴", { pic: "wolf", off: 1700, tint: "rgba(60,0,0,.28)" }, W("골짜기 깊은 곳 — 무리가 몰려온다!", ["wolf", "wolf", "wolf", "wolf", "wolf", "goblin", "goblin"])),
+      room("보스룸 — 우두머리의 바위산", { pic: "lava", boss: true, tint: "rgba(20,0,30,.3)" }, W("대장 늑대 우두머리 등장!", ["wchief", "wolf", "wolf"])) ]),
+    orc: mkDun("오크족의 성지", "orc", [7, 10], [
+      room("성지 바깥 성벽", { pic: "orc" }, W("오크족의 성지 — 전사들이 막아선다!", ["orc", "orc", "orc", "orcArcher"])),
+      room("화살 성문", { pic: "orc", off: 800, tint: "rgba(90,40,0,.25)" }, W("화살이 날아온다 — 붉은 줄을 피해!", ["orc", "orc", "orcArcher", "orcArcher", "orcShaman"])),
+      room("주술사의 뜰", { pic: "temple", off: 500, tint: "rgba(60,0,80,.3)", fog: 0.25 }, W("주술사의 저주 — 발밑 붉은 원을 피해!", ["orc", "orc", "orc", "orcArcher", "orcShaman", "orcShaman"])),
+      room("전사의 훈련장", { pic: "orc", off: 1600, tint: "rgba(110,30,10,.25)" }, W("오크 전사 무리!", ["orc", "orc", "orc", "orc", "orcArcher"]), W("바위 거인을 부렸다!", ["golem", "orc", "orcShaman"])),
+      room("피의 제단", { pic: "lava", off: 700, tint: "rgba(120,0,0,.25)", fog: 0.15 }, W("제단을 지키는 무리!", ["orc", "orc", "orcArcher", "orcArcher", "orcShaman", "orcShaman"])),
+      room("족장의 회랑", { pic: "castle", off: 900, tint: "rgba(80,30,0,.3)" }, W("회랑의 정예 전사들!", ["orc", "orc", "orc", "orc", "orcArcher", "orcShaman"])),
+      room("보스룸 — 우르각의 왕좌", { pic: "lava", boss: true, tint: "rgba(80,0,0,.3)" }, W("대장 오크 우르각 등장!", ["orcChief", "orcArcher", "orcShaman"])) ]),
   };
   /* 무한의 탑 — 층 n 의 무리 · 강해지는 정도. 10층마다 대장 */
   const TOWER = { name: "무한의 탑", theme: "castle", tower: true, waves: [] };
@@ -130,8 +142,11 @@ const Dungeon = (() => {
          { name: "흑룡 난무", short: "궁극", cd: 45, fr: "mj_shadow", kind: "ult", multi: [{ kind: "strike", fr: "mj_shadow", n: 10, range: 950, dmg: 65, type: "launch", size: 230 }, { kind: "zone", fr: "mj_poison", at: 0, r: 480, dur: 2.5, tick: 0.3, dmg: 16, size: 700, spin: 0 }] }],
   };
   const ACTS = ["s1", "s2", "s3", "s4", "s5", "s6", "ult"];
+  /* 운영자는 다섯 직업 스킬을 모두 — "나는 모든 스킬을 배울 수 있고 쓸 수 있게, 모든 캐릭터의 스킬을 써 봐야 어떤 문제가 있는지 안다" (2026-10-27).
+     한 줄로 이어 35개(직업 순서 × 7 + 스킬 번호, 7번째마다 궁극기) */
+  const HERO_ORDER = ["kh", "hr", "ds", "je", "mj"], ALL_SKILLS = HERO_ORDER.flatMap((h) => SKILLS[h]);
   const MPCOST = [8, 12, 15, 18, 22, 25, 50]; // 스킬 칸 번호(스킬 순서)마다 마력
-  const mpOf = (i) => (SKILL[i] && SKILL[i].mp) || MPCOST[i] || 15;
+  const mpOf = (i) => (SKILL[i] && SKILL[i].mp) || MPCOST[i % 7] || 15;
   let SKILL = SKILLS.kh;
 
   let S = null, C = null, stop = 0, shake = 0, nextId = 1;
@@ -141,15 +156,15 @@ const Dungeon = (() => {
      watch = 운영자 투명 관전 — 내 캐릭터는 없고(몬스터가 안 노림 · 안 그림 · 안 보냄), 화면은 파티장을 따라간다 */
   function start(cfg) {
     C = cfg; const D = DUN[cfg.d] || DUN.forest;
-    SKILL = SKILLS[heroOf(cfg.look)] || SKILLS.kh; MYATK = ATKS[heroOf(cfg.look)] || ATK; // 직업 평타 // 내 캐릭터(다섯 명 중) 스킬
+    SKILL = cfg.op ? ALL_SKILLS : SKILLS[heroOf(cfg.look)] || SKILLS.kh; MYATK = ATKS[heroOf(cfg.look)] || ATK; // 직업 평타 // 내 캐릭터(다섯 명 중) 스킬
     const n = cfg.party ? cfg.party.members.length : 1;
     stop = 0; shake = 0;
     S = {
-      D, t: 0, wave: 0, waveT: 1.2, spawned: false, banner: "", bannerT: 0, foes: [], shots: [], fx: [], nums: [], tele: [],
+      D, t: 0, wave: 0, room: 0, door: false, fadeT: 0, upWas: false, waveT: 1.2, spawned: false, banner: "", bannerT: 0, foes: [], shots: [], fx: [], nums: [], tele: [],
       hero: { x: 220, z: 440, h: 0, vx: 0, vh: 0, face: 1, hp: cfg.stats.hpMax, max: cfg.stats.hpMax, mp: cfg.stats.mpMax || 150, mpMax: cfg.stats.mpMax || 150, st: "idle", t: 0, inv: 0, step: 0, queued: false, hit: [], walk: 0 },
       mult: cfg.stats.atk / 33, hpK: 1 + 0.6 * (n - 1), potions: Object.assign({ p1: 0, p2: 0, p3: 0, p4: 0, p5: 0, p6: 0, mp1: 0, mp2: 0, mp3: 0 }, typeof cfg.potions === "object" ? cfg.potions : { p1: cfg.potions || 0 }), potCd: 0, regen: null,
-      combo: 0, comboT: 0, maxCombo: 0, hitsTaken: 0, cd: [0, 0, 0, 0, 0, 0, 0], ring: 0, over: false, win: false, lose: false, camX: 0, endT: 0, ended: false,
-      remote: {}, sendT: 0, syncT: 0, zones: [], loot: [], learned: cfg.learned || null, slots: cfg.slots || [0, 1, 2, 3, 4, 5, 6],
+      combo: 0, comboT: 0, maxCombo: 0, hitsTaken: 0, cd: SKILL.map(() => 0), ring: 0, over: false, win: false, lose: false, camX: 0, endT: 0, ended: false,
+      remote: {}, sendT: 0, syncT: 0, zones: [], loot: [], learned: cfg.op ? null : cfg.learned || null, slots: cfg.slots || [0, 1, 2, 3, 4, 5, 6],
     };
     if (cfg.watch) { S.hero.hp = 0; S.hero.x = -999; }
     if (D.pvp) { const left = cfg.party && cfg.party.host === cfg.me; S.hero.x = left ? 600 : 1200; S.hero.face = left ? 1 : -1; S.pvpT = 3; S.spawned = true; for (const id in S.remote) { S.remote[id].x = S.remote[id].tx = left ? 1200 : 600; S.remote[id].face = left ? -1 : 1; } } // 결투 — 양쪽 끝에서, 3초 세고 시작
@@ -228,10 +243,12 @@ const Dungeon = (() => {
       if (!S.spawned && !S.over) { if (S.rest > 0) { S.rest -= dt; if (KEYS.take("talk")) S.rest = 0; } if (!(S.rest > 0)) { S.floor = (S.floor || 0) + 1; S.spawned = true; S.rest = 0; banner("무한의 탑 " + S.floor + "층" + (S.floor % 10 === 0 ? " — 대장!" : "")); towerFloor(S.floor).forEach((k, i) => spawn(k, i, towerScale(MON[k], S.floor))); } }
     } else if (host() && !S.win && !S.lose) {
       const alive = S.foes.some((f) => f.st !== "dead");
-      if (S.spawned && !alive) { S.wave++; S.spawned = false; if (S.wave >= S.D.waves.length) { S.win = true; S.over = true; S.endT = 1.8; } else S.waveT = 1.4; }
-      if (!S.spawned && S.wave < S.D.waves.length && (S.waveT -= dt) <= 0) { const W = S.D.waves[S.wave]; S.spawned = true; banner(W.text); W.list.forEach((k, i) => spawn(k, i)); }
+      if (S.spawned && !alive) { S.wave++; S.spawned = false; if (S.wave >= S.D.waves.length) { S.win = true; S.over = true; S.endT = 1.8; } else { S.waveT = 1.4; if (S.D.rooms && S.D.waves[S.wave].room !== S.room) { S.door = true; banner("차원의 문이 열렸다 — 문 앞에서 ↑ (또는 문을 눌러)"); } } }
+      if (!S.spawned && !S.door && S.wave < S.D.waves.length && (!S.D.rooms || S.D.waves[S.wave].room === S.room) && (S.waveT -= dt) <= 0) { const W = S.D.waves[S.wave]; S.spawned = true; banner(W.text); W.list.forEach((k, i) => spawn(k, i)); }
       if (C.party && !heroes().length) { S.lose = true; S.over = true; S.endT = 1.6; banner("모두 쓰러졌다…"); }
     }
+    if (S.fadeT > 0) S.fadeT -= dt;
+    if (S.door && !S.over && !C.watch) { const up = C.axis()[1] < -0.6; if (up && !S.upWas && Math.abs(H.x - DOOR_X) < 120) useDoor(); S.upWas = up; } else S.upWas = false;
     if (S.bannerT > 0) S.bannerT -= dt;
     if (S.comboT > 0 && (S.comboT -= dt) <= 0) S.combo = 0;
     for (let i = 0; i < S.cd.length; i++) S.cd[i] = Math.max(0, S.cd[i] - dt);
@@ -267,7 +284,7 @@ const Dungeon = (() => {
     /* 파티 — 내 자리 초당 15번, 파티장은 몬스터 자리 초당 12번 */
     if ((C.party || S.spec) && !C.watch) { // S.spec = 운영자가 보는 중(혼자 하는 판도 보냄)
       if ((S.sendT -= dt) <= 0) { S.sendT = 1 / 15; C.send({ k: "me", x: Math.round(H.x), z: Math.round(H.z), h: Math.round(H.h), face: H.face, st: H.st, step: H.step, hp: Math.max(0, Math.round(H.hp)), max: H.max }); }
-      if (host() && (S.syncT -= dt) <= 0) { S.syncT = 1 / 12; C.send({ k: "sync", wave: S.wave, banner: S.bannerT > 2 ? S.banner : "", win: S.win ? 1 : 0, lose: S.lose ? 1 : 0, tele: S.tele.map((t) => [t.k, Math.round(t.k === "rect" ? t.x0 : t.x), Math.round(t.x1 || 0), Math.round(t.z), t.zr || t.r, +t.t.toFixed(2), t.full]), foes: S.foes.map((f) => [f.id, f.kind, Math.round(f.x), Math.round(f.z), Math.round(f.h), f.st, f.face, Math.round(f.hp), f.max]) }); }
+      if (host() && (S.syncT -= dt) <= 0) { S.syncT = 1 / 12; C.send({ k: "sync", wave: S.wave, room: S.room, door: S.door ? 1 : 0, banner: S.bannerT > 2 ? S.banner : "", win: S.win ? 1 : 0, lose: S.lose ? 1 : 0, tele: S.tele.map((t) => [t.k, Math.round(t.k === "rect" ? t.x0 : t.x), Math.round(t.x1 || 0), Math.round(t.z), t.zr || t.r, +t.t.toFixed(2), t.full]), foes: S.foes.map((f) => [f.id, f.kind, Math.round(f.x), Math.round(f.z), Math.round(f.h), f.st, f.face, Math.round(f.hp), f.max]) }); }
     }
     if (S.over && !S.ended && (S.endT -= dt) <= 0) { S.ended = true; C.onEnd({ win: S.win, sec: Math.floor(S.t), maxCombo: S.maxCombo, hits: S.hitsTaken, tower: !!S.D.tower, floor: S.cleared || 0, kills: S.kills || 0 }); }
   }
@@ -316,7 +333,7 @@ const Dungeon = (() => {
     const dd = C.dash ? C.dash() : 0;
     if (dd && S.dashCd <= 0 && (free || H.st === "atk") && grounded) { H.st = "sprint"; H.t = 0; H.face = dd; H.inv = Math.max(H.inv, 0.22); S.dashCd = 0.45; H.queued = false; }
     /* 스킬 — 누른 것을 0.4초 기억했다가 움직일 수 있게 되면 바로(다른 동작 중에 누르면 버려져 '먹통' 같던 것). 기다림 중이면 머리 위에 알려 줌 */
-    S.slots.forEach((si, slot) => { const i = si, sk = SKILL[si]; if (KEYS.take(ACTS[slot]) && sk) { if (S.learned && !S.learned.includes(i)) { if (!(S.cdSay > 0)) { num(H.x, H.z - H.h - 140, sk.short + " — 아직 안 배움", "#c9c2b0"); S.cdSay = 0.6; } } else if (S.cd[i] > 0) { if (!(S.cdSay > 0)) { num(H.x, H.z - H.h - 140, sk.short + " " + Math.ceil(S.cd[i]) + "초", "#c9c2b0"); S.cdSay = 0.4; } } else S.skBuf = { i, t: 0.4 }; } });
+    S.slots.forEach((si, slot) => { const i = si, sk = SKILL[si]; if (KEYS.take(ACTS[slot]) && sk) { if (S.learned && !S.learned.includes(i)) { if (!(S.cdSay > 0)) { num(H.x, H.z - H.h - 140, sk.short + " — 아직 안 배움", "#c9c2b0"); S.cdSay = 0.6; } } else if (S.cd[i] > 0) { if (!(S.cdSay > 0)) { num(H.x, H.z - H.h - 140, sk.short + " " + Math.ceil(S.cd[i]) + "초", "#c9c2b0"); S.cdSay = 0.4; } } else if (!grounded) { if (!(S.cdSay > 0)) { num(H.x, H.z - H.h - 140, "점프 중엔 스킬 못 써요", "#c9c2b0"); S.cdSay = 0.6; } } else S.skBuf = { i, t: 0.4 }; } }); // 점프 중엔 스킬 못 씀 (2026-10-27)
     S.cdSay = Math.max(0, (S.cdSay || 0) - dt); S.flash = Math.max(0, (S.flash || 0) - dt);
     if (S.skBuf) { const i = S.skBuf.i, sk = SKILL[i], ready = free || H.st === "atk" || (H.st === "cast" && H.t >= 0.12) || H.st === "sprint";
       if (ready && grounded && S.cd[i] <= 0) { if (H.mp < mpOf(i)) { S.skBuf = null; if (!(S.cdSay > 0)) { num(H.x, H.z - H.h - 140, "마력 부족", "#7fb7ff"); S.cdSay = 0.6; } } else { H.mp -= mpOf(i); S.cd[i] = sk.cd; H.queued = false; S.skBuf = null; cast(sk); } } else if ((S.skBuf.t -= dt) <= 0) S.skBuf = null; }
@@ -356,10 +373,13 @@ const Dungeon = (() => {
       if (ax) H.face = Math.sign(ax);
       H.st = ax || az ? (run ? "run" : "walk") : "idle"; if (ax || az) H.walk += dt * (run ? 14 : 9);
       if (KEYS.take("atk")) { H.st = "atk"; H.step = 0; H.t = 0; H.hit = []; H.queued = false; }
-      else if (KEYS.take("jump")) { H.st = "jump"; H.vh = 760; H.t = 0; }
+      else if (KEYS.take("jump")) { H.st = "jump"; H.vh = 760; H.t = 0; S.skBuf = null; }
       else if (KEYS.take("back")) { H.st = "backstep"; H.t = 0; H.vh = 260; H.inv = 0.28; }
       else if (KEYS.take("roll")) { H.st = "roll"; H.t = 0; H.inv = 0.34; if (ax) H.face = Math.sign(ax); }
     }
+    /* 공중에 뜬 채 멈추던 것 (2026-10-27 "가끔 캐릭터가 공중에 뜬다, 점프 눌러줘야 스킬 나간다") — 중력은 점프 · 공중 공격 · 쓰러짐 · 백스텝에서만 돌아,
+       공중에서 맞거나(hit) 공중에서 돌진 · 시전 등 다른 동작이 되면 높이가 그대로 남았다(서 있는 동작인데 떠 있고, 땅이 아니라 스킬도 막힘). 어떤 동작이든 떠 있으면 떨어지게 */
+    if ((H.h > 0 || H.vh > 0) && !["jump", "airatk", "fall", "backstep"].includes(H.st)) gravity(H, dt);
     H.x = clamp(H.x, 30, ROOM - 30);
   }
   function gravity(o, dt) { o.h += o.vh * dt; o.vh -= G * dt; if (o.h < 0) o.h = 0; }
@@ -441,8 +461,27 @@ const Dungeon = (() => {
   }
 
   /* ── 파티 주고받기 ── */
+  /* 차원의 문 — 방 오른쪽 끝. 파티장이 넘어가면(또는 파티원이 문을 쓰면 파티장에게 알려) 모두 다음 방으로 */
+  const DOOR_X = ROOM - 130;
+  function useDoor() { if (!S || !S.door) return; if (host()) goRoom(S.room + 1); else C.send({ k: "door" }); }
+  function goRoom(r) {
+    const H = S.hero, RM = S.D.rooms[r]; if (!RM) return;
+    S.room = r; S.door = false; S.fadeT = 0.7; S.waveT = 1.0; S.camX = 0;
+    H.x = 160; H.h = 0; H.vh = 0; H.vx = 0; if (H.hp > 0) H.st = "idle"; H.inv = Math.max(H.inv, 1);
+    S.foes = []; S.shots = []; S.zones = []; S.tele = [];
+    banner((RM.look.boss ? "⚠ " : (r + 1) + " / " + S.D.rooms.length + " — ") + RM.name);
+  }
+  function drawDoor(g, x, y) { // 차원의 문 — 보랏빛 소용돌이
+    const t = S.t; g.save(); g.translate(x, y);
+    const gr = g.createRadialGradient(0, -90, 10, 0, -90, 110); gr.addColorStop(0, "rgba(255,240,255,.95)"); gr.addColorStop(0.35, "rgba(190,110,255,.8)"); gr.addColorStop(1, "rgba(80,20,160,0)");
+    g.fillStyle = gr; g.beginPath(); g.ellipse(0, -90, 70, 120, 0, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = "rgba(225,180,255,.9)"; g.lineWidth = 3; for (let k = 0; k < 3; k++) { g.beginPath(); g.ellipse(0, -90, 52 - k * 14, 100 - k * 26, t * (1.5 + k) , 0, Math.PI * 1.4); g.stroke(); }
+    g.font = "800 15px 'Noto Sans KR', sans-serif"; g.textAlign = "center"; g.lineWidth = 4; g.strokeStyle = "rgba(0,0,0,.85)"; const tx = "차원의 문  ↑", ty = -230 + Math.sin(t * 3) * 4; g.strokeText(tx, 0, ty); g.fillStyle = "#f0d8ff"; g.fillText(tx, 0, ty);
+    g.restore();
+  }
   function net(from, d) {
     if (!S || !C.party || !d) return;
+    if (d.k === "door") { if (host() && S.door) goRoom(S.room + 1); return; }
     if (d.k === "me") { const r = S.remote[from]; if (!r) return; Object.assign(r, { tx: d.x, tz: d.z, th: d.h, face: d.face, step: d.step, hp: d.hp, max: d.max, alive: d.hp > 0 }); if (r.st !== d.st) { r.st = d.st; r.t = 0; } return; }
     if (d.k === "hit" && host()) { const f = S.foes.find((x) => x.id === d.i); if (f) hitFoe(f, Math.min(600, +d.dmg || 0), d.type, d.dir || 1, true); return; }
     if (d.k === "hurt") { if (d.pvp && (!S.D.pvp || S.pvpT > 0)) return; hurt(S.hero, +d.dmg || 0, !!d.heavy, d.dir || 1); return; }
@@ -457,7 +496,7 @@ const Dungeon = (() => {
       S.foes.forEach((f) => { if (!seen.has(f.id) && f.st !== "dead") { f.st = "dead"; f.t = 0.6; } });
       S.tele = d.tele.map(([k, a, b, z, r, t, full]) => k === "rect" ? { k, x0: a, x1: b, z, zr: r, t, full } : { k, x: a, z, r, t, full });
       if (d.banner && d.banner !== S.banner) banner(d.banner);
-      S.wave = d.wave;
+      S.wave = d.wave; if (d.room != null && d.room !== S.room && S.D.rooms) goRoom(d.room); S.door = !!d.door;
       if ((d.win || d.lose) && !S.over) { S.over = true; S.win = !!d.win; S.lose = !!d.lose; S.endT = 1.8; if (d.lose) banner("모두 쓰러졌다…"); }
     }
   }
@@ -541,7 +580,11 @@ const Dungeon = (() => {
   function draw(g, touch) {
     if (!S) return;
     const cx = S.camX + (shake > 0 ? (Math.random() - 0.5) * 20 * shake : 0);
-    BG.draw(g, S.D.theme, cx, VW, VH, Z0);
+    const LK = (S.D.rooms && S.D.rooms[S.room] && S.D.rooms[S.room].look) || {};
+    BG.draw(g, LK.pic || S.D.theme, cx + (LK.off || 0), VW, VH, Z0);
+    if (LK.tint) { g.fillStyle = LK.tint; g.fillRect(0, 0, VW, VH); }
+    if (LK.fog) { const fg = g.createLinearGradient(0, Z0 - 120, 0, VH); fg.addColorStop(0, "rgba(200,205,215,0)"); fg.addColorStop(0.5, "rgba(200,205,215," + LK.fog + ")"); fg.addColorStop(1, "rgba(200,205,215," + LK.fog * 0.4 + ")"); g.fillStyle = fg; g.fillRect(0, Z0 - 120, VW, VH - Z0 + 120); }
+    if (S.door) { drawDoor(g, DOOR_X - cx, Z0 + 40); if (DOOR_X - cx > VW + 40) { const bob = Math.sin(S.t * 5) * 6; g.font = "800 17px 'Noto Sans KR', sans-serif"; g.textAlign = "right"; g.lineWidth = 4; g.strokeStyle = "rgba(0,0,0,.85)"; g.strokeText("차원의 문 ▶", VW - 16 + bob, Z0 - 20); g.fillStyle = "#e8c8ff"; g.fillText("차원의 문 ▶", VW - 16 + bob, Z0 - 20); } } /* 화면 밖이면 오른쪽 끝에 알림 */
     S.tele.forEach((t) => {
       const p = clamp(1 - t.t / t.full, 0, 1); g.fillStyle = "rgba(255,50,40,.18)"; g.strokeStyle = "rgba(255,70,50,.9)"; g.lineWidth = 2;
       if (t.k === "rect") { g.fillRect(t.x0 - cx, t.z - t.zr, t.x1 - t.x0, t.zr * 2); g.strokeRect(t.x0 - cx, t.z - t.zr, t.x1 - t.x0, t.zr * 2); g.fillStyle = "rgba(255,50,40,.35)"; g.fillRect(t.x0 - cx, t.z - t.zr, (t.x1 - t.x0) * p, t.zr * 2); }
@@ -569,16 +612,17 @@ const Dungeon = (() => {
   function bar(g, x, y, w, h, p, c) { g.fillStyle = "rgba(0,0,0,.65)"; g.fillRect(x - 2, y - 2, w + 4, h + 4); g.fillStyle = c; g.fillRect(x, y, w * clamp(p, 0, 1), h); }
   function hud(g, touch) {
     const H = S.hero;
+    if (S.fadeT > 0) { g.fillStyle = "rgba(0,0,0," + Math.min(1, S.fadeT / 0.5) + ")"; g.fillRect(0, 0, VW, VH); } // 방을 넘어갈 때 잠깐 어둡게
     g.textAlign = "left";
     if (C.watch) { g.font = "800 15px 'Noto Sans KR', sans-serif"; g.fillStyle = "#c58cff"; g.fillText("👁 투명 관전 중 · " + S.D.name + " — 이 판 사람들에게는 안 보여요", 22, 30); g.font = "600 12px 'Noto Sans KR', sans-serif"; let py = 56; for (const id in S.remote) { const r = S.remote[id]; g.fillStyle = "#bfe3ff"; g.fillText(r.nick, 22, py); bar(g, 110, py - 9, 90, 7, r.hp / (r.max || 1), "#3ccf6a"); py += 18; } return; }
     g.font = "700 15px 'Noto Sans KR', sans-serif"; g.fillStyle = "#f6d27a"; g.fillText(C.nick + "  ·  " + S.D.name, 22, 30);
     bar(g, 22, 40, 260, 14, H.hp / H.max, H.hp / H.max > 0.3 ? "#3ccf6a" : "#e5484d");
     g.font = "600 12px 'Noto Sans KR', sans-serif"; g.fillStyle = "#fff"; g.fillText(Math.ceil(H.hp) + " / " + H.max, 28, 52);
     bar(g, 22, 57, 260, 8, H.mp / H.mpMax, "#3f8cff"); // 마력
-    g.fillStyle = "#c9b48a"; g.fillText("무리 " + Math.min(S.wave + 1, S.D.waves.length) + " / " + S.D.waves.length + "   " + Math.floor(S.t / 60) + ":" + String(Math.floor(S.t % 60)).padStart(2, "0") + "   물약 " + Object.values(S.potions).reduce((a, b) => a + b, 0) + (touch ? "" : " (" + KEYS.label("potion") + ")"), 22, 74);
+    g.fillStyle = "#c9b48a"; g.fillText((S.D.rooms ? "방 " + (S.room + 1) + " / " + S.D.rooms.length + "   " : "무리 " + Math.min(S.wave + 1, S.D.waves.length) + " / " + S.D.waves.length + "   ") + Math.floor(S.t / 60) + ":" + String(Math.floor(S.t % 60)).padStart(2, "0") + "   물약 " + Object.values(S.potions).reduce((a, b) => a + b, 0) + (touch ? "" : " (" + KEYS.label("potion") + ")"), 22, 74);
     let py = 96; for (const id in S.remote) { const r = S.remote[id]; g.fillStyle = "#bfe3ff"; g.fillText(r.nick, 22, py); bar(g, 110, py - 9, 90, 7, r.hp / (r.max || 1), "#3ccf6a"); py += 18; }
     if (S.D.tower) { g.textAlign = "right"; g.font = "900 22px 'Noto Sans KR', sans-serif"; g.lineWidth = 4; g.strokeStyle = "rgba(0,0,0,.8)"; const tt = "무한의 탑 " + (S.floor || 1) + "층"; g.strokeText(tt, VW - 22, 70); g.fillStyle = "#ffd36b"; g.fillText(tt, VW - 22, 70);
-      if (S.rest > 0 && !S.over) { g.textAlign = "center"; g.font = "800 20px 'Noto Sans KR', sans-serif"; const r = "쉬는 시간 " + Math.ceil(S.rest) + "초 — " + (touch ? "말걸기 단추" : KEYS.label("talk")) + " 로 바로 " + (S.floor + 1) + "층"; g.strokeText(r, VW / 2, 120); g.fillStyle = "#9df59a"; g.fillText(r, VW / 2, 120); } }
+      if (S.rest > 0 && !S.over) { g.textAlign = "center"; g.font = "800 20px 'Noto Sans KR', sans-serif"; const r = "쉬는 시간 " + Math.ceil(S.rest) + "초 — " + (touch ? "화면을 누르면" : KEYS.label("talk") + " 또는 화면 클릭으로") + " 바로 " + (S.floor + 1) + "층"; g.strokeText(r, VW / 2, 120); g.fillStyle = "#9df59a"; g.fillText(r, VW / 2, 120); } }
     if (S.flash > 0) { g.fillStyle = "rgba(255,240,200," + Math.min(0.5, S.flash) + ")"; g.fillRect(0, 0, VW, VH); }
     const B = S.foes.find((f) => f.D.boss && f.st !== "dead");
     if (B) { g.textAlign = "center"; g.font = "800 15px 'Noto Sans KR', sans-serif"; g.fillStyle = "#ffb08a"; g.fillText(B.D.name, VW / 2, 28); bar(g, VW / 2 - 220, 36, 440, 12, B.hp / B.max, "#e0662a"); }
@@ -607,7 +651,7 @@ const Dungeon = (() => {
       const lab = KEYS.label(ACTS[slot]); g.fillStyle = "rgba(0,0,0,.75)"; g.fillRect(x + 36, y + 42, 18, 15); g.fillStyle = "#e8e2d0"; g.textAlign = "center"; g.font = "800 11px sans-serif"; g.fillText(lab.length > 2 ? lab.slice(0, 2) : lab, x + 45, y + 54);
     }
   }
-  return { lootText(t2) { if (S) num(S.hero.x, S.hero.z - S.hero.h - 125, t2, "#ffe08a"); }, duelWon() { if (S && !S.over) { S.over = true; S.win = true; S.endT = 1.6; banner("승리!"); } }, gmAura: (g, x, y) => gmAura(g, x, y, performance.now() / 1000), start, step, draw, net, MON, DUN, SKILLS, get SKILL() { return SKILL; }, get S() { return S; }, quit() { if (S) S.ended = true; S = null; }, addRemote(p) { if (!S || S.remote[p.id]) return; if (!C.party) C.party = { host: C.me, members: [] }; S.spec = true; /* 혼자 하던 판에 운영자가 들어오면 그때부터 주고받음 */ S.remote[p.id] = { id: p.id, nick: p.nick, look: p.look, gear: p.gear, op: !!p.op, x: S.hero.x - 60, z: S.hero.z, h: 0, face: 1, st: "idle", t: 0, step: 0, walk: 0, hp: 1, max: 1, tx: S.hero.x - 60, tz: S.hero.z, th: 0, alive: true, inv: 0 }; }, watched() { if (S) S.spec = true; } };
+  return { HERO_ORDER, ALL_SKILLS, /* 화면을 눌렀을 때 — 차원의 문을 누르면 들어감(화면 좌표 x, y) */ click(x, y) { if (S && S.D.tower && S.rest > 0 && !S.spawned && !S.over && !C.watch) { S.rest = 0; return true; } /* 무한의 탑 쉬는 시간 — 화면을 누르면 바로 다음 층(휴대폰엔 말걸기 단추가 없어 30초를 다 쉬어야 했다, 2026-10-27) */ if (!S || !S.door || S.over || C.watch) return false; const dx = DOOR_X - S.camX; if (Math.abs(x - dx) < 90 && y > Z0 - 230 && y < Z0 + 60) { useDoor(); return true; } return false; }, get room() { return S && S.room; }, lootText(t2) { if (S) num(S.hero.x, S.hero.z - S.hero.h - 125, t2, "#ffe08a"); }, duelWon() { if (S && !S.over) { S.over = true; S.win = true; S.endT = 1.6; banner("승리!"); } }, gmAura: (g, x, y) => gmAura(g, x, y, performance.now() / 1000), start, step, draw, net, MON, DUN, SKILLS, get SKILL() { return SKILL; }, get S() { return S; }, quit() { if (S) S.ended = true; S = null; }, addRemote(p) { if (!S || S.remote[p.id]) return; if (!C.party) C.party = { host: C.me, members: [] }; S.spec = true; /* 혼자 하던 판에 운영자가 들어오면 그때부터 주고받음 */ S.remote[p.id] = { id: p.id, nick: p.nick, look: p.look, gear: p.gear, op: !!p.op, x: S.hero.x - 60, z: S.hero.z, h: 0, face: 1, st: "idle", t: 0, step: 0, walk: 0, hp: 1, max: 1, tx: S.hero.x - 60, tz: S.hero.z, th: 0, alive: true, inv: 0 }; }, watched() { if (S) S.spec = true; } };
 })();
 
 /* ── 배경 — 마을 · 던전마다. 제미나이 맵 그림(img/maps/<이름>.jpg, frames.js 의 MAPS 에 적힌 것)이 있으면 그것을, 없으면 코드로 그린다
