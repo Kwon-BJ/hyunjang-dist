@@ -5,7 +5,7 @@ const KEYS = (() => {
   const ACTS = [
     ["left", "왼쪽", "ArrowLeft"], ["right", "오른쪽", "ArrowRight"], ["up", "안쪽(위)", "ArrowUp"], ["down", "바깥쪽(아래)", "ArrowDown"],
     ["atk", "공격", "KeyX"], ["jump", "점프", "KeyC"], ["roll", "구르기", "KeyZ"],
-    ["s1", "스킬 1", "KeyA"], ["s2", "스킬 2", "KeyS"], ["s3", "스킬 3", "KeyD"], ["potion", "물약", "KeyQ"],
+    ["back", "백스텝", "KeyV"], ["s1", "스킬 1", "KeyA"], ["s2", "스킬 2", "KeyS"], ["s3", "스킬 3", "KeyD"], ["potion", "물약(빠른 칸 1)", "KeyQ"], ["q1", "물약 칸 1", "Digit1"], ["q2", "물약 칸 2", "Digit2"], ["q3", "물약 칸 3", "Digit3"], ["q4", "물약 칸 4", "Digit4"], ["q5", "물약 칸 5", "Digit5"],
     ["talk", "말 걸기 · 들어가기", "KeyF"], ["bag", "가방", "KeyI"], ["chat", "채팅", "Enter"], ["menu", "메뉴 · 닫기", "Escape"],
   ];
   let map = {};
