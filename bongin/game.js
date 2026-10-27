@@ -156,6 +156,7 @@ const Dungeon = (() => {
      watch = 운영자 투명 관전 — 내 캐릭터는 없고(몬스터가 안 노림 · 안 그림 · 안 보냄), 화면은 파티장을 따라간다 */
   function start(cfg) {
     C = cfg; const D = DUN[cfg.d] || DUN.forest;
+    POTS = Array.isArray(cfg.potSlots) && cfg.potSlots.length === 8 ? cfg.potSlots.slice() : POTS_DEF.slice();
     SKILL = cfg.op ? ALL_SKILLS : SKILLS[heroOf(cfg.look)] || SKILLS.kh; MYATK = ATKS[heroOf(cfg.look)] || ATK; // 직업 평타 // 내 캐릭터(다섯 명 중) 스킬
     const n = cfg.party ? cfg.party.members.length : 1;
     stop = 0; shake = 0;
@@ -236,7 +237,28 @@ const Dungeon = (() => {
   function target(f) { let best = null, bd = 1e9; heroes().forEach((h) => { const d = Math.abs(h.x - f.x) + Math.abs(h.z - f.z) * 2; if (d < bd) { bd = d; best = h; } }); return best || S.hero; }
 
   /* ── 한 틀 ── */
+  /* 궁극기 컷인 — 던파 각성기처럼: 화면 어두워짐 · 시간 멈춤 · 대각선 띠에 캐릭터가 미끄러져 들어옴 · 큰 이름 → 하얗게 번쩍 · 크게 흔들림 · 터짐 (2026-10-28) */
+  const CUT_T = 1.15;
+  function cutStep(dt) { const c = S.cut; c.t += dt; if (c.t >= CUT_T) { S.cut = null; S.flash = 0.9; shake = 1.1; stop = 0.12; cast(c.sk, true); } }
+  function drawCut(g) {
+    const c = S.cut; if (!c) return; const t = c.t, inA = Math.min(1, t / 0.18), out = t > CUT_T - 0.16 ? (CUT_T - t) / 0.16 : 1, e = 1 - Math.pow(1 - inA, 3);
+    g.save(); g.fillStyle = "rgba(0,0,0," + (0.7 * Math.min(1, t / 0.1)) + ")"; g.fillRect(0, 0, VW, VH);
+    // 대각선 띠 · 속도선
+    g.translate(VW / 2, VH / 2); g.rotate(-0.22); const bw = VW * 1.6, bh = 210 * e;
+    const bg2 = g.createLinearGradient(0, -bh / 2, 0, bh / 2); bg2.addColorStop(0, "rgba(120,10,10,.95)"); bg2.addColorStop(0.5, "rgba(40,0,0,.97)"); bg2.addColorStop(1, "rgba(120,10,10,.95)");
+    g.globalAlpha = out; g.fillStyle = bg2; g.fillRect(-bw / 2, -bh / 2, bw, bh); g.fillStyle = "#ffcf4a"; g.fillRect(-bw / 2, -bh / 2 - 4, bw, 4); g.fillRect(-bw / 2, bh / 2, bw, 4);
+    g.strokeStyle = "rgba(255,220,160,.35)"; g.lineWidth = 2; for (let k = 0; k < 26; k++) { const y = -bh / 2 + ((k * 37) % bh), x = ((k * 211 + t * 2600) % bw) - bw / 2; g.beginPath(); g.moveTo(x, y); g.lineTo(x - 160, y); g.stroke(); }
+    g.rotate(0.22);
+    // 캐릭터 — 오른쪽에서 미끄러져 들어와 살짝 계속 움직임
+    const pic = typeof MASTER_IMG !== "undefined" && MASTER_IMG.complete && FR.masters && FR.masters[c.hero] ? [MASTER_IMG, FR.masters[c.hero]] : typeof CHIEF_IMG !== "undefined" && FR.npc && FR.npc.chief && c.hero === "chief" ? [CHIEF_IMG, FR.npc.chief] : null;
+    if (pic) { const [im, r] = pic, hh = 420, ww = r[2] * hh / r[3], px = 120 + (1 - e) * 600 - t * 30; g.save(); g.beginPath(); g.rect(-VW / 2, -VH / 2, VW, VH); g.clip(); g.shadowColor = "rgba(255,180,60,.8)"; g.shadowBlur = 30; g.drawImage(im, r[0], r[1], r[2], r[3], px - ww / 2, -hh / 2 + 40, ww, hh); g.restore(); }
+    // 이름
+    const nm = c.sk.name, fs2 = 64, tx = -VW * 0.18 - (1 - e) * 300; g.font = "900 " + fs2 + "px 'Noto Sans KR', serif"; g.textAlign = "center"; g.lineWidth = 10; g.strokeStyle = "rgba(0,0,0,.9)"; g.strokeText(nm, tx, 20);
+    const tg = g.createLinearGradient(0, -30, 0, 30); tg.addColorStop(0, "#fff6c8"); tg.addColorStop(0.5, "#ffcf4a"); tg.addColorStop(1, "#d8861a"); g.fillStyle = tg; g.fillText(nm, tx, 20);
+    g.font = "800 20px 'Noto Sans KR', sans-serif"; g.fillStyle = "#ffe6a8"; g.fillText("— 각 성 —", tx, -42); g.restore();
+  }
   function step(dt) {
+    if (S && S.cut) { cutStep(dt); return; }
     if (!S || S.ended) return;
     S.foes.forEach((f) => { if (f.shk > 0) f.shk -= dt; });
     if (stop > 0) { stop -= dt; return; }
@@ -307,7 +329,8 @@ const Dungeon = (() => {
   }
   function cast(sk, sub) {
     if (!sub && !S.ghost && C.party) C.send({ k: "cast", i: ALL_SKILLS.indexOf(sk) });
-    if (sk.kind === "ult") { S.flash = 0.5; shake = 0.7; banner("궁극기 — " + sk.name + "!"); S.hero.inv = Math.max(S.hero.inv, 1); sk.multi.forEach((m) => cast(m, true)); return; } // 궁극기 — 여러 재주를 한 번에
+    if (sk.kind === "ult" && !S.ghost && !sub && !S.cut) { S.cut = { t: 0, sk, hero: C.op && !(C.look && C.look.gm === 0) ? "chief" : heroOf(C.look) }; S.hero.inv = Math.max(S.hero.inv, 2.5); return; } // 각성 컷인(아래 cutStep)
+    if (sk.kind === "ult") { S.flash = 0.5; shake = 0.7; if (S.ghost) banner("궁극기 — " + sk.name + "!"); S.hero.inv = Math.max(S.hero.inv, 1); sk.multi.forEach((m) => cast(m, true)); return; } // 궁극기 — 여러 재주를 한 번에
     const H = S.hero, near = (r) => S.foes.filter((f) => f.st !== "dead" && Math.abs(f.x - H.x) < r).concat(pvpFoes().filter((p) => Math.abs(p.x - H.x) < r)).sort((a, b) => Math.abs(a.x - H.x) - Math.abs(b.x - H.x));
     if (sk.kind === "shot") { H.st = "cast"; H.t = 0; const n = sk.n || 1; for (let k = 0; k < n; k++) S.shots.push({ x: H.x + H.face * 40, z: clamp(H.z + (k - (n - 1) / 2) * 34, Z0, Z1), vx: H.face * sk.spd, t: sk.life, hit: [], face: H.face, sk }); }
     else if (sk.kind === "aura") { S.zones.push({ follow: true, x: H.x, z: H.z, t: sk.dur, tt: 0, sk }); H.st = "cast"; H.t = 0.1; }
@@ -322,8 +345,9 @@ const Dungeon = (() => {
     else if (sk.kind === "guard") { H.inv = sk.dur; H.st = "cast"; H.t = 0; S.zones.push({ follow: true, x: H.x, z: H.z, t: sk.dur, tt: 0, sk: Object.assign({}, sk, { tick: 0.5, type: "knock" }) }); }
   }
   /* 물약 — 빠른 칸 1~5. p1 체력 40% · p2 80% · p3 6초 동안 60% · p4 금단(가득 + 3초 무적) · p5 기력(스킬 기다림 없앰). 서로 1초 간격 */
-  const POTS = ["p1", "p2", "p6", "mp1", "mp2", "mp3", "p4", "p5"]; // 체력 소 · 중 · 대 · 마력 소 · 중 · 대 · 금단 · 기력 (회복 단약 p3 는 Q 로)
+  const POTS_DEF = ["p1", "p2", "p6", "mp1", "mp2", "mp3", "p4", "p5"]; let POTS = POTS_DEF.slice(); // 빠른 칸 8 — 유저가 가방에서 넣고 뺌(cfg.potSlots, 2026-10-28) // 체력 소 · 중 · 대 · 마력 소 · 중 · 대 · 금단 · 기력 (회복 단약 p3 는 Q 로)
   function usePot(k) {
+    if (!k) return;
     const H = S.hero; if (!S.potions[k] || S.potCd > 0 || H.hp <= 0) return;
     if ((k === "p1" || k === "p2" || k === "p6" || k === "p3") && H.hp >= H.max) return;
     if (k.startsWith("mp") && H.mp >= H.mpMax) return;
@@ -352,7 +376,7 @@ const Dungeon = (() => {
     /* 대시 2번 충전식 — 하나 쓰면 8초 뒤 하나 참 (2026-10-27 "대쉬도 2회 연달아 쓸 수 있게, 충전식, 1개당 8초") */
     if (S.dashN == null) { S.dashN = DASH_MAX; S.dashRe = 0; }
     if (S.dashN < DASH_MAX) { S.dashRe += dt; if (S.dashRe >= DASH_CD) { S.dashN++; S.dashRe = 0; } } else S.dashRe = 0;
-    if (dd && S.dashCd <= 0 && (free || H.st === "atk") && grounded) { if (S.dashN > 0) { H.st = "sprint"; H.t = 0; H.face = dd; H.inv = Math.max(H.inv, 0.22); S.dashCd = 0.25; S.dashN--; H.queued = false; } else if (!(S.cdSay > 0)) { num(H.x, H.z - H.h - 140, "대시 충전 중 " + Math.ceil(DASH_CD - S.dashRe) + "초", "#c9c2b0"); S.cdSay = 0.6; } }
+    if (dd && S.dashCd <= 0 && (free || H.st === "atk") && grounded) { if (S.dashN > 0) { H.st = "sprint"; H.t = 0; H.face = dd; H.inv = Math.max(H.inv, 0.22); S.dashCd = 0.25; S.dashN--; H.queued = false; } } // 모자라면 그냥 안 나감 — 남은 횟수 · 차는 중은 오른쪽 대시 칸에 (2026-10-28)
     /* 스킬 — 누른 것을 0.4초 기억했다가 움직일 수 있게 되면 바로(다른 동작 중에 누르면 버려져 '먹통' 같던 것). 기다림 중이면 머리 위에 알려 줌 */
     S.slots.forEach((si, slot) => { const i = si, sk = SKILL[si]; if (KEYS.take(ACTS[slot]) && sk) { if (S.learned && !S.learned.includes(i)) { if (!(S.cdSay > 0)) { num(H.x, H.z - H.h - 140, sk.short + " — 아직 안 배움", "#c9c2b0"); S.cdSay = 0.6; } } else if (S.cd[i] > 0) { if (!(S.cdSay > 0)) { num(H.x, H.z - H.h - 140, sk.short + " " + Math.ceil(S.cd[i]) + "초", "#c9c2b0"); S.cdSay = 0.4; } } else if (!grounded) { if (!(S.cdSay > 0)) { num(H.x, H.z - H.h - 140, "점프 중엔 스킬 못 써요", "#c9c2b0"); S.cdSay = 0.6; } } else S.skBuf = { i, t: 0.4 }; } }); // 점프 중엔 스킬 못 씀 (2026-10-27)
     S.cdSay = Math.max(0, (S.cdSay || 0) - dt); S.flash = Math.max(0, (S.flash || 0) - dt);
@@ -654,7 +678,7 @@ const Dungeon = (() => {
   }
   function bar(g, x, y, w, h, p, c) { g.fillStyle = "rgba(0,0,0,.65)"; g.fillRect(x - 2, y - 2, w + 4, h + 4); g.fillStyle = c; g.fillRect(x, y, w * clamp(p, 0, 1), h); }
   function hud(g, touch) {
-    const H = S.hero;
+    const H = S.hero; if (S.cut) { drawCut(g); return; }
     if (S.fadeT > 0) { g.fillStyle = "rgba(0,0,0," + Math.min(1, S.fadeT / 0.5) + ")"; g.fillRect(0, 0, VW, VH); } // 방을 넘어갈 때 잠깐 어둡게
     g.textAlign = "left";
     if (C.watch) { g.font = "800 15px 'Noto Sans KR', sans-serif"; g.fillStyle = "#c58cff"; g.fillText("👁 투명 관전 중 · " + S.D.name + " — 이 판 사람들에게는 안 보여요", 22, 30); g.font = "600 12px 'Noto Sans KR', sans-serif"; let py = 56; for (const id in S.remote) { const r = S.remote[id]; g.fillStyle = "#bfe3ff"; g.fillText(r.nick, 22, py); bar(g, 110, py - 9, 90, 7, r.hp / (r.max || 1), "#3ccf6a"); py += 18; } return; }
@@ -662,7 +686,7 @@ const Dungeon = (() => {
     bar(g, 22, 40, 260, 14, H.hp / H.max, H.hp / H.max > 0.3 ? "#3ccf6a" : "#e5484d");
     g.font = "600 12px 'Noto Sans KR', sans-serif"; g.fillStyle = "#fff"; g.fillText(Math.ceil(H.hp) + " / " + H.max, 28, 52);
     bar(g, 22, 57, 260, 8, H.mp / H.mpMax, "#3f8cff"); // 마력
-    g.fillStyle = "#c9b48a"; g.fillText((S.D.rooms ? "방 " + (S.room + 1) + " / " + S.D.rooms.length + "   " : "무리 " + Math.min(S.wave + 1, S.D.waves.length) + " / " + S.D.waves.length + "   ") + Math.floor(S.t / 60) + ":" + String(Math.floor(S.t % 60)).padStart(2, "0") + "   대시 " + "●".repeat(S.dashN == null ? DASH_MAX : S.dashN) + "○".repeat(DASH_MAX - (S.dashN == null ? DASH_MAX : S.dashN)) + "   물약 " + Object.values(S.potions).reduce((a, b) => a + b, 0) + (touch ? "" : " (" + KEYS.label("potion") + ")"), 22, 74);
+    g.fillStyle = "#c9b48a"; g.fillText((S.D.rooms ? "방 " + (S.room + 1) + " / " + S.D.rooms.length + "   " : "무리 " + Math.min(S.wave + 1, S.D.waves.length) + " / " + S.D.waves.length + "   ") + Math.floor(S.t / 60) + ":" + String(Math.floor(S.t % 60)).padStart(2, "0")  + "   물약 " + Object.values(S.potions).reduce((a, b) => a + b, 0) + (touch ? "" : " (" + KEYS.label("potion") + ")"), 22, 74);
     let py = 96; for (const id in S.remote) { const r = S.remote[id]; g.fillStyle = "#bfe3ff"; g.fillText(r.nick, 22, py); bar(g, 110, py - 9, 90, 7, r.hp / (r.max || 1), "#3ccf6a"); py += 18; }
     if (S.D.tower) { g.textAlign = "right"; g.font = "900 22px 'Noto Sans KR', sans-serif"; g.lineWidth = 4; g.strokeStyle = "rgba(0,0,0,.8)"; const tt = "무한의 탑 " + (S.floor || 1) + "층"; g.strokeText(tt, VW - 22, 70); g.fillStyle = "#ffd36b"; g.fillText(tt, VW - 22, 70);
       if (S.rest > 0 && !S.over) { g.textAlign = "center"; g.font = "800 20px 'Noto Sans KR', sans-serif"; const r = "쉬는 시간 " + Math.ceil(S.rest) + "초 — " + (touch ? "화면을 누르면" : KEYS.label("talk") + " 또는 화면 클릭으로") + " 바로 " + (S.floor + 1) + "층"; g.strokeText(r, VW / 2, 120); g.fillStyle = "#9df59a"; g.fillText(r, VW / 2, 120); } }
@@ -683,6 +707,14 @@ const Dungeon = (() => {
         if (S.potCd > 0 && n) { g.fillStyle = "rgba(0,0,0,.5)"; g.fillRect(x, y + 40 * (1 - S.potCd), 46, 40 * S.potCd); }
         g.textAlign = "right"; g.font = "800 12px 'Noto Sans KR', sans-serif"; g.lineWidth = 3; g.strokeStyle = "#000"; g.strokeText(String(n), x + 44, y + 38); g.fillStyle = "#fff"; g.fillText(String(n), x + 44, y + 38);
         g.textAlign = "center"; g.font = "700 9px sans-serif"; g.fillStyle = "#c9c2b0"; g.fillText(KEYS.label("q" + (i + 1)), x + 23, y + 51); });
+    }
+    { /* 대시 칸 — 스킬 칸 왼쪽(휴대폰은 위 오른쪽). 점 = 남은 횟수, 차는 중이면 아래에서 차오름 */
+      const n = S.dashN == null ? DASH_MAX : S.dashN, x = touch ? VW - 70 : VW - 300 - 62, y = touch ? 60 : VH - 66, cx2 = x + 28, cy2 = y + 28;
+      g.save(); g.beginPath(); g.arc(cx2, cy2, 24, 0, Math.PI * 2); g.fillStyle = "rgba(15,12,20,.8)"; g.fill(); g.lineWidth = 2; g.strokeStyle = n ? "rgba(120,200,255,.8)" : "rgba(220,210,190,.35)"; g.stroke(); g.clip();
+      if (n < DASH_MAX) { const p = (S.dashRe || 0) / DASH_CD; g.fillStyle = "rgba(90,170,255,.28)"; g.fillRect(x, y + 56 * (1 - p), 56, 56 * p); }
+      g.fillStyle = n ? "#cfe8ff" : "rgba(207,232,255,.4)"; g.font = "900 20px sans-serif"; g.textAlign = "center"; g.fillText("»", cx2, cy2 + 5); g.restore();
+      for (let k = 0; k < DASH_MAX; k++) { g.beginPath(); g.arc(cx2 - 6 + k * 12, y + 62, 4, 0, Math.PI * 2); g.fillStyle = k < n ? "#7fd0ff" : "rgba(255,255,255,.18)"; g.fill(); }
+      g.fillStyle = "#e8e2d0"; g.font = "800 10px 'Noto Sans KR', sans-serif"; g.textAlign = "center"; g.fillText("대시", cx2, y - 3);
     }
     if (!touch) for (let slot = 0; slot < 7; slot++) { // 둥근 스킬 칸 — 위 1·2·3·궁극, 아래 4·5·6 (스킬창에서 끌어다 바꿈)
       const i = S.slots[slot], sk = SKILL[i], ult = slot === 6, x = VW - 300 + (slot < 3 ? slot * 62 + 31 : ult ? 3 * 62 + 31 : (slot - 3) * 62), y = slot < 3 || ult ? VH - 128 : VH - 66, R = ult ? 28 : 26;
