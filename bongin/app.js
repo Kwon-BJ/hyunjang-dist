@@ -608,13 +608,15 @@ const APP = (() => {
     /* 운영자는 다섯 직업 스킬을 모두 배운 것으로 · 탭으로 골라 아무 칸에나 (2026-10-27). base = 이 탭 스킬의 번호 시작(직업 순서 × 7) */
     const base = op ? Dungeon.HERO_ORDER.indexOf(hero) * 7 : 0, ALL = op ? Dungeon.ALL_SKILLS : SK, L = op ? ALL.map((_, i) => i) : C.learned || [0, 1, 2], isUlt = (si) => si % 7 === 6;
     const list = el("div", "bag");
-    SK.forEach((s, i) => { const r = el("div", "item"), ic = document.createElement("canvas"); ic.width = ic.height = 44; const f = FR.hsk[s.fr], im = new Image(); im.src = "img/hsk.webp" + (V ? "?v=" + V : ""); im.onload = () => { const k = 40 / Math.max(f[2], f[3]); ic.getContext("2d").drawImage(im, f[0], f[1], f[2], f[3], 22 - f[2] * k / 2, 22 - f[3] * k / 2, f[2] * k, f[3] * k); };
+    const skPic = (s, sz) => { const c = document.createElement("canvas"); c.width = c.height = sz; const u = FR.ui2 && FR.ui2[s.ic], f = u || FR.hsk[s.fr], im = new Image(); im.src = (u ? "img/ui2.webp" : "img/hsk.webp") + (V ? "?v=" + V : ""); /* 스킬마다 제 아이콘(2026-10-28) */
+      im.onload = () => { const x = c.getContext("2d"); if (u) x.drawImage(im, f[0], f[1], f[2], f[3], 0, 0, sz, sz); else { const k = (sz - 4) / Math.max(f[2], f[3]); x.drawImage(im, f[0], f[1], f[2], f[3], sz / 2 - f[2] * k / 2, sz / 2 - f[3] * k / 2, f[2] * k, f[3] * k); } }; return c; };
+    SK.forEach((s, i) => { const r = el("div", "item"), ic = skPic(s, 44);
       ic.style.cssText = "width:44px;height:44px;border-radius:8px;background:" + (i === 6 ? "#5a3a0a" : "#1b1e2a"); const got = op || L.includes(i), q = REQ[i] || { lv: 1, cost: 0 };
       const txt = el("div"); txt.style.flex = "1"; txt.append(el("b", null, (i === 6 ? "궁극기 · " : i + 1 + ". ") + s.name), el("small", null, " " + (KIND_TXT[s.kind] || "") + " · 기다림 " + s.cd + "초 · 키 " + KEYS.label(["s1", "s2", "s3", "s4", "s5", "s6", "ult"][i])));
       r.append(ic, txt, got ? el("small", "reward", op ? "운영자 ✔" : "배움 ✔") : btn("배우기 · Lv " + q.lv + (q.cost ? " · " + q.cost.toLocaleString() + "G" : ""), () => send({ t: "learn", i }), "tiny" + (C.lv < q.lv || C.gold < q.cost ? " ghost" : ""))); list.appendChild(r); });
     /* 스킬 칸 — 아래 스킬을 끌어다 칸에 놓기 · 칸에서 밖으로 끌면 빼기 · 눌러 고르고 칸 누르기(휴대폰도) */
     const SL = (C.skillSlots || [0, 1, 2, 3, 4, 5, 6]).slice(), save = () => send({ t: "setSlots", s: SL });
-    const iconOf = (i, sz) => { const c = document.createElement("canvas"); c.width = c.height = sz; const f = FR.hsk[ALL[i].fr], im = new Image(); im.src = "img/hsk.webp" + (V ? "?v=" + V : ""); im.onload = () => { const k = (sz - 4) / Math.max(f[2], f[3]); c.getContext("2d").drawImage(im, f[0], f[1], f[2], f[3], sz / 2 - f[2] * k / 2, sz / 2 - f[3] * k / 2, f[2] * k, f[3] * k); }; return c; };
+    const iconOf = (i, sz) => skPic(ALL[i], sz);
     const bar = el("div", "sbar"), rows2 = [[0, 1, 2, 6], [3, 4, 5]];
     rows2.forEach((rr) => { const rw = el("div", "sbar-row"); rr.forEach((slot) => { const s = el("div", "sslot" + (slot === 6 ? " ult" : "")); s.dataset.slot = slot; const si = SL[slot]; if (si >= 0 && ALL[si]) { const ic = iconOf(si, 52); ic.dataset.skill = si; ic.dataset.from = slot; ic.className = "sdrag"; s.appendChild(ic); } s.appendChild(el("span", "skey", KEYS.label(["s1", "s2", "s3", "s4", "s5", "s6", "ult"][slot]))); rw.appendChild(s); }); bar.appendChild(rw); });
     let picked = null;
