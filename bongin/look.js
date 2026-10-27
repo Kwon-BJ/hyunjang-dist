@@ -95,15 +95,17 @@ function drawSeq(g, hero, L, pose, sc, opt) {
   let src = base, r = FR[base][nm], axN = Mm.ax2 ? Mm.ax2[nm] : Mm.ax, rot = 0, lift = 0;
   if (RM && FR[rx][nm]) { src = rx; r = FR[rx][nm]; axN = RM.ax2[nm]; }
   if (!r) { const st = pose.st; r = FR[base].idle0; if (Mm.ax2) axN = Mm.ax2.idle0; if (st === "hit" || st === "backstep") rot = -0.18; else if (st === "fall" || st === "down" || st === "dead") { rot = -1.45; lift = -6; } else if (st === "sprint" || st === "jump" || st === "airatk") { r = FR[base].walk2 || r; if (Mm.ax2) axN = Mm.ax2.walk2 != null ? Mm.ax2.walk2 : axN; } } // 반응 영상이 아직 없으면 몸짓으로
-  const P = motionPic(src, (L && L.mc) | 0, (L && L.mh) | 0), k = sc * 124 / Mm.tall, st = pose.st, t = pose.t || 0, bob = st === "idle" ? Math.sin(t * 2.5) * 0.6 : 0;
-  const G = opt && opt.gear, col = (opt && opt.glow && "rgba(255,230,140,1)") || (G && G.b && GEAR_COL[G.b]);
+  const SK = opt && opt.gear && opt.gear.skin, P = motionPic(src, (L && L.mc) | 0, (L && L.mh) | 0, SK), k = sc * 124 / Mm.tall, st = pose.st, t = pose.t || 0, bob = st === "idle" ? Math.sin(t * 2.5) * 0.6 : 0;
+  const G = opt && opt.gear, col = (opt && opt.glow && "rgba(255,230,140,1)") || SKIN_GLOW[SK] || (G && G.b && GEAR_COL[G.b]);
   g.save(); g.translate(0, (-bob + lift) * sc); if (rot) g.rotate(rot); if (col) { g.shadowColor = col; g.shadowBlur = 14 * sc; }
-  g.drawImage(P, r[0], r[1], r[2], r[3], -r[2] * k * axN, -r[3] * k + 2, r[2] * k, r[3] * k); g.restore(); return true;
+  g.drawImage(P, r[0], r[1], r[2], r[3], -r[2] * k * axN, -r[3] * k + 2, r[2] * k, r[3] * k);
+  if (SK === "gold") { g.shadowBlur = 0; g.globalCompositeOperation = "lighter"; g.globalAlpha *= 0.18 + 0.14 * Math.sin(performance.now() / 250); g.drawImage(P, r[0], r[1], r[2], r[3], -r[2] * k * axN, -r[3] * k + 2, r[2] * k, r[3] * k); } // 황금 의상 — 반짝임
+  g.restore(); return true;
 }
 function drawMotion(g, hero, L, pose, sc, opt) {
   if (drawSeq(g, hero, L, pose, sc, opt)) return true;
   const M = MOTION[hero], I = MOTION_IMG[hero], F = M && FR[M.pic]; if (!F || !I || !I.complete || !I.naturalWidth) return false;
-  const n = motionFrame(pose.st, pose), r = F[n] || F.idle, P = motionPic(hero, (L && L.mc) | 0, (L && L.mh) | 0), k = sc * 124 / M.base, ax = M.ax[n] == null ? 0.5 : M.ax[n];
+  const n = motionFrame(pose.st, pose), r = F[n] || F.idle, P = motionPic(hero, (L && L.mc) | 0, (L && L.mh) | 0, opt && opt.gear && opt.gear.skin), k = sc * 124 / M.base, ax = M.ax[n] == null ? 0.5 : M.ax[n];
   const st = pose.st, t = pose.t || 0; let bob = 0, sx = 1;
   if (st === "idle") bob = Math.sin(t * 2.5) * 1.2; else if (st === "walk" || st === "run" || st === "sprint") bob = Math.abs(Math.sin(pose.walk || t * 9)) * 2.5;
   if (st === "atk" && t < 0.06) sx = 1.06; // 휘두르는 순간 살짝 늘림 — 힘이 실린 느낌
@@ -113,13 +115,15 @@ function drawMotion(g, hero, L, pose, sc, opt) {
   return true;
 }
 const MTJOB = new Set();
-function motionPic(hero, mc, mh) { // 동작 그림 전체를 옷 · 머리 색 바꿔 만들어 둠(칸마다 위쪽이 머리)
+const SKIN_F = { red: "hue-rotate(-25deg) saturate(1.5) brightness(1.05)", blue: "hue-rotate(180deg) saturate(1.3)", dark: "brightness(.62) contrast(1.3) saturate(.8)", gold: "sepia(.85) saturate(2.4) hue-rotate(-12deg) brightness(1.12)" }; // 스킨 — 그림 색
+const SKIN_GLOW = { red: "rgba(255,90,40,.95)", blue: "rgba(80,170,255,.95)", dark: "rgba(150,80,255,.9)", gold: "rgba(255,214,90,1)" }; // 스킨 — 둘레 빛
+function motionPic(hero, mc, mh, skin) { // 동작 그림 전체를 옷 · 머리 색 바꿔 만들어 둠(칸마다 위쪽이 머리)
   // 한 번에 다 바꾸면 휴대폰이 몇 초 멈춤(마을에서 처음 점프할 때 점프 그림을 바꾸느라, 2026-10-28) → 조금씩 나눠 바꾸고 끝날 때까지는 원래 색으로 그림
-  const key = "M" + hero + ":" + mc + ":" + mh; let c = MTINT.get(key); if (c) return c; const I = MOTION_IMG[hero], F = FR[MOTION[hero].pic];
-  const TC = MASTER_MC[mc], TH = MASTER_MH[mh]; if (!TC && !TH) { MTINT.set(key, I); return I; }
-  if (/2$/.test(hero) && MOTION[hero.replace(/2$/, "3")]) { const h3 = hero.replace(/2$/, "3"), I3 = MOTION_IMG[h3]; if (I3 && I3.complete && I3.naturalWidth) motionPic(h3, mc, mh); } // 반응 그림도 미리
+  skin = SKIN_F[skin] ? skin : ""; const key = "M" + hero + ":" + mc + ":" + mh + ":" + skin; let c = MTINT.get(key); if (c) return c; const I = MOTION_IMG[hero], F = FR[MOTION[hero].pic];
+  const TC = MASTER_MC[mc], TH = MASTER_MH[mh]; if (!TC && !TH && !skin) { MTINT.set(key, I); return I; }
+  if (/2$/.test(hero) && MOTION[hero.replace(/2$/, "3")]) { const h3 = hero.replace(/2$/, "3"), I3 = MOTION_IMG[h3]; if (I3 && I3.complete && I3.naturalWidth) motionPic(h3, mc, mh, skin); } // 반응 그림도 미리
   if (MTJOB.has(key)) return I; MTJOB.add(key);
-  c = document.createElement("canvas"); c.width = I.naturalWidth; c.height = I.naturalHeight; const x = c.getContext("2d"); x.drawImage(I, 0, 0);
+  c = document.createElement("canvas"); c.width = I.naturalWidth; c.height = I.naturalHeight; const x = c.getContext("2d"); if (skin) x.filter = SKIN_F[skin]; x.drawImage(I, 0, 0); x.filter = "none"; // 스킨 색은 한 번만 입혀 둠
   const tc = TC && hexHsl(TC), th = TH && hexHsl(TH), list = Object.entries(F); let j = 0;
   const step = () => { const t0 = performance.now();
     while (j < list.length && performance.now() - t0 < 8) { const [n, r] = list[j++]; if (!Array.isArray(r)) continue; const D = x.getImageData(r[0], r[1], r[2], r[3]), p = D.data, W = r[2], H = r[3], mm0 = FR[MOTION[hero].pic + "_meta"], mm = mm0 && mm0.tall ? mm0 : null, hb = mm ? H - mm.tall * 1.02 : 0, hairY = n === "down" || /^(fall|dead)/.test(n) ? 0 : mm ? hb + (MASTER_HAIR[String(hero).replace(/^m_/, "").replace(/\d$/, "")] || 0) * mm.tall * 1.1 : (MASTER_HAIR[String(hero).replace(/^m_/, "").replace(/\d$/, "")] || 0) * H * 1.1;
@@ -163,7 +167,7 @@ function drawHero(g, L, pose, sc, opt) {
   const glow = (col, blur, alpha) => { const c = glowFrame(r, col, blur), p = c.pad * k; g.save(); g.globalAlpha *= alpha; g.drawImage(c, X - p, Y - p, c.width * k, c.height * k); g.restore(); };
   if (G && G.plus >= 7) glow(G.plus >= 10 ? "rgba(255,60,30,1)" : "rgba(255,120,40,.9)", G.plus >= 10 ? 16 : 10, 0.75 + 0.25 * Math.sin(now * 6)); // 강화 불꽃(깜빡임은 밝기로)
   if (G && GEAR_COL[G.b]) glow(GEAR_COL[G.b], 4 + G.b * 3, 1); // 몸 장비 빛
-  const SKIN = { red: "hue-rotate(-25deg) saturate(1.5) brightness(1.05)", blue: "hue-rotate(180deg) saturate(1.3)", dark: "brightness(.62) contrast(1.3) saturate(.8)", gold: "sepia(.85) saturate(2.4) hue-rotate(-12deg) brightness(1.12)" }; // 스킨
+  const SKIN = SKIN_F; // 스킨
   if (G && SKIN[G.skin]) { g.save(); g.filter = SKIN[G.skin]; g.drawImage(HERO_IMG, r[0], r[1], r[2], r[3], X, Y, r[2] * k, r[3] * k); g.restore(); }
   else g.drawImage(HERO_IMG, r[0], r[1], r[2], r[3], X, Y, r[2] * k, r[3] * k);
   if (G && G.skin === "gold") { g.save(); g.globalAlpha *= 0.35 + 0.15 * Math.sin(now * 4); g.globalCompositeOperation = "lighter"; g.filter = SKIN.gold; g.drawImage(HERO_IMG, r[0], r[1], r[2], r[3], X, Y, r[2] * k, r[3] * k); g.restore(); }
