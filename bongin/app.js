@@ -59,8 +59,8 @@ const APP = (() => {
     if (m.t === "cardRes") { A.cardRes = m; if (A.result) showResult(); return; }
     if (m.t === "look") { const o = A.others[m.id]; if (o) o.look = m.look; return; }
     if (m.t === "gear") { const o = A.others[m.id]; if (o) o.gear = m.gear; return; }
-    if (m.t === "ground") { A.ground = m.list || []; return; }
-    if (m.t === "gadd") { A.ground = (A.ground || []).concat(m.g); return; }
+    if (m.t === "ground") { const t = Date.now(), sn = m.now || t; A.ground = (m.list || []).map((o) => Object.assign(o, { lt: t - (sn - (o.at || sn)) })); return; } // lt = 내 시계로 떨어진 때
+    if (m.t === "gadd") { A.ground = (A.ground || []).concat(Object.assign(m.g, { lt: Date.now() })); return; }
     if (m.t === "gdel") { A.ground = (A.ground || []).filter((x) => x.gid !== m.gid); if (m.by === (A.me && A.me.nick)) toast(m.name + " 을(를) 주웠어요.", "good"); return; }
     if (m.t === "notice") { // 운영자 전체 공지 — 화면 위 띠(남은 시간이 있으면 1초마다 줄임)
       const N = $("notice"), end = Date.now() + m.sec * 1000; clearInterval(A.noticeT);
@@ -240,6 +240,7 @@ const APP = (() => {
     if (!BG.pics.town || !BG.pics.town.naturalWidth) townHouses(cx);
     const bodies = [];
     NPC.forEach((n) => bodies.push([n.z, () => drawNpc(n, cx)]));
+    if (A.ground && A.ground.length) { const t = Date.now(); A.ground = A.ground.filter((o) => t - (o.lt || t) < GROUND_MS); } // 3분 지나면 사라짐
     (A.ground || []).forEach((o) => bodies.push([o.z - 0.5, () => drawGround(o, cx)]));
     for (const id in A.others) { const o = A.others[id]; bodies.push([o.z, () => drawPerson(o, o.look, cx, o.nick, false, id)]); }
     const H = A.hero; bodies.push([H.z + 0.1, () => drawPerson(H, A.char.look, cx, A.char.name, true, A.me.id)]);
@@ -262,8 +263,9 @@ const APP = (() => {
   }
   /* 땅에 떨어진 물건 — 아이콘이 등급 색 빛 위에서 둥실 */
   const GLOW = ["rgba(230,230,240,.5)", "rgba(90,160,255,.6)", "rgba(190,120,255,.65)", "rgba(255,200,70,.7)"];
+  const GROUND_MS = 3 * 60 * 1000; // 바닥 물건 남는 시간(서버와 같게)
   function drawGround(o, cx) {
-    const x = o.x - cx; if (x < -60 || x > VW + 60) return; const I = A.items[o.key] || {}, r = FR.items && FR.items[o.key], bob = Math.sin(performance.now() / 400 + o.x) * 3;
+    const x = o.x - cx; if (x < -60 || x > VW + 60) return; const left = GROUND_MS - (Date.now() - (o.lt || Date.now())); if (left < 20000 && Math.floor(performance.now() / 200) % 2) return; // 사라지기 20초 전 깜빡임 const I = A.items[o.key] || {}, r = FR.items && FR.items[o.key], bob = Math.sin(performance.now() / 400 + o.x) * 3;
     g.fillStyle = "rgba(0,0,0,.35)"; g.beginPath(); g.ellipse(x, o.z, 18, 5, 0, 0, Math.PI * 2); g.fill();
     const gr = g.createRadialGradient(x, o.z - 20 + bob, 2, x, o.z - 20 + bob, 26); gr.addColorStop(0, GLOW[I.grade || 0]); gr.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = gr; g.beginPath(); g.arc(x, o.z - 20 + bob, 26, 0, Math.PI * 2); g.fill();
     if (r && ITEM_IMG.complete) { const k = 36 / Math.max(r[2], r[3]); g.drawImage(ITEM_IMG, r[0], r[1], r[2], r[3], x - r[2] * k / 2, o.z - 38 + bob, r[2] * k, r[3] * k); }
@@ -432,7 +434,7 @@ const APP = (() => {
     const sw = (key, cols, names) => { const r = el("div", "row"); cols.forEach((c, i) => { const b = btn(names[i], () => { L[key] = i; pv.look = L; draw(); }, "tiny" + ((L[key] | 0) === i ? "" : " ghost")); if (c) b.style.boxShadow = "inset 0 -5px 0 " + c; r.appendChild(b); }); return r; };
     const draw = () => { const w = el("div", "create"), left = el("div", "cleft"), right = el("div", "cright"); left.appendChild(pv); if (A.me && A.me.op) { const hr = el("div", "row"); [["gm", "문주"], ["kh", "강혁"], ["hr", "혜린"], ["ds", "대성"], ["je", "지은"], ["mj", "무진"]].forEach(([k, nm]) => { const on = k === "gm" ? L.gm !== 0 : L.gm === 0 && L.hero === k; hr.appendChild(btn(nm, () => { if (k === "gm") L.gm = 1; else { L.gm = 0; L.hero = k; } pv.look = L; draw(); }, "tiny" + (on ? "" : " ghost"))); }); right.append(el("b", null, "캐릭터 바꾸기 (운영자)"), hr); }
       right.append(el("b", null, "옷 색"), sw("mc", MASTER_MC, ["원래", "붉은", "푸른", "초록", "검정", "보라", "흰", "금빛"]), el("b", null, "머리 색"), sw("mh", MASTER_MH, ["원래", "갈색", "밤색", "금발", "은발", "붉은", "푸른", "보라"]), el("p", "sub", "스승 모습에 색만 바꿔요. 무기 모양은 끼는 무기에 따라 빛이 달라져요.")); w.append(left, right);
-      panel([el("h2", null, "모습 바꾸기 — " + C.name), w, row(btn("저장", () => { send({ t: "look", mc: L.mc | 0, mh: L.mh | 0, hero: L.hero, gm: L.gm === 0 ? 0 : 1 }); if (A.scene === "menu") { A.char.look = Object.assign({}, A.char.look, L); charScreen(); } else closePanel(); }), btn("닫기", () => (A.scene === "menu" ? charScreen() : closePanel()), "ghost")) /* 캐릭터 화면에서 열었으면 그 화면으로 돌아감(예전엔 빈 화면에 멈춤) */], true); };
+      panel([el("h2", null, "모습 바꾸기 — " + C.name), w, row(btn("저장", () => { send({ t: "look", mc: L.mc | 0, mh: L.mh | 0, hero: L.hero, gm: L.gm === 0 ? 0 : 1 }); A.skTab = null; if (A.scene === "menu") { A.char.look = Object.assign({}, A.char.look, L); charScreen(); } else closePanel(); }), btn("닫기", () => (A.scene === "menu" ? charScreen() : closePanel()), "ghost")) /* 캐릭터 화면에서 열었으면 그 화면으로 돌아감(예전엔 빈 화면에 멈춤) */], true); };
     draw();
   }
   function equipPanel() {
@@ -450,7 +452,7 @@ const APP = (() => {
     const C = A.char, S = $("bagSide"); if (!C) return;
     const sortK = { kind: () => 0, grade: (a, b) => A.items[b.key].grade - A.items[a.key].grade, plus: (a, b) => (b.plus || 0) - (a.plus || 0) }[bagUI.sort];
     bagUI.tab = "bag"; const tabs = el("div", "bs-top"); tabs.appendChild(el("div", "bs-title", "🎒 가방")); tabs.appendChild(btn("📖 도감", codexPanel, "tiny ghost"));
-    const x = el("button", "bs-x", "✕"); x.onclick = () => { S.hidden = true; }; tabs.appendChild(x);
+    const x = el("button", "bs-x cl", "✕ 닫기"); x.onclick = () => { S.hidden = true; }; tabs.prepend(x);
     const sel = document.createElement("select");
     [["kind", "종류순"], ["grade", "등급순"], ["plus", "강화순"]].forEach(([v, n]) => { const o = document.createElement("option"); o.value = v; o.textContent = n; sel.appendChild(o); });
     sel.value = bagUI.sort; sel.onchange = () => { bagUI.sort = sel.value; bagPanel(); };
@@ -670,23 +672,22 @@ const APP = (() => {
   cv.addEventListener("pointerup", lift); cv.addEventListener("pointercancel", lift);
   /* 휴대폰 단추 — 마을도 던전과 같게 / 던전: 공격 · 점프 · 회피 · 스킬 3 · 물약 */
   /* 휴대폰 단추 — 공격을 가운데로 둥글게(겹치지 않게, 2026-10-27 휴대폰 점검) */
-  const PADS = { none: [], town: null, // 마을도 던전과 같은 단추(2026-10-28 부장님) — 말걸기·줍기는 빈 화면 누르기, 가방·장비·스킬은 위 메뉴
-    dungeon: [["공격", "atk", "right:3%;bottom:5%;width:14%;height:24.9%;font-size:17px"], ["점프", "jump", "right:19%;bottom:4%;width:8%;height:14.2%"], ["백스텝", "back", "right:28%;bottom:4%;width:7%;height:12.4%"], ["물약", "potion", "right:36%;bottom:4%;width:7%;height:12.4%"], ["마력", "mpot", "right:44%;bottom:4%;width:7%;height:12.4%;border-color:#4a7ac8"], ["회피", "roll", "right:3%;bottom:33%;width:8%;height:14.2%"], ["1", "s1", "right:19%;bottom:21%;width:7%;height:12.4%"], ["2", "s2", "right:12%;bottom:33%;width:7%;height:12.4%"], ["3", "s3", "right:3%;bottom:50%;width:7%;height:12.4%"], ["4", "s4", "right:27%;bottom:19%;width:7%;height:12.4%"], ["5", "s5", "right:20%;bottom:37%;width:7%;height:12.4%"], ["6", "s6", "right:12%;bottom:52%;width:7%;height:12.4%"], ["궁극", "ult", "right:3%;bottom:66%;width:8%;height:14.2%;border-color:#ffd36b"]] };
+  /* 휴대폰 단추 — 마을 · 던전 같게. 자리 · 그림은 game.js TPAD/drawPad(스킬 그림 · 쿨타임), 여기는 같은 자리에 투명한 누름 칸만 */
+  let padWhich = "none";
+  const padSkills = () => { const sk = A.me && A.me.op ? Dungeon.ALL_SKILLS : Dungeon.SKILLS[(A.char && A.char.look && A.char.look.hero) || "kh"] || Dungeon.SKILLS.kh; /* 운영자는 35개 중에서 */ return [sk, (A.char && A.char.skillSlots) || [0, 1, 2, 3, 4, 5, 6]]; };
   function setPad(which) {
-    if (which === "town") which = "dungeon";
-    if (which === "dungeon") { const sk = A.me && A.me.op ? Dungeon.ALL_SKILLS : Dungeon.SKILLS[(A.char && A.char.look && A.char.look.hero) || "kh"] || Dungeon.SKILLS.kh; /* 운영자는 35개 중에서 */ const SL = (A.char && A.char.skillSlots) || [0, 1, 2, 3, 4, 5, 6]; PADS.dungeon.forEach((p) => { const slot = ["s1", "s2", "s3", "s4", "s5", "s6", "ult"].indexOf(p[1]); if (slot >= 0) p[0] = sk[SL[slot]] ? sk[SL[slot]].short : "—"; }); }
-    const pad = $("pad"); pad.hidden = !touch; if (!touch) return;
-    pad.replaceChildren(...PADS[which].map(([t, a, css]) => { const b = el("div", "tb", t); b.style.cssText = css; b.dataset.a = a;
-      b.addEventListener("pointerdown", (e) => { e.preventDefault(); e.stopPropagation(); if (a === "chat") { $("chatIn").focus(); return; } KEYS.press(a, true); b.classList.add("on"); });
+    padWhich = which; const pad = $("pad"); pad.hidden = !touch; if (!touch) return;
+    pad.replaceChildren(...(which === "none" ? [] : Dungeon.TPAD).map(([a, x, y, r]) => { const b = el("div", "tb tp"); b.style.cssText = "left:" + (x - r) / VW * 100 + "%;top:" + (y - r) / VH * 100 + "%;width:" + 2 * r / VW * 100 + "%;height:" + 2 * r / VH * 100 + "%"; b.dataset.a = a;
+      b.addEventListener("pointerdown", (e) => { e.preventDefault(); e.stopPropagation(); KEYS.press(a, true); b.classList.add("on"); });
       const up = () => { KEYS.press(a, false); b.classList.remove("on"); }; b.addEventListener("pointerup", up); b.addEventListener("pointercancel", up); b.addEventListener("pointerleave", up); return b; }));
   }
   $("hudOp").onclick = () => opPanel(null); /* 위 단추에 그림 — 운영 · 접속 · 스킬 · 장비 · 가방 · 키 설정 (제미나이 그림, 2026-10-27) */
   [["hudOp", "op"], ["hudOnline", "online"], ["hudSkill", "skill"], ["hudEquip", "equip"], ["hudBag", "bag"], ["hudKeys", "keys"]].forEach(([id, k]) => { const b = $(id), r = FR.ui && FR.ui[k]; if (!b || !r) return; const s = 26 / 64, i = document.createElement("i"); i.className = "hic"; i.style.cssText = "width:" + Math.round(r[2] * s) + "px;background-position:-" + r[0] * s + "px -" + r[1] * s + "px;background-size:" + 2048 * s + "px auto"; b.prepend(i); b.title = b.textContent; });
-  $("hudSkill").onclick = skillPanel; ["hudSkill", "hudEquip", "hudBag"].forEach((id) => { $(id).style.display = "none"; }); // 메뉴 탭으로 옮김
+  $("hudSkill").onclick = skillPanel; ["hudSkill", "hudEquip", "hudBag", "hudOnline", "hudKeys", "hudOut"].forEach((id) => { $(id).style.display = "none"; }); // 메뉴 탭으로 옮김(캐릭터 · 키 설정 · 접속현황도, 2026-10-28)
   /* 오른쪽 위 메뉴 — 스킬 · 장비 · 가방 (2026-10-28 "우측 상단에 메뉴 탭, 스킬 · 장비 · 가방 3가지 우선") */
-  (() => { const pop = $("menuPop"), map = { skill: "skill", equip: "equip", bag: "bag" };
+  (() => { const pop = $("menuPop"), map = { skill: "skill", equip: "equip", bag: "bag", online: "online", keys: "keys" };
     pop.querySelectorAll("button").forEach((b) => { const r = FR.ui && FR.ui[map[b.dataset.m]], i = b.querySelector(".mic"); if (r && i) { const s = 40 / 64; i.style.width = Math.round(r[2] * s) + "px"; i.style.backgroundPosition = "-" + r[0] * s + "px -" + r[1] * s + "px"; i.style.backgroundSize = 2048 * s + "px auto"; }
-      b.onclick = () => { pop.hidden = true; if (b.dataset.m === "skill") skillPanel(); else if (b.dataset.m === "equip") { const E = $("equipSide"); if (E.hidden) equipPanel(); else E.hidden = true; } else { const S = $("bagSide"); if (S.hidden) bagPanel(); else S.hidden = true; } }; });
+      b.onclick = () => { pop.hidden = true; const m = b.dataset.m; if (m === "online" || m === "keys" || m === "char") { $({ online: "hudOnline", keys: "hudKeys", char: "hudOut" }[m]).click(); return; } if (b.dataset.m === "skill") skillPanel(); else if (b.dataset.m === "equip") { const E = $("equipSide"); if (E.hidden) equipPanel(); else E.hidden = true; } else { const S = $("bagSide"); if (S.hidden) bagPanel(); else S.hidden = true; } }; });
     $("menuBtn").onclick = (e) => { e.stopPropagation(); pop.hidden = !pop.hidden; };
     addEventListener("pointerdown", (e) => { if (!pop.hidden && !e.target.closest("#topMenu")) pop.hidden = true; }); })(); $("hudOnline").onclick = () => send({ t: "online" }); $("hudBag").onclick = () => { const S = $("bagSide"); if (S.hidden) bagPanel(); else S.hidden = true; }; $("hudEquip").onclick = () => { const E = $("equipSide"); if (E.hidden) equipPanel(); else E.hidden = true; }; $("hudKeys").onclick = keyPanel; $("hudOut").onclick = () => { send({ t: "back" }); charScreen(); };
 
@@ -695,7 +696,7 @@ const APP = (() => {
   function loop(ts) {
     const dt = Math.min(0.033, (ts - last) / 1000 || 0); last = ts;
     g.setTransform(DPR, 0, 0, DPR, 0, 0); g.fillStyle = "#0c0708"; g.fillRect(0, 0, VW, VH); // 매번 지움 — 배경 그림이 늦게 와도 겹쳐 쌓이지 않게
-    if (A.scene === "town" && A.char) { townStep(dt); townDraw(); }
+    if (A.scene === "town" && A.char) { townStep(dt); townDraw(); if (touch && padWhich === "town") { const [sk, SL] = padSkills(); Dungeon.drawPad(g, sk, SL); } }
     else if (A.scene === "dungeon") { Dungeon.step(dt); Dungeon.draw(g, touch); }
     else { BG.draw(g, "town", performance.now() / 50, VW, VH, Z0); g.fillStyle = "rgba(8,4,6,.55)"; g.fillRect(0, 0, VW, VH); }
     if (stick) { g.strokeStyle = "rgba(246,210,122,.5)"; g.lineWidth = 2; g.beginPath(); g.arc(stick.ox, stick.oy, 45, 0, Math.PI * 2); g.stroke(); const [ax, az] = axis(); g.fillStyle = "rgba(246,210,122,.4)"; g.beginPath(); g.arc(stick.ox + ax * 45, stick.oy + az * 45, 18, 0, Math.PI * 2); g.fill(); }
