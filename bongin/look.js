@@ -2,6 +2,7 @@
    제미나이 부위 그림이 오기 전까지 쓰는 코드 그림. 발 가운데가 (0,0), 오른쪽을 본다. pose = { st, t, walk, step }
    st: idle · walk · run · atk(step 0~2) · airatk · jump · cast · dash · hit · fall · down · dead */
 "use strict";
+const LOOK_V = ((document.currentScript && document.currentScript.src) || "").split("?v=")[1] || ""; // 그림 주소 끝 판 번호(옛 그림이 남지 않게)
 /* 기본 캐릭터 — 연병장 다섯 명. 내 캐릭터는 이 중 하나의 모습(look.hero) */
 const HEROES = [["kh", "강혁", "무사", "m"], ["hr", "혜린", "도사", "f"], ["ds", "대성", "수호자", "m"], ["je", "지은", "사수", "f"], ["mj", "무진", "자객", "m"]];
 const HERO_IMG = (() => { const V = ((document.currentScript && document.currentScript.src) || "").split("?v=")[1] || ""; const i = new Image(); i.src = "img/heroes5.webp" + (V ? "?v=" + V : ""); return i; })();
@@ -61,7 +62,8 @@ function masterPic(hero, mc, mh) { // 그 사람 그림을 잘라 옷 · 머리 
    ax = 칸에서 몸 가운데(0~1, 칼이 앞으로 뻗은 칸은 몸이 왼쪽), base = 서 있는 칸 높이(이 높이를 124 로 맞춤) */
 const MOTION = {
   chief: { pic: "m_chief", base: 213, ax: { idle: 0.5, walk1: 0.5, walk2: 0.5, run: 0.5, atk1: 0.38, atk2: 0.36, atk3: 0.5, air: 0.45, charge: 0.5, swing: 0.36, hit: 0.5, down: 0.5 } }, // 운영자 = 문주 — 손바닥 · 발차기 · 장풍
-  kh2: { pic: "m_kh2", seq: true, ext: ".webp" }, // 강혁 — 영상에서 뽑은 이어지는 동작(아래 kh 대신 씀)
+  kh2: { pic: "m_kh2", seq: true, ext: ".webp" },
+  kh3: { pic: "m_kh3", seq: true, ext: ".webp" }, // 강혁 백스텝 · 대시 · 점프 · 공중 · 맞기 · 쓰러짐 · 사망(따라가며 자른 칸) // 강혁 — 영상에서 뽑은 이어지는 동작(아래 kh 대신 씀)
   kh: { pic: "m_kh", base: 212, ax: { idle: 0.5, walk1: 0.5, walk2: 0.5, run: 0.5, atk1: 0.3, atk2: 0.26, atk3: 0.5, air: 0.5, charge: 0.45, swing: 0.28, hit: 0.5, down: 0.5 } },
 };
 const MOTION_IMG = {};
@@ -74,8 +76,9 @@ function motionFrame(st, pose) {
   if (st === "hit" || st === "backstep") return "hit"; if (st === "fall" || st === "down" || st === "dead") return "down";
   return "idle";
 }
-function seqFrame(M, pose, town) { // 이어지는 동작 — 동작마다 몇 장을 시간 · 걸음에 맞춰
-  const C = FR[M.pic + "_meta"].counts, st = pose.st, t = pose.t || 0, at = (k, dur) => k + Math.min(C[k] - 1, Math.floor(Math.max(0, t) / dur * C[k]));
+function seqFrame(M, pose, town, RM) { // 이어지는 동작 — 동작마다 몇 장을 시간 · 걸음에 맞춰. RM = 반응 칸 표(없으면 null)
+  const C = Object.assign({}, FR[M.pic + "_meta"].counts, (RM || {}).counts), st = pose.st, t = pose.t || 0, at = (k, dur) => k + Math.min(C[k] - 1, Math.floor(Math.max(0, t) / dur * C[k]));
+  if (RM) { if (st === "backstep") return at("back", 0.26); if (st === "sprint" || st === "dash") return at("dash", 0.22); if (st === "airatk") return at("air", 0.4); if (st === "jump") return at("jump", 0.3); if (st === "hit") return at("hit", 0.3); if (st === "fall") return at("fall", 0.6); if (st === "down") return "fall" + (C.fall - 1); if (st === "dead") return at("dead", 1.2); } // 반응 동작은 영상 칸(2026-10-28)
   if (st === "atk") return at(["atk1", "atk2", "atk3", "atk1"][pose.step | 0] || "atk1", 0.36);
   if (st === "airatk") return "air"; if (st === "cast" || st === "dash") return at("cast", 0.25);
   if (st === "walk") return "walk" + (Math.floor((pose.walk || 0) * 1.5) % C.walk);
@@ -84,14 +87,21 @@ function seqFrame(M, pose, town) { // 이어지는 동작 — 동작마다 몇 �
   if (town && C.peace) return "peace" + (Math.floor(t * 3) % C.peace); // 마을 · 캐릭터 화면은 칼을 칼집에(2026-10-28)
   return "idle" + (Math.floor(t * 6) % C.idle);
 }
+/* 영상에서 뽑은 동작 칸 — m_<사람>2(서기 · 걷기 · 평타 · 스킬 · 마을 서기), m_<사람>3(백스텝 · 대시 · 점프 · 공중 · 맞기 · 쓰러짐 · 사망). 2026-10-28 다섯 명 공통 */
+function seqReady(name) { if (!FR[name]) return false; if (!MOTION[name]) { MOTION[name] = { pic: name, seq: true, ext: ".webp" }; const i = new Image(); i.src = "img/" + name + ".webp" + (LOOK_V ? "?v=" + LOOK_V : ""); MOTION_IMG[name] = i; } const I = MOTION_IMG[name]; return I.complete && I.naturalWidth > 0; }
+function drawSeq(g, hero, L, pose, sc, opt) {
+  const base = "m_" + hero + "2", rx = "m_" + hero + "3"; if (!seqReady(base)) return false;
+  const Mm = FR[base + "_meta"], RM = seqReady(rx) ? FR[rx + "_meta"] : null, nm = seqFrame(MOTION[base], pose, opt && opt.town, RM);
+  let src = base, r = FR[base][nm], axN = Mm.ax2 ? Mm.ax2[nm] : Mm.ax, rot = 0, lift = 0;
+  if (RM && FR[rx][nm]) { src = rx; r = FR[rx][nm]; axN = RM.ax2[nm]; }
+  if (!r) { const st = pose.st; r = FR[base].idle0; if (Mm.ax2) axN = Mm.ax2.idle0; if (st === "hit" || st === "backstep") rot = -0.18; else if (st === "fall" || st === "down" || st === "dead") { rot = -1.45; lift = -6; } else if (st === "sprint" || st === "jump" || st === "airatk") { r = FR[base].walk2 || r; if (Mm.ax2) axN = Mm.ax2.walk2 != null ? Mm.ax2.walk2 : axN; } } // 반응 영상이 아직 없으면 몸짓으로
+  const P = motionPic(src, (L && L.mc) | 0, (L && L.mh) | 0), k = sc * 124 / Mm.tall, st = pose.st, t = pose.t || 0, bob = st === "idle" ? Math.sin(t * 2.5) * 0.6 : 0;
+  const G = opt && opt.gear, col = (opt && opt.glow && "rgba(255,230,140,1)") || (G && G.b && GEAR_COL[G.b]);
+  g.save(); g.translate(0, (-bob + lift) * sc); if (rot) g.rotate(rot); if (col) { g.shadowColor = col; g.shadowBlur = 14 * sc; }
+  g.drawImage(P, r[0], r[1], r[2], r[3], -r[2] * k * axN, -r[3] * k + 2, r[2] * k, r[3] * k); g.restore(); return true;
+}
 function drawMotion(g, hero, L, pose, sc, opt) {
-  if (hero === "kh" && MOTION.kh2 && MOTION_IMG.kh2 && MOTION_IMG.kh2.complete && MOTION_IMG.kh2.naturalWidth && FR.m_kh2) { // 강혁은 영상 동작으로
-    const M = MOTION.kh2, Mm = FR.m_kh2_meta, r = FR.m_kh2[seqFrame(M, pose, opt && opt.town)] || FR.m_kh2.idle0, P = motionPic("kh2", (L && L.mc) | 0, (L && L.mh) | 0), k = sc * 124 / Mm.tall;
-    const st = pose.st, t = pose.t || 0; let bob = 0; if (st === "walk" || st === "run") bob = 0; else if (st === "idle") bob = Math.sin(t * 2.5) * 0.6;
-    const G = opt && opt.gear, col = (opt && opt.glow && "rgba(255,230,140,1)") || (G && G.b && GEAR_COL[G.b]);
-    g.save(); g.translate(0, -bob * sc); if (col) { g.shadowColor = col; g.shadowBlur = 14 * sc; }
-    g.drawImage(P, r[0], r[1], r[2], r[3], -r[2] * k * Mm.ax, -r[3] * k + 2, r[2] * k, r[3] * k); g.restore(); return true;
-  }
+  if (drawSeq(g, hero, L, pose, sc, opt)) return true;
   const M = MOTION[hero], I = MOTION_IMG[hero], F = M && FR[M.pic]; if (!F || !I || !I.complete || !I.naturalWidth) return false;
   const n = motionFrame(pose.st, pose), r = F[n] || F.idle, P = motionPic(hero, (L && L.mc) | 0, (L && L.mh) | 0), k = sc * 124 / M.base, ax = M.ax[n] == null ? 0.5 : M.ax[n];
   const st = pose.st, t = pose.t || 0; let bob = 0, sx = 1;
@@ -107,9 +117,9 @@ function motionPic(hero, mc, mh) { // 동작 그림 전체를 옷 · 머리 색 
   c = document.createElement("canvas"); c.width = I.naturalWidth; c.height = I.naturalHeight; const x = c.getContext("2d"); x.drawImage(I, 0, 0);
   const TC = MASTER_MC[mc], TH = MASTER_MH[mh];
   if (TC || TH) { const tc = TC && hexHsl(TC), th = TH && hexHsl(TH);
-    Object.entries(F).forEach(([n, r]) => { const D = x.getImageData(r[0], r[1], r[2], r[3]), p = D.data, W = r[2], H = r[3], mm = FR[MOTION[hero].pic + "_meta"], hb = mm ? H - mm.tall * 1.02 : 0, hairY = n === "down" ? 0 : mm ? hb + (MASTER_HAIR.kh || 0) * mm.tall * 1.1 : (MASTER_HAIR[hero] || 0) * H * 1.1;
+    Object.entries(F).forEach(([n, r]) => { const D = x.getImageData(r[0], r[1], r[2], r[3]), p = D.data, W = r[2], H = r[3], mm0 = FR[MOTION[hero].pic + "_meta"], mm = mm0 && mm0.tall ? mm0 : null, hb = mm ? H - mm.tall * 1.02 : 0, hairY = n === "down" || /^(fall|dead)/.test(n) ? 0 : mm ? hb + (MASTER_HAIR[String(hero).replace(/^m_/, "").replace(/\d$/, "")] || 0) * mm.tall * 1.1 : (MASTER_HAIR[String(hero).replace(/^m_/, "").replace(/\d$/, "")] || 0) * H * 1.1;
       for (let i = 0; i < W * H; i++) { const o = i * 4; if (p[o + 3] < 20) continue; const y = (i / W) | 0, [h, s, l] = hsl(p[o], p[o + 1], p[o + 2]); let out = null;
-        if (tc && (MASTER_CLOTH[hero === "kh2" ? "kh" : hero] || []).some(([a, b, sm]) => h >= a && h <= b && s >= sm) && y > (mm ? hb + mm.tall * 0.12 : H * 0.12)) out = rgb(tc[0], Math.max(0.15, tc[1] * 0.85), Math.min(0.92, Math.max(0.05, l + (tc[2] - 0.38) * 0.75)));
+        if (tc && (MASTER_CLOTH[String(hero).replace(/^m_/, "").replace(/\d$/, "")] || []).some(([a, b, sm]) => h >= a && h <= b && s >= sm) && y > (mm ? hb + mm.tall * 0.12 : H * 0.12)) out = rgb(tc[0], Math.max(0.15, tc[1] * 0.85), Math.min(0.92, Math.max(0.05, l + (tc[2] - 0.38) * 0.75)));
         else if (th && y < hairY && l > 0.07 && l < 0.4 && s < 0.6) out = rgb(th[0], th[1] * 0.8, Math.min(0.9, l + (th[2] - 0.15) * 0.85));
         if (out) { p[o] = out[0]; p[o + 1] = out[1]; p[o + 2] = out[2]; } }
       x.putImageData(D, r[0], r[1]); }); }
