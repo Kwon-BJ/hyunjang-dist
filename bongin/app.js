@@ -185,9 +185,9 @@ const APP = (() => {
     { id: "kid", name: "꼬마 돌쇠", pic: "kid", x: 2120, z: 470, talk: () => say("꼬마 돌쇠", ["나도 크면 스승님들처럼 칼 쓸 거야!", "형(누나), 수문장 아저씨 뒤 문으로 들어가면 고블린 있대!"]) },
     { id: "gate", name: "수문장", pic: "gate", x: 2380, z: 430, look: { g: "m", face: 2, hair: 4, hc: 0, eye: 1, ec: 0, brow: 3, nose: 1, mouth: 1, skin: 2, mark: 0, oc: 1 }, talk: gateTalk },
   ];
-  const H5 = new Image(); H5.src = "img/heroes5.png";
-  const NPCIMG = new Image(); NPCIMG.src = "img/npc.png" + (V ? "?v=" + V : ""); // 제미나이 마을 사람 그림
-  const MASTERIMG = new Image(); MASTERIMG.src = "img/masters.png" + (V ? "?v=" + V : ""); // 스승 다섯 — 마을 사람과 같은 그림체
+  const H5 = HERO_IMG; // 캐릭터 그림 — look.js 와 같은 것(두 번 받지 않게)
+  const NPCIMG = new Image(); NPCIMG.src = "img/npc.webp" + (V ? "?v=" + V : ""); // 제미나이 마을 사람 그림
+  const MASTERIMG = new Image(); MASTERIMG.src = "img/masters.webp" + (V ? "?v=" + V : ""); // 스승 다섯 — 마을 사람과 같은 그림체
   function enterTown() {
     closePanel(); A.scene = "town"; A.hero = A.hero || { x: 260, z: 440, face: 1, st: "idle", walk: 0, t: 0 };
     A.hero.x = Math.min(A.hero.x, TOWN_W - 300);
@@ -335,7 +335,7 @@ const APP = (() => {
     panel([el("h2", null, "수문장 — 「어디로 가겠나?」"), list, el("p", "sub", P ? "파티장이 들어가면 마을에 있는 파티원이 모두 같이 들어가요." : "파티를 맺으면 같이 들어갈 수 있어요(다른 사람을 눌러 파티 신청)."), row(btn("닫기", closePanel, "ghost"))], true);
   }
   /* ── 가방 — 오른쪽 창. 종류별로 묶고(접기 · 펴기), 칸은 등급 색 · 아이콘 · +강화 · 개수 · E(끼는 중). 칸을 누르면 아래에 정보 · 끼기 ── */
-  const ITEM_IMG = new Image(); ITEM_IMG.src = "img/items.png" + (V ? "?v=" + V : "");
+  const ITEM_IMG = new Image(); ITEM_IMG.src = "img/items.webp" + (V ? "?v=" + V : "");
   const BAG_MAX = 100, KINDS = [["weapon", "무기", "⚔"], ["armor", "방어구", "🛡"], ["acc", "장신구", "💍"], ["potion", "소모품", "🧪"], ["material", "재료", "💎"]];
   const GROUP = { pants: "armor", shoes: "armor", greave: "armor", gloves: "armor", ring: "acc", earring: "acc", bracelet: "acc", necklace: "acc" };
   const SLOT_NAMES = { weapon: "무기", armor: "갑옷", pants: "하의", greave: "각반", shoes: "신발", gloves: "장갑", ring: "반지", earring: "귀걸이", bracelet: "팔찌", necklace: "목걸이" };
