@@ -68,7 +68,7 @@ Object.keys(MOTION).forEach((h) => { const V = ((document.currentScript && docum
 function motionFrame(st, pose) {
   if (st === "atk") return ["atk1", "atk2", "atk3", "atk1"][pose.step | 0] || "atk1";
   if (st === "airatk") return "air"; if (st === "cast") return (pose.t || 0) < 0.1 ? "charge" : "swing"; if (st === "dash") return "swing";
-  if (st === "walk") return Math.floor((pose.walk || 0) / Math.PI) % 2 ? "walk2" : "walk1";
+  if (st === "walk") return ["walk1", "idle", "walk2", "idle"][Math.floor((pose.walk || 0) / (Math.PI / 2)) % 4]; // 내딛기 · 모음 · 내딛기 · 모음 — 같은 발만 세우는 느낌 줄임(제대로 된 걷기 그림 오기 전까지)
   if (st === "run" || st === "sprint" || st === "jump" || st === "roll") return "run";
   if (st === "hit" || st === "backstep") return "hit"; if (st === "fall" || st === "down" || st === "dead") return "down";
   return "idle";
@@ -177,7 +177,7 @@ function shade(hex, k) { // k < 0 어둡게, > 0 밝게
 
 function drawChar(g, L, pose, sc, opt) {
   L = L || LOOK.base("m"); pose = pose || { st: "idle", t: 0 }; opt = opt || {};
-  if (opt && opt.op && (drawMotion(g, "chief", L, pose, sc, opt) || drawChief(g, pose, sc))) return; // 운영자 = 문주 모습(동작 그림이 있으면 동작마다)
+  if (opt && opt.op && !(L && L.gm === 0) && (drawMotion(g, "chief", L, pose, sc, opt) || drawChief(g, pose, sc))) return; // 운영자 = 문주 모습(동작 그림이 있으면 동작마다)
   if (drawMaster(g, L, pose, sc, opt)) return; // 스승 모습(기본 캐릭터, 2026-10-27)
   if (drawHero(g, L, pose, sc, opt)) return; // 기본 캐릭터 그림(없으면 아래 코드 그림)
   if (!HERO_IMG.complete) return; // 그림 받는 중 — 잠깐 기다림(코드 그림 · 부위 그림을 괜히 받지 않게)
@@ -380,4 +380,16 @@ function hairDraw(g, L, x, y, col, OUT, layer) {
   if (fem && H === 4) { g.beginPath(); g.arc(x + 10, y - 16, 5, 0, Math.PI * 2); g.fill(); g.stroke(); }
   if (fem && H === 5) { g.fillStyle = "#c8323a"; g.fillRect(x - 15, y - 20, 6, 5); }
   if (fem && H === 0) { g.fillStyle = "#c8323a"; g.fillRect(x - 16, y - 4, 5, 5); }
+}
+
+/* 채팅 말풍선 — 폭에 맞춰 줄을 바꿈(많아야 3줄, 넘치면 …) · 꼬리. x = 가운데, bottom = 풍선 아래 끝 (2026-10-27 "말풍선에서 넘어가는 게 이상하다") */
+function drawBubble(g, text, x, bottom) {
+  g.save(); g.font = "600 13px 'Noto Sans KR', sans-serif"; g.textAlign = "center"; g.textBaseline = "alphabetic";
+  const MAXW = 200, lines = []; let cur = "";
+  for (const ch of String(text)) { const t = cur + ch; if (g.measureText(t).width > MAXW && cur) { lines.push(cur); cur = ch; if (lines.length === 3) break; } else cur = t; }
+  if (lines.length < 3 && cur) lines.push(cur); else if (lines.length === 3 && cur) { let l = lines[2]; while (l && g.measureText(l + "…").width > MAXW) l = l.slice(0, -1); lines[2] = l + "…"; }
+  const w = Math.min(MAXW, Math.max(...lines.map((l) => g.measureText(l).width))) + 20, lh = 17, h = lines.length * lh + 10, y = bottom - h - 7;
+  g.fillStyle = "rgba(255,255,255,.96)"; g.strokeStyle = "rgba(0,0,0,.35)"; g.lineWidth = 1; g.beginPath(); if (g.roundRect) g.roundRect(x - w / 2, y, w, h, 10); else g.rect(x - w / 2, y, w, h);
+  g.moveTo(x - 6, y + h); g.lineTo(x, y + h + 7); g.lineTo(x + 6, y + h); g.fill(); g.stroke();
+  g.fillStyle = "#1a1012"; lines.forEach((l, i) => g.fillText(l, x, y + 18 + i * lh)); g.restore();
 }
