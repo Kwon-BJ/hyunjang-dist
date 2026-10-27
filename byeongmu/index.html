@@ -1200,7 +1200,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610270513";
+  const BUILD = "202610271122";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -4011,10 +4011,14 @@ body.game-full { overflow: hidden; }
     /* 내가 다치는 곳은 모두 여기로 — 결계 · 대쉬 · 무적(기준량 점검)이면 안 다친다. cap 이 있으면 한 번(또는 초당) 많아야 최대 체력의 cap 만큼.
        "22단 보스 늑대한테 한방 맞으면 죽는다" (2026-10-27) — 대장 공격력이 바퀴(× 2.5)와 단계(× 3.1)를 곱해 늑대 왕 4 는 붙으면 초당 202,
        최대 체력은 많아야 250 이라 덮치기 한 번에 죽었다. 대장 몸통은 초당 최대 체력 35%, 대장 탄 · 땅 공격은 한 방 30% 까지 */
+    const PAIN = 0.25, PAIN_RATE = 0.4; // 한꺼번에 많아야 최대 체력 25%, 그 뒤로는 초당 40%
     function ouch(n, cap, fx) {
       if (s.ward || s.dashT > 0 || s.god || s.stealth > 0) return false; // 그림자 질주로 숨은 동안도
       if (cap) n = Math.min(n, s.max * cap);
       if (s.gaura) n *= 0.5; // 금강 기운 — 받는 피해 절반
+      /* 깎이는 피해는 모두 합쳐 한꺼번에 최대 체력 25%, 그 뒤 초당 40% 까지 — "76단에서 갑자기 죽는다" (2026-10-27). 76단은 잡귀 150 마리가 한꺼번에 나와 0.8초 만에
+         26 마리가 붙고(마리당 초당 147~330) 체력 400 이 0.2초에 0 이 됐다. 몬스터 세기 · 수는 그대로, 둘러싸여도 2초쯤 버텨 빠져나갈 틈 */
+      const room = s.max * PAIN - (s.pain || 0); if (room <= 0) return true; n = Math.min(n, room); s.pain = (s.pain || 0) + n;
       s.hp -= n; s.hurt = 0.15; s.hitFx = Math.max(s.hitFx, fx || 0.35); s.calm = 2;
       return true;
     }
@@ -4143,7 +4147,7 @@ body.game-full { overflow: hidden; }
       s.trail.forEach((p) => { p.life -= dt; }); s.trail = s.trail.filter((p) => p.life > 0);
       inMap(s); arenaClamp(s);
       /* 숨 고르기 — 맞은 뒤 2초 동안은 안 찬다. 예전엔 맞는 중에도 초당 4까지 차서 안 죽었다 (2026-10-26) */
-      s.calm = Math.max(0, (s.calm || 0) - dt);
+      s.calm = Math.max(0, (s.calm || 0) - dt); s.pain = Math.max(0, (s.pain || 0) - s.max * PAIN_RATE * dt);
       if (s.regen && !s.calm) s.hp = Math.min(s.max, s.hp + s.regen * dt);
       s.hurt = Math.max(0, s.hurt - dt); s.ward = Math.max(0, s.ward - dt); if (!s.ward) { s.wardR = 0; s.wardSpr = ""; }
       /* 피격 효과 (2026-10-26 "주인공이 데미지 받으면 피격 효과") — 화면 가장자리 붉게 · 살짝 흔들림 · 붉은 불꽃 */
