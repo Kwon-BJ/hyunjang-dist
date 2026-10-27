@@ -38,7 +38,7 @@ const APP = (() => {
   /* 새 판 확인 — 올린 판 번호(index.html 의 ?v=)가 지금 것과 다르면 새로고침 */
   function newBuild() { if (!V) return; fetch("./?nb=" + Date.now(), { cache: "no-store" }).then((r) => r.text()).then((h) => { const m2 = h.match(/app.js?v=(d+)/); if (m2 && m2[1] !== V) { toast("새 판으로 바꾸는 중…", "good"); setTimeout(() => location.reload(), 600); } }).catch(() => {}); }
   function send(m) { if (ws && wsOpen) ws.send(JSON.stringify(m)); }
-  function fail(text) { panel([el("h2", null, "연결"), el("p", null, text), row(btn("다시 연결", () => { panel([el("p", null, "연결하는 중…")]); connect(); }), btn("병무청 홈페이지", () => { location.href = "../byeongmu/"; }, "ghost"))]); A.scene = "menu"; document.body.classList.remove("in-dun"); }
+  function fail(text) { panel([el("h2", null, "연결"), el("p", null, text), row(btn("다시 연결", () => { panel([el("p", null, "연결하는 중…")]); connect(); }), btn("병무청 홈페이지", () => { location.href = "../byeongmu/"; }, "ghost"))]); A.scene = "menu"; document.body.classList.remove("in-dun"); document.body.classList.remove("in-town"); $("topMenu").hidden = true; }
   function on(m) {
     if (m.t === "hello" && A.re) newBuild(); // 다시 이었는데 새 판이 올라와 있으면 저절로 새로고침(업데이트)
     if (m.t === "hello" && A.re && A.char && m.char) { // 다시 이음 — 하던 곳으로
@@ -100,7 +100,7 @@ const APP = (() => {
   function preview(look, h, pose) { // 작은 캔버스에 캐릭터 — 걷는 모습을 계속 돌림
     const c = el("canvas", "pv"); c.width = h * 0.9 * 2; c.height = h * 1.15 * 2; c.style.width = h * 0.9 + "px"; c.style.height = h * 1.15 + "px";
     const x = c.getContext("2d"); let t = 0, alive = true;
-    const tick = () => { if (!c.isConnected) { if (alive && t > 1) return; } t += 1 / 60; x.setTransform(2, 0, 0, 2, 0, 0); x.clearRect(0, 0, c.width, c.height); x.save(); x.translate(h * 0.45, h * 1.1); drawChar(x, c.look || look, { st: pose || "idle", t, walk: t * 8 }, h / 120, { gear: c.gear, op: c.op }); x.restore(); requestAnimationFrame(tick); };
+    const tick = () => { if (!c.isConnected) { if (alive && t > 1) return; } t += 1 / 60; x.setTransform(2, 0, 0, 2, 0, 0); x.clearRect(0, 0, c.width, c.height); x.save(); x.translate(h * 0.45, h * 1.1); drawChar(x, c.look || look, { st: pose || "idle", t, walk: t * 8 }, h / 120, { town: true, gear: c.gear, op: c.op }); x.restore(); requestAnimationFrame(tick); };
     c.look = look; requestAnimationFrame(tick); return c;
   }
 
@@ -117,7 +117,7 @@ const APP = (() => {
 
   /* ── 캐릭터 만들기 ── */
   function createScreen() { // 다섯 명 중 하나 — 옷 · 모자는 장비로 입힘(준비 중)
-    A.scene = "menu"; document.body.classList.remove("in-dun"); let L = LOOK.base("m");
+    A.scene = "menu"; document.body.classList.remove("in-dun"); document.body.classList.remove("in-town"); $("topMenu").hidden = true; let L = LOOK.base("m");
     const pv = preview(L, 220, "walk"), cards = el("div", "heroes");
     const draw = () => {
       pv.look = L;
@@ -138,7 +138,7 @@ const APP = (() => {
 
   /* ── 캐릭터 화면 ── */
   function charScreen() {
-    A.scene = "menu"; document.body.classList.remove("in-dun"); Dungeon.quit(); const C = A.char;
+    A.scene = "menu"; document.body.classList.remove("in-dun"); document.body.classList.remove("in-town"); $("topMenu").hidden = true; Dungeon.quit(); const C = A.char;
     const info = el("div", "cinfo");
     info.append(el("h2", null, C.name), el("p", null, "Lv " + C.lv + " · " + C.job + " · 경험치 " + C.exp + " / " + C.need), el("p", null, "공격 " + C.atk + " · 방어 " + C.def + " · 체력 " + C.hpMax + " · " + C.gold.toLocaleString() + " 골드"), equipList(), bagList("char"));
     const keys = btn("키 설정", keyPanel, "ghost"), remake = btn("캐릭터 다시 만들기", () => { if (remake.dataset.sure) { send({ t: "remake" }); return; } remake.dataset.sure = 1; remake.textContent = "정말 지울까요? (Lv · 가방이 모두 사라져요)"; }, "ghost danger");
@@ -198,7 +198,7 @@ const APP = (() => {
   const NPCIMG = new Image(); NPCIMG.src = "img/npc.webp" + (V ? "?v=" + V : ""); // 제미나이 마을 사람 그림
   const MASTERIMG = new Image(); MASTERIMG.src = "img/masters.webp" + (V ? "?v=" + V : ""); // 스승 다섯 — 마을 사람과 같은 그림체
   function enterTown() {
-    closePanel(); A.scene = "town"; document.body.classList.remove("in-dun"); A.hero = A.hero || { x: 260, z: 440, face: 1, st: "idle", walk: 0, t: 0 };
+    closePanel(); A.scene = "town"; document.body.classList.remove("in-dun"); document.body.classList.add("in-town"); $("topMenu").hidden = false; A.hero = A.hero || { x: 260, z: 440, face: 1, st: "idle", walk: 0, t: 0 };
     A.hero.x = Math.min(A.hero.x, TOWN_W - 300);
     send({ t: "town", x: Math.round(A.hero.x), z: Math.round(A.hero.z) });
     $("hud").hidden = false; hudText(); drawParty(); setPad("town");
@@ -283,7 +283,7 @@ const APP = (() => {
     g.fillStyle = "rgba(0,0,0,.35)"; g.beginPath(); g.ellipse(x, P.z, 24, 7, 0, 0, Math.PI * 2); g.fill();
     const isOp = me ? A.me && A.me.op : P.op; if (isOp) Dungeon.gmAura(g, x, P.z + 2);
     g.save(); g.translate(x, P.z + 2 - (P.h || 0)); if (P.face < 0) g.scale(-1, 1); if (P.st === "sprint") { g.save(); g.globalAlpha = 0.3; g.translate(-34, 0); drawChar(g, look, { st: "sprint", t: P.t }, 1); g.restore(); }
-    drawChar(g, look, { st: P.st === "run" ? "run" : P.st === "walk" ? "walk" : P.st === "sprint" ? "sprint" : "idle", t: P.t, walk: P.walk }, 1, { gear: me ? A.char.gear : P.gear, op: isOp }); g.restore();
+    drawChar(g, look, { st: P.st === "run" ? "run" : P.st === "walk" ? "walk" : P.st === "sprint" ? "sprint" : "idle", t: P.t, walk: P.walk }, 1, { gear: me ? A.char.gear : P.gear, op: isOp, town: true }); g.restore();
     const party = A.party && A.party.members.some((m) => m.id === id);
     g.font = "700 12px 'Noto Sans KR', sans-serif"; g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.85)"; const label = (isOp ? "⚜운영자 " : "") + nick + (P.lv ? " Lv" + P.lv : ""); g.strokeText(label, x, P.z - 128); g.fillStyle = me ? "#ffe08a" : party ? "#7fe3ff" : "#fff"; g.fillText(label, x, P.z - 128);
     const B = A.bubbles[id]; if (B) drawBubble(g, B.text, x, P.z - 150);
@@ -363,6 +363,30 @@ const APP = (() => {
     if (ITEM_IMG.complete) put(); else ITEM_IMG.addEventListener("load", put, { once: true });
     return c;
   }
+  /* 물약 빠른 칸 8 — 가방의 물약을 끌어다 놓으면 들어가고, 칸을 누르면 빠짐 (2026-10-28 "HP · MP 포션 자리는 유저들이 직접 넣었다 뺐다") */
+  const POT_DEF = ["p1", "p2", "p6", "mp1", "mp2", "mp3", "p4", "p5"];
+  function potSlots() { try { const v = JSON.parse(localStorage.getItem("bg-pots") || "null"); if (Array.isArray(v) && v.length === 8) return v; } catch (e) {} return POT_DEF.slice(); }
+  function savePots(v) { try { localStorage.setItem("bg-pots", JSON.stringify(v)); } catch (e) {} }
+  function potRow() {
+    const row2 = el("div", "pslots"), P = potSlots();
+    P.forEach((k, i) => { const s = el("div", "pslot" + (k ? "" : " empty")); s.dataset.i = i; if (k) { s.appendChild(icon(k, 34)); const n = (A.char.inv.find((x) => x.key === k) || {}).n || 0; s.appendChild(el("span", "ct", String(n))); s.title = (A.items[k] || {}).name + " — 누르면 빼기"; s.onclick = () => { const v = potSlots(); v[i] = null; savePots(v); bagPanel(); }; } s.appendChild(el("span", "pk", KEYS.label("q" + (i + 1)))); row2.appendChild(s); });
+    const w = el("div", "pwrap"); w.append(el("div", "ptitle", "물약 칸 — 물약을 끌어다 넣고, 누르면 빼요"), row2); return w;
+  }
+  /* 아이템 도감 — 등급(일반 · 희귀 · 영웅 · 전설) · 종류(무기 · 방어구 · 장신구 · 기타)별로, 가진 것은 ✔ (2026-10-28) */
+  const codexUI = { cat: "weapon", grade: -1 };
+  function codexPanel() {
+    refreshFn = null; const GN = ["일반", "희귀", "영웅", "전설"], CAT = [["weapon", "무기"], ["armor", "방어구"], ["acc", "장신구"], ["etc", "기타"]];
+    const catOf = (I) => I.kind === "weapon" ? "weapon" : ["armor", "pants", "shoes", "greave", "gloves"].includes(I.kind) ? "armor" : ["ring", "earring", "bracelet", "necklace"].includes(I.kind) ? "acc" : "etc";
+    const have = new Set((A.char && A.char.inv || []).map((x) => x.key)), keys = Object.keys(A.items).filter((k) => catOf(A.items[k]) === codexUI.cat && (codexUI.grade < 0 || (A.items[k].grade || 0) === codexUI.grade)).sort((p, q) => (A.items[p].grade || 0) - (A.items[q].grade || 0));
+    const tabs = el("div", "row"); CAT.forEach(([k, n]) => tabs.appendChild(btn(n, () => { codexUI.cat = k; codexPanel(); }, "tiny" + (codexUI.cat === k ? "" : " ghost"))));
+    const gr = el("div", "row"); [[-1, "전체"]].concat(GN.map((n, i) => [i, n])).forEach(([g, n]) => { const b = btn(n, () => { codexUI.grade = g; codexPanel(); }, "tiny" + (codexUI.grade === g ? "" : " ghost")); if (g >= 0) b.style.color = GRADE[g]; gr.appendChild(b); });
+    const grid = el("div", "codex");
+    keys.forEach((k) => { const I = A.items[k], c = el("div", "cx g" + (I.grade || 0)), ic = el("div", "slot g" + (I.grade || 0)); ic.appendChild(icon(k, 56)); if (have.has(k)) ic.appendChild(el("span", "eq", "✔"));
+      const nm = el("b", null, I.name); nm.style.color = GRADE[I.grade || 0]; c.append(ic, nm, el("small", null, GN[I.grade || 0] + " · " + (SLOT_NAMES[I.kind] || ({ potion: "물약", material: "재료", skin: "스킨", weapon: "무기" })[I.kind] || I.kind)), el("small", "sub", statText({ key: k })), el("small", "sub", (I.price || 0).toLocaleString() + " G")); grid.appendChild(c); });
+    if (!keys.length) grid.appendChild(el("p", "sub", "이 등급의 아이템이 없어요"));
+    const total = Object.keys(A.items).length, got = Object.keys(A.items).filter((k) => have.has(k)).length;
+    panel([el("h2", null, "📖 아이템 도감 — " + got + " / " + total), tabs, gr, grid, row(btn("닫기", closePanel, "ghost"))], true);
+  }
   function dropAsk(it) {
     refreshFn = null;
     if (isEq(it.uid)) return toast("끼고 있는 장비는 먼저 빼 주세요.", "bad");
@@ -380,7 +404,7 @@ const APP = (() => {
     /* 끌어서 버리기 — 가방 · 장비 창 밖(게임 화면)에 놓으면 「버릴까요?」 (2026-10-27 "아이템은 마우스로 드래그해서 버릴 수 있게") */
     b.addEventListener("pointerdown", (e) => { if (e.button) return; const x0 = e.clientX, y0 = e.clientY; let gh = null;
       const mv = (ev) => { if (!gh && Math.hypot(ev.clientX - x0, ev.clientY - y0) > 10) { gh = b.cloneNode(true); gh.style.cssText = "position:fixed;pointer-events:none;z-index:99;width:56px;height:56px;opacity:.85"; document.body.appendChild(gh); } if (gh) { gh.style.left = ev.clientX - 28 + "px"; gh.style.top = ev.clientY - 28 + "px"; } };
-      const up = (ev) => { removeEventListener("pointermove", mv); removeEventListener("pointerup", up); if (!gh) return; gh.remove(); const tg = document.elementFromPoint(ev.clientX, ev.clientY); if (tg && tg.closest("#bagSide, #equipSide, #panel")) return; dropAsk(it); };
+      const up = (ev) => { removeEventListener("pointermove", mv); removeEventListener("pointerup", up); if (!gh) return; gh.remove(); const tg = document.elementFromPoint(ev.clientX, ev.clientY), ps = tg && tg.closest(".pslot"); if (ps) { if ((A.items[it.key] || {}).kind !== "potion") return toast("물약만 넣을 수 있어요", "bad"); const v = potSlots(); for (let k = 0; k < 8; k++) if (v[k] === it.key) v[k] = null; v[+ps.dataset.i] = it.key; savePots(v); return bagPanel(); } if (tg && tg.closest("#bagSide, #equipSide, #panel")) return; dropAsk(it); };
       addEventListener("pointermove", mv); addEventListener("pointerup", up); });
     b.ondblclick = () => { if (isGear(it.key)) send({ t: "equip", uid: it.uid }); }; // 두 번 누르면 끼기 · 빼기
     return b;
@@ -425,13 +449,13 @@ const APP = (() => {
   function bagPanel() {
     const C = A.char, S = $("bagSide"); if (!C) return;
     const sortK = { kind: () => 0, grade: (a, b) => A.items[b.key].grade - A.items[a.key].grade, plus: (a, b) => (b.plus || 0) - (a.plus || 0) }[bagUI.sort];
-    bagUI.tab = "bag"; const tabs = el("div", "bs-top"); tabs.appendChild(el("div", "bs-title", "🎒 가방"));
+    bagUI.tab = "bag"; const tabs = el("div", "bs-top"); tabs.appendChild(el("div", "bs-title", "🎒 가방")); tabs.appendChild(btn("📖 도감", codexPanel, "tiny ghost"));
     const x = el("button", "bs-x", "✕"); x.onclick = () => { S.hidden = true; }; tabs.appendChild(x);
     const sel = document.createElement("select");
     [["kind", "종류순"], ["grade", "등급순"], ["plus", "강화순"]].forEach(([v, n]) => { const o = document.createElement("option"); o.value = v; o.textContent = n; sel.appendChild(o); });
     sel.value = bagUI.sort; sel.onchange = () => { bagUI.sort = sel.value; bagPanel(); };
     const bar = el("div", "bs-bar"); bar.append(el("span", "bs-cnt", "▦ " + C.inv.length + " / " + BAG_MAX + "   ·   " + C.gold.toLocaleString() + " G"), sel);
-    const list = el("div", "bs-list"), rail = el("div", "bs-rail");
+    const list = el("div", "bs-list"), rail = el("div", "bs-rail"); list.appendChild(potRow());
     const show = C.inv;
     const all = el("button"); all.innerHTML = "<b>▦</b>" + show.length; all.onclick = () => { list.scrollTop = 0; }; rail.appendChild(all);
     KINDS.forEach(([k, name, ic]) => {
@@ -510,11 +534,11 @@ const APP = (() => {
   function goDungeon(m, watch, gm) {
     $("bagSide").hidden = true; $("equipSide").hidden = true; A.duelRes = null;
     watchBar(!!watch); exitBar(!watch); A.run = watch ? null : m.run;
-    closePanel(); A.scene = "dungeon"; document.body.classList.add("in-dun"); A.reward = null; A.cardRes = null; A.cardSent = null; A.watch = !!watch; $("hud").hidden = true; $("partyBox").hidden = true; setPad(watch ? "none" : "dungeon");
+    closePanel(); A.scene = "dungeon"; document.body.classList.add("in-dun"); document.body.classList.remove("in-town"); $("topMenu").hidden = !!watch; A.reward = null; A.cardRes = null; A.cardSent = null; A.watch = !!watch; $("hud").hidden = true; $("partyBox").hidden = true; setPad(watch ? "none" : "dungeon");
     const C = A.char, party = watch || gm || m.pvp || (m.members && m.members.length > 1) ? { host: m.host, members: m.members } : null;
     const pots = {}; ["p1", "p2", "p3", "p4", "p5", "p6", "mp1", "mp2", "mp3"].forEach((k) => { const p = (C.inv || []).find((x) => x.key === k); pots[k] = p ? p.n : 0; });
     Dungeon.start({ d: m.d, me: A.me.id, look: C.look, nick: C.name, stats: { hpMax: C.hpMax, mpMax: C.mpMax, atk: C.atk, def: C.def }, potions: pots, gear: C.gear, party,
-      bubbles: A.bubbles, send: (data, to) => send({ t: "relay", data, to }), usePotion: (key) => send({ t: "usePotion", key }), loot: () => send({ t: "loot" }), learned: C.learned, slots: C.skillSlots, axis, dash, duelLose: () => send({ t: "duelLose" }), watch: !!watch, gm: !!gm, op: !!(A.me && A.me.op),
+      bubbles: A.bubbles, potSlots: potSlots(), send: (data, to) => send({ t: "relay", data, to }), usePotion: (key) => send({ t: "usePotion", key }), loot: () => send({ t: "loot" }), learned: C.learned, slots: C.skillSlots, axis, dash, duelLose: () => send({ t: "duelLose" }), watch: !!watch, gm: !!gm, op: !!(A.me && A.me.op),
       onEnd: (res) => { if (m.pvp) { exitBar(false); const R = A.duelRes || {}; const pv = R.pvp || {}; return panel([el("h1", null, res.win ? "승리!" : "패배…"), el("p", null, "결투 — " + (R.nick || "") + (R.left ? " 님이 나갔어요" : "")), el("p", "reward", "내 결투 전적 " + (pv.w || 0) + "승 " + (pv.l || 0) + "패"), row(btn("마을로", backToTown))]); }
         if (res.tower) { A.result = res; send({ t: "twrDone", floor: res.floor, kills: res.kills }); return panel([el("h2", null, "무한의 탑 — " + res.floor + "층"), el("p", null, "기록 확인 중…")]); }
         if (watch) return panel([el("h2", null, "관전 끝 — " + (res.win ? "클리어" : "실패")), el("p", null, Math.floor(res.sec / 60) + "분 " + (res.sec % 60) + "초"), row(btn("마을로", backToTown))]); A.result = res; if (res.win && !A.solo) send({ t: "dclear" }); showResult(); } });
@@ -655,7 +679,13 @@ const APP = (() => {
   }
   $("hudOp").onclick = () => opPanel(null); /* 위 단추에 그림 — 운영 · 접속 · 스킬 · 장비 · 가방 · 키 설정 (제미나이 그림, 2026-10-27) */
   [["hudOp", "op"], ["hudOnline", "online"], ["hudSkill", "skill"], ["hudEquip", "equip"], ["hudBag", "bag"], ["hudKeys", "keys"]].forEach(([id, k]) => { const b = $(id), r = FR.ui && FR.ui[k]; if (!b || !r) return; const s = 26 / 64, i = document.createElement("i"); i.className = "hic"; i.style.cssText = "width:" + Math.round(r[2] * s) + "px;background-position:-" + r[0] * s + "px -" + r[1] * s + "px;background-size:" + 2048 * s + "px auto"; b.prepend(i); b.title = b.textContent; });
-  $("hudSkill").onclick = skillPanel; $("hudOnline").onclick = () => send({ t: "online" }); $("hudBag").onclick = () => { const S = $("bagSide"); if (S.hidden) bagPanel(); else S.hidden = true; }; $("hudEquip").onclick = () => { const E = $("equipSide"); if (E.hidden) equipPanel(); else E.hidden = true; }; $("hudKeys").onclick = keyPanel; $("hudOut").onclick = () => { send({ t: "back" }); charScreen(); };
+  $("hudSkill").onclick = skillPanel; ["hudSkill", "hudEquip", "hudBag"].forEach((id) => { $(id).style.display = "none"; }); // 메뉴 탭으로 옮김
+  /* 오른쪽 위 메뉴 — 스킬 · 장비 · 가방 (2026-10-28 "우측 상단에 메뉴 탭, 스킬 · 장비 · 가방 3가지 우선") */
+  (() => { const pop = $("menuPop"), map = { skill: "skill", equip: "equip", bag: "bag" };
+    pop.querySelectorAll("button").forEach((b) => { const r = FR.ui && FR.ui[map[b.dataset.m]], i = b.querySelector(".mic"); if (r && i) { const s = 40 / 64; i.style.width = Math.round(r[2] * s) + "px"; i.style.backgroundPosition = "-" + r[0] * s + "px -" + r[1] * s + "px"; i.style.backgroundSize = 2048 * s + "px auto"; }
+      b.onclick = () => { pop.hidden = true; if (b.dataset.m === "skill") skillPanel(); else if (b.dataset.m === "equip") { const E = $("equipSide"); if (E.hidden) equipPanel(); else E.hidden = true; } else { const S = $("bagSide"); if (S.hidden) bagPanel(); else S.hidden = true; } }; });
+    $("menuBtn").onclick = (e) => { e.stopPropagation(); pop.hidden = !pop.hidden; };
+    addEventListener("pointerdown", (e) => { if (!pop.hidden && !e.target.closest("#topMenu")) pop.hidden = true; }); })(); $("hudOnline").onclick = () => send({ t: "online" }); $("hudBag").onclick = () => { const S = $("bagSide"); if (S.hidden) bagPanel(); else S.hidden = true; }; $("hudEquip").onclick = () => { const E = $("equipSide"); if (E.hidden) equipPanel(); else E.hidden = true; }; $("hudKeys").onclick = keyPanel; $("hudOut").onclick = () => { send({ t: "back" }); charScreen(); };
 
   /* ── 한 틀 ── */
   let last = 0;
