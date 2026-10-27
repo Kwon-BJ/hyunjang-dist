@@ -57,7 +57,48 @@ function masterPic(hero, mc, mh) { // 그 사람 그림을 잘라 옷 · 머리 
     x.putImageData(D, 0, 0); }
   MTINT.set(key, c); return c;
 }
+/* 스승 동작 그림 — 있는 사람은 동작마다 그 칸으로(던파처럼 자세가 바뀜), 없으면 아래 한 장 그림을 몸짓으로.
+   ax = 칸에서 몸 가운데(0~1, 칼이 앞으로 뻗은 칸은 몸이 왼쪽), base = 서 있는 칸 높이(이 높이를 124 로 맞춤) */
+const MOTION = {
+  chief: { pic: "m_chief", base: 213, ax: { idle: 0.5, walk1: 0.5, walk2: 0.5, run: 0.5, atk1: 0.38, atk2: 0.36, atk3: 0.5, air: 0.45, charge: 0.5, swing: 0.36, hit: 0.5, down: 0.5 } }, // 운영자 = 문주 — 손바닥 · 발차기 · 장풍
+  kh: { pic: "m_kh", base: 212, ax: { idle: 0.5, walk1: 0.5, walk2: 0.5, run: 0.5, atk1: 0.3, atk2: 0.26, atk3: 0.5, air: 0.5, charge: 0.45, swing: 0.28, hit: 0.5, down: 0.5 } },
+};
+const MOTION_IMG = {};
+Object.keys(MOTION).forEach((h) => { const V = ((document.currentScript && document.currentScript.src) || "").split("?v=")[1] || ""; const i = new Image(); i.src = "img/" + MOTION[h].pic + ".png" + (V ? "?v=" + V : ""); MOTION_IMG[h] = i; });
+function motionFrame(st, pose) {
+  if (st === "atk") return ["atk1", "atk2", "atk3", "atk1"][pose.step | 0] || "atk1";
+  if (st === "airatk") return "air"; if (st === "cast") return (pose.t || 0) < 0.1 ? "charge" : "swing"; if (st === "dash") return "swing";
+  if (st === "walk") return Math.floor((pose.walk || 0) / Math.PI) % 2 ? "walk2" : "walk1";
+  if (st === "run" || st === "sprint" || st === "jump" || st === "roll") return "run";
+  if (st === "hit" || st === "backstep") return "hit"; if (st === "fall" || st === "down" || st === "dead") return "down";
+  return "idle";
+}
+function drawMotion(g, hero, L, pose, sc, opt) {
+  const M = MOTION[hero], I = MOTION_IMG[hero], F = M && FR[M.pic]; if (!F || !I || !I.complete || !I.naturalWidth) return false;
+  const n = motionFrame(pose.st, pose), r = F[n] || F.idle, P = motionPic(hero, (L && L.mc) | 0, (L && L.mh) | 0), k = sc * 124 / M.base, ax = M.ax[n] == null ? 0.5 : M.ax[n];
+  const st = pose.st, t = pose.t || 0; let bob = 0, sx = 1;
+  if (st === "idle") bob = Math.sin(t * 2.5) * 1.2; else if (st === "walk" || st === "run" || st === "sprint") bob = Math.abs(Math.sin(pose.walk || t * 9)) * 2.5;
+  if (st === "atk" && t < 0.06) sx = 1.06; // 휘두르는 순간 살짝 늘림 — 힘이 실린 느낌
+  const G = opt && opt.gear, col = (opt && opt.glow && "rgba(255,230,140,1)") || (G && G.b && GEAR_COL[G.b]);
+  g.save(); g.translate(0, -bob * sc); g.scale(sx, 1); if (col) { g.shadowColor = col; g.shadowBlur = 14 * sc; }
+  g.drawImage(P, r[0], r[1], r[2], r[3], -r[2] * k * ax, -r[3] * k + 2, r[2] * k, r[3] * k); g.restore();
+  return true;
+}
+function motionPic(hero, mc, mh) { // 동작 그림 전체를 옷 · 머리 색 바꿔 한 번 만들어 둠(칸마다 위쪽이 머리)
+  const key = "M" + hero + ":" + mc + ":" + mh; let c = MTINT.get(key); if (c) return c; const I = MOTION_IMG[hero], F = FR[MOTION[hero].pic];
+  c = document.createElement("canvas"); c.width = I.naturalWidth; c.height = I.naturalHeight; const x = c.getContext("2d"); x.drawImage(I, 0, 0);
+  const TC = MASTER_MC[mc], TH = MASTER_MH[mh];
+  if (TC || TH) { const tc = TC && hexHsl(TC), th = TH && hexHsl(TH);
+    Object.entries(F).forEach(([n, r]) => { const D = x.getImageData(r[0], r[1], r[2], r[3]), p = D.data, W = r[2], H = r[3], hairY = n === "down" ? 0 : (MASTER_HAIR[hero] || 0) * H * 1.1;
+      for (let i = 0; i < W * H; i++) { const o = i * 4; if (p[o + 3] < 20) continue; const y = (i / W) | 0, [h, s, l] = hsl(p[o], p[o + 1], p[o + 2]); let out = null;
+        if (tc && (MASTER_CLOTH[hero] || []).some(([a, b, sm]) => h >= a && h <= b && s >= sm) && y > H * 0.12) out = rgb(tc[0], Math.max(0.15, tc[1] * 0.85), Math.min(0.92, Math.max(0.05, l + (tc[2] - 0.38) * 0.75)));
+        else if (th && y < hairY && l > 0.07 && l < 0.4 && s < 0.6) out = rgb(th[0], th[1] * 0.8, Math.min(0.9, l + (th[2] - 0.15) * 0.85));
+        if (out) { p[o] = out[0]; p[o + 1] = out[1]; p[o + 2] = out[2]; } }
+      x.putImageData(D, r[0], r[1]); }); }
+  MTINT.set(key, c); return c;
+}
 function drawMaster(g, L, pose, sc, opt) {
+  if (drawMotion(g, heroOf(L), L, pose, sc, opt)) return true;
   const hero = heroOf(L), r = FR.masters && FR.masters[hero]; if (!r || !MASTER_IMG.complete || !MASTER_IMG.naturalWidth) return false;
   const P = masterPic(hero, (L && L.mc) | 0, (L && L.mh) | 0), st = pose.st, t = pose.t || 0, k = sc * 124 / r[3]; let rot = 0, bob = 0, sx = 1, lx = 0;
   if (st === "walk" || st === "run" || st === "sprint") { const s = Math.sin(pose.walk || t * 9); bob = Math.abs(s) * 3; rot = 0.05 * s; }
@@ -136,7 +177,7 @@ function shade(hex, k) { // k < 0 어둡게, > 0 밝게
 
 function drawChar(g, L, pose, sc, opt) {
   L = L || LOOK.base("m"); pose = pose || { st: "idle", t: 0 }; opt = opt || {};
-  if (opt && opt.op && drawChief(g, pose, sc)) return; // 운영자 = 문주 모습
+  if (opt && opt.op && (drawMotion(g, "chief", L, pose, sc, opt) || drawChief(g, pose, sc))) return; // 운영자 = 문주 모습(동작 그림이 있으면 동작마다)
   if (drawMaster(g, L, pose, sc, opt)) return; // 스승 모습(기본 캐릭터, 2026-10-27)
   if (drawHero(g, L, pose, sc, opt)) return; // 기본 캐릭터 그림(없으면 아래 코드 그림)
   if (!HERO_IMG.complete) return; // 그림 받는 중 — 잠깐 기다림(코드 그림 · 부위 그림을 괜히 받지 않게)
