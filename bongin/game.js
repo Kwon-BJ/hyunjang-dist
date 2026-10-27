@@ -528,16 +528,19 @@ const Dungeon = (() => {
     const pg = g.createLinearGradient(0, -330, 0, 0); pg.addColorStop(0, "rgba(160,90,255,0)"); pg.addColorStop(0.7, "rgba(170,110,255,.22)"); pg.addColorStop(1, "rgba(220,180,255,.45)"); g.fillStyle = pg; g.fillRect(-RX * 0.9, -330, RX * 1.8, 330);
     // 바깥 빛
     const og = g.createRadialGradient(0, cy, 10, 0, cy, RY * 1.5); og.addColorStop(0, "rgba(190,120,255,.55)"); og.addColorStop(0.5, "rgba(110,40,220,.25)"); og.addColorStop(1, "rgba(60,0,140,0)"); g.fillStyle = og; g.beginPath(); g.ellipse(0, cy, RX * 1.9, RY * 1.5, 0, 0, Math.PI * 2); g.fill();
-    // 소용돌이 — 팔 7개 × 3겹
-    g.save(); g.translate(0, cy); g.scale(RX / RY, 1);
-    for (let L = 0; L < 3; L++) { const sp = (1.4 + L * 0.7) * (L % 2 ? -1 : 1), R0 = RY * (1 - L * 0.24); g.lineWidth = 5 - L;
-      for (let a = 0; a < 7; a++) { const base = t * sp + a * Math.PI * 2 / 7; g.beginPath(); for (let s = 0; s <= 24; s++) { const q = s / 24, r = R0 * (1 - q * 0.85), ang = base + q * 2.6; s ? g.lineTo(Math.cos(ang) * r, Math.sin(ang) * r) : g.moveTo(Math.cos(ang) * r, Math.sin(ang) * r); }
-        g.strokeStyle = "rgba(" + (170 + L * 30) + "," + (110 + L * 40) + ",255," + (0.55 - L * 0.1) + ")"; g.stroke(); } }
-    g.restore();
-    // 가장자리 고리
-    g.lineWidth = 4; g.strokeStyle = "rgba(235,200,255,.9)"; g.beginPath(); g.ellipse(0, cy, RX, RY, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 10; g.strokeStyle = "rgba(150,80,255,.35)"; g.stroke();
-    // 가운데
-    const cg = g.createRadialGradient(0, cy, 2, 0, cy, RX * 0.8); cg.addColorStop(0, "rgba(255,255,255,1)"); cg.addColorStop(0.3, "rgba(240,210,255,.9)"); cg.addColorStop(1, "rgba(150,80,255,0)"); g.fillStyle = cg; g.beginPath(); g.ellipse(0, cy, RX * 0.8, RY * 0.8 * (0.9 + Math.sin(t * 4) * 0.08), 0, 0, Math.PI * 2); g.fill();
+    const DV = FR.door, DI = IMG.door || (IMG.door = img("img/door.webp")); /* 영상에서 뽑은 문(검은 바탕 — 더해 그림, 2026-10-28) · 아직 안 왔으면 그려 만든 소용돌이 */
+    if (DV && DI.complete && DI.naturalWidth) { const k = Math.floor(t * 10) % DV.n, s2 = RY * 2.5 / DV.h; g.drawImage(DI, (k % DV.cols) * DV.w, Math.floor(k / DV.cols) * DV.h, DV.w, DV.h, -DV.w * s2 / 2, cy - DV.h * s2 / 2, DV.w * s2, DV.h * s2); } else {
+      // 소용돌이 — 팔 7개 × 3겹
+      g.save(); g.translate(0, cy); g.scale(RX / RY, 1);
+      for (let L = 0; L < 3; L++) { const sp = (1.4 + L * 0.7) * (L % 2 ? -1 : 1), R0 = RY * (1 - L * 0.24); g.lineWidth = 5 - L;
+        for (let a = 0; a < 7; a++) { const base = t * sp + a * Math.PI * 2 / 7; g.beginPath(); for (let s = 0; s <= 24; s++) { const q = s / 24, r = R0 * (1 - q * 0.85), ang = base + q * 2.6; s ? g.lineTo(Math.cos(ang) * r, Math.sin(ang) * r) : g.moveTo(Math.cos(ang) * r, Math.sin(ang) * r); }
+          g.strokeStyle = "rgba(" + (170 + L * 30) + "," + (110 + L * 40) + ",255," + (0.55 - L * 0.1) + ")"; g.stroke(); } }
+      g.restore();
+      // 가장자리 고리
+      g.lineWidth = 4; g.strokeStyle = "rgba(235,200,255,.9)"; g.beginPath(); g.ellipse(0, cy, RX, RY, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 10; g.strokeStyle = "rgba(150,80,255,.35)"; g.stroke();
+      // 가운데
+      const cg = g.createRadialGradient(0, cy, 2, 0, cy, RX * 0.8); cg.addColorStop(0, "rgba(255,255,255,1)"); cg.addColorStop(0.3, "rgba(240,210,255,.9)"); cg.addColorStop(1, "rgba(150,80,255,0)"); g.fillStyle = cg; g.beginPath(); g.ellipse(0, cy, RX * 0.8, RY * 0.8 * (0.9 + Math.sin(t * 4) * 0.08), 0, 0, Math.PI * 2); g.fill();
+      }
     // 빨려 드는 불티
     for (let k = 0; k < 26; k++) { const ph = (t * 0.7 + k * 0.137) % 1, ang = k * 2.39996 + t * 1.5, r = (1 - ph) * RY * 1.35, px = Math.cos(ang) * r * (RX / RY) * 1.2, py = cy + Math.sin(ang) * r; g.fillStyle = "rgba(240,215,255," + (0.85 * ph) + ")"; g.beginPath(); g.arc(px, py, 1.5 + ph * 2.5, 0, Math.PI * 2); g.fill(); }
     g.globalCompositeOperation = "source-over";
