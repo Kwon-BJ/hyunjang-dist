@@ -184,25 +184,29 @@ const Dungeon = (() => {
   function num(x, y, v, c) { if (S.nums.length < 80) S.nums.push({ x, y, v, c: c || "#fff", t: 0.7 }); }
 
   /* 맞히기 — 파티원은 보이는 것만 하고 파티장에게 보낸다. remote = 파티원이 보낸 것 */
+  /* 타격감 (2026-10-27 "적중 순간 히트스톱, 맞은 캐릭터가 밀려나게 넉백 강공격은 더 멀리, 맞은 뒤 잠깐 행동할 수 없게 피격경직").
+     강공격 = 넉백 · 띄우기 · 피해 30 넘는 것(콤보 마지막 타 · 큰 스킬). 수치는 시험(전투-시험 타격감)으로 맞춤 */
+  const FEEL = { stop: 0.06, stopHeavy: 0.11, stopBoss: 0.15, push: 260, pushHeavy: 580, stun: 0.42, stunHeavy: 0.7, bossPush: 12, shake: 0.12, shakeHeavy: 0.3 };
   function hitFoe(f, dmg, type, dir, remote) {
     if (S.remote[f.id] === f) return hitPlayer(f, dmg, type, dir); // 결투 상대
     if (f.st === "dead" || f.inv > 0) return false;
-    if (!remote) { dmg = Math.round(dmg * S.mult * rnd(0.92, 1.08)); S.combo++; S.comboT = 1.6; S.maxCombo = Math.max(S.maxCombo, S.combo); stop = Math.max(stop, type === "launch" ? 0.07 : 0.045); num(f.x, f.z - f.h - f.D.sc * 70, dmg, type === "launch" ? "#ffd36b" : "#fff"); }
+    const heavy = type === "knock" || type === "launch" || dmg >= 30; f.shk = heavy ? 0.16 : 0.1; // 맞은 몸 떨림(히트스톱 동안)
+    if (!remote) { dmg = Math.round(dmg * S.mult * rnd(0.92, 1.08)); S.combo++; S.comboT = 1.6; S.maxCombo = Math.max(S.maxCombo, S.combo); stop = Math.max(stop, heavy ? FEEL.stopHeavy : FEEL.stop); shake = Math.max(shake, heavy ? FEEL.shakeHeavy : FEEL.shake); num(f.x, f.z - f.h - f.D.sc * 70, dmg, type === "launch" ? "#ffd36b" : "#fff"); }
     addFx({ k: "spark", x: f.x - dir * 10, y: f.z - f.h - 40 * f.D.sc, t: 0.22, d: 0.22, s: 70 });
     f.flash = 0.1;
     if (!host()) { C.send({ k: "hit", i: f.id, dmg, type, dir }, C.party.host); return true; }
     f.hp -= dmg;
     if (f.D.boss) {
-      f.poise -= dmg; f.x += dir * 4;
-      if (f.poise <= 0) { f.poise = 260 * S.hpK; f.st = "hit"; f.t = 0.7; banner(f.D.name + " 이(가) 휘청인다 — 지금이다!"); }
+      f.poise -= dmg; f.x += dir * (heavy ? FEEL.bossPush * 2 : FEEL.bossPush);
+      if (f.poise <= 0) { f.poise = 260 * S.hpK; f.st = "hit"; f.t = 1.0; f.vx = dir * 200; stop = Math.max(stop, FEEL.stopBoss); banner(f.D.name + " 이(가) 휘청인다 — 지금이다!"); }
       if (f.hp <= 0) { f.hp = 0; f.st = "dead"; f.t = 1.6; shake = 0.6; S.kills = (S.kills || 0) + 3; }
       return true;
     }
     const airborne = f.h > 0.5 || f.st === "air";
     if (type === "launch") { f.vh = 680; f.vx = dir * 60; f.st = "air"; f.jug = 0; }
-    else if (type === "knock") { f.vh = 380; f.vx = dir * 420; f.st = "air"; f.jug = 0; }
+    else if (type === "knock") { f.vh = 380; f.vx = dir * FEEL.pushHeavy; f.st = "air"; f.jug = 0; }
     else if (airborne) { f.vh = Math.max(f.vh, 330 - f.jug * 55); f.jug++; f.vx = dir * 40; f.st = "air"; }
-    else { f.st = "hit"; f.t = 0.38; f.vx = dir * 130; }
+    else { f.st = "hit"; f.t = heavy ? FEEL.stunHeavy : FEEL.stun; f.stunFull = f.t; f.vx = dir * (heavy ? FEEL.pushHeavy * 0.7 : FEEL.push); }
     if (f.hp <= 0) { f.hp = 0; f.dying = true; if (!airborne && type === "stagger") { f.vh = 360; f.vx = dir * 160; f.st = "air"; } }
     return true;
   }
@@ -219,7 +223,7 @@ const Dungeon = (() => {
     H.hp -= dmg; S.hitsTaken++; shake = Math.max(shake, heavy ? 0.35 : 0.18);
     num(H.x, H.z - H.h - 120, dmg, "#ff6a5a");
     if (heavy) { H.st = "fall"; H.vh = 420; H.vx = dir * 300; H.t = 0; }
-    else { H.st = "hit"; H.t = 0.3; H.vx = dir * 160; H.inv = 0.45; }
+    else { H.st = "hit"; H.t = 0; H.vx = dir * 240; H.inv = 0.45; stop = Math.max(stop, 0.05); shake = Math.max(shake, 0.15); } // 맞으면 0.3초 경직(예전엔 H.t 를 0.3 으로 넣어 바로 풀렸다) · 밀림 · 멈칫
     H.queued = false;
     if (H.hp <= 0) { H.hp = 0; H.st = "fall"; H.vh = 300; if (!C.party || S.D.pvp) { S.over = true; S.lose = true; S.endT = 1.6; } if (S.D.pvp && C.duelLose) C.duelLose(); }
   }
@@ -233,6 +237,7 @@ const Dungeon = (() => {
   /* ── 한 틀 ── */
   function step(dt) {
     if (!S || S.ended) return;
+    S.foes.forEach((f) => { if (f.shk > 0) f.shk -= dt; });
     if (stop > 0) { stop -= dt; return; }
     S.t += dt;
     const H = S.hero;
@@ -405,7 +410,7 @@ const Dungeon = (() => {
       return;
     }
     if (f.st === "down") { if (f.t <= 0) { f.st = "walk"; f.inv = 0.45; f.jug = 0; } return; }
-    if (f.st === "hit") { f.x += f.vx * dt; f.vx *= 0.88; if (f.t <= 0) f.st = "walk"; return; }
+    if (f.st === "hit") { f.x = clamp(f.x + f.vx * dt, 20, ROOM - 20); f.vx *= Math.pow(0.02, dt); if (f.t <= 0) f.st = "walk"; return; } // 밀려나다 멈춤(경직이 끝날 때까지 못 움직임)
     if (D.boss) return bossStep(f, dt, dx, dz);
     if (f.st === "walk") {
       f.face = Math.sign(dx) || f.face;
@@ -467,7 +472,7 @@ const Dungeon = (() => {
 
   /* ── 파티 주고받기 ── */
   /* 차원의 문 — 방 오른쪽 끝. 파티장이 넘어가면(또는 파티원이 문을 쓰면 파티장에게 알려) 모두 다음 방으로 */
-  const DOOR_X = ROOM - 130;
+  const DOOR_X = ROOM - 300; // 스킬 단추와 안 겹치게 조금 안쪽
   function useDoor() { if (!S || !S.door) return; if (host()) goRoom(S.room + 1); else C.send({ k: "door" }); }
   function goRoom(r) {
     const H = S.hero, RM = S.D.rooms[r]; if (!RM) return;
@@ -476,12 +481,31 @@ const Dungeon = (() => {
     S.foes = []; S.shots = []; S.zones = []; S.tele = [];
     banner((RM.look.boss ? "⚠ " : (r + 1) + " / " + S.D.rooms.length + " — ") + RM.name);
   }
-  function drawDoor(g, x, y) { // 차원의 문 — 보랏빛 소용돌이
-    const t = S.t; g.save(); g.translate(x, y);
-    const gr = g.createRadialGradient(0, -90, 10, 0, -90, 110); gr.addColorStop(0, "rgba(255,240,255,.95)"); gr.addColorStop(0.35, "rgba(190,110,255,.8)"); gr.addColorStop(1, "rgba(80,20,160,0)");
-    g.fillStyle = gr; g.beginPath(); g.ellipse(0, -90, 70, 120, 0, 0, Math.PI * 2); g.fill();
-    g.strokeStyle = "rgba(225,180,255,.9)"; g.lineWidth = 3; for (let k = 0; k < 3; k++) { g.beginPath(); g.ellipse(0, -90, 52 - k * 14, 100 - k * 26, t * (1.5 + k) , 0, Math.PI * 1.4); g.stroke(); }
-    g.font = "800 15px 'Noto Sans KR', sans-serif"; g.textAlign = "center"; g.lineWidth = 4; g.strokeStyle = "rgba(0,0,0,.85)"; const tx = "차원의 문  ↑", ty = -230 + Math.sin(t * 3) * 4; g.strokeText(tx, 0, ty); g.fillStyle = "#f0d8ff"; g.fillText(tx, 0, ty);
+  /* 차원의 문 — 겹겹이 도는 소용돌이 · 빛나는 가운데 · 빨려 드는 불티 · 바닥 마법진 · 빛기둥 (2026-10-27 "퀄리티 좀 높여라") */
+  function drawDoor(g, x, y) {
+    const t = S.t, cy = -105, RX = 62, RY = 112; g.save(); g.translate(x, y);
+    g.globalCompositeOperation = "lighter";
+    // 바닥 마법진
+    g.save(); g.scale(1, 0.32); g.rotate(t * 0.6); g.strokeStyle = "rgba(200,140,255,.55)"; g.lineWidth = 3; g.beginPath(); g.arc(0, 0, 120, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1.5; g.beginPath(); g.arc(0, 0, 96, 0, Math.PI * 2); g.stroke();
+    for (let k = 0; k < 12; k++) { g.rotate(Math.PI / 6); g.beginPath(); g.moveTo(96, 0); g.lineTo(120, 0); g.stroke(); g.fillStyle = "rgba(230,190,255,.7)"; g.fillRect(104, -3, 6, 6); } g.restore();
+    // 빛기둥
+    const pg = g.createLinearGradient(0, -330, 0, 0); pg.addColorStop(0, "rgba(160,90,255,0)"); pg.addColorStop(0.7, "rgba(170,110,255,.22)"); pg.addColorStop(1, "rgba(220,180,255,.45)"); g.fillStyle = pg; g.fillRect(-RX * 0.9, -330, RX * 1.8, 330);
+    // 바깥 빛
+    const og = g.createRadialGradient(0, cy, 10, 0, cy, RY * 1.5); og.addColorStop(0, "rgba(190,120,255,.55)"); og.addColorStop(0.5, "rgba(110,40,220,.25)"); og.addColorStop(1, "rgba(60,0,140,0)"); g.fillStyle = og; g.beginPath(); g.ellipse(0, cy, RX * 1.9, RY * 1.5, 0, 0, Math.PI * 2); g.fill();
+    // 소용돌이 — 팔 7개 × 3겹
+    g.save(); g.translate(0, cy); g.scale(RX / RY, 1);
+    for (let L = 0; L < 3; L++) { const sp = (1.4 + L * 0.7) * (L % 2 ? -1 : 1), R0 = RY * (1 - L * 0.24); g.lineWidth = 5 - L;
+      for (let a = 0; a < 7; a++) { const base = t * sp + a * Math.PI * 2 / 7; g.beginPath(); for (let s = 0; s <= 24; s++) { const q = s / 24, r = R0 * (1 - q * 0.85), ang = base + q * 2.6; s ? g.lineTo(Math.cos(ang) * r, Math.sin(ang) * r) : g.moveTo(Math.cos(ang) * r, Math.sin(ang) * r); }
+        g.strokeStyle = "rgba(" + (170 + L * 30) + "," + (110 + L * 40) + ",255," + (0.55 - L * 0.1) + ")"; g.stroke(); } }
+    g.restore();
+    // 가장자리 고리
+    g.lineWidth = 4; g.strokeStyle = "rgba(235,200,255,.9)"; g.beginPath(); g.ellipse(0, cy, RX, RY, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 10; g.strokeStyle = "rgba(150,80,255,.35)"; g.stroke();
+    // 가운데
+    const cg = g.createRadialGradient(0, cy, 2, 0, cy, RX * 0.8); cg.addColorStop(0, "rgba(255,255,255,1)"); cg.addColorStop(0.3, "rgba(240,210,255,.9)"); cg.addColorStop(1, "rgba(150,80,255,0)"); g.fillStyle = cg; g.beginPath(); g.ellipse(0, cy, RX * 0.8, RY * 0.8 * (0.9 + Math.sin(t * 4) * 0.08), 0, 0, Math.PI * 2); g.fill();
+    // 빨려 드는 불티
+    for (let k = 0; k < 26; k++) { const ph = (t * 0.7 + k * 0.137) % 1, ang = k * 2.39996 + t * 1.5, r = (1 - ph) * RY * 1.35, px = Math.cos(ang) * r * (RX / RY) * 1.2, py = cy + Math.sin(ang) * r; g.fillStyle = "rgba(240,215,255," + (0.85 * ph) + ")"; g.beginPath(); g.arc(px, py, 1.5 + ph * 2.5, 0, Math.PI * 2); g.fill(); }
+    g.globalCompositeOperation = "source-over";
+    g.font = "800 16px 'Noto Sans KR', sans-serif"; g.textAlign = "center"; g.lineWidth = 4; g.strokeStyle = "rgba(0,0,0,.85)"; const tx = "차원의 문  ↑", ty = -245 + Math.sin(t * 3) * 4; g.strokeText(tx, 0, ty); g.fillStyle = "#f3e0ff"; g.fillText(tx, 0, ty);
     g.restore();
   }
   function net(from, d) {
@@ -546,10 +570,10 @@ const Dungeon = (() => {
     if (nick) { g.font = "700 12px 'Noto Sans KR', sans-serif"; g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.8)"; g.strokeText(nick, x, y - 128); g.fillStyle = me ? "#ffe08a" : "#bfe3ff"; g.fillText(nick, x, y - 128);
       if (!me) { g.fillStyle = "rgba(0,0,0,.6)"; g.fillRect(x - 22, y - 122, 44, 4); g.fillStyle = "#3ccf6a"; g.fillRect(x - 22, y - 122, 44 * clamp(P.hp / (P.max || 1), 0, 1), 4); } }
     /* 채팅 말풍선 — 사냥터에서도 머리 위에 (2026-10-27). C.bubbles 는 마을과 같은 것(id → { text, t }) */
-    const B = C.bubbles && C.bubbles[me ? C.me : P.id]; if (B) { g.font = "600 13px 'Noto Sans KR', sans-serif"; g.textAlign = "center"; const w = Math.min(260, g.measureText(B.text.slice(0, 30)).width + 20); g.fillStyle = "rgba(255,255,255,.95)"; g.beginPath(); if (g.roundRect) g.roundRect(x - w / 2, y - 176, w, 28, 10); else g.rect(x - w / 2, y - 176, w, 28); g.fill(); g.fillStyle = "#1a1012"; g.fillText(B.text.slice(0, 30), x, y - 157); }
+    const B = C.bubbles && C.bubbles[me ? C.me : P.id]; if (B) drawBubble(g, B.text, x, y - 150);
   }
   function drawFoe(g, f, cx) {
-    const x = f.x - cx, y = f.z - f.h, D = f.D, A = FR.mon[D.sprite || f.kind], IM = IMG[A.img || "mon"];
+    const x = f.x - cx + (f.shk > 0 ? (Math.random() - 0.5) * 9 : 0), y = f.z - f.h, D = f.D, A = FR.mon[D.sprite || f.kind], IM = IMG[A.img || "mon"]; // 히트스톱 동안 부르르
     shadow(g, x, f.z, D.w * 0.9 * Math.max(0.5, 1 - f.h / 400));
     let list = A.move, rot = 0;
     if (f.st === "hit" || f.st === "air") list = A.hit;
@@ -568,7 +592,7 @@ const Dungeon = (() => {
         else { tsy = 1 + 0.025 * Math.sin(S.t * 3 + f.ph); tsx = 1 - 0.015 * Math.sin(S.t * 3 + f.ph); } // 숨쉬기
       } else if (f.st === "wind") { const p = clamp(1 - f.t / (D.boss ? 0.85 : D.wind), 0, 1), e = p * p * (3 - 2 * p); tr = -fc * 0.2 * e; tsx = 1 - 0.1 * e; tsy = 1 + 0.07 * e; lx = -fc * 8 * e; } // 젖히며 힘 모으기
       else if (f.st === "atk") { tr = fc * 0.28; tsx = 1.12; tsy = 0.94; lx = fc * 10; } // 덮치기
-      else if (f.st === "hit") { const p = clamp(f.t / 0.38, 0, 1); tr = -fc * 0.25 * p; tsx = 1 - 0.06 * p; lx = -fc * 6 * p; }
+      else if (f.st === "hit") { const p = clamp(f.t / (f.stunFull || 0.42), 0, 1); tr = -fc * 0.25 * p; tsx = 1 - 0.06 * p; lx = -fc * 6 * p; }
       else if (f.st === "air") { tr = -fc * Math.min(1.2, f.h / 200); }
       else if (f.st === "down" || f.st === "dead") { tr = -fc * 1.5; tsy = 0.95; }
       const k = f.st === "atk" ? 0.5 : f.st === "down" || f.st === "dead" ? 0.18 : 0.22; // 얼마나 빨리 그 자세로
