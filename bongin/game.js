@@ -457,7 +457,7 @@ const Dungeon = (() => {
     if (P.st === "roll") { g.translate(0, -36); g.rotate(P.t / 0.34 * Math.PI * 2); g.translate(0, 36); }
     const gear = me ? C.gear : P.gear, isOp = me ? C.op : P.op;
     if (isOp) gmAura(g, x, y, S.t);
-    drawChar(g, look, { st: P.st === "roll" ? "jump" : P.st, t: P.t, walk: P.walk, step: P.step }, 1, { glow: P.st === "dash" || (P.st === "atk" && P.step === 2), gear });
+    drawChar(g, look, { st: P.st === "roll" ? "jump" : P.st, t: P.t, walk: P.walk, step: P.step }, 1, { glow: P.st === "dash" || (P.st === "atk" && P.step === 2), gear, op: isOp });
     g.restore();
     // (평타 때 그리던 흰 반달 선은 없앰 — 부장님 2026-10-27 "이상한 흰색깔 안 보이게")
     if (nick && (me ? C.op : P.op)) nick = "⚜운영자 " + nick;
