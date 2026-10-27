@@ -31,18 +31,27 @@ const APP = (() => {
     try { ws = new WebSocket(SERVER + "/ws?token=" + encodeURIComponent(token)); } catch (e) { return fail("서버에 닿지 못했어요."); }
     ws.onopen = () => { wsOpen = true; };
     ws.onmessage = (e) => { let m; try { m = JSON.parse(e.data); } catch (er) { return; } on(m); };
-    ws.onclose = (e) => { wsOpen = false; if (e.code === 4000) return fail("다른 곳에서 접속해 여기는 끊었어요."); if (!A.solo) fail(A.me ? "서버와 연결이 끊겼어요." : "로그인을 확인하지 못했어요. 병무청 홈페이지에 다시 로그인해 주세요."); };
+    ws.onclose = (e) => { wsOpen = false; if (e.code === 4000) return fail("다른 곳에서 접속해 여기는 끊었어요.");
+      if (A.me && A.char && !A.solo && (A.re || 0) < 8) { // 잠깐 끊김(휴대폰 화면 꺼짐 · 망 · 업데이트) — 저절로 다시 이음
+        A.re = (A.re || 0) + 1; toast("연결이 잠깐 끊겨 다시 잇는 중… (" + A.re + ")", "bad"); setTimeout(connect, Math.min(8000, 800 * 2 ** (A.re - 1))); return; } if (!A.solo) fail(A.me ? "서버와 연결이 끊겼어요." : "로그인을 확인하지 못했어요. 병무청 홈페이지에 다시 로그인해 주세요."); };
   }
   function send(m) { if (ws && wsOpen) ws.send(JSON.stringify(m)); }
   function fail(text) { panel([el("h2", null, "연결"), el("p", null, text), row(btn("다시 연결", () => { panel([el("p", null, "연결하는 중…")]); connect(); }), btn("병무청 홈페이지", () => { location.href = "../byeongmu/"; }, "ghost"))]); A.scene = "menu"; }
   function on(m) {
-    if (m.t === "hello") { A.me = m.me; $("hudOp").hidden = !m.me.op; A.items = m.items; A.shop = m.shop; A.dungeons = m.dungeons; A.char = m.char; return m.char ? charScreen() : createScreen(); }
+    if (m.t === "hello" && A.re && A.char && m.char) { // 다시 이음 — 하던 곳으로
+      A.re = 0; A.me = m.me; A.char = m.char; $("hudOp").hidden = !m.me.op; toast("다시 연결됐어요.", "good");
+      if (A.scene === "town") { A.others = {}; enterTown(); } else if (A.scene === "dungeon" && A.run && !A.watch) send({ t: "dresume", run: A.run }); else if (A.scene !== "dungeon") charScreen();
+      return; }
+    if (m.t === "hello") { A.re = 0; A.me = m.me; $("hudOp").hidden = !m.me.op; A.items = m.items; A.shop = m.shop; A.dungeons = m.dungeons; A.char = m.char; return m.char ? charScreen() : createScreen(); }
     if (m.t === "char") { const first = !A.char && m.char; A.char = m.char; if (!m.char) return createScreen(); if (first) return charScreen(); refresh(); return; }
     if (m.t === "err") return toast(m.text, "bad");
     if (m.t === "opok") return toast(m.text, "good");
     if (m.t === "oplist") return opPanel(m.runs);
     if (m.t === "dwatch") return goDungeon(m, true);
     if (m.t === "spec") return Dungeon.watched();
+    if (m.t === "ground") { A.ground = m.list || []; return; }
+    if (m.t === "gadd") { A.ground = (A.ground || []).concat(m.g); return; }
+    if (m.t === "gdel") { A.ground = (A.ground || []).filter((x) => x.gid !== m.gid); if (m.by === (A.me && A.me.nick)) toast(m.name + " 을(를) 주웠어요.", "good"); return; }
     if (m.t === "notice") { // 운영자 전체 공지 — 화면 위 띠(남은 시간이 있으면 1초마다 줄임)
       const N = $("notice"), end = Date.now() + m.sec * 1000; clearInterval(A.noticeT);
       const show = () => { const left = Math.ceil((end - Date.now()) / 1000); N.textContent = "📢 " + m.text + (m.sec ? (left > 0 ? "  (" + Math.floor(left / 60) + ":" + String(left % 60).padStart(2, "0") + ")" : "  — 지금 업데이트 중이에요. 잠시 뒤 새로고침해 주세요") : ""); };
@@ -171,6 +180,7 @@ const APP = (() => {
   ];
   const H5 = new Image(); H5.src = "img/heroes5.png";
   const NPCIMG = new Image(); NPCIMG.src = "img/npc.png" + (V ? "?v=" + V : ""); // 제미나이 마을 사람 그림
+  const MASTERIMG = new Image(); MASTERIMG.src = "img/masters.png" + (V ? "?v=" + V : ""); // 스승 다섯 — 마을 사람과 같은 그림체
   function enterTown() {
     closePanel(); A.scene = "town"; A.hero = A.hero || { x: 260, z: 440, face: 1, st: "idle", walk: 0, t: 0 };
     A.hero.x = Math.min(A.hero.x, TOWN_W - 300);
@@ -200,17 +210,21 @@ const APP = (() => {
     if ((mvT -= dt) <= 0) { mvT = 0.1; const k = Math.round(H.x) + "," + Math.round(H.z) + "," + H.face + "," + H.st; if (k !== lastMv) { lastMv = k; send({ t: "mv", x: Math.round(H.x), z: Math.round(H.z), face: H.face, st: H.st }); } }
   }
   function nearNpc() { const H = A.hero; let best = null, bd = 110; NPC.forEach((n) => { const d = Math.abs(n.x - H.x) + Math.abs(n.z - H.z) * 0.5; if (d < bd) { bd = d; best = n; } }); return best; }
-  function talkNear() { const n = nearNpc(); if (n) n.talk(); }
+  function nearItem() { const H = A.hero; let best = null, bd = 80; (A.ground || []).forEach((o) => { const d = Math.abs(o.x - H.x) + Math.abs(o.z - H.z) * 0.6; if (d < bd) { bd = d; best = o; } }); return best; }
+  function talkNear() { const it = nearItem(); if (it) return send({ t: "pick", gid: it.gid }); const n = nearNpc(); if (n) n.talk(); }
   function townDraw() {
     const cx = A.camX;
-    BG.draw(g, "town", cx, VW, VH, Z0, { par: 1, end: { pic: "town", at: TOWN_W - 70, f: 0.959, fade: 0 } }); // 마을은 한 장으로 길게 이어 붙인 그림(뒤집은 마을 · 마을 · 이어지는 마을과 던전 문) — 문 가운데가 입구 자리
+    BG.draw(g, "town", cx, VW, VH, Z0, { par: 1, end: { pic: "town", at: TOWN_W - 70, f: 0.958, fade: 0 } }); // 마을은 한 장으로 길게 이어 붙인 그림(뒤집은 마을 · 마을 · 이어지는 마을과 던전 문) — 문 가운데가 입구 자리
     if (!BG.pics.town || !BG.pics.town.naturalWidth) townHouses(cx);
     const bodies = [];
     NPC.forEach((n) => bodies.push([n.z, () => drawNpc(n, cx)]));
+    (A.ground || []).forEach((o) => bodies.push([o.z - 0.5, () => drawGround(o, cx)]));
     for (const id in A.others) { const o = A.others[id]; bodies.push([o.z, () => drawPerson(o, o.look, cx, o.nick, false, id)]); }
     const H = A.hero; bodies.push([H.z + 0.1, () => drawPerson(H, A.char.look, cx, A.char.name, true, A.me.id)]);
     bodies.sort((a, b) => a[0] - b[0]).forEach((b) => b[1]());
-    const n = nearNpc();
+    const gi = nearItem();
+    if (gi && $("panel").hidden) { const I = A.items[gi.key], t = (touch ? "말걸기 단추" : KEYS.label("talk")) + " — 줍기: " + I.name + (gi.plus ? " +" + gi.plus : "") + (gi.n > 1 ? " × " + gi.n : ""); g.textAlign = "center"; g.font = "700 14px 'Noto Sans KR', sans-serif"; g.lineWidth = 4; g.strokeStyle = "rgba(0,0,0,.8)"; g.strokeText(t, gi.x - cx, gi.z - 56); g.fillStyle = "#ffe08a"; g.fillText(t, gi.x - cx, gi.z - 56); }
+    const n = gi ? null : nearNpc();
     if (n && $("panel").hidden) { g.textAlign = "center"; g.font = "700 14px 'Noto Sans KR', sans-serif"; const t = (touch ? "말걸기 단추" : KEYS.label("talk")) + " — " + n.name + " 와(과) 이야기"; g.lineWidth = 4; g.strokeStyle = "rgba(0,0,0,.8)"; g.strokeText(t, n.x - cx, n.z - 150); g.fillStyle = "#ffe08a"; g.fillText(t, n.x - cx, n.z - 150); }
     // 오른쪽 끝 — 던전 입구
     const gx = TOWN_W - 70 - cx, gate = BG.pics.town && BG.pics.town.naturalWidth; if (gx < VW + 100) { if (!gate) { g.fillStyle = "rgba(160,60,255,.25)"; g.beginPath(); g.ellipse(gx, 410, 60, 130, 0, 0, Math.PI * 2); g.fill(); g.strokeStyle = "#c58cff"; g.lineWidth = 4; g.stroke(); } g.fillStyle = "#fff"; g.font = "800 14px 'Noto Sans KR', sans-serif"; g.textAlign = "center"; g.lineWidth = 4; g.strokeStyle = "rgba(0,0,0,.8)"; g.strokeText("던전 입구", gx, gate ? 120 : 260); g.fillText("던전 입구", gx, gate ? 120 : 260); }
@@ -224,11 +238,20 @@ const APP = (() => {
     house(200, 260, "병무청 본산", "#3a2a40"); house(600, 230, "만복 상회"); house(950, 230, "철산 대장간", "#40302a"); house(1360, 620, "스승의 수련장", "#2a3a40"); house(2240, 200, "수문 초소");
     const fx = 1080 - cx; g.fillStyle = "rgba(255,140,40," + (0.3 + Math.random() * 0.2) + ")"; g.beginPath(); g.arc(fx - 60, Z0 - 50, 26, 0, Math.PI * 2); g.fill(); // 대장간 불
   }
+  /* 땅에 떨어진 물건 — 아이콘이 등급 색 빛 위에서 둥실 */
+  const GLOW = ["rgba(230,230,240,.5)", "rgba(90,160,255,.6)", "rgba(190,120,255,.65)", "rgba(255,200,70,.7)"];
+  function drawGround(o, cx) {
+    const x = o.x - cx; if (x < -60 || x > VW + 60) return; const I = A.items[o.key] || {}, r = FR.items && FR.items[o.key], bob = Math.sin(performance.now() / 400 + o.x) * 3;
+    g.fillStyle = "rgba(0,0,0,.35)"; g.beginPath(); g.ellipse(x, o.z, 18, 5, 0, 0, Math.PI * 2); g.fill();
+    const gr = g.createRadialGradient(x, o.z - 20 + bob, 2, x, o.z - 20 + bob, 26); gr.addColorStop(0, GLOW[I.grade || 0]); gr.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = gr; g.beginPath(); g.arc(x, o.z - 20 + bob, 26, 0, Math.PI * 2); g.fill();
+    if (r && ITEM_IMG.complete) { const k = 36 / Math.max(r[2], r[3]); g.drawImage(ITEM_IMG, r[0], r[1], r[2], r[3], x - r[2] * k / 2, o.z - 38 + bob, r[2] * k, r[3] * k); }
+    if (o.plus || o.n > 1) { g.font = "800 11px 'Noto Sans KR', sans-serif"; g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "#000"; const t = o.plus ? "+" + o.plus : "×" + o.n; g.strokeText(t, x + 14, o.z - 4); g.fillStyle = "#fff"; g.fillText(t, x + 14, o.z - 4); }
+  }
   function drawNpc(n, cx) {
     const x = n.x - cx; if (x < -100 || x > VW + 100) return;
     g.fillStyle = "rgba(0,0,0,.35)"; g.beginPath(); g.ellipse(x, n.z, 26, 7, 0, 0, Math.PI * 2); g.fill();
-    const NP = n.pic && FR.npc && FR.npc[n.pic];
-    if (NP && NPCIMG.complete && NPCIMG.naturalWidth) { const k = (n.pic === "kid" ? 92 : 124) / NP[3], bob = Math.sin(performance.now() / 600 + n.x) * 1.2; g.drawImage(NPCIMG, NP[0], NP[1], NP[2], NP[3], x - NP[2] * k / 2, n.z + 4 - NP[3] * k + bob, NP[2] * k, NP[3] * k); }
+    const MP = n.sprite && FR.masters && FR.masters[n.sprite], NP = MP || (n.pic && FR.npc && FR.npc[n.pic]), NI = MP ? MASTERIMG : NPCIMG;
+    if (NP && NI.complete && NI.naturalWidth) { const k = (n.pic === "kid" ? 92 : 124) / NP[3], bob = Math.sin(performance.now() / 600 + n.x) * 1.2; g.drawImage(NI, NP[0], NP[1], NP[2], NP[3], x - NP[2] * k / 2, n.z + 4 - NP[3] * k + bob, NP[2] * k, NP[3] * k); }
     else if (n.sprite) { const F = FR.heroes && FR.heroes[n.sprite]; if (F && H5.complete) { const f = F.front, k = 0.95; g.drawImage(H5, f[0], f[1], f[2], f[3], x - f[2] * k / 2, n.z - f[3] * k + 4, f[2] * k, f[3] * k); } }
     else { g.save(); g.translate(x, n.z + 2); g.scale(-1, 1); drawChar(g, n.look, { st: "idle", t: performance.now() / 1000 }, 1); g.restore(); }
     g.font = "800 13px 'Noto Sans KR', sans-serif"; g.textAlign = "center"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.85)"; g.strokeText(n.name, x, n.z - 128); g.fillStyle = "#9df59a"; g.fillText(n.name, x, n.z - 128);
@@ -284,12 +307,13 @@ const APP = (() => {
     refreshFn = smithTalk;
     panel([el("h2", null, "대장장이 철산 — 「칼은 두드릴수록 단단해지지」"), el("p", "sub", "강화는 +10 까지. +5 까지는 실패해도 그대로, +6 부터는 실패하면 한 단계 내려가요. 장비가 깨지지는 않아요. 가진 돈 " + A.char.gold.toLocaleString() + " G"), bagList("smith"), row(btn("닫기", () => { refreshFn = null; closePanel(); }, "ghost"))], true);
   }
-  function masterTalk(k) {
-    const N = { kh: "강혁", hr: "혜린", ds: "대성", je: "지은", mj: "무진" }, J = { kh: "무사", hr: "도사", ds: "수호자", je: "사수", mj: "자객" };
-    if (k === "kh") return panel([el("h2", null, "스승 강혁 — 무사"), el("p", "story", "칼끝에 불을 실어라. 세 번 베면 적이 뜨고, 뜬 적은 떨어질 때까지 벨 수 있다."),
-      el("p", null, "평타 " + KEYS.label("atk") + " (3타째 띄우기) · 점프 " + KEYS.label("jump") + " · 구르기 " + KEYS.label("roll") + " · 화염 검기 " + KEYS.label("s1") + " · 화염검 진 " + KEYS.label("s2") + " · 화염 돌진 " + KEYS.label("s3") + " · 물약 " + KEYS.label("potion")), row(btn("명심하겠습니다", closePanel))]);
-    panel([el("h2", null, "스승 " + N[k] + " — " + J[k]), el("p", "story", "아직 " + J[k] + "의 길은 열리지 않았다. 곧 가르쳐 주마."), el("p", "sub", "베타에서는 무사만 고를 수 있어요. 다른 직업은 준비 중이에요."), row(btn("닫기", closePanel))]);
+  function masterTalk(k) { // 스승 — 그 사람의 스킬 셋을 알려 줌(내 캐릭터가 그 사람이면 그 스킬을 씀)
+    const N = { kh: "강혁", hr: "혜린", ds: "대성", je: "지은", mj: "무진" }, J = { kh: "무사", hr: "도사", ds: "수호자", je: "사수", mj: "자객" }, sk = Dungeon.SKILLS[k];
+    const mine = A.char && A.char.look && (A.char.look.hero || "kh") === k;
+    panel([el("h2", null, "스승 " + N[k] + " — " + J[k]), el("p", "story", mine ? "나와 같은 길을 걷는구나. 내 기술을 가르쳐 주마." : "내 기술은 이렇다네. 나와 같은 모습으로 길을 시작하면 쓸 수 있지."),
+      el("p", null, sk.map((s, i) => s.name + " " + KEYS.label(["s1", "s2", "s3"][i])).join(" · ")), el("p", "sub", "평타 " + KEYS.label("atk") + " (3타째 띄우기) · 점프 " + KEYS.label("jump") + " · 구르기 " + KEYS.label("roll") + " · 물약 " + KEYS.label("potion")), row(btn("명심하겠습니다", closePanel))]);
   }
+
   function gateTalk() {
     const list = el("div", "bag"), P = A.party, leader = !P || P.leader === A.me.id;
     Object.keys(A.dungeons).forEach((k) => { const D = A.dungeons[k], r = el("div", "item"), locked = D.lv && A.char.lv < D.lv;
@@ -364,6 +388,7 @@ const APP = (() => {
       txt.append(nm, el("small", null, (I.atk ? "공격 " + Math.round(I.atk * (1 + (it.plus || 0) * 0.1)) : I.def ? "방어 " + Math.round(I.def * (1 + (it.plus || 0) * 0.1)) : I.heal ? "체력 40% 회복 · 던전에서 " + KEYS.label("potion") : "재료 · 상인에게 팔 수 있어요") + (eq ? " · 끼는 중" : "")));
       const s2 = el("div", "slot g" + (I.grade || 0)); s2.style.width = "48px"; s2.appendChild(icon(it.key, 48)); info.append(s2, txt);
       if (I.kind === "weapon" || I.kind === "armor") info.appendChild(btn(eq ? "빼기" : "끼기", () => send({ t: "equip", uid: it.uid }), "tiny"));
+      if (!eq && A.scene === "town") { const d = btn("버리기", () => { if (d.dataset.sure) { send({ t: "drop", uid: it.uid }); bagUI.sel = null; return; } d.dataset.sure = "1"; d.textContent = "한 번 더 = 버림"; }, "tiny danger"); info.appendChild(d); }
     } else info.appendChild(el("small", null, "칸을 누르면 정보 · 끼기"));
     const body = el("div", "bs-body"); body.append(list, rail);
     const keep = S.querySelector(".bs-list"), top = keep ? keep.scrollTop : 0;
@@ -385,7 +410,13 @@ const APP = (() => {
   }
 
   /* ── 던전 ── */
+  function watchBar(on) { // 관전 중 단추 — 다른 판 보기 · 관전 나가기
+    let b = $("watchBar"); if (!b) { b = el("div"); b.id = "watchBar"; $("stage").appendChild(b); }
+    b.hidden = !on; if (!on) return;
+    b.replaceChildren(btn("👁 다른 판 보기", () => send({ t: "op", a: "list" }), "tiny"), btn("관전 나가기", () => { watchBar(false); backToTown(); }, "tiny ghost"));
+  }
   function goDungeon(m, watch) {
+    watchBar(!!watch); A.run = watch ? null : m.run;
     closePanel(); A.scene = "dungeon"; A.reward = null; A.watch = !!watch; $("hud").hidden = true; $("partyBox").hidden = true; setPad(watch ? "none" : "dungeon");
     const C = A.char, party = watch || (m.members && m.members.length > 1) ? { host: m.host, members: m.members } : null;
     const pot = (C.inv || []).find((x) => x.key === "p1");
@@ -425,7 +456,7 @@ const APP = (() => {
       el("p", "sub", "사냥터 투명 관전 — 들어가도 그 판 사람들 화면 · 목록에 안 나와요"), runs ? watch : row(btn("열린 던전 보기", () => send({ t: "op", a: "list" }), "tiny")),
       row(btn("닫기", closePanel, "ghost"))], true);
   }
-  function backToTown() { Dungeon.quit(); send({ t: "back" }); enterTown(); }
+  function backToTown() { watchBar(false); A.watch = false; Dungeon.quit(); send({ t: "back" }); enterTown(); }
 
   /* ── 움직임 입력 — 키(설정한 키) · 휴대폰 막대. 같은 쪽 두 번 = 달리기 ── */
   let stick = null, runOn = false; const lastTap = {};
@@ -444,6 +475,7 @@ const APP = (() => {
   const PADS = { none: [], town: [["말걸기", "talk", "right:4%;bottom:10%;width:13%;height:23%"], ["가방", "bag", "right:19%;bottom:6%;width:9%;height:16%"], ["채팅", "chat", "right:4%;bottom:38%;width:9%;height:16%"]],
     dungeon: [["공격", "atk", "right:4%;bottom:8%;width:17%;height:30.2%;font-size:17px"], ["점프", "jump", "right:23%;bottom:5%;width:10%;height:17.8%"], ["회피", "roll", "right:4%;bottom:42%;width:10%;height:17.8%"], ["검기", "s1", "right:24%;bottom:26%;width:9%;height:16%"], ["검진", "s2", "right:16%;bottom:43%;width:9%;height:16%"], ["돌진", "s3", "right:15%;bottom:62%;width:9%;height:16%"], ["물약", "potion", "right:26%;bottom:46%;width:8%;height:14%"]] };
   function setPad(which) {
+    if (which === "dungeon") { const sk = Dungeon.SKILLS[(A.char && A.char.look && A.char.look.hero) || "kh"] || Dungeon.SKILLS.kh; PADS.dungeon.forEach((p) => { const i = ["s1", "s2", "s3"].indexOf(p[1]); if (i >= 0) p[0] = sk[i].short; }); }
     const pad = $("pad"); pad.hidden = !touch; if (!touch) return;
     pad.replaceChildren(...PADS[which].map(([t, a, css]) => { const b = el("div", "tb", t); b.style.cssText = css; b.dataset.a = a;
       b.addEventListener("pointerdown", (e) => { e.preventDefault(); e.stopPropagation(); if (a === "chat") { $("chatIn").focus(); return; } KEYS.press(a, true); b.classList.add("on"); });
@@ -466,6 +498,6 @@ const APP = (() => {
   requestAnimationFrame(loop);
   if (token) { panel([el("p", null, "봉인검록에 들어가는 중…")]); connect(); } else noLogin();
   setInterval(() => send({ t: "ping" }), 25000);
-  A.__send = send; // 시험용(보내는 것은 서버가 모두 다시 확인)
+  A.__send = send; A.__drop = () => ws && ws.close(); // 시험용(보내는 것은 서버가 모두 다시 확인 · 끊김 흉내)
   return A;
 })();
