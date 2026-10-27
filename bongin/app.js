@@ -201,7 +201,7 @@ const APP = (() => {
     closePanel(); A.scene = "town"; document.body.classList.remove("in-dun"); document.body.classList.add("in-town"); $("topMenu").hidden = false; A.hero = A.hero || { x: 260, z: 440, face: 1, st: "idle", walk: 0, t: 0 };
     A.hero.x = Math.min(A.hero.x, TOWN_W - 300);
     send({ t: "town", x: Math.round(A.hero.x), z: Math.round(A.hero.z) });
-    $("hud").hidden = false; hudText(); drawParty(); setPad("town");
+    $("hud").hidden = false; hudText(); drawParty(); setPad("town"); Dungeon.preload((A.char.look && A.char.look.hero) || "kh", A.me && A.me.op);
   }
   function hudText() { if (!A.char) return; $("hudName").textContent = A.char.name + " · Lv " + A.char.lv; $("hudGold").textContent = A.char.gold.toLocaleString() + " G"; }
   let mvT = 0, lastMv = "";
