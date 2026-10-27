@@ -145,7 +145,7 @@ const Dungeon = (() => {
   /* 운영자는 다섯 직업 스킬을 모두 — "나는 모든 스킬을 배울 수 있고 쓸 수 있게, 모든 캐릭터의 스킬을 써 봐야 어떤 문제가 있는지 안다" (2026-10-27).
      한 줄로 이어 35개(직업 순서 × 7 + 스킬 번호, 7번째마다 궁극기) */
   const HERO_ORDER = ["kh", "hr", "ds", "je", "mj"], ALL_SKILLS = HERO_ORDER.flatMap((h) => SKILLS[h]);
-  HERO_ORDER.forEach((h) => SKILLS[h].forEach((s, i) => { s.ic = "sk_" + h + i; })); // 스킬마다 제 아이콘(ui2) — "스킬 칸 아이콘이 재탕" (2026-10-28)
+  HERO_ORDER.forEach((h) => SKILLS[h].forEach((s, i) => { s.ic = "sk_" + h + i; (s.multi || []).forEach((m) => { m.ic = s.ic; }); })); // 스킬마다 제 아이콘(ui2) — "스킬 칸 아이콘이 재탕" (2026-10-28)
   const MPCOST = [8, 12, 15, 18, 22, 25, 50]; // 스킬 칸 번호(스킬 순서)마다 마력
   const mpOf = (i) => (SKILL[i] && SKILL[i].mp) || MPCOST[i % 7] || 15;
   let SKILL = SKILLS.kh;
@@ -336,12 +336,12 @@ const Dungeon = (() => {
     if (sk.kind === "shot") { H.st = "cast"; H.t = 0; const n = sk.n || 1; for (let k = 0; k < n; k++) S.shots.push({ x: H.x + H.face * 40, z: clamp(H.z + (k - (n - 1) / 2) * 34, Z0, Z1), vx: H.face * sk.spd, t: sk.life, hit: [], face: H.face, sk }); }
     else if (sk.kind === "aura") { S.zones.push({ follow: true, x: H.x, z: H.z, t: sk.dur, tt: 0, sk }); H.st = "cast"; H.t = 0.1; }
     else if (sk.kind === "zone") { S.zones.push({ x: H.x + H.face * sk.at, z: H.z, t: sk.dur, tt: 0, sk }); H.st = "cast"; H.t = 0; }
-    else if (sk.kind === "dash") { H.st = "dash"; H.t = 0; H.inv = 0.4; H.hit = []; H.dashDmg = sk.dmg; addFx({ k: "hsk", fr: sk.fr, x: H.x + H.face * 150, y: H.z - 30, t: 0.5, d: 0.5, s: 330, flip: H.face < 0 }); }
-    else if (sk.kind === "strike") { H.st = "cast"; H.t = 0; near(sk.range).slice(0, sk.n).forEach((f) => { addFx({ k: "hsk", fr: sk.fr, x: f.x, y: f.z - f.h - 70, t: 0.45, d: 0.45, s: sk.size }); hitFoe(f, sk.dmg, sk.type, Math.sign(f.x - H.x) || H.face); }); }
-    else if (sk.kind === "blink") { const f = near(sk.range)[0]; addFx({ k: "hsk", fr: sk.fr, x: H.x, y: H.z - 50, t: 0.4, d: 0.4, s: sk.size, flip: H.face < 0 });
-      if (f) { const side = f.x >= H.x ? 1 : -1; H.x = clamp(f.x + side * (f.D.w + 40), 30, ROOM - 30); H.z = f.z; H.face = -side; hitFoe(f, sk.dmg, "launch", -side); addFx({ k: "hsk", fr: sk.fr, x: H.x, y: H.z - 50, t: 0.4, d: 0.4, s: sk.size, flip: H.face < 0 }); }
+    else if (sk.kind === "dash") { H.st = "dash"; H.t = 0; H.inv = 0.4; H.hit = []; H.dashDmg = sk.dmg; addFx({ k: "hsk", fr: sk.fr, ic: sk.ic, x: H.x + H.face * 150, y: H.z - 30, t: 0.5, d: 0.5, s: 330, flip: H.face < 0 }); }
+    else if (sk.kind === "strike") { H.st = "cast"; H.t = 0; near(sk.range).slice(0, sk.n).forEach((f) => { addFx({ k: "hsk", fr: sk.fr, ic: sk.ic, x: f.x, y: f.z - f.h - 70, t: 0.45, d: 0.45, s: sk.size }); hitFoe(f, sk.dmg, sk.type, Math.sign(f.x - H.x) || H.face); }); }
+    else if (sk.kind === "blink") { const f = near(sk.range)[0]; addFx({ k: "hsk", fr: sk.fr, ic: sk.ic, x: H.x, y: H.z - 50, t: 0.4, d: 0.4, s: sk.size, flip: H.face < 0 });
+      if (f) { const side = f.x >= H.x ? 1 : -1; H.x = clamp(f.x + side * (f.D.w + 40), 30, ROOM - 30); H.z = f.z; H.face = -side; hitFoe(f, sk.dmg, "launch", -side); addFx({ k: "hsk", fr: sk.fr, ic: sk.ic, x: H.x, y: H.z - 50, t: 0.4, d: 0.4, s: sk.size, flip: H.face < 0 }); }
       H.st = "atk"; H.step = 2; H.t = 0; H.inv = 0.35; }
-    else if (sk.kind === "slam") { H.st = "cast"; H.t = 0; shake = 0.35; addFx({ k: "hsk", fr: sk.fr, x: H.x + H.face * 150, y: H.z - 20, t: 0.5, d: 0.5, s: sk.size, flip: H.face < 0 }); addFx({ k: "quake", x: H.x + H.face * 150, y: H.z, t: 0.5, d: 0.5, s: 300 });
+    else if (sk.kind === "slam") { H.st = "cast"; H.t = 0; shake = 0.35; addFx({ k: "hsk", fr: sk.fr, ic: sk.ic, x: H.x + H.face * 150, y: H.z - 20, t: 0.5, d: 0.5, s: sk.size, flip: H.face < 0 }); addFx({ k: "quake", x: H.x + H.face * 150, y: H.z, t: 0.5, d: 0.5, s: 300 });
       S.foes.concat(pvpFoes()).forEach((f) => { const d = (f.x - H.x) * H.face; if (d > -20 && d < sk.range + f.D.w && Math.abs(f.z - H.z) < 60) hitFoe(f, sk.dmg, "launch", H.face); }); }
     else if (sk.kind === "guard") { H.inv = sk.dur; H.st = "cast"; H.t = 0; S.zones.push({ follow: true, x: H.x, z: H.z, t: sk.dur, tt: 0, sk: Object.assign({}, sk, { tick: 0.5, type: "knock" }) }); }
   }
@@ -688,18 +688,18 @@ const Dungeon = (() => {
       else { g.beginPath(); g.ellipse(t.x - cx, t.z, t.r, t.r * 0.42, 0, 0, Math.PI * 2); g.fill(); g.stroke(); g.fillStyle = "rgba(255,50,40,.35)"; g.beginPath(); g.ellipse(t.x - cx, t.z, t.r * p, t.r * 0.42 * p, 0, 0, Math.PI * 2); g.fill(); }
     });
     const H = S.hero;
-    S.zones.forEach((zn) => centered(g, IMG.hsk, FR.hsk[zn.sk.fr], zn.x - cx, zn.z - 30 - (zn.follow ? (zn.who || H).h || 0 : 0), zn.sk.size, false, Math.min(1, zn.t / 0.3) * 0.95, zn.sk.spin ? S.t * zn.sk.spin : 0));
+    S.zones.forEach((zn) => drawHsk(g, zn.sk, zn.sk.fr, zn.x - cx, zn.z - 30 - (zn.follow ? (zn.who || H).h || 0 : 0), zn.sk.size, false, Math.min(1, zn.t / 0.3) * 0.95, zn.sk.spin ? S.t * zn.sk.spin : 0, (zn.sk.dur || 1) - zn.t, true));
     const bodies = S.foes.map((f) => [f.z, () => drawFoe(g, f, cx)]);
     if (!C.watch) bodies.push([H.z + 0.1, () => drawPerson(g, H, C.look, cx, true, C.party ? C.nick : "")]);
     for (const id in S.remote) { const r = S.remote[id]; bodies.push([r.z, () => drawPerson(g, r, r.look, cx, false, r.nick)]); }
     bodies.sort((a, b) => a[0] - b[0]).forEach((b) => b[1]());
     S.loot.forEach((o) => { const r = FR.items && FR.items.box; if (!r || !IMG.items.complete) return; const k = 30 / Math.max(r[2], r[3]), x = o.x - cx, y = o.z - o.h; g.save(); g.shadowColor = "rgba(255,220,90,.9)"; g.shadowBlur = 10; g.drawImage(IMG.items, r[0], r[1], r[2], r[3], x - r[2] * k / 2, y - r[3] * k / 2, r[2] * k, r[3] * k); g.restore(); }); // 드롭 주머니
-    S.shots.forEach((s) => centered(g, IMG.hsk, FR.hsk[s.sk ? s.sk.fr : "kh_wave"], s.x - cx, s.z - 60, s.sk ? s.sk.size : 170, s.face < 0, Math.min(1, s.t / 0.15)));
+    S.shots.forEach((s) => drawHsk(g, s.sk, s.sk ? s.sk.fr : "kh_wave", s.x - cx, s.z - 60, s.sk ? s.sk.size : 170, s.face < 0, Math.min(1, s.t / 0.15), 0, s.sk ? (s.sk.life || 1) - s.t : 0, true));
     S.fx.forEach((x) => {
       const p = 1 - x.t / x.d;
       if (x.k === "spark") { const L = FR.mfx.spark; centered(g, IMG.mfx, L[Math.min(L.length - 1, Math.floor(p * L.length))], x.x - cx, x.y, x.s * (0.8 + p * 0.5), false, 1 - p * 0.6); }
       else if (x.k === "quake") { const L = FR.mfx.quake; centered(g, IMG.mfx, L[Math.min(L.length - 1, Math.floor(p * L.length))], x.x - cx, x.y - 20, x.s, false, 1 - p * 0.5); }
-      else if (x.k === "hsk") centered(g, IMG.hsk, FR.hsk[x.fr], x.x - cx, x.y, x.s, x.flip, 1 - p);
+      else if (x.k === "hsk") drawHsk(g, x, x.fr, x.x - cx, x.y, x.s, x.flip, 1 - p * p, 0, x.d - x.t, false);
     });
     g.textAlign = "center"; g.textBaseline = "middle";
     S.nums.forEach((n) => { g.font = "900 22px 'Noto Sans KR', sans-serif"; g.lineWidth = 4; g.strokeStyle = "rgba(0,0,0,.85)"; g.globalAlpha = Math.min(1, n.t / 0.3); g.strokeText(n.v, n.x - cx, n.y); g.fillStyle = n.c; g.fillText(n.v, n.x - cx, n.y); g.globalAlpha = 1; });
@@ -720,6 +720,16 @@ const Dungeon = (() => {
     g.drawImage(IMG.ui2, F[0], F[1], F[2], F[3], x, y, w, fh);
     if (text) { g.textAlign = "center"; g.font = "800 " + Math.max(9, Math.round(ih * 0.72)) + "px 'Noto Sans KR', sans-serif"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.85)"; g.strokeText(text, ix + iw / 2, iy + ih * 0.78); g.fillStyle = "#fff"; g.fillText(text, ix + iw / 2, iy + ih * 0.78); g.textAlign = "left"; }
     return fh;
+  }
+  /* 스킬 효과 — 영상에서 뽑은 칸(FR.sfx[아이콘 이름], 검은 바탕을 더해 그림)이 있으면 그것, 없으면 예전 그림 (2026-10-28 "스킬도 각각 영상으로"). age = 시작부터 흐른 초, loop = 끝나면 처음부터 */
+  const SFX = {};
+  function drawHsk(g, o, fr, x, y, size, flip, alpha, rot, age, loop) {
+    const ic = o && o.ic, V = ic && FR.sfx && FR.sfx[ic], I = V && (SFX[ic] || (SFX[ic] = img("img/sfx/" + ic + ".webp")));
+    if (!V || !I.complete || !I.naturalWidth) return centered(g, IMG.hsk, FR.hsk[fr], x, y, size, flip, alpha, rot);
+    let k = Math.floor(Math.max(0, age || 0) * 10); k = loop ? k % V.n : Math.min(V.n - 1, k);
+    const sc = size * 1.35 / Math.max(V.w, V.h), w = V.w * sc, h = V.h * sc;
+    g.save(); g.globalCompositeOperation = "lighter"; g.globalAlpha *= clamp(alpha, 0, 1); g.translate(x, y); if (flip) g.scale(-1, 1);
+    g.drawImage(I, (k % V.cols) * V.w, Math.floor(k / V.cols) * V.h, V.w, V.h, -w / 2, -h / 2, w, h); g.restore();
   }
   function skIcon(g, sk, x, y, size, alpha) { // 스킬 아이콘 — 새 그림(ui2)이 있으면 그것, 없으면 예전 효과 그림
     const r = FR.ui2 && FR.ui2[sk.ic]; if (!r || !IMG.ui2.complete || !IMG.ui2.naturalWidth) return centered(g, IMG.hsk, FR.hsk[sk.fr], x, y, size, false, alpha);
