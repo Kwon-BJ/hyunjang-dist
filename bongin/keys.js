@@ -5,8 +5,8 @@ const KEYS = (() => {
   const ACTS = [
     ["left", "왼쪽", "ArrowLeft"], ["right", "오른쪽", "ArrowRight"], ["up", "안쪽(위)", "ArrowUp"], ["down", "바깥쪽(아래)", "ArrowDown"],
     ["atk", "공격", "KeyX"], ["jump", "점프", "KeyC"], ["roll", "구르기", "KeyZ"],
-    ["back", "백스텝", "KeyV"], ["s1", "스킬 1", "KeyA"], ["s2", "스킬 2", "KeyS"], ["s3", "스킬 3", "KeyD"], ["potion", "물약(빠른 칸 1)", "KeyQ"], ["q1", "물약 칸 1", "Digit1"], ["q2", "물약 칸 2", "Digit2"], ["q3", "물약 칸 3", "Digit3"], ["q4", "물약 칸 4", "Digit4"], ["q5", "물약 칸 5", "Digit5"],
-    ["talk", "말 걸기 · 들어가기", "KeyF"], ["bag", "가방", "KeyI"], ["equip", "장비", "KeyE"], ["chat", "채팅", "Enter"], ["menu", "메뉴 · 닫기", "Escape"],
+    ["back", "백스텝", "KeyV"], ["s1", "스킬 1", "KeyA"], ["s2", "스킬 2", "KeyS"], ["s3", "스킬 3", "KeyD"], ["s4", "스킬 4", "KeyW"], ["s5", "스킬 5", "KeyR"], ["s6", "스킬 6", "KeyT"], ["ult", "궁극기", "KeyG"], ["potion", "물약(빠른 칸 1)", "KeyQ"], ["q1", "물약 칸 1", "Digit1"], ["q2", "물약 칸 2", "Digit2"], ["q3", "물약 칸 3", "Digit3"], ["q4", "물약 칸 4", "Digit4"], ["q5", "물약 칸 5", "Digit5"], ["q6", "물약 칸 6", "Digit6"], ["q7", "물약 칸 7", "Digit7"], ["q8", "물약 칸 8", "Digit8"], ["mpot", "마력 물약", "KeyB"],
+    ["talk", "말 걸기 · 들어가기", "KeyF"], ["bag", "가방", "KeyI"], ["equip", "장비", "KeyE"], ["skills", "스킬창", "KeyK"], ["chat", "채팅", "Enter"], ["menu", "메뉴 · 닫기", "Escape"],
   ];
   let map = {};
   const def = () => { const m = {}; ACTS.forEach(([a, , k]) => { m[a] = k; }); return m; };
