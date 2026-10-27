@@ -379,6 +379,9 @@ footer .tagline::before, footer .tagline::after { width: clamp(30px, 6vw, 60px);
 /* 앱으로 설치 안내 (2026-10-26) */
 .new-build { position: sticky; top: 0; z-index: 70; display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: center; margin-bottom: 12px; padding: 10px 14px; border: 1px solid var(--gold); border-radius: 6px; background: #2a1f0e; color: var(--gold-hi); font-size: 14px; }
 .new-build[hidden] { display: none; }
+/* 연병장 화면 위 업데이트 안내 (2026-10-27) — 체력 줄 · 대장 막대를 안 가리게 아래 가운데, 누르면 안 됨 */
+.game-box .gupd { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); z-index: 6; pointer-events: none; padding: 5px 12px; border: 1px solid var(--gold); border-radius: 999px; background: rgba(42,31,14,.92); color: var(--gold-hi); font-size: 12.5px; font-weight: 700; white-space: nowrap; max-width: 94%; overflow: hidden; text-overflow: ellipsis; }
+.game-box .gupd[hidden] { display: none; }
 .app-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; margin-bottom: 14px; padding: 12px 14px; border: 1px solid var(--gold); border-radius: 6px; background: linear-gradient(180deg, #2a2010, #140f08); }
 .app-bar[hidden] { display: none; }
 .app-bar img { width: 40px; height: 40px; border-radius: 10px; flex: none; }
@@ -824,7 +827,7 @@ body.game-full { overflow: hidden; }
 
 <main class="wrap">
   <!-- 새 판 알림 — 글 쓰는 중 · 게임 중에만 (2026-10-26) -->
-  <div class="new-build" id="newBuildBar" hidden><span>홈페이지 새 판이 나왔어요. 쓰던 글 · 게임을 마치고 눌러 주세요.</span><button class="btn" type="button" onclick="sessionStorage.removeItem('bmc-reloaded');location.reload()">새로고침</button></div>
+  <div class="new-build" id="newBuildBar" hidden><span id="newBuildText">홈페이지 새 판이 나왔어요. 쓰던 글 · 게임을 마치고 눌러 주세요.</span><button class="btn" type="button" onclick="if(window.__bmcSaveGame)window.__bmcSaveGame();sessionStorage.removeItem('bmc-reloaded');location.reload()">새로고침</button></div>
   <!-- 앱으로 설치 안내 — 로그인 전에도 보인다 (2026-10-26) -->
   <div class="app-bar" id="appBar" hidden>
     <img src="img/app-192.png" alt="" width="40" height="40">
@@ -1071,6 +1074,7 @@ body.game-full { overflow: hidden; }
           <button class="gskill dashbtn ready" type="button" id="gDash" aria-label="대쉬 (스페이스)"><span>대쉬</span><small id="gDashN">Space</small></button>
         </div>
         <div class="game-over" id="gameOver"><div id="gameOverIn"></div></div>
+        <div class="gupd" id="gUpd" hidden>업데이트가 완료되었어요 · 하던 게임을 마친 뒤 새로고침해 주세요</div>
       </div>
       <!-- 순위표 — 판이 끝날 때마다 창구에 올라간다 (2026-10-26) -->
       <!-- 지금 하는 사람 (2026-10-26) -->
@@ -1191,16 +1195,22 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610270402";
+  const BUILD = "202610270422";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
   function goNew() { if (newBuild && sessionStorage.getItem("bmc-reloaded") !== newBuild) { sessionStorage.setItem("bmc-reloaded", newBuild); location.replace(location.pathname + "?v=" + newBuild + location.hash); } }
-  /* 잠수함 패치 — 게임 중이면 판을 저장하고 바로 새 판으로, 새로 열리면 이어서 (2026-10-26 "게임하는 사람도 배포하면 바로 적용") */
+  /* 연병장은 멈추지 않는다 — "연병장 게임은 앞으로 하던 사람들 중지시키지 말고, 화면 상단에 업데이트가 완료되었으므로 하던 게임 완료 후 새로고침해 달라고 공지만" (2026-10-27).
+     연병장을 보고 있거나 게임 중(멈춘 판 포함)이면 위 띠 · 게임 화면 위에 안내만. 띠의 [새로고침] 은 하던 판을 저장하고 새로 열어 이어서 한다.
+     예전(2026-10-26 잠수함 패치)엔 게임 중이면 판을 저장하고 바로 새 판으로 열었다 */
   function tryGo() {
     if (!newBuild) return;
-    if (busy()) { const bar = document.getElementById("newBuildBar"); if (bar) bar.hidden = false; return; }
-    if (window.__bmcPlaying && window.__bmcPlaying() && !(window.__bmcSaveGame && window.__bmcSaveGame())) return;
+    const bar = document.getElementById("newBuildBar");
+    if (window.__bmcInGame && window.__bmcInGame()) {
+      document.getElementById("newBuildText").textContent = "업데이트가 완료되었어요. 하던 게임을 마친 뒤 새로고침해 주세요.";
+      if (bar) bar.hidden = false; if (window.__bmcGameNotice) window.__bmcGameNotice(true); return;
+    }
+    if (busy()) { if (bar) bar.hidden = false; return; }
     goNew();
   }
   function busy() { // 글 쓰는 중
@@ -4862,6 +4872,8 @@ body.game-full { overflow: hidden; }
 
     /* 점검용 — 주소에 ?bmctest=1 이 있을 때만 시험(시험/전체점검-시험.cjs)이 게임 상태를 보고 바꿀 수 있게 (2026-10-26 "오류 · 버그 전체 확인"). 보통 때는 없다 */
     window.__bmcPlaying = () => !!(s && !s.over); // 멈춰 둔 판도 하는 중
+    window.__bmcInGame = () => view === "game" || !!(s && !s.over); // 연병장을 보는 중 — 새 판이 와도 안 닫음 (2026-10-27)
+    window.__bmcGameNotice = (on) => { $("gUpd").hidden = !on; }; // 전체화면에서도 보이게 게임 화면 위에도
     /* 잠수함 패치 — 하던 판을 세션에 저장(2분 안에 새로 열리면 이어서). 몬스터를 가리키는 것(대장 · 조준 · 화살 목표 · 맞힌 목록)은 번호로 바꾸거나 비운다 */
     window.__bmcSaveGame = () => {
       if (!s || s.over) return false;
