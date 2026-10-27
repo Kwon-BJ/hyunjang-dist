@@ -18,6 +18,21 @@ function heroFrame(st, pose) {
 function heroOf(L) { const h = L && L.hero; return HEROES.some((x) => x[0] === h) ? h : (L && L.g === "f" ? "hr" : "kh"); }
 /* 착용 모습 — gear = { w 무기 등급+1, b 몸 장비 최고 등급+1, acc 장신구 수, plus 강화 최고 } */
 const GEAR_COL = [null, "rgba(235,235,245,.85)", "rgba(90,165,255,.95)", "rgba(185,120,255,.95)", "rgba(255,205,70,1)"];
+/* 운영자 — 문주 그림(마을 사람 그림의 chief). 그림 한 장이라 몸짓으로 걷기 · 공격 · 맞기 · 쓰러짐 */
+const CHIEF_IMG = (() => { const V = ((document.currentScript && document.currentScript.src) || "").split("?v=")[1] || ""; const i = new Image(); i.src = "img/npc.webp" + (V ? "?v=" + V : ""); return i; })();
+function drawChief(g, pose, sc) {
+  const r = FR.npc && FR.npc.chief; if (!r || !CHIEF_IMG.complete || !CHIEF_IMG.naturalWidth) return false;
+  const st = pose.st, t = pose.t || 0, k = sc * 124 / r[3]; let rot = 0, bob = 0, sx = 1, lx = 0;
+  if (st === "walk" || st === "run" || st === "sprint") { const s = Math.sin(pose.walk || t * 9); bob = Math.abs(s) * 3; rot = 0.05 * s; }
+  else if (st === "idle") bob = Math.sin(t * 2.5) * 1.2;
+  else if (st === "atk" || st === "airatk") { rot = 0.22 * Math.min(1, t / 0.1); lx = 10; sx = 1.05; }
+  else if (st === "cast" || st === "dash") { rot = -0.12; sx = 1.06; }
+  else if (st === "hit" || st === "backstep") rot = -0.2;
+  else if (st === "fall" || st === "down" || st === "dead") rot = -1.4;
+  g.save(); g.translate(lx * sc, -bob * sc); g.rotate(rot); g.scale(sx, 1);
+  g.drawImage(CHIEF_IMG, r[0], r[1], r[2], r[3], -r[2] * k / 2, -r[3] * k + 2, r[2] * k, r[3] * k); g.restore();
+  return true;
+}
 const GLOW = new Map();
 function glowFrame(r, col, blur) { // 캐릭터 한 칸의 빛 테두리를 캔버스로 만들어 둠
   const key = r.join() + col + blur; let c = GLOW.get(key); if (c) return c;
@@ -79,6 +94,7 @@ function shade(hex, k) { // k < 0 어둡게, > 0 밝게
 
 function drawChar(g, L, pose, sc, opt) {
   L = L || LOOK.base("m"); pose = pose || { st: "idle", t: 0 }; opt = opt || {};
+  if (opt && opt.op && drawChief(g, pose, sc)) return; // 운영자 = 문주 모습
   if (drawHero(g, L, pose, sc, opt)) return; // 기본 캐릭터 그림(없으면 아래 코드 그림)
   if (!HERO_IMG.complete) return; // 그림 받는 중 — 잠깐 기다림(코드 그림 · 부위 그림을 괜히 받지 않게)
   const st = pose.st, t = pose.t || 0, fem = L.g === "f", OUT = "#1a1012";
