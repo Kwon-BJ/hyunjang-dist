@@ -1406,7 +1406,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610280417";
+  const BUILD = "202610280420";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -3920,6 +3920,7 @@ body.game-full { overflow: hidden; }
         range: AIM_R, tors: [], wardR: 0, wardSpr: "", ring: null, gaura: null, stealth: 0, rest: 0, cleanT: 0, bossDone: false, god: false, cheat: false };
       s.test = testOn(); $("gTest").hidden = !s.test; opTools();
       s.chap = o.ch || 0; s.run = o.run || ""; s.raid = !!o.raid; { const CT = CH_TBL[s.chap] || CH_TBL[0]; s.chHp = CT[0]; s.chDmg = CT[1]; s.chSp = CT[2]; s.chCap = CT[3]; } setMap(s.chap || mapFor(1)); // 장마다 맵(무한의 탑은 1장 맵부터) — 빠져 있어 늘 옛 어두운 맵이었다(2026-10-28)
+      { const P0 = WPROF[heroKey] || WPROF.je; s.rate = P0.rate; s.range = Math.round(AIM_R * (P0.range || 1)); } // 무기마다 쏘는 빠르기 · 사거리
       const GS = o.gs || {}; if (GS.hp) { s.max += GS.hp; s.hp = s.max; } if (GS.atk) s.dmg *= 1 + GS.atk / 100; if (GS.spd) s.spd *= 1 + GS.spd / 100; s.defR = (GS.def || 0) / ((GS.def || 0) + 100); // 장비(2026-10-28)
       if (GS.set >= 2) s.dmg *= 1.15; if (GS.set >= 4) { s.max = Math.round(s.max * 1.2); s.hp = s.max; } if (GS.set >= 6) s.cool *= 0.9; // 세트 효과
       const U = o.used || {}, K = o.carry || {}; if (U.atk) s.dmg *= 1.2; if (U.spd) s.spd *= 1.15; s.heal = K.heal || 0; s.rev = K.rev || 0; s.healUsed = 0; s.revUsed = 0; healLabel(); // 상점 물건 setMap(s.chap || 1); // 장마다 맵 · 몬스터 세기
@@ -4342,7 +4343,12 @@ body.game-full { overflow: hidden; }
     }
     /* 상자 — 몬스터가 조준 동그라미 안에 없을 때만 겨눈다 (2026-10-27) */
     function boxTargets() { return s.boxes.filter((b) => (b.x - s.x) ** 2 + (b.y - s.y) ** 2 <= (s.range + 20) ** 2).sort((p, q) => ((p.x - s.x) ** 2 + (p.y - s.y) ** 2) - ((q.x - s.x) ** 2 + (q.y - s.y) ** 2)); }
+    /* 무기마다 평타가 다르게 — 탕탕특공대처럼(2026-10-28 "무기를 바꿨는데 공격이 다 비슷하다").
+       기본 총: 곧게 한 발 · 화염방사기: 짧은 거리 부채꼴로 계속(다 꿰뚫음) · 전기 건: 맞으면 옆 몬스터로 3번 튕김 · 로켓포: 느리지만 크게 터짐 · 메이저 건: 아주 빠른 연사 · 1번 꿰뚫음 */
+    const WPROF = { je: { rate: 0.7, v: 430, dm: 1 }, kh: { rate: 0.2, v: 320, dm: 0.26, fan: 2, fanA: 0.2, pierce: 99, range: 0.62 }, hr: { rate: 0.85, v: 520, dm: 0.9, bn: 3 },
+      ds: { rate: 1.5, v: 330, dm: 2.2, boom: 65, range: 1.2 }, mj: { rate: 0.3, v: 640, dm: 0.42, pierce: 1, range: 1.1 } };
     function shoot() {
+      const WP = WPROF[heroKey] || WPROF.je;
       let near = targets();
       if (!near.length) near = boxTargets();
       s.lock = near[0] || null;
@@ -4352,8 +4358,9 @@ body.game-full { overflow: hidden; }
         const j = Math.floor(i / Math.max(1, near.length)), spread = j ? (j % 2 ? 1 : -1) * Math.ceil(j / 2) * 0.12 : 0;
         const a = near.length ? Math.atan2(near[i % near.length].y - s.y, near[i % near.length].x - s.x) + spread
           : s.mvA + (i - (s.multi - 1) / 2) * 0.15;
-        for (let j = -s.fan; j <= s.fan; j++) { const aa = a + j * 0.2; // 멀티샷 — 부채처럼
-          s.shots.push({ x: s.x + Math.cos(aa) * 20, y: s.y - 2 + Math.sin(aa) * 20, vx: Math.cos(aa) * 430, vy: Math.sin(aa) * 430, a: aa, life: 1.1 * s.range / AIM_R, p: s.pierce, bn: s.bounce, hit: [], c: s.pierce >= 3 ? 2 : s.pierce >= 1 ? 1 : 0 }); }
+        const fn = s.fan + (WP.fan || 0), fa = WP.fanA || 0.2;
+        for (let j = -fn; j <= fn; j++) { const aa = a + j * fa + (WP.fan ? (Math.random() - 0.5) * 0.12 : 0); // 멀티샷 — 부채처럼
+          s.shots.push({ x: s.x + Math.cos(aa) * 20, y: s.y - 2 + Math.sin(aa) * 20, vx: Math.cos(aa) * WP.v, vy: Math.sin(aa) * WP.v, a: aa, life: s.range / WP.v * 1.05, p: s.pierce + (WP.pierce || 0), bn: s.bounce + (WP.bn || 0), dm: WP.dm, boom: WP.boom || 0, hit: [], c: s.pierce >= 3 ? 2 : s.pierce >= 1 ? 1 : 0 }); }
         if (!i) s.aim = a;
       }
       s.flash = 0.07; s.shotT = 0.5; s.shotC = (s.shotC || 0) + 1;
@@ -4412,18 +4419,18 @@ body.game-full { overflow: hidden; }
           if (b.life <= 0) break;
           // 맞는 범위 = 그림 크기에 맞춰(그림은 몸의 2.8배) — 예전엔 몸 동그라미만이라 그림 가장자리를 지나가도 안 맞았다
           if (f.hp <= 0 || b.hit.includes(f) || (f.x - b.x) ** 2 + (f.y - b.y) ** 2 > (f.r * 1.25 + 5) ** 2) continue;
-          const crit = Math.random() < s.crit, dmg = s.dmg * (crit ? 2.5 : 1);
+          const crit = Math.random() < s.crit, dmg = s.dmg * (b.dm || 1) * (crit ? 2.5 : 1);
           hurt(f, dmg, true, crit, true); b.hit.push(f);
           if (s.fx.length < 160) s.fx.push({ spark: true, x: b.x, y: b.y, c: b.c, life: 0.15 });
-          if (s.boom) { // 폭발 — 둘레 절반 피해
-            const R = 36 + 12 * s.boom;
+          if (s.boom || b.boom) { // 폭발 — 둘레 절반 피해(로켓포는 늘 크게)
+            const R = Math.max(b.boom || 0, 36 + 12 * s.boom);
             s.foes.forEach((o) => { if (o !== f && o.hp > 0 && (o.x - b.x) ** 2 + (o.y - b.y) ** 2 < (R + o.r) ** 2) hurt(o, dmg * 0.5, false, false, true); });
             if (s.fx.length < 160) s.fx.push({ x: b.x, y: b.y, r: R / 2.2, c: "#ff9a3c", life: 0.2 });
           }
           if (b.bn > 0) { // 튕김 — 가까운 다른 몬스터로 (꿰뚫기는 안 씀)
             let nx = null, best = 220 * 220;
             s.foes.forEach((o) => { if (o.hp > 0 && !b.hit.includes(o)) { const d = (o.x - b.x) ** 2 + (o.y - b.y) ** 2; if (d < best) { best = d; nx = o; } } });
-            if (nx) { b.bn--; b.a = Math.atan2(nx.y - b.y, nx.x - b.x); b.vx = Math.cos(b.a) * 430; b.vy = Math.sin(b.a) * 430; b.life = Math.max(b.life, 0.7); break; }
+            if (nx) { b.bn--; b.a = Math.atan2(nx.y - b.y, nx.x - b.x); const v0 = Math.hypot(b.vx, b.vy) || 430; b.vx = Math.cos(b.a) * v0; b.vy = Math.sin(b.a) * v0; if (heroKey === "hr" && s.fx.length < 160) s.fx.push({ bolt: true, spr: "thunder", x: nx.x, y: nx.y + nx.r, size: 60, base: true, add: true, life: 0.2, dur: 0.2 }); b.life = Math.max(b.life, 0.7); break; }
           }
           if (b.p-- <= 0) b.life = 0;
         }
@@ -4918,6 +4925,7 @@ body.game-full { overflow: hidden; }
           g.fillStyle = gr; g.beginPath(); g.arc(x, y, z.r, 0, Math.PI * 2); g.fill();
           if (fxOk) { const age = z.full - z.life; fxDraw("fire", age < 0.45 ? Math.floor(age / 0.15) : 2 + (Math.floor(age * 8) % 2), x, y + z.r * 0.35, z.r * 2.1, { base: true, alpha: Math.min(1, z.life / 0.5) }); }
         });
+        if (!s.watchView) { g.save(); g.setLineDash([7, 9]); g.lineDashOffset = -s.t * 12; g.strokeStyle = "rgba(255,255,255,.32)"; g.lineWidth = 2; g.beginPath(); g.arc(hx, hy, s.range, 0, Math.PI * 2); g.stroke(); g.restore(); } // 평타 사거리 원(2026-10-28 "평타 사거리 원형도")
         if (s.aura) { g.beginPath(); g.arc(hx, hy, 55 + s.aura * 12, 0, Math.PI * 2); g.fillStyle = "rgba(214,176,98,.07)"; g.fill(); g.strokeStyle = "rgba(214,176,98,.35)"; g.stroke(); }
         /* 경험치 구슬 3가지 — "경험치 색깔 소량 중량 대량" (2026-10-27): 1 하늘 · 2 ~ 4 초록 · 5 이상(대장 등) 금, 클수록 크게 */
         GEM.forEach((G, ti) => {
@@ -5262,11 +5270,11 @@ body.game-full { overflow: hidden; }
     const CHAPS = ["이끼 숲", "사막 유적", "설원", "화산", "독 늪", "묘지", "얼음 동굴", "황금 신전", "성벽 광장", "하늘 섬"];
     const CHSUB = ["숲속의 첫 번째 생존 전투", "모래바람 속 옛 유적", "얼어붙은 눈밭의 사투", "불타는 용암 위 결전", "독기 가득한 늪지대", "망자가 깨어나는 묘지", "수정빛 얼음 동굴", "황금 신전의 수호자", "성벽 광장 최후의 방어", "구름 위 하늘 섬 결전"];
     /* 무기(총) — 열쇠는 창구와 같게. hero = 공격 방식(예전 캐릭터 평타 · 스킬), 그림 = img/lb/w-*.webp. 물대포 · 빙결 총 · 유도 미사일은 준비 중 */
-    const WPN = { bow: { n: "기본 총", hero: "je", pic: "w-basic", shot: "연사 탄", d: "가장 기본적인 무기 — 곧게 날아가는 연사 탄" },
-      sword: { n: "화염방사기", hero: "kh", pic: "w-fire2", lock: "w-fire", shot: "불꽃 탄", d: "넓게 베는 불꽃 탄 — 가까운 무리에 강해요" },
-      tali: { n: "전기 건", hero: "hr", pic: "w-elec2", lock: "w-elec", shot: "전기 부적", d: "전기를 두른 탄 — 맞은 몬스터를 찌릿하게" },
-      club: { n: "로켓포", hero: "ds", pic: "w-rocket", shot: "충격탄", d: "묵직한 충격탄 — 한 방이 세요" },
-      dagger: { n: "메이저 건", hero: "mj", pic: "w-major", shot: "독 표창탄", d: "독을 묻힌 표창탄 — 빠르고 날카로워요" } };
+    const WPN = { bow: { n: "기본 총", hero: "je", pic: "w-basic", shot: "연사 탄", d: "곧게 날아가는 한 발 — 무난한 기본 무기" },
+      sword: { n: "화염방사기", hero: "kh", pic: "w-fire2", lock: "w-fire", shot: "불꽃 탄", d: "짧은 거리 부채꼴 불길을 계속 — 몬스터를 다 꿰뚫어요(사거리 짧음)" },
+      tali: { n: "전기 건", hero: "hr", pic: "w-elec2", lock: "w-elec", shot: "전기 부적", d: "맞으면 옆 몬스터로 전기가 3번 튕겨요 — 무리에 강해요" },
+      club: { n: "로켓포", hero: "ds", pic: "w-rocket", shot: "충격탄", d: "느리지만 맞으면 크게 터지는 로켓 — 한 방 · 범위 피해(사거리 김)" },
+      dagger: { n: "메이저 건", hero: "mj", pic: "w-major", shot: "독 표창탄", d: "아주 빠른 연사 — 한 발은 약하지만 1번 꿰뚫어요" } };
     const WPN_SOON = [["물대포", "w-water"], ["빙결 총", "w-ice2"], ["유도 미사일", "w-missile2"]]; // 자물쇠 없는 그림은 제미나이(시험/무기아이콘-자르기.cjs)
     const ITEMS = { exp: { n: "경험치 부스트", pic: "i-exp", d: "5판 동안 경험치 1.5배" }, gboost: { n: "골드 부스트", pic: "i-gboost", d: "5판 동안 골드 1.5배" }, luck: { n: "행운 부적", pic: "i-luck", d: "다음 장비 상자 3번 — 희귀 이상 확정" } }; // 2026-10-28 회복약 · 물약 · 부활권 없앰
     const LBI = (n) => "img/lb/" + n + ".webp?v=" + BUILD;
