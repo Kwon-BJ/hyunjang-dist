@@ -1429,7 +1429,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610280753";
+  const BUILD = "202610280757";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -4055,7 +4055,7 @@ body.game-full { overflow: hidden; }
       if (!me || !token) return;
       call("gamePing", token, Object.assign({ sec: Math.floor(s.t), stage: s.stage, hero: heroKey, test: s.test || s.cheat ? 1 : 0 }, end ? { end: 1 } : {})).then(takeLive).catch(() => {});
     }
-    function takeLive(r) { live = Array.isArray(r) ? r : []; liveGot = Date.now(); if (s && running && me) { const mine = live.find((p) => p.nick === me.gameId && !p.end); s.watched = !!(mine && mine.watched); } drawLive(); const o = document.querySelector("#gLobby .lb-live"); if (o) o.replaceWith(lobLive()); } // 로비 오른쪽(운영자)도 새로
+    function takeLive(r) { live = Array.isArray(r) ? r : []; liveGot = Date.now(); if (s && !s.over && me) { const mine = live.find((p) => p.nick === me.gameId && !p.end); s.watched = !!(mine && mine.watched); } drawLive(); const o = document.querySelector("#gLobby .lb-live"); if (o) o.replaceWith(lobLive()); } // 로비 오른쪽(운영자)도 새로
     function loadLive() { liveAt = Date.now(); call("getLive", token || adminPw).then(takeLive).catch(() => {}); }
     function drawLive() {
       $("liveBox").hidden = !live.length;
@@ -4068,7 +4068,7 @@ body.game-full { overflow: hidden; }
         return li;
       }));
     }
-    setInterval(() => { if (s && !s.over && !s.watchView && me && Date.now() - pingAt > 10000) { pingAt = Date.now(); ping(); } if (view === "game" && Date.now() - liveAt > 15000) loadLive(); else if (view === "game") drawLive(); }, 1000 * 5);
+    setInterval(() => { if (s && !s.over && !s.watchView && me && Date.now() - pingAt > (s.watched ? 9000 : 3000)) { pingAt = Date.now(); ping(); } if (s && !s.over && !running && s.watched) snapSend(performance.now()); if (view === "game" && Date.now() - liveAt > 15000) loadLive(); else if (view === "game") drawLive(); }, 1000);
     /* 순위표 지우기 — "순위표 초기화 기준량 문주한테 권한 줘라" (2026-10-26). 문주 · 관리자만 보이고, 한 번 더 눌러야 지운다 */
     function drawResetTools() { $("rankAdmin").hidden = !canWrite; if (!canWrite) $("rankReset").hidden = true; }
     $("rankAdmin").onclick = () => { $("rankReset").hidden = !$("rankReset").hidden; drawRanks(); };
@@ -5694,14 +5694,14 @@ body.game-full { overflow: hidden; }
       sh: s.shots.slice(0, 60).map((b) => [Math.round(b.x), Math.round(b.y), Math.round(b.vx), Math.round(b.vy), +b.a.toFixed(2), b.c || 0]),
       fl: s.fields.slice(0, 12).map((z) => [Math.round(z.x), Math.round(z.y), Math.round(z.r), +z.life.toFixed(1), z.full]),
       f: s.foes.slice(0, 150).map((f) => [Math.round(f.x), Math.round(f.y), f.skin, f.k === "boss" ? 1 : 0, f.r, +(f.hp / (f.full || 1)).toFixed(2), f.hit > 0 ? 1 : 0, f.near ? 1 : 0, f.sid || (f.sid = s.sidN = (s.sidN || 0) + 1)]) }; }
-    function snapSend(ts) { if (!s || !s.watched || !running || !me || !token || ts - (s.snapAt || 0) < 300) return; s.snapAt = ts; call("gameSnap", token, snapOf()).then((r) => { if (s && r) s.watched = !!r.watched; }).catch(() => {}); }
+    function snapSend(ts) { if (!s || !s.watched || s.over || s.watchView || !me || !token || ts - (s.snapAt || 0) < 300) return; s.snapAt = ts; call("gameSnap", token, snapOf()).then((r) => { if (s && r) s.watched = !!r.watched; }).catch(() => {}); }
     function watchStart(id, nick) {
       if (watchOn) watchStop(true);
       $("gLobby").hidden = true; begin({}); running = false; if (raf) { cancelAnimationFrame(raf); raf = 0; } $("gameHud").hidden = true; s.god = true; s.watchView = true;
       const bar = el("div", "gwatch"), tx = el("span", null, "👁 " + nick + " 님의 게임은 관전중"), out = el("button", "tiny", "나가기"); out.type = "button"; out.onclick = () => watchStop();
       bar.append(tx, out); $("gameBox").appendChild(bar);
-      watchOn = { id, nick, bar, tx, cur: null, prev: null, poll: 0, raf: 0, last: performance.now(), buf: [], clock: null };
-      const poll = () => { if (!watchOn) return; call("gameWatch", token, id).then((sn) => { if (!watchOn) return; if (sn && sn.s && (!watchOn.cur || sn.at !== watchOn.cur.at)) { watchOn.prev = watchOn.cur; watchOn.cur = { at: sn.at, t: performance.now(), S: sn.s }; const B0 = watchOn.buf, tt = sn.s.tt != null ? sn.s.tt : sn.at; if (!B0.length || tt > B0[B0.length - 1].tt) { if (B0.length && tt < B0[B0.length - 1].tt - 5000) B0.length = 0; B0.push({ tt, S: sn.s }); if (B0.length > 30) B0.shift(); } tx.textContent = "👁 " + nick + " 님의 게임은 관전중"; /* 2026-10-28 "이렇게만 해라, 작대기는 없애라" */ } else if (!sn) tx.textContent = "👁 " + nick + " 님의 게임은 관전중"; }).catch(() => {}); };
+      watchOn = { id, nick, bar, tx, cur: null, prev: null, poll: 0, raf: 0, last: performance.now(), buf: [], clock: null, t0: performance.now() };
+      const poll = () => { if (!watchOn) return; call("gameWatch", token, id).then((sn) => { if (!watchOn) return; if (sn && sn.s && (!watchOn.cur || sn.at !== watchOn.cur.at)) { watchOn.prev = watchOn.cur; watchOn.cur = { at: sn.at, t: performance.now(), S: sn.s }; const B0 = watchOn.buf, tt = sn.s.tt != null ? sn.s.tt : sn.at; if (!B0.length || tt > B0[B0.length - 1].tt) { if (B0.length && tt < B0[B0.length - 1].tt - 5000) B0.length = 0; B0.push({ tt, S: sn.s }); if (B0.length > 30) B0.shift(); } tx.textContent = "👁 " + nick + " 님의 게임은 관전중"; /* 2026-10-28 "이렇게만 해라, 작대기는 없애라" */ } else if (!sn) tx.textContent = performance.now() - watchOn.t0 > 9000 ? "👁 " + nick + " 님 화면을 기다리는 중 ㆍ 상대가 옛 화면이면 새로고침해야 보여요" : "👁 " + nick + " 님의 게임은 관전중"; }).catch(() => {}); };
       poll(); watchOn.poll = setInterval(poll, 300);
       const tick = (ts) => { if (!watchOn) return; const W2 = watchOn, dt = Math.min(0.05, (ts - W2.last) / 1000); W2.last = ts; s.t += dt;
         /* 받은 상태를 모아 0.8초 늦게 재생 — 그 사이를 이어 그려서 안 끊김(늦게 오면 천천히 · 많이 밀리면 따라잡음) */
