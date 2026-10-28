@@ -680,7 +680,7 @@ body.game-full { overflow: hidden; }
 .lb-ghead { display: flex; align-items: center; justify-content: space-between; gap: 2cqw; padding: 2cqw 0 0; } .lb-ghead b { padding: 1cqw 3cqw; border-radius: 3cqw; background: linear-gradient(#8a5a2a, #5a3a14); color: #fff; font-size: 4.4cqw; text-shadow: 0 1px 2px #000; white-space: nowrap; }
 .lb-power { padding: 1cqw 3cqw; border-radius: 3cqw; background: #1d2f12; color: #ffe36b; font-size: 3.6cqw; font-weight: 900; white-space: nowrap; }
 .lb-gstage { position: relative; height: 62cqw; border-radius: 3cqw; background: radial-gradient(ellipse at 50% 70%, #cfe8a8, #8cc06a 60%, #5a8a3a); overflow: hidden; }
-.lb-gotter { position: absolute; left: 50%; bottom: 8cqw; width: 30cqw; height: 35cqw; transform: translateX(-50%); background: url(img/bg/m_ot2.webp) 0 0 / auto 100% no-repeat; background-size: calc(30cqw * 906 / 131) 35cqw; }
+.lb-gotter { position: absolute; left: 50%; bottom: 10cqw; width: 34cqw; height: 42cqw; transform: translateX(-50%); background: url(img/lb/otter-front.webp) center bottom / contain no-repeat; } /* 정면 수달(부장님 설정 그림, 2026-10-28) */
 .lb-gslot { position: absolute; width: 17cqw; height: 17cqw; display: grid; place-items: center; align-content: center; gap: .4cqw; border-radius: 2.6cqw; border: .7cqw solid #e2c58a; background: linear-gradient(#1f3550, #0f1f33); color: #fff; padding: 0; }
 .lb-gslot img { width: 72%; } .lb-gslot small { font-size: 2.4cqw; font-weight: 800; white-space: nowrap; } .lb-gslot.empty i { font-style: normal; font-size: 6cqw; color: #9fb7cf; line-height: 1; } .lb-gslot.empty { border-color: #5a6a7a; }
 .lb-gslot::before, .lb-gslot::after { display: none !important; } .p-helm { left: 3cqw; top: 2cqw; } .p-armor { left: 3cqw; top: 22cqw; } .p-gloves { left: 3cqw; top: 42cqw; } .p-weapon { right: 3cqw; top: 2cqw; } .p-belt { right: 3cqw; top: 22cqw; } .p-boots { right: 3cqw; top: 42cqw; } .p-acc { left: 50%; bottom: 1cqw; transform: translateX(-50%); width: 14cqw !important; height: 14cqw !important; }
@@ -1310,7 +1310,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610280221";
+  const BUILD = "202610280231";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
