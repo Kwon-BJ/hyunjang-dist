@@ -693,6 +693,15 @@ body.game-full { overflow: hidden; }
 .lb-tr { display: grid; grid-template-columns: 12cqw 1fr 12cqw 22cqw; align-items: center; padding: 1.2cqw 2cqw; font-size: 3.2cqw; color: #3a2a10; border-top: .2cqw solid #efe0bd; } .lb-tr.hd { background: #efdcab; font-size: 2.8cqw; color: #6a4a1a; border: 0; }
 .lb-tr .no { text-align: center; } .lb-tr .no img { width: 7cqw; } .lb-tr .nm { display: flex; align-items: center; gap: 1.4cqw; min-width: 0; } .lb-tr .nm img { width: 6cqw; border-radius: 50%; } .lb-tr .nm b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .lb-tr > span:nth-child(3), .lb-tr > span:nth-child(4) { text-align: right; } .lb-tr.me { background: #ffe9a0; }
+.lb-tr .lb-del { border: 0; background: none; font-size: 3.6cqw; cursor: pointer; } .lb-table.op .lb-tr { grid-template-columns: 12cqw 1fr 12cqw 20cqw 8cqw; }
+.lb-reset { display: flex; flex-wrap: wrap; gap: 1.4cqw; align-items: center; padding: 2cqw; border-radius: 2.6cqw; background: #2a1e0c; color: #ffe08a; } .lb-reset b { width: 100%; font-size: 3cqw; }
+.lb-opbtn { padding: 0; border-radius: 999px; border: .4cqw solid #e8c46a; background: rgba(20,36,12,.9); color: #fff; font-size: 3cqw !important; } .lb-opbtn.on { background: #b3261e; }
+.lb-live { position: absolute; z-index: 2; right: 8px; top: 18%; width: 210px; max-height: 60%; overflow: auto; padding: 10px; border-radius: 12px; background: rgba(12,20,8,.9); border: 2px solid #e8c46a; color: #fff; display: grid; gap: 6px; font-size: 13px; font-family: "Noto Sans KR", sans-serif; }
+.lb-live b { color: #ffe08a; } .lb-live.min > :not(b) { display: none; } .lb-live.min { width: auto; } .lb-lrow { display: grid; } .lb-lrow small, .lb-live > small { color: #cfe8b8; font-size: 11px; }
+@media (max-width: 760px) { .lb-live { width: 150px; top: 24%; opacity: .92; font-size: 12px; } }
+.lb-sel { padding: 2cqw; border-radius: 2cqw; border: .4cqw solid #c79a4a; font-size: 3.6cqw; }
+.lb-give { display: grid; grid-template-columns: 1fr 1fr; gap: 1.6cqw; } .lb-give label { display: grid; gap: .6cqw; font-size: 3cqw; color: #5a3a1a; } .lb-give input, .lb-sel { background: #fffaf0; color: #3a2a10; } .lb-give input { padding: 1.6cqw; border-radius: 1.6cqw; border: .3cqw solid #c79a4a; font-size: 3.6cqw; width: 100%; box-sizing: border-box; }
+.lb-wchk { display: flex; flex-wrap: wrap; gap: 2cqw; font-size: 3.2cqw; color: #3a2a10; } .lb-wchk label { display: flex; align-items: center; gap: 1cqw; }
 .lb-admin { font-size: 13px; font-family: "Noto Sans KR", sans-serif; color: var(--ink); background: #1b1408; border-radius: 3cqw; padding: 2cqw; } .lb-admin summary { cursor: pointer; color: #ffe08a; } .lb-admin .game-rank, .lb-admin .game-live { margin: 8px 0 0; }
 .lb-note { margin: 0; padding: 3cqw; text-align: center; color: #7a5a2a; font-size: 3cqw; } .lb-err { margin: 0; text-align: center; color: #b3261e; font-size: 3.2cqw; }
 /* 로딩 — 부장님 로딩 그림(img/loading.webp), 막대는 진짜 받은 만큼 */
@@ -1272,7 +1281,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610280018";
+  const BUILD = "202610280025";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -3775,7 +3784,7 @@ body.game-full { overflow: hidden; }
         range: AIM_R, tors: [], wardR: 0, wardSpr: "", ring: null, gaura: null, stealth: 0, rest: 0, cleanT: 0, bossDone: false, god: false, cheat: false };
       s.test = testOn(); $("gTest").hidden = !s.test; opTools();
       s.chap = o.ch || 0; s.run = o.run || ""; s.chMul = s.chap ? 1 + (s.chap - 1) * 0.45 : 1;
-      const U = o.used || {}, K = o.carry || {}; if (U.atk) s.dmg *= 1.2; if (U.spd) s.spd *= 1.15; s.heal = K.heal || 0; s.rev = K.rev || 0; s.healUsed = 0; s.revUsed = 0; healLabel(); // 상점 물건 setMap(s.chap || 0); // 장마다 맵 · 몬스터 세기
+      const U = o.used || {}, K = o.carry || {}; if (U.atk) s.dmg *= 1.2; if (U.spd) s.spd *= 1.15; s.heal = K.heal || 0; s.rev = K.rev || 0; s.healUsed = 0; s.revUsed = 0; healLabel(); // 상점 물건 setMap(s.chap || 1); // 장마다 맵 · 몬스터 세기
       renderSkills(); resume(); msg(s.chap ? s.chap + "장 " + CHAPS[s.chap - 1] + " — 1단계!" : "1단계 — 죽을 때까지 버텨라!");
     }
     function resume() {
@@ -3848,7 +3857,7 @@ body.game-full { overflow: hidden; }
       if (!me || !token) return;
       call("gamePing", token, Object.assign({ sec: Math.floor(s.t), stage: s.stage, hero: heroKey, test: s.test || s.cheat ? 1 : 0 }, end ? { end: 1 } : {})).then(takeLive).catch(() => {});
     }
-    function takeLive(r) { live = Array.isArray(r) ? r : []; liveGot = Date.now(); drawLive(); }
+    function takeLive(r) { live = Array.isArray(r) ? r : []; liveGot = Date.now(); drawLive(); const o = document.querySelector("#gLobby .lb-live"); if (o) o.replaceWith(lobLive()); } // 로비 오른쪽(운영자)도 새로
     function loadLive() { liveAt = Date.now(); call("getLive", token || adminPw).then(takeLive).catch(() => {}); }
     function drawLive() {
       $("liveBox").hidden = !live.length;
@@ -3920,7 +3929,7 @@ body.game-full { overflow: hidden; }
     /* 10단계마다 맵이 바뀜 — "연병장도 맵이 1개 밖에 없다, 10단계 넘어갈 때마다 맵이 바뀌게, 10개 정도" (2026-10-28). 1~10단계 돌바닥 법진, 11단계부터 img/maps/m1~m10 (Flow 그림) */
     const MAPS = ["img/map2.jpg"].concat(Array.from({ length: 10 }, (_, i) => "img/maps/m" + (i + 1) + ".jpg"));
     let mapIdx = 0;
-    function mapFor(n) { return Math.floor(Math.max(0, (n || 1) - 1) / 10) % MAPS.length; }
+    function mapFor(n) { return 1 + Math.floor(Math.max(0, (n || 1) - 1) / 10) % 10; } // 무한의 탑도 1~10장 맵을 10층마다 차례로(2026-10-28 "지금 맵은 너무 어둡다")
     function setMap(i) { if (i === mapIdx) return; mapIdx = i; const N = new Image(); N.onload = () => { MAP = N; mapFit(); }; N.src = MAPS[i] + "?v=" + BUILD; }
 
     /* "좀더 어두운 용암맵으로 바꿔라 몹이 잘안보인다" (2026-10-26) — 숲 맵 색만 바꾼 용암 맵(무료, 시험/용암맵-만들기.cjs). 숲 맵(map.jpg)은 남겨 둠 */
@@ -5059,11 +5068,11 @@ body.game-full { overflow: hidden; }
     const CHSUB = ["숲속의 첫 번째 생존 전투", "모래바람 속 옛 유적", "얼어붙은 눈밭의 사투", "불타는 용암 위 결전", "독기 가득한 늪지대", "망자가 깨어나는 묘지", "수정빛 얼음 동굴", "황금 신전의 수호자", "성벽 광장 최후의 방어", "구름 위 하늘 섬 결전"];
     /* 무기(총) — 열쇠는 창구와 같게. hero = 공격 방식(예전 캐릭터 평타 · 스킬), 그림 = img/lb/w-*.webp. 물대포 · 빙결 총 · 유도 미사일은 준비 중 */
     const WPN = { bow: { n: "기본 총", hero: "je", pic: "w-basic", shot: "연사 탄", d: "가장 기본적인 무기 — 곧게 날아가는 연사 탄" },
-      sword: { n: "화염방사기", hero: "kh", pic: "w-fire", shot: "불꽃 탄", d: "넓게 베는 불꽃 탄 — 가까운 무리에 강해요" },
-      tali: { n: "전기 건", hero: "hr", pic: "w-elec", shot: "전기 부적", d: "전기를 두른 탄 — 맞은 몬스터를 찌릿하게" },
+      sword: { n: "화염방사기", hero: "kh", pic: "w-fire2", lock: "w-fire", shot: "불꽃 탄", d: "넓게 베는 불꽃 탄 — 가까운 무리에 강해요" },
+      tali: { n: "전기 건", hero: "hr", pic: "w-elec2", lock: "w-elec", shot: "전기 부적", d: "전기를 두른 탄 — 맞은 몬스터를 찌릿하게" },
       club: { n: "로켓포", hero: "ds", pic: "w-rocket", shot: "충격탄", d: "묵직한 충격탄 — 한 방이 세요" },
       dagger: { n: "메이저 건", hero: "mj", pic: "w-major", shot: "독 표창탄", d: "독을 묻힌 표창탄 — 빠르고 날카로워요" } };
-    const WPN_SOON = [["물대포", "w-water"], ["빙결 총", "w-ice"], ["유도 미사일", "w-missile"]];
+    const WPN_SOON = [["물대포", "w-water"], ["빙결 총", "w-ice2"], ["유도 미사일", "w-missile2"]]; // 자물쇠 없는 그림은 제미나이(시험/무기아이콘-자르기.cjs)
     const ITEMS = { heal: { n: "체력 회복약", pic: "i-heal", d: "판 중에 ❤ 단추로 체력 30% 회복" }, atk: { n: "공격력 증가 물약", pic: "i-atk", d: "다음 판 공격력 +20% (출전할 때 저절로 씀)" }, spd: { n: "이동속도 증가 물약", pic: "i-spd", d: "다음 판 이동속도 +15% (출전할 때 저절로 씀)" }, rev: { n: "부활권", pic: "i-rev", d: "쓰러지면 한 번 체력 50% 로 일어남" }, exp: { n: "경험치 부스트", pic: "i-exp", d: "5판 동안 경험치 1.5배" } };
     const LBI = (n) => "img/lb/" + n + ".webp?v=" + BUILD;
     let LP = null, lobTab = "go", lobCh = 1, lobErr = "", lobBusy = false, lobT = 0, lobSel = null, lobRankTab = "all";
@@ -5106,9 +5115,10 @@ body.game-full { overflow: hidden; }
       art.lastChild.textContent = "← 홈";
       if (!P && lobTab !== "rank") art.appendChild(el("div", "lb-page", lobErr || "불러오는 중…")); // 순위는 내 정보 없이도
       else if (lobTab === "go") art.append(...lobGo(P));
-      else { const pg = el("div", "lb-page lb-" + lobTab); pg.append(...(lobTab === "wpn" ? lobWpn(P) : lobTab === "shop" ? lobShop(P) : lobRank())); if (lobErr) pg.appendChild(el("p", "lb-err", lobErr)); art.appendChild(pg); }
+      else { const pg = el("div", "lb-page lb-" + lobTab); pg.append(...(lobTab === "wpn" ? lobWpn(P) : lobTab === "shop" ? lobShop(P) : lobTab === "op" ? lobOp() : lobRank())); if (lobErr) pg.appendChild(el("p", "lb-err", lobErr)); art.appendChild(pg); }
       const nav = el("nav", "lb-nav"); [["shop", "상점"], ["wpn", "무기"], ["go", "출전"], ["rank", "순위"]].forEach(([k, n]) => { const b = el("button", k === lobTab ? "on" : ""); b.type = "button"; b.setAttribute("aria-label", n); b.appendChild(el("span", null, n)); b.onclick = () => { lobTab = k; lobErr = ""; lobSel = null; lobDraw(); if (k === "rank") loadRanks(); }; nav.appendChild(b); });
-      art.appendChild(nav); L.replaceChildren(art);
+      if (P && P.op) { const ob = lobBtn("lb-opbtn" + (lobTab === "op" ? " on" : ""), px(24, 150, 150, 40), () => { lobTab = lobTab === "op" ? "go" : "op"; lobErr = ""; lobDraw(); }, "운영"); ob.textContent = "🛠 운영"; art.appendChild(ob); }
+      art.appendChild(nav); L.replaceChildren(art); if (P && P.op) { L.appendChild(lobLive()); if (Date.now() - liveAt > 5000) loadLive(); } // 운영자만 오른쪽에 지금 하는 사람
     }
     function lobGo(P) {
       const c = Math.max(1, Math.min(10, lobCh)), open = c <= P.ch, need = !P.free && P.en < (P.cost || 5), first = !(P.clears || {})[c], out = [];
@@ -5137,13 +5147,15 @@ body.game-full { overflow: hidden; }
     function lobCard(pic, name, small, on, lock, fn) { const b = el("button", "lb-card" + (on ? " on" : "") + (lock ? " lock" : "")); b.type = "button"; const i = el("img"); i.src = LBI(pic); i.alt = ""; b.append(i, el("b", null, name), el("small", null, small)); if (fn) b.onclick = fn; else b.disabled = true; return b; }
     function lobWpn(P) {
       const keys = Object.keys(WPN), sel = lobSel && WPN[lobSel] ? lobSel : P.wpn, grid = el("div", "lb-grid g4");
-      keys.forEach((k) => { const w = WPN[k], own = P.own.includes(k); grid.appendChild(lobCard(w.pic, w.n, P.wpn === k ? "✔ 끼는 중" : own ? "가짐" : "💰 " + ((P.shop.weapons || {})[k] || 0).toLocaleString(), sel === k, !own, () => { lobSel = k; lobDraw(); })); });
+      const lvNow = (P.lv || {}).lv || 1, need = (k) => ((P.shop.wlv || {})[k] || 0);
+      keys.forEach((k) => { const w = WPN[k], own = P.own.includes(k); grid.appendChild(lobCard(own ? w.pic : w.lock || w.pic, w.n, P.wpn === k ? "✔ 끼는 중" : own ? "가짐" : lvNow < need(k) ? "🔒 Lv " + need(k) : "💰 " + ((P.shop.weapons || {})[k] || 0).toLocaleString(), sel === k, !own, () => { lobSel = k; lobDraw(); })); });
       WPN_SOON.forEach(([n, pic]) => grid.appendChild(lobCard(pic, n, "준비 중", false, true, null)));
-      const w = WPN[sel], own = P.own.includes(sel), det = el("div", "lb-det"), di = el("img"); di.src = LBI(w.pic); di.alt = "";
+      const w = WPN[sel], own = P.own.includes(sel), det = el("div", "lb-det"), di = el("img"); di.src = LBI(own ? w.pic : w.lock || w.pic); di.alt = "";
       det.append(di, el("b", null, w.n), el("p", null, w.d), el("small", null, "평타 " + w.shot + " · 스킬은 판 안에서 레벨업으로 골라요"));
       let b;
       if (P.wpn === sel) { b = el("button", "lb-buy eq", "장착중"); b.disabled = true; }
       else if (own) { b = el("button", "lb-buy", "장착하기"); b.onclick = () => lobAct("gameWeapon", sel, () => { LP.wpn = sel; }); }
+      else if (lvNow < need(sel)) { b = el("button", "lb-buy", "🔒 Lv " + need(sel) + " 부터 살 수 있어요"); b.disabled = true; }
       else { const pr = (P.shop.weapons || {})[sel] || 0; b = el("button", "lb-buy", "구매하기 💰 " + pr.toLocaleString()); b.disabled = P.free || P.gold < pr; b.onclick = () => lobAct("gameBuy", sel); }
       b.type = "button"; det.appendChild(b);
       return [lobHead("sign-wpn", "다양한 무기를 장착하고 더 강력하게!"), grid, det];
@@ -5161,15 +5173,45 @@ body.game-full { overflow: hidden; }
       return [lobHead("sign-shop", "필요한 아이템을 구매하세요!"), m, det, grid];
     }
     function lobRank() {
-      const R = ranks || { all: [], month: [], week: [] }, list = (R[lobRankTab] || []).slice(0, 30), mine = list.findIndex((x) => me && x.id === me.id);
+      const R = ranks || { all: [], month: [], week: [] }, list = (R[lobRankTab] || []).slice(0, 30), mine = list.findIndex((x) => me && x.id === me.id), op = !!(LP && LP.op) || canWrite;
       const tabs = el("div", "lb-rtabs"); [["all", "전체"], ["month", "이번 달"], ["week", "이번 주"]].forEach(([k, n]) => { const b = el("button", k === lobRankTab ? "on" : "", n); b.type = "button"; b.onclick = () => { lobRankTab = k; lobDraw(); }; tabs.appendChild(b); });
-      const tb = el("div", "lb-table"), hd = el("div", "lb-tr hd"); hd.append(el("span", null, "순위"), el("span", null, "닉네임"), el("span", null, "단계"), el("span", null, "점수")); tb.appendChild(hd);
+      const tb = el("div", "lb-table" + (op ? " op" : "")), hd = el("div", "lb-tr hd"); hd.append(el("span", null, "순위"), el("span", null, "닉네임"), el("span", null, "단계"), el("span", null, "점수")); if (op) hd.appendChild(el("span")); tb.appendChild(hd);
+      const sure = (b, label, fn) => { b.onclick = () => { if (b.dataset.sure !== "1") { b.dataset.sure = "1"; b.textContent = "정말?"; setTimeout(() => { b.dataset.sure = ""; b.textContent = label; }, 3000); return; } b.disabled = true; fn(); }; };
       list.forEach((x, i) => { const r = el("div", "lb-tr" + (i === mine ? " me" : "")), no = el("span", "no"); if (i < 3) { const md = el("img"); md.src = LBI("md" + (i + 1)); md.alt = (i + 1) + "위"; no.appendChild(md); } else no.textContent = i + 1;
-        const nm = el("span", "nm"), f = el("img"); f.src = LBI("face"); f.alt = ""; nm.append(f, el("b", null, x.nick || "?")); r.append(no, nm, el("span", null, String(x.stage || 0)), el("span", null, (x.score || 0).toLocaleString())); tb.appendChild(r); });
+        const nm = el("span", "nm"), f = el("img"); f.src = LBI("face"); f.alt = ""; nm.append(f, el("b", null, x.nick || "?")); r.append(no, nm, el("span", null, String(x.stage || 0)), el("span", null, (x.score || 0).toLocaleString()));
+        if (op) { const d = el("button", "lb-del", "🗑"); d.type = "button"; d.setAttribute("aria-label", x.nick + " 기록 지우기"); sure(d, "🗑", () => call("deleteGameScore", adminPw || token, lobRankTab, x.id).then((r) => { takeRanks(r); lobDraw(); }).catch((e) => { lobErr = errMsg(e); lobDraw(); })); r.appendChild(d); }
+        tb.appendChild(r); });
       if (!list.length) tb.appendChild(el("p", "lb-note", ranks ? "아직 기록이 없어요" : "불러오는 중…"));
-      const m = el("div", "lb-mascot rank"), mi = el("img"); mi.src = LBI("m-rank"); mi.alt = ""; const my = el("div", "lb-my"); my.append(el("small", null, "나의 순위"), el("b", null, mine >= 0 ? mine + 1 + "위" : "—")); m.append(mi, my);
+      const m = el("div", "lb-mascot rank"), mi = el("img"); mi.src = LBI("m-rank"); mi.alt = ""; const my = el("div", "lb-my"); my.append(el("small", null, "나의 순위"), el("b", null, mine >= 0 ? mine + 1 + "위" : "—"), el("small", null, mine >= 0 ? (list[mine].stage || 0) + "단계 · " + (list[mine].score || 0).toLocaleString() + "점" : "무한의 탑에 도전해 보세요")); m.append(mi, my);
       const out = [lobHead("sign-rank", "최고의 수달이 되어보세요! (무한의 탑 기록)"), m, tabs, tb];
-      if (canWrite) { const box = el("details", "lb-admin"); box.appendChild(el("summary", null, "관리 — 순위표 지우기 · 지금 하는 사람")); box.append(LOB_LIVE, LOB_RANK); box.open = true; out.push(box); }
+      if (op) { const rs = el("div", "lb-reset"); rs.appendChild(el("b", null, "운영 — 순위표 지우기")); [["all", "전체(주 · 달 포함)"], ["month", "이번 달"], ["week", "이번 주"]].forEach(([k, n]) => { const b = el("button", "lb-btn", n + " 지우기"); b.type = "button"; sure(b, n + " 지우기", () => call("resetGameBoard", adminPw || token, k).then((r) => { takeRanks(r); lobDraw(); }).catch((e) => { lobErr = errMsg(e); lobDraw(); })); rs.appendChild(b); }); out.push(rs); }
+      return out;
+    }
+    /* 운영자만 — 오른쪽에 지금 게임하는 사람(2026-10-28 "게임 진행 중인 사람들은 나만 우측 화면에 볼 수 있게") */
+    let lobLiveMin = matchMedia("(max-width: 760px)").matches; // 휴대폰은 접어 둠(누르면 펼침)
+    function lobLive() {
+      const box = el("aside", "lb-live"), on = (live || []).filter((p) => !p.end);
+      const hd = el("b", null, "🎮 지금 하는 사람 " + on.length + "명 ▾"); hd.style.cursor = "pointer"; hd.onclick = () => { lobLiveMin = !lobLiveMin; box.classList.toggle("min", lobLiveMin); }; box.appendChild(hd); if (lobLiveMin) box.classList.add("min");
+      on.forEach((p) => { const r = el("div", "lb-lrow"); r.append(el("span", "nm", p.nick), el("small", null, p.stage + "단계 · " + mmss(p.sec || 0))); box.appendChild(r); });
+      if (!on.length) box.appendChild(el("small", null, "지금은 아무도 없어요"));
+      return box;
+    }
+    /* 운영자만 — 주기(피로도 · 골드 · 경험치 · 물건 · 무기 · 장 열기). 2026-10-28 "기준량이 운영자니깐 자유롭게 사람들한테 줄 수 있게" */
+    let lobMembers = null, lobGiveTo = "", lobGiveRes = null;
+    function lobOp() {
+      const out = [el("h3", "lb-h", "🛠 운영 — 주기")];
+      if (!lobMembers) { call("gameMembers", token).then((r) => { lobMembers = r || []; lobDraw(); }).catch((e) => { lobErr = errMsg(e); lobDraw(); }); out.push(el("p", "lb-note", "회원 불러오는 중…")); return out; }
+      const sel = document.createElement("select"); sel.className = "lb-sel"; sel.appendChild(new Option("— 받을 사람 —", "")); lobMembers.slice().sort((a, b) => a.nick.localeCompare(b.nick)).forEach((m) => sel.appendChild(new Option(m.nick, m.id))); sel.value = lobGiveTo; sel.onchange = () => { lobGiveTo = sel.value; lobGiveRes = null; if (lobGiveTo) call("gamePeek", token, lobGiveTo).then((r) => { lobGiveRes = r; lobDraw(); }).catch(() => {}); lobDraw(); };
+      out.push(sel);
+      if (lobGiveRes) out.push(el("p", "lb-note", "지금 — ⚡ " + lobGiveRes.en + " · 💰 " + lobGiveRes.gold.toLocaleString() + " · Lv " + lobGiveRes.lv.lv + " · " + lobGiveRes.ch + "장까지 · 무기 " + lobGiveRes.own.map((k) => (WPN[k] || {}).n || k).join(", ")));
+      const f = el("div", "lb-give"), inp = {}, num = (k, n) => { const l = el("label", null, n), i = document.createElement("input"); i.type = "number"; i.inputMode = "numeric"; i.value = ""; i.placeholder = "0"; inp[k] = i; l.appendChild(i); f.appendChild(l); };
+      num("en", "⚡ 피로도"); num("gold", "💰 골드"); num("exp", "EXP 경험치"); num("ch", "열 장(1~10)"); Object.keys(ITEMS).forEach((k) => num("i_" + k, ITEMS[k].n));
+      const wb = el("div", "lb-wchk"); Object.keys(WPN).filter((k) => k !== "bow").forEach((k) => { const l = el("label"), c = document.createElement("input"); c.type = "checkbox"; c.value = k; l.append(c, WPN[k].n); wb.appendChild(l); });
+      out.push(f, el("small", "lb-note", "무기 주기"), wb);
+      const go = el("button", "lb-buy", "주기"); go.type = "button"; go.disabled = !lobGiveTo || lobBusy;
+      go.onclick = () => { const g = { en: inp.en.value, gold: inp.gold.value, exp: inp.exp.value, ch: inp.ch.value, items: {}, wpn: [...wb.querySelectorAll("input:checked")].map((c) => c.value) }; Object.keys(ITEMS).forEach((k) => { if (inp["i_" + k].value) g.items[k] = inp["i_" + k].value; });
+        lobBusy = true; call("gameGive", token, lobGiveTo, g).then((r) => { lobBusy = false; lobGiveRes = r; lobErr = ""; setStatus(r.nick + " 님에게 줬어요."); lobDraw(); }).catch((e) => { lobBusy = false; lobErr = errMsg(e); lobDraw(); }); };
+      out.push(go, el("small", "lb-note", "빼려면 앞에 − (예: −5)"));
       return out;
     }
     const LOB_LIVE = $("liveBox"), LOB_RANK = document.querySelector(".game-rank");
