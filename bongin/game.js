@@ -155,7 +155,7 @@ const Dungeon = (() => {
 
   /* cfg = { d, me, look, nick, stats:{hpMax, atk, def}, potions, party:{host, members:[{id,nick,look,lv}]} | null, send(data, to), usePotion(), onEnd(res), axis(), watch }
      watch = 운영자 투명 관전 — 내 캐릭터는 없고(몬스터가 안 노림 · 안 그림 · 안 보냄), 화면은 파티장을 따라간다 */
-  function preload(hero, op) { (op ? ALL_SKILLS : SKILLS[hero] || SKILLS.kh).forEach((s) => { if (s.ic && FR.sfx && FR.sfx[s.ic] && !SFX[s.ic]) SFX[s.ic] = img("img/sfx/" + s.ic + ".webp"); }); } // 스킬 효과 영상 미리 받기(처음 쓸 때 옛 그림이 보이지 않게)
+  function preload(hero, op) { (SKILLS[hero] || SKILLS.kh).forEach((s) => { /* 운영자도 지금 캐릭터 7개만(35개 한꺼번에 받으면 휴대폰이 멈춤) */ if (s.ic && FR.sfx && FR.sfx[s.ic] && !SFX[s.ic]) SFX[s.ic] = img("img/sfx/" + s.ic + ".webp"); }); } // 스킬 효과 영상 미리 받기(처음 쓸 때 옛 그림이 보이지 않게)
   function start(cfg) {
     C = cfg; const D = DUN[cfg.d] || DUN.forest; preload(heroOf(cfg.look), cfg.op);
     POTS = Array.isArray(cfg.potSlots) && cfg.potSlots.length === 8 ? cfg.potSlots.slice() : POTS_DEF.slice();
@@ -183,7 +183,7 @@ const Dungeon = (() => {
     S.foes.push({ id: nextId++, kind, D, x, z: rnd(Z0 + 10, Z1 - 10), h: D.boss ? 400 : 0, vx: 0, vh: 0, face: -side, hp, max: hp, st: D.boss ? "air" : "walk", t: 0, cd: rnd(0.6, 1.6), jug: 0, inv: 0, flash: 0, poise: 260 * S.hpK, hitDone: false, ph: Math.random() * 5 });
     if (D.boss) shake = 0.5;
   }
-  function addFx(o) { if (o.k === "hsk" && o.ic && FR.sfx && FR.sfx[o.ic]) o.t = o.d = Math.max(o.d || 0, o.big ? 2.2 : 1.1); if (S.fx.length < 120) S.fx.push(o); } // 스킬 영상은 끝까지 보이게(예전 0.4초 — "임팩트가 너무 빨리 사라진다")
+  function addFx(o) { if (o.k === "hsk" && o.ic && FR.sfx && FR.sfx[o.ic]) o.t = o.d = Math.max(o.d || 0, o.big ? 1.5 : 0.9); if (S.fx.length < 120) S.fx.push(o); } // 스킬 영상은 끝까지 보이게(예전 0.4초 — "임팩트가 너무 빨리 사라진다")
   function num(x, y, v, c) { if (S.nums.length < 80) S.nums.push({ x, y, v, c: c || "#fff", t: 0.7 }); }
 
   /* 맞히기 — 파티원은 보이는 것만 하고 파티장에게 보낸다. remote = 파티원이 보낸 것 */
@@ -242,7 +242,7 @@ const Dungeon = (() => {
   /* 궁극기 컷인 — 던파 각성기처럼: 화면 어두워짐 · 시간 멈춤 · 대각선 띠에 캐릭터가 미끄러져 들어옴 · 큰 이름 → 하얗게 번쩍 · 크게 흔들림 · 터짐 (2026-10-28) */
   const CUT_T = 1.15;
   function ultAll(sk, m) { // 궁극기 — 화면 가득 큰 효과 + 지금 방의 모든 몬스터가 맞음
-    const H = S.hero; addFx({ k: "hsk", fr: sk.fr, ic: sk.ic, x: S.camX + VW / 2, y: VH * 0.5, s: 1150, flip: H.face < 0, big: true }); S.flash = Math.max(S.flash || 0, 0.7); shake = Math.max(shake, 0.9);
+    const H = S.hero; addFx({ k: "hsk", fr: sk.fr, ic: sk.ic, x: S.camX + VW / 2, y: VH * 0.5, s: 760, flip: H.face < 0, big: true }); S.flash = Math.max(S.flash || 0, 0.7); shake = Math.max(shake, 0.9);
     S.foes.forEach((f) => { if (f.st === "dead" || f.dying) return; f.inv = 0; hitFoe(f, Math.round((sk.allDmg || 150) * m), "launch", Math.sign(f.x - H.x) || H.face); addFx({ k: "hsk", fr: sk.fr, ic: sk.ic, x: f.x, y: f.z - (f.h || 0) - 60, s: 300 }); });
   }
   function cutStep(dt) { const c = S.cut; c.t += dt; if (c.t >= CUT_T) { S.cut = null; S.flash = 0.9; shake = 1.1; stop = 0.12; cast(c.sk, true); } }
@@ -257,7 +257,7 @@ const Dungeon = (() => {
     g.rotate(0.22);
     // 캐릭터 — 오른쪽에서 미끄러져 들어와 살짝 계속 움직임
     const pic = typeof MASTER_IMG !== "undefined" && MASTER_IMG.complete && FR.masters && FR.masters[c.hero] ? [MASTER_IMG, FR.masters[c.hero]] : typeof CHIEF_IMG !== "undefined" && FR.npc && FR.npc.chief && c.hero === "chief" ? [CHIEF_IMG, FR.npc.chief] : null;
-    if (pic) { const [im, r] = pic, hh = 420, ww = r[2] * hh / r[3], px = 120 + (1 - e) * 600 - t * 30; g.save(); g.beginPath(); g.rect(-VW / 2, -VH / 2, VW, VH); g.clip(); g.shadowColor = "rgba(255,180,60,.8)"; g.shadowBlur = 30; g.drawImage(im, r[0], r[1], r[2], r[3], px - ww / 2, -hh / 2 + 40, ww, hh); g.restore(); }
+    if (pic) { const [im, r] = pic, hh = 420, ww = r[2] * hh / r[3], px = 120 + (1 - e) * 600 - t * 30; g.save(); g.beginPath(); g.rect(-VW / 2, -VH / 2, VW, VH); g.clip(); g.shadowColor = "rgba(255,180,60,.8)"; g.shadowBlur = 0; g.drawImage(im, r[0], r[1], r[2], r[3], px - ww / 2, -hh / 2 + 40, ww, hh); g.restore(); }
     // 이름
     const nm = c.sk.name, fs2 = 64, tx = -VW * 0.18 - (1 - e) * 300; g.font = "900 " + fs2 + "px 'Noto Sans KR', serif"; g.textAlign = "center"; g.lineWidth = 10; g.strokeStyle = "rgba(0,0,0,.9)"; g.strokeText(nm, tx, 20);
     const tg = g.createLinearGradient(0, -30, 0, 30); tg.addColorStop(0, "#fff6c8"); tg.addColorStop(0.5, "#ffcf4a"); tg.addColorStop(1, "#d8861a"); g.fillStyle = tg; g.fillText(nm, tx, 20);
@@ -699,7 +699,7 @@ const Dungeon = (() => {
     if (!C.watch) bodies.push([H.z + 0.1, () => drawPerson(g, H, C.look, cx, true, C.party ? C.nick : "")]);
     for (const id in S.remote) { const r = S.remote[id]; bodies.push([r.z, () => drawPerson(g, r, r.look, cx, false, r.nick)]); }
     bodies.sort((a, b) => a[0] - b[0]).forEach((b) => b[1]());
-    S.loot.forEach((o) => { const r = FR.items && FR.items.box; if (!r || !IMG.items.complete) return; const k = 30 / Math.max(r[2], r[3]), x = o.x - cx, y = o.z - o.h; g.save(); g.shadowColor = "rgba(255,220,90,.9)"; g.shadowBlur = 10; g.drawImage(IMG.items, r[0], r[1], r[2], r[3], x - r[2] * k / 2, y - r[3] * k / 2, r[2] * k, r[3] * k); g.restore(); }); // 드롭 주머니
+    S.loot.forEach((o) => { const r = FR.items && FR.items.box; if (!r || !IMG.items.complete) return; const k = 30 / Math.max(r[2], r[3]), x = o.x - cx, y = o.z - o.h; g.save(); g.shadowColor = "rgba(255,220,90,.9)"; g.shadowBlur = 0; g.drawImage(IMG.items, r[0], r[1], r[2], r[3], x - r[2] * k / 2, y - r[3] * k / 2, r[2] * k, r[3] * k); g.restore(); }); // 드롭 주머니
     S.shots.forEach((s) => drawHsk(g, s.sk, s.sk ? s.sk.fr : "kh_wave", s.x - cx, s.z - 60, s.sk ? s.sk.size : 170, s.face < 0, Math.min(1, s.t / 0.15), 0, s.sk ? (s.sk.life || 1) - s.t : 0, true));
     S.fx.forEach((x) => {
       const p = 1 - x.t / x.d;
@@ -737,7 +737,7 @@ const Dungeon = (() => {
     g.save(); g.globalCompositeOperation = "lighter"; g.globalAlpha *= clamp(alpha, 0, 1); g.translate(x, y); if (flip) g.scale(-1, 1);
     const ox = (FR.sfxOx && FR.sfxOx[ic]) || 0; // 영상 속 효과가 비켜난 만큼 되돌림
     g.drawImage(I, (k % V.cols) * V.w, Math.floor(k / V.cols) * V.h, V.w, V.h, -w / 2 - ox * w, -h / 2, w, h);
-    g.globalAlpha *= 0.75; g.drawImage(I, (k % V.cols) * V.w, Math.floor(k / V.cols) * V.h, V.w, V.h, -w / 2 - ox * w, -h / 2, w, h); g.restore(); // 두 번 겹쳐 진하게("스킬이 너무 연하다")
+    g.restore(); // 한 번만 그림(두 번 겹치면 휴대폰이 멈춤, 2026-10-28)
   }
   function skIcon(g, sk, x, y, size, alpha) { // 스킬 아이콘 — 새 그림(ui2)이 있으면 그것, 없으면 예전 효과 그림
     const r = FR.ui2 && FR.ui2[sk.ic]; if (!r || !IMG.ui2.complete || !IMG.ui2.naturalWidth) return centered(g, IMG.hsk, FR.hsk[sk.fr], x, y, size, false, alpha);
@@ -750,7 +750,7 @@ const Dungeon = (() => {
   function drawPad(g, skill, slots, cd, learned) {
     TPAD.forEach(([a, x, y, r, t]) => { const slot = TSLOT.indexOf(a), ult = a === "ult";
       g.save(); g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fillStyle = a === "atk" ? "rgba(70,24,16,.55)" : "rgba(15,12,20,.6)"; g.fill();
-      g.lineWidth = ult ? 3 : 2; g.strokeStyle = ult ? "#ffcf4a" : a === "mpot" ? "rgba(90,140,220,.85)" : a === "potion" ? "rgba(220,80,80,.85)" : "rgba(232,200,140,.65)"; if (ult) { g.shadowColor = "rgba(255,200,60,.9)"; g.shadowBlur = 12; } g.stroke(); g.shadowBlur = 0;
+      g.lineWidth = ult ? 3 : 2; g.strokeStyle = ult ? "#ffcf4a" : a === "mpot" ? "rgba(90,140,220,.85)" : a === "potion" ? "rgba(220,80,80,.85)" : "rgba(232,200,140,.65)"; if (ult) { g.shadowColor = "rgba(255,200,60,.9)"; g.shadowBlur = 0; } g.stroke(); g.shadowBlur = 0;
       if (slot >= 0) { const i = slots[slot], sk = skill[i]; g.clip(); if (sk) { const c = cd ? cd[i] || 0 : 0, lock = learned && !learned.includes(i); skIcon(g, sk, x, y, r * 2, lock ? 0.15 : c > 0 ? 0.4 : 1);
           if (c > 0) { const h = 2 * r * Math.min(1, c / sk.cd); g.fillStyle = "rgba(0,0,0,.55)"; g.fillRect(x - r, y + r - h, 2 * r, h); g.textAlign = "center"; g.font = "900 " + Math.round(r * 0.75) + "px sans-serif"; g.lineWidth = 4; g.strokeStyle = "rgba(0,0,0,.85)"; const cs = c < 1 ? c.toFixed(1) : String(Math.ceil(c)); g.strokeText(cs, x, y + r * 0.27); g.fillStyle = "#fff"; g.fillText(cs, x, y + r * 0.27); } } }
       else { g.textAlign = "center"; g.font = (a === "atk" ? "800 20px" : "700 13px") + " 'Noto Sans KR', sans-serif"; g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,.6)"; g.strokeText(t, x, y + 5); g.fillStyle = "#fff4dc"; g.fillText(t, x, y + 5); }
@@ -797,7 +797,7 @@ const Dungeon = (() => {
     if (!touch) for (let slot = 0; slot < 7; slot++) { // 둥근 스킬 칸 — 위 1·2·3·궁극, 아래 4·5·6 (스킬창에서 끌어다 바꿈)
       const i = S.slots[slot], sk = SKILL[i], ult = slot === 6, x = VW - 300 + (slot < 3 ? slot * 62 + 31 : ult ? 3 * 62 + 31 : (slot - 3) * 62), y = slot < 3 || ult ? VH - 128 : VH - 66, R = ult ? 28 : 26;
       g.save(); g.beginPath(); if (ult) { for (let k = 0; k < 6; k++) { const a = Math.PI / 6 + k * Math.PI / 3; g.lineTo(x + 28 + Math.cos(a) * (R + 3), y + 28 + Math.sin(a) * (R + 3)); } g.closePath(); } else g.arc(x + 28, y + 28, R, 0, Math.PI * 2);
-      g.fillStyle = "rgba(15,12,20,.8)"; g.fill(); g.lineWidth = ult ? 3 : 2; g.strokeStyle = ult ? "#ffcf4a" : "rgba(220,210,190,.55)"; if (ult) { g.shadowColor = "rgba(255,200,60,.9)"; g.shadowBlur = 12; } g.stroke(); g.shadowBlur = 0; g.clip();
+      g.fillStyle = "rgba(15,12,20,.8)"; g.fill(); g.lineWidth = ult ? 3 : 2; g.strokeStyle = ult ? "#ffcf4a" : "rgba(220,210,190,.55)"; if (ult) { g.shadowColor = "rgba(255,200,60,.9)"; g.shadowBlur = 0; } g.stroke(); g.shadowBlur = 0; g.clip();
       if (sk) { const lock = S.learned && !S.learned.includes(i); skIcon(g, sk, x + 28, y + 28, 56, lock ? 0.15 : S.cd[i] > 0 ? 0.4 : 1);
         if (S.cd[i] > 0) { g.fillStyle = "rgba(0,0,0,.55)"; g.fillRect(x, y + 56 * (1 - S.cd[i] / sk.cd), 56, 56 * S.cd[i] / sk.cd); g.fillStyle = "#fff"; g.textAlign = "center"; g.font = "800 16px sans-serif"; g.fillText(Math.ceil(S.cd[i]), x + 28, y + 34); } }
       g.restore();
