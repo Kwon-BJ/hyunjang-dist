@@ -800,6 +800,11 @@ body.game-full { overflow: hidden; }
 .lb-gequip { padding: 1.6cqw 1cqw; border: 0; border-radius: 2.4cqw; font-size: 3.6cqw !important; white-space: nowrap; color: #fff; background: linear-gradient(#7fd36a, #2f8f1c); box-shadow: 0 .6cqw 0 #1d5a10; text-shadow: 0 .2cqw 0 #1a4a0e; }
 .lb-gequip.off { background: linear-gradient(#a8a8a8, #6a6a6a); box-shadow: 0 .6cqw 0 #3a3a3a; text-shadow: 0 .2cqw 0 #333; } .lb-gequip:active, .lb-gsell:active, .lb-gdis:active { transform: translateY(.5cqw); box-shadow: none; }
 .lb-det > small.lb-ghint { grid-area: auto; grid-column: 1 / -1; text-align: center; font-size: 2.6cqw; color: #8a6a3a; }
+.lb-gact.two { grid-template-columns: 1fr 1fr; }
+.lb-gup, .lb-gmerge { display: grid; gap: .2cqw; padding: 1.4cqw 1cqw; border: 0; border-radius: 2.4cqw; color: #fff; text-shadow: 0 .2cqw 0 rgba(0,0,0,.4); min-width: 0; }
+.lb-gup { background: linear-gradient(#ffd86a, #e89a10); box-shadow: 0 .6cqw 0 #9a6206; } .lb-gmerge { background: linear-gradient(#d29aff, #8a3dff); box-shadow: 0 .6cqw 0 #5a1aaa; }
+.lb-gup b, .lb-gmerge b { font-size: 3.6cqw; } .lb-gup small, .lb-gmerge small { font-size: 2.5cqw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lb-gup:disabled, .lb-gmerge:disabled { filter: grayscale(.85); opacity: .65; }
 .lb-gact { grid-column: 1 / -1; display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 1.6cqw; margin-top: 1.2cqw; }
 .lb-gsell, .lb-gdis { padding: 1.6cqw 1cqw; border: 0; border-radius: 2.4cqw; font-size: 3.2cqw !important; white-space: nowrap; color: #fff; }
 .lb-gsell { background: linear-gradient(#ffb36b, #ef6a1c); box-shadow: 0 .6cqw 0 #a8420a; } .lb-gdis { background: linear-gradient(#8fb4ff, #3d6fe0); box-shadow: 0 .6cqw 0 #22449a; }
@@ -1400,7 +1405,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610280408";
+  const BUILD = "202610280412";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -5369,7 +5374,7 @@ body.game-full { overflow: hidden; }
     const GRADE_N = ["일반", "희귀", "영웅", "전설"], GRADE_C = ["#9aa3ad", "#3d8bff", "#a64dff", "#ffb300"];
     let lobGsel = "", lobGot = "";
     function lobGear(P) {
-      const D = P.gdef || {}, eq = P.eq || {}, gear = P.gear || [], st = P.stats || {}, find = (u) => gear.find((x) => x.u === u), SELL = P.sellP || [100, 300, 800, 2000], MATN = P.matN || ["낡은 부품", "튼튼한 부품", "빛나는 부품", "전설 부품"];
+      const D = P.gdef || {}, eq = P.eq || {}, gear = P.gear || [], st = P.stats || {}, find = (u) => gear.find((x) => x.u === u), SELL = P.sellP || [100, 300, 800, 2000], MAXLV = P.maxLv || [10, 20, 30, 40], MATN = P.matN || ["낡은 부품", "튼튼한 부품", "빛나는 부품", "전설 부품"];
       const head = el("div", "lb-ghead"); head.append(el("b", null, "🐾 장비 착용"), el("span", "lb-power", "전투력 " + (st.power || 0).toLocaleString()));
       const stage = el("div", "lb-gstage"), mid = el("div", "lb-gotter"); stage.appendChild(mid);
       const slot = (key, label, side) => { const it = key === "weapon" ? null : find(eq[key]), b = el("button", "lb-gslot p-" + key); b.type = "button";
@@ -5383,10 +5388,17 @@ body.game-full { overflow: hidden; }
       const out = [head, stage, stats, set];
       const sel = lobGsel && !lobGsel.startsWith("slot:") ? find(lobGsel) : null, want = lobGsel.startsWith("slot:") ? lobGsel.slice(5) : "";
       if (sel) { const G = D[sel.k] || {}, on = Object.values(eq).includes(sel.u), det = el("div", "lb-det"), i = el("img"); i.src = LBI("g-" + sel.k); i.alt = "";
-        det.append(i, el("b", null, G.n + " · " + GRADE_N[sel.g]), el("p", null, ["hp", "atk", "def", "spd"].filter((k) => G[k]).map((k) => ({ hp: "체력 +", atk: "공격력 +", def: "방어력 +", spd: "이동속도 +" })[k] + G[k] * (1 + sel.g) + (k === "atk" || k === "spd" ? "%" : "")).join(" · ")), el("small", null, "팔면 💰 " + SELL[sel.g].toLocaleString() + " · 분해하면 " + MATN[sel.g] + " 1"));
+        const lv = sel.lv || 1, mx = MAXLV[sel.g], up = lv < mx ? { gold: 100 * lv, tier: Math.min(3, Math.floor((lv - 1) / 10)), n: 1 + Math.floor(lv / 5) } : null, same = gear.filter((x) => x !== sel && x.k === sel.k && x.g === sel.g && !Object.values(eq).includes(x.u)).length;
+        det.append(i, el("b", null, G.n + " · " + GRADE_N[sel.g] + " · Lv " + lv + "/" + mx), el("p", null, ["hp", "atk", "def", "spd"].filter((k) => G[k]).map((k) => ({ hp: "체력 +", atk: "공격력 +", def: "방어력 +", spd: "이동속도 +" })[k] + Math.round(G[k] * (1 + sel.g) * (1 + 0.1 * (lv - 1))) + (k === "atk" || k === "spd" ? "%" : "")).join(" · ")), el("small", null, "팔면 💰 " + SELL[sel.g].toLocaleString() + " · 분해하면 " + MATN[sel.g] + " 1 (강화에 쓴 부품은 돌려받음)"));
+        /* 강화 · 합성(탕탕특공대처럼) — 강화: 골드 + 부품으로 Lv +1(등급마다 최고 Lv) · 합성: 같은 장비 같은 등급 3개 → 한 등급 위 */
+        const r2 = el("div", "lb-gact two"), bu = el("button", "lb-gup"), bm = el("button", "lb-gmerge"); bu.type = bm.type = "button";
+        if (up) { bu.append(el("b", null, "⬆ 강화"), el("small", null, "💰" + up.gold.toLocaleString() + " · 🔩" + MATN[up.tier].split(" ")[0] + " " + ((P.mats || [])[up.tier] || 0) + "/" + up.n)); bu.disabled = P.gold < up.gold || ((P.mats || [])[up.tier] || 0) < up.n; bu.onclick = () => lobAct("gameGearUp", sel.u); }
+        else { bu.append(el("b", null, "최고 레벨"), el("small", null, sel.g < 3 ? "합성으로 등급 올리기" : "더 올릴 수 없어요")); bu.disabled = true; }
+        bm.append(el("b", null, "✨ 합성"), el("small", null, sel.g < 3 ? "같은 장비 " + Math.min(3, same + 1) + "/3 → " + GRADE_N[sel.g + 1] : "전설 — 최고 등급")); bm.disabled = sel.g >= 3 || same < 2; bm.onclick = () => lobAct("gameGearMerge", sel.u);
+        r2.append(bu, bm);
         /* 장착 단추 다시(2026-10-28 "장착 버튼 마음에 안 든다, 더블클릭하면 장착 해제") — 장착 · 팔기 · 분해 한 줄, 장비를 두 번 누르면 장착 / 해제 */
         const row = el("div", "lb-gact"), b1 = el("button", "lb-gequip" + (on ? " off" : ""), on ? "✖ 해제" : "✔ 장착"), b2 = el("button", "lb-gsell", "💰 " + SELL[sel.g].toLocaleString()), b3 = el("button", "lb-gdis", "🔧 분해"); b1.type = b2.type = b3.type = "button";
-        b1.onclick = () => lobAct("gameEquip", sel.u); b2.onclick = () => { lobGsel = ""; lobAct2("gameEquip", sel.u, "sell"); }; b3.onclick = () => { lobGsel = ""; lobAct2("gameEquip", sel.u, "dis"); }; b2.title = "팔기"; row.append(b1, b2, b3); det.append(row, el("small", "lb-ghint", "💡 장비를 두 번 누르면 바로 " + (on ? "해제" : "장착"))); out.push(det); }
+        b1.onclick = () => lobAct("gameEquip", sel.u); b2.onclick = () => { lobGsel = ""; lobAct2("gameEquip", sel.u, "sell"); }; b3.onclick = () => { lobGsel = ""; lobAct2("gameEquip", sel.u, "dis"); }; b2.title = "팔기"; row.append(b1, b2, b3); det.append(r2, row, el("small", "lb-ghint", "💡 장비를 두 번 누르면 바로 " + (on ? "해제" : "장착"))); out.push(det); }
       /* 부품(분해해서 모음 — 나중에 강화 재료) · 등급별 한꺼번에 팔기 · 분해(끼고 있는 것은 빼고, 두 번 눌러 확인) (2026-10-28) */
       const mats = el("div", "lb-mats"); MATN.forEach((n2, g) => { const c = el("span"); c.style.borderColor = GRADE_C[g]; c.append(el("i", null, "🔩"), el("b", null, n2), el("em", null, String((P.mats || [])[g] || 0))); mats.appendChild(c); }); out.push(mats);
       const onU = Object.values(eq), bulk = el("div", "lb-bulk"); [0, 1, 2, 3].forEach((g) => { const n2 = gear.filter((x) => x.g === g && !onU.includes(x.u)).length; if (!n2) return; const r = el("div"); r.style.borderColor = GRADE_C[g];
@@ -5394,7 +5406,7 @@ body.game-full { overflow: hidden; }
         const t1 = "모두 팔기 💰" + (SELL[g] * n2).toLocaleString(), t2 = "모두 분해";
         r.append(el("b", null, GRADE_N[g] + " " + n2 + "개"), sure(el("button", "lb-gsell", t1), t1, "sell"), sure(el("button", "lb-gdis", t2), t2, "dis")); bulk.appendChild(r); });
       if (bulk.childNodes.length) out.push(bulk);
-      const bag = el("div", "lb-grid g5"); gear.filter((x) => !want || (D[x.k] || {}).slot === want).sort((a, b) => b.g - a.g).forEach((x) => { const c = el("button", "lb-gitem" + (Object.values(eq).includes(x.u) ? " eq" : "") + (lobGsel === x.u ? " on" : "")); c.type = "button"; c.style.borderColor = GRADE_C[x.g]; const i = el("img"); i.src = LBI("g-" + x.k); i.alt = ""; c.append(i, el("small", null, GRADE_N[x.g])); c.onclick = () => gTap(x.u); bag.appendChild(c); });
+      const bag = el("div", "lb-grid g5"); gear.filter((x) => !want || (D[x.k] || {}).slot === want).sort((a, b) => b.g - a.g).forEach((x) => { const c = el("button", "lb-gitem" + (Object.values(eq).includes(x.u) ? " eq" : "") + (lobGsel === x.u ? " on" : "")); c.type = "button"; c.style.borderColor = GRADE_C[x.g]; const i = el("img"); i.src = LBI("g-" + x.k); i.alt = ""; c.append(i, el("small", null, GRADE_N[x.g] + " " + (x.lv || 1))); c.onclick = () => gTap(x.u); bag.appendChild(c); });
       out.push(el("p", "lb-note", want ? "그 칸에 낄 장비 — 상점 상자에서 얻어요" : "장비 가방 " + gear.length + "/60 · 상점에서 방어구 · 장신구 상자로 얻어요"), bag);
       return out;
     }
@@ -5532,7 +5544,9 @@ body.game-full { overflow: hidden; }
       const go = el("button", "lb-buy", "주기"); go.type = "button"; go.disabled = !lobGiveTo || lobBusy; // 우편은 받는 사람 없이도
       go.onclick = () => { const g = { en: inp.en.value, gold: inp.gold.value, exp: inp.exp.value, ch: inp.ch.value, items: {}, wpn: [...wb.querySelectorAll("input:checked")].map((c) => c.value) }; Object.keys(ITEMS).forEach((k) => { if (inp["i_" + k].value) g.items[k] = inp["i_" + k].value; });
         lobBusy = true; call("gameGive", token, lobGiveTo, g).then((r) => { lobBusy = false; lobGiveRes = r; lobErr = ""; setStatus(r.nick + " 님에게 줬어요."); lobDraw(); }).catch((e) => { lobBusy = false; lobErr = errMsg(e); lobDraw(); }); };
-      out.push(go, el("small", "lb-note", "빼려면 앞에 − (예: −5)"));
+      const best = el("button", "lb-buy", "👑 최고 장비 한 벌 주기(전설 Lv 40 · 무기 다)"); best.type = "button"; best.disabled = !lobGiveTo || lobBusy; // 2026-10-28 "기준량은 제일 좋은 아이템 다 착용시켜 놔라, 1개씩 만드는 거 귀찮다"
+      best.onclick = () => { lobBusy = true; call("gameGive", token, lobGiveTo, { best: 1 }).then((r) => { lobBusy = false; lobGiveRes = r; lobErr = ""; setStatus(r.nick + " 님에게 최고 장비 한 벌을 끼워 줬어요."); if (me && lobGiveTo === me.id) call("gameProfile", token).then((p2) => { LP = p2; LP.got = Date.now(); lobDraw(); }).catch(() => {}); lobDraw(); }).catch((e) => { lobBusy = false; lobErr = errMsg(e); lobDraw(); }); };
+      out.push(go, best, el("small", "lb-note", "빼려면 앞에 − (예: −5)"));
       /* 모든 유저에게 우편 — 위 칸에 넣은 선물 그대로 */
       const tt = document.createElement("input"); tt.className = "lb-sel"; tt.placeholder = "우편 제목 (예: 출시 기념 선물)"; tt.maxLength = 40;
       const mall = el("button", "lb-buy", "📬 모든 유저에게 우편 보내기"); mall.type = "button";
