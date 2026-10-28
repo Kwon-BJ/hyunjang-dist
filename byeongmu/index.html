@@ -753,7 +753,7 @@ body.game-full { overflow: hidden; }
 .lb-gset { display: grid; gap: .6cqw; padding: 2cqw 2.6cqw; border-radius: 2.6cqw; background: #2a2a2a; color: #aaa; font-size: 3cqw; } .lb-gset b { color: #9fd0ff; font-size: 3.4cqw; } .lb-gset .on { color: #ffe36b; }
 .lb-gstats { background: linear-gradient(#fffaf0, #f3e2b8); border: .5cqw solid #e2c58a; } .lb-gstats div { border-right-color: #e8d4a6; } .lb-gstats small { color: #7a5a2a; } .lb-gstats b { color: #3a2a10; }
 .lb-gset { background: #fffaf0; border: .5cqw solid #e2c58a; color: #9a8a6a; } .lb-gset b { color: #2f5a1c; } .lb-gset .on { color: #b97a0a; } /* 검은 칸이 화풍과 안 맞던 것(2026-10-28) */
-.lb-grid.g5 { grid-template-columns: repeat(5, 1fr); } .lb-gitem { display: grid; justify-items: center; padding: 1cqw; border-radius: 2cqw; border: .6cqw solid #ccc; background: #fffaf0; } .lb-gitem img { width: 90%; } .lb-gitem small { font-size: 2.4cqw; color: #5a3a1a; white-space: nowrap; } .lb-gitem.eq { background: #fff2b8; } .lb-gitem.on { box-shadow: 0 0 0 .6cqw #3a2a10; }
+.lb-grid.g5 { grid-template-columns: repeat(5, 1fr); } .lb-gitem { display: grid; justify-items: center; padding: 1cqw; border-radius: 2cqw; border: .6cqw solid #ccc; background: #fffaf0; } .lb-gitem img { width: 90%; } .lb-gitem small { font-size: 2.4cqw; color: #5a3a1a; white-space: nowrap; } .lb-gitem.eq { background: #fff2b8; } .lb-gitem { position: relative; } .lb-eqE { position: absolute; right: .6cqw; top: .4cqw; min-width: 3.6cqw; padding: 0 .6cqw; border-radius: 1cqw; background: #2f8a2a; color: #fff; font: 800 2.5cqw/3.6cqw sans-serif; font-style: normal; text-align: center; box-shadow: 0 0 0 .3cqw #fff; } .lb-gitem.on { box-shadow: 0 0 0 .6cqw #3a2a10; }
 .lb-dcard { position: relative; display: grid; align-content: end; justify-items: start; height: 22cqw; padding: 2cqw 3cqw; border: .6cqw solid #e2c58a; border-radius: 3cqw; background: #333 center / cover; color: #fff; text-align: left; overflow: hidden; }
 .lb-dcard::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,.65), rgba(0,0,0,.05)); } .lb-dcard > * { position: relative; } .lb-dcard b { font-size: 4.6cqw; text-shadow: 0 1px 3px #000; white-space: nowrap; } .lb-dcard small { font-size: 3cqw; color: #e8f5d8; white-space: nowrap; }
 .lb-dcard i { position: absolute; right: 3cqw; top: 50%; transform: translateY(-50%); font-style: normal; padding: 1cqw 3cqw; border-radius: 999px; background: linear-gradient(#ffe36b, #f2a91c); color: #4a2a06; font-size: 3.4cqw; font-weight: 900; } .lb-dcard.lock { filter: grayscale(.85) brightness(.75); } .lb-dcard.tower { height: 26cqw; border-color: #ffb300; }
@@ -1464,7 +1464,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610280959";
+  const BUILD = "202610281014";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -5599,16 +5599,16 @@ body.game-full { overflow: hidden; }
         r2.append(bu, bm);
         /* 장착 단추 다시(2026-10-28 "장착 버튼 마음에 안 든다, 더블클릭하면 장착 해제") — 장착 · 팔기 · 분해 한 줄, 장비를 두 번 누르면 장착 / 해제 */
         const row = el("div", "lb-gact"), b1 = el("button", "lb-gequip" + (on ? " off" : ""), on ? "✖ 해제" : "✔ 장착"), b2 = el("button", "lb-gsell", "💰 " + SELL[sel.g].toLocaleString()), b3 = el("button", "lb-gdis", "🔧 분해"); b1.type = b2.type = b3.type = "button";
-        b1.onclick = () => lobAct("gameEquip", sel.u); b2.onclick = () => { lobGsel = ""; lobAct2("gameEquip", sel.u, "sell"); }; b3.onclick = () => { lobGsel = ""; lobAct2("gameEquip", sel.u, "dis"); }; b2.title = "팔기"; row.append(b1, b2, b3); det.append(r2, row, el("small", "lb-ghint", "💡 장비를 두 번 누르면 바로 " + (on ? "해제" : "장착"))); out.push(det); }
+        if (on) { b2.disabled = b3.disabled = true; b2.title = b3.title = "끼고 있는 장비는 먼저 해제"; } /* 낀 장비는 못 팔고 못 분해(2026-10-28 실제 — 구분이 안 가 낀 것까지 다 팔았음) */ b1.onclick = () => lobAct("gameEquip", sel.u); b2.onclick = () => { lobGsel = ""; lobAct2("gameEquip", sel.u, "sell"); }; b3.onclick = () => { lobGsel = ""; lobAct2("gameEquip", sel.u, "dis"); }; b2.title = "팔기"; row.append(b1, b2, b3); det.append(r2, row, el("small", "lb-ghint", "💡 장비를 두 번 누르면 바로 " + (on ? "해제" : "장착"))); out.push(det); }
       /* 부품(분해해서 모음 — 나중에 강화 재료) · 등급별 한꺼번에 팔기 · 분해(끼고 있는 것은 빼고, 두 번 눌러 확인) (2026-10-28) */
-      const mats = el("div", "lb-mats"); MATN.forEach((n2, g) => { const c = el("span"); c.style.borderColor = GRADE_C[g]; c.append(el("i", null, "🔩"), el("b", null, n2), el("em", null, String((P.mats || [])[g] || 0))); mats.appendChild(c); }); out.push(mats);
+      const mats = el("div", "lb-mats"); MATN.forEach((n2, g) => { const c = el("span"); c.style.borderColor = GRADE_C[g]; c.append(el("i", null, "🔩"), el("b", null, n2), el("em", null, String((P.mats || [])[g] || 0))); mats.appendChild(c); }); const tail = [mats];
       const onU = Object.values(eq), bulk = el("div", "lb-bulk"); [0, 1, 2, 3].forEach((g) => { const n2 = gear.filter((x) => x.g === g && !onU.includes(x.u)).length; if (!n2) return; const r = el("div"); r.style.borderColor = GRADE_C[g];
         const sure = (b, txt, act) => { b.type = "button"; b.onclick = () => { if (b.dataset.sure !== "1") { b.dataset.sure = "1"; b.textContent = "정말?"; setTimeout(() => { b.dataset.sure = ""; b.textContent = txt; }, 3000); return; } lobGsel = ""; lobAct2("gameGearBulk", act, g); }; return b; };
         const t1 = "모두 팔기 💰" + (SELL[g] * n2).toLocaleString(), t2 = "모두 분해";
         r.append(el("b", null, GRADE_N[g] + " " + n2 + "개"), sure(el("button", "lb-gsell", t1), t1, "sell"), sure(el("button", "lb-gdis", t2), t2, "dis")); bulk.appendChild(r); });
-      if (bulk.childNodes.length) out.push(bulk);
-      const bag = el("div", "lb-grid g5"); gear.filter((x) => !want || (D[x.k] || {}).slot === want).sort((a, b) => b.g - a.g).forEach((x) => { const c = el("button", "lb-gitem" + (Object.values(eq).includes(x.u) ? " eq" : "") + (lobGsel === x.u ? " on" : "")); c.type = "button"; c.style.borderColor = GRADE_C[x.g]; const i = el("img"); i.src = LBI("g-" + x.k); i.alt = ""; c.append(i, el("small", null, GRADE_N[x.g] + " " + (x.lv || 1))); c.onclick = () => gTap(x.u); bag.appendChild(c); });
-      out.push(el("p", "lb-note", want ? "그 칸에 낄 장비 ㆍ 상점 상자에서 얻어요" : "↔ 수달을 끌면 360도로 돌아가요 · 장비 가방 " + gear.length + "/60"), bag);
+      if (bulk.childNodes.length) tail.push(bulk);
+      const bag = el("div", "lb-grid g5"); gear.filter((x) => !want || (D[x.k] || {}).slot === want).sort((a, b) => (Object.values(eq).includes(b.u) ? 1 : 0) - (Object.values(eq).includes(a.u) ? 1 : 0) || b.g - a.g).forEach((x) => { const c = el("button", "lb-gitem" + (Object.values(eq).includes(x.u) ? " eq" : "") + (lobGsel === x.u ? " on" : "")); c.type = "button"; c.style.borderColor = GRADE_C[x.g]; const i = el("img"); i.src = LBI("g-" + x.k); i.alt = ""; c.append(i, el("small", null, GRADE_N[x.g] + " " + (x.lv || 1))); if (Object.values(eq).includes(x.u)) c.appendChild(el("em", "lb-eqE", "E")); c.onclick = () => gTap(x.u); bag.appendChild(c); }); /* 낀 장비는 오른쪽 위 E(2026-10-28 "어떤 걸 차고 있는지 모른다 ㆍ 탕탕특공대처럼") */
+      out.push(el("p", "lb-note", want ? "그 칸에 낄 장비 ㆍ 상점 상자에서 얻어요" : "↔ 수달을 끌면 360도로 돌아가요 · 장비 가방 " + gear.length + "/60"), bag, ...tail); /* 가방을 위로 · 낀 것(E)부터 · 모두 팔기는 맨 아래 */
       return out;
     }
     let gTapAt = { u: "", t: 0 };
