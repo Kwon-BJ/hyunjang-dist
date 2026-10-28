@@ -1461,7 +1461,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610280854";
+  const BUILD = "202610280900";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -5497,7 +5497,7 @@ body.game-full { overflow: hidden; }
       const nav = el("nav", "lb-nav lb-nav5"); [["shop", "상점"], ["gear", "장비"], ["go", "출전"], ["dun", "던전"], ["rank", "순위"]].forEach(([k, n]) => { const b = el("button", k === lobTab || (k === "gear" && lobTab === "skin") ? "on" : ""); b.type = "button"; b.setAttribute("aria-label", n); b.appendChild(el("span", null, n)); if (k === "gear" && lobTab === "wpn") b.className = "on"; b.onclick = () => { lobTab = k; lobErr = ""; lobSel = null; lobDraw(); if (k === "rank") loadRanks(); }; nav.appendChild(b); });
       if (P && !P.free) { const mb = lobBtn("lb-mailbtn" + (lobTab === "mail" ? " on" : ""), px(782, 100, 58, 58), () => { lobTab = lobTab === "mail" ? "go" : "mail"; lobErr = ""; lobDraw(); }, "우편함"); mb.innerHTML = `<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="12" width="36" height="25" rx="3" fill="#f9eccb" stroke="#5a3a14" stroke-width="2.5"/><path d="M7 14l17 13 17-13" fill="none" stroke="#5a3a14" stroke-width="2.5" stroke-linejoin="round"/><circle cx="24" cy="27" r="4.5" fill="#e8382c" stroke="#5a3a14" stroke-width="1.8"/></svg>`; /* 홈 왼쪽 · 글자 없이(2026-10-28) */ const n = (P.mail || []).length; if (n) mb.appendChild(el("b", "lb-badge", String(n))); art.appendChild(mb); }
       if (P && !P.free && lobTab !== "go") art.appendChild(chatBar());
-      art.appendChild(nav); if (shopRw && lobTab === "shop") art.appendChild(lobRewardBox()); else shopRw = null; L.replaceChildren(art); lobFit(art); if (P && P.op) { (matchMedia("(max-width: 760px)").matches ? art : L).appendChild(lobLive()); /* 휴대폰은 그림 안 「← 홈」 옆 */ if (Date.now() - liveAt > 5000) loadLive(); } // 운영자만 오른쪽에 지금 하는 사람
+      art.appendChild(nav); if (shopRw && lobTab === "shop") art.appendChild(lobRewardBox()); else shopRw = null; { const o = L.querySelector(".lb-page"), st = o && lobDraw.tab === lobTab ? o.scrollTop : 0; L.replaceChildren(art); lobDraw.tab = lobTab; const nw = st && art.querySelector(".lb-page"); if (nw) nw.scrollTop = st; } /* 같은 칸에서 다시 그릴 때 내려 둔 자리 그대로(2026-10-28 실제 시험 — 스킨 눈을 누르면 맨 위로 튐) */ lobFit(art); if (P && P.op) { (matchMedia("(max-width: 760px)").matches ? art : L).appendChild(lobLive()); /* 휴대폰은 그림 안 「← 홈」 옆 */ if (Date.now() - liveAt > 5000) loadLive(); } // 운영자만 오른쪽에 지금 하는 사람
     }
     function lobGo(P) {
       const MO = P.modeOpen || [1, 0, 0]; if (!MO[lobMode]) lobMode = 0; const M = lobMode, chM = (P.mch || [P.ch])[M] || 1, clr = (cc) => M ? (P.mcl || {})[M + ":" + cc] || 0 : (P.clears || {})[cc] || 0, mul = MODE_MUL[M];
