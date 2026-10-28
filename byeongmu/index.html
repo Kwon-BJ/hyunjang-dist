@@ -1426,7 +1426,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610280644";
+  const BUILD = "202610280720";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -4708,7 +4708,7 @@ body.game-full { overflow: hidden; }
     function bgPut(I, r, x, y, k, flip, ax, a) { const w = r[2] * k, h = r[3] * k; g.save(); g.translate(x, y); if (flip) g.scale(-1, 1); if (a != null) g.globalAlpha *= a; g.drawImage(I, r[0], r[1], r[2], r[3], -w * ax, -h, w, h); g.restore(); }
     /* 주인공 — 겨누는 쪽(왼 · 오)을 보고, 쏘면 평타 동작 · 스킬은 기술 동작 · 대시 · 맞기 · 쓰러짐 */
     function bgHero(cx, cy, flip, dead) {
-      const b = "m_ot2", rx = "m_ot3", // 캐릭터는 하나(수달, 부장님 설정 그림 · 시험/수달-자르기.cjs) — 무기만 바뀜 (2026-10-28)
+      const skA = s && s.skin && s.skin !== "basic" && BGF["m_ot2_" + s.skin] && bgImg("m_ot2_" + s.skin) ? "_" + s.skin : "", b = "m_ot2" + skA, rx = "m_ot3" + skA, // 스킨 한 벌 입은 동작 그림이 있으면 그것(2026-10-28 "게임에서도 착용한 상태로") // 캐릭터는 하나(수달, 부장님 설정 그림 · 시험/수달-자르기.cjs) — 무기만 바뀜 (2026-10-28)
         F = BGF[b], M = BGF[b + "_meta"]; if (!F || !M) return false;
       const I = bgImg(b); if (!I) return false; const R = BGF[rx], RM = BGF[rx + "_meta"], I3 = R && bgImg(rx);
       const C = Object.assign({}, M.counts, I3 ? RM.counts : {}), at = (k, q) => k + Math.min(C[k] - 1, Math.max(0, Math.floor(q * C[k])));
@@ -4726,7 +4726,7 @@ body.game-full { overflow: hidden; }
       if (ax == null) ax = 0.5;
       const k = 76 / M.tall, idle = /^idle/.test(nm) && !dead;
       g.save(); g.translate(cx, cy + 19); if (dead) g.rotate(-Math.PI / 2 * (flip < 0 ? -1 : 1)); else if (idle) g.scale(1, 1 + Math.sin((s ? s.t : 0) * 3) * 0.012); // 대기는 숨 쉬듯 · 쓰러지면 눕기
-      const SK = s && s.skin && s.skin !== "basic" ? s.skin : ""; if (SK === "ice") g.filter = "hue-rotate(185deg) saturate(.7) brightness(1.15)"; else if (SK === "ninja") g.filter = "brightness(.8) contrast(1.1)"; else if (SK === "king") { g.shadowColor = "rgba(255,210,60,.9)"; g.shadowBlur = 14; }
+      const SK = s && s.skin && s.skin !== "basic" && !skA ? s.skin : ""; if (SK === "ice") g.filter = "hue-rotate(185deg) saturate(.7) brightness(1.15)"; else if (SK === "ninja") g.filter = "brightness(.8) contrast(1.1)"; else if (SK === "king") { g.shadowColor = "rgba(255,210,60,.9)"; g.shadowBlur = 14; }
       bgPut(img, r, 0, 0, k, flip < 0, ax); g.filter = "none"; g.shadowBlur = 0;
       if (SK && !dead) { const hi = lbImg("hat-" + SK); if (hi) { const H0 = r[3] * k, W0 = r[2] * k, hx = (0.5 - ax) * W0 * (flip < 0 ? -1 : 1) + (flip < 0 ? -3 : 3), hw = { astro: 44, wizard: 42, chef: 32, king: 32, ice: 32 }[SK] || 36, hh = hw * hi.height / hi.width, top = -H0 + ({ astro: 0.30, wizard: -0.06, chef: 0.06 }[SK] != null ? { astro: 0.30, wizard: -0.06, chef: 0.06 }[SK] : 0.11) * H0; // 머리 위에 모자(2026-10-28 스킨)
         g.save(); if (flip < 0) { g.translate(hx, top); g.scale(-1, 1); g.drawImage(hi, -hw / 2, -hh / 2, hw, hh); } else g.drawImage(hi, hx - hw / 2, top - hh / 2, hw, hh); g.restore(); } }
@@ -5569,10 +5569,10 @@ body.game-full { overflow: hidden; }
          장비 입은 수달(ChatGPT 8방향) 위에 모자를 머리 자리(칸마다 그림에서 잰 머리 가운데 · 폭)에 맞춰 씌움, 왼쪽을 볼 땐 뒤집음. 끌어도 돌아감 */
       const sk = skin && skin !== "basic" && (preview || !P.skinHide) ? skin : "", wrap = el("div", "lb-o360w"), box = el("div", "lb-o360"), cv = document.createElement("canvas"); box.appendChild(cv); wrap.appendChild(box);
       const name = Object.keys(P.eq || {}).length ? "otter-360g" : "otter-360";
-      const draw = () => { const I = o360Img(name) || o360Img("otter-360"); if (!I || !cv.isConnected) return; const r = box.getBoundingClientRect(), d = Math.min(2, devicePixelRatio || 1), W2 = Math.max(1, Math.round(r.width * d)), H2 = Math.max(1, Math.round(r.height * d)); if (cv.width !== W2 || cv.height !== H2) { cv.width = W2; cv.height = H2; }
+      const draw = () => { const SI = sk && o360Img("otter-360-" + sk), I = SI || o360Img(name) || o360Img("otter-360"); if (!I || !cv.isConnected) return; /* 스킨 한 벌 입은 그림(ChatGPT 8방향)이 있으면 그것 */ const r = box.getBoundingClientRect(), d = Math.min(2, devicePixelRatio || 1), W2 = Math.max(1, Math.round(r.width * d)), H2 = Math.max(1, Math.round(r.height * d)); if (cv.width !== W2 || cv.height !== H2) { cv.width = W2; cv.height = H2; }
         const n = 8, cw = I.naturalWidth / n, ch = I.naturalHeight, i = ((Math.round(o360Ang / 45) % n) + n) % n, k = Math.min(W2 / cw, H2 / ch * 0.92), gx = cv.getContext("2d"); gx.clearRect(0, 0, W2, H2); gx.imageSmoothingQuality = "high"; const ox = (W2 - cw * k) / 2, oy = H2 - ch * k;
-        gx.filter = SKIN_FX[sk] || "none"; gx.drawImage(I, i * cw, 0, cw, ch, ox, oy, cw * k, ch * k); gx.filter = "none";
-        const HI = sk && o360Img("hat-" + sk); if (HI) { const M = o360Met(I, i, cw, ch), P2 = HAT_FIT[sk] || HAT_FIT._, w = M.hw * P2[0] * k, h = w * HI.naturalHeight / HI.naturalWidth, cx = ox + (M.hx + M.hw * P2[2] * (i >= 5 ? -1 : i >= 1 && i <= 3 ? 1 : 0)) * k, bot = oy + (M.top + M.h * P2[1]) * k;
+        gx.filter = SI ? "none" : SKIN_FX[sk] || "none"; gx.drawImage(I, i * cw, 0, cw, ch, ox, oy, cw * k, ch * k); gx.filter = "none";
+        const HI = sk && !SI && o360Img("hat-" + sk); if (HI) { const M = o360Met(I, i, cw, ch), P2 = HAT_FIT[sk] || HAT_FIT._, w = M.hw * P2[0] * k, h = w * HI.naturalHeight / HI.naturalWidth, cx = ox + (M.hx + M.hw * P2[2] * (i >= 5 ? -1 : i >= 1 && i <= 3 ? 1 : 0)) * k, bot = oy + (M.top + M.h * P2[1]) * k;
           gx.save(); gx.translate(cx, bot - h / 2); if (i >= 5) gx.scale(-1, 1); gx.drawImage(HI, -w / 2, -h / 2, w, h); gx.restore(); } };
       let drag = null; box.addEventListener("pointerdown", (e) => { drag = { x: e.clientX, a: o360Ang }; box.setPointerCapture(e.pointerId); box.classList.add("on"); });
       box.addEventListener("pointermove", (e) => { if (!drag) return; o360Ang = drag.a - (e.clientX - drag.x) * 1.1; draw(); });
