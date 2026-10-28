@@ -953,7 +953,10 @@ body.game-full { overflow: hidden; }
 .game-picks button.pk-atk { border-color: #6ab4ff; } .game-picks button.pk-evo, .game-picks button.pk-evo b, .game-picks button.pk-evo span { color: #5a3008; } .game-picks button.pk-evo { border-color: #f5b419; background: linear-gradient(#fff6cc, #ffd86a); box-shadow: 0 4px 0 #b97a0a, 0 0 18px rgba(245,180,25,.8); } .pk-new.evo { background: linear-gradient(#ff9a3a, #e0402c); } .game-picks button.pk-evo .gico { filter: drop-shadow(0 0 6px #ffd23a) saturate(1.3); } .game-picks button.pk-sup { border-color: #7fd36a; }
 .game-picks button.pk-atk b, .game-picks button.pk-sup b, .game-picks button.pk-evo b { font-size: 19px; color: #3a2a10; } .game-picks button.pk-atk span, .game-picks button.pk-sup span, .game-picks button.pk-evo span { color: #5a3a12; font-size: 14px; } /* ChatGPT 검토(2026-10-28) — 이름 18~20 · 설명 13~14 */
 .pk-type { margin-left: 8px; padding: 1px 7px; border-radius: 999px; font-style: normal; font-size: 11px; letter-spacing: 0; color: #fff; vertical-align: 2px; background: #3d82e6; } .pk-type.t-basic { background: #e07a1c; } .pk-type.t-all { background: #c0392b; } .pk-type.t-atk2 { background: #6a5acd; } .pk-type.t-hp { background: #d6336c; } .pk-type.t-body { background: #2f8f1c; } .pk-type.t-evo { background: #b97a0a; }
-.pk-st { font-style: normal; color: #f5b419; letter-spacing: 1px; font-size: 14px; } .pk-new { margin-left: 6px; padding: 0 6px; border-radius: 999px; background: #ff5a4a; color: #fff; font-style: normal; font-size: 11px; vertical-align: 2px; }
+.pk-st { grid-column: 2; display: flex; gap: 2px; font-style: normal; font-size: 17px; line-height: 1; } .pk-st u { text-decoration: none; color: #cdbb94; } .pk-st u.on { color: #f5b419; } .pk-st u.nw { color: #ff9f1a; animation: pkStar .7s ease-in-out infinite alternate; } @keyframes pkStar { from { opacity: .35; transform: scale(.85); } to { opacity: 1; transform: scale(1.15); } }
+.pk-pair { margin-left: auto; display: flex; gap: 4px; align-items: center; } .pk-pair::before { content: "⇄"; color: #b08a4a; font-size: 13px; } .pk-pair b { position: relative; width: 26px; height: 26px; border-radius: 6px; background: rgba(0,0,0,.12); opacity: .45; filter: grayscale(1); } .pk-pair b.on { opacity: 1; filter: none; box-shadow: 0 0 0 2px #ffd23a; } .pk-pair b img, .pk-pair b canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; padding: 0 !important; margin: 0 !important; }
+.pk-slots { width: min(100%, 320px); display: grid; grid-template-columns: minmax(0, 1fr); gap: 5px; margin: 4px 0 8px; } .pk-grp { min-width: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 3px; padding: 4px; border-radius: 10px; background: rgba(0,0,0,.35); border: 2px solid #6ab4ff; } .pk-grp.sup { border-color: #7fd35a; }
+.pk-slot { position: relative; aspect-ratio: 1; border-radius: 6px; background: rgba(255,255,255,.12); overflow: hidden; } .pk-slot.none { background: rgba(255,255,255,.05); } .pk-slot.evo { box-shadow: inset 0 0 0 2px #ffd23a; } .pk-slot img, .pk-slot canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; padding: 0 !important; margin: 0 !important; border-radius: 6px !important; display: block; } .pk-slot i { position: absolute; right: 2px; bottom: 1px; font: 700 12px/1 sans-serif; color: #fff; text-shadow: 0 0 2px #000, 0 0 2px #000; font-style: normal; } .pk-new { margin-left: 6px; padding: 0 6px; border-radius: 999px; background: #ff5a4a; color: #fff; font-style: normal; font-size: 11px; vertical-align: 2px; }
 .gskill img.sk-pic { width: 34px; height: 34px; border-radius: 8px; margin: 0 auto 1px; }
 .game-picks button { display: grid; grid-template-columns: 46px 1fr; column-gap: 12px; row-gap: 2px; align-items: center; text-align: left; padding: 12px 14px; border: 1px solid var(--gold-lo); border-radius: 6px; background: var(--panel-hi); color: var(--ink); cursor: pointer; font: inherit; }
 .game-picks button:hover, .game-picks button:focus-visible { border-color: var(--gold); }
@@ -1461,7 +1464,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610280900";
+  const BUILD = "202610280959";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -3805,7 +3808,7 @@ body.game-full { overflow: hidden; }
     ];
     /* 진화 — 무기 Lv 5 + 짝 보조를 가지면 레벨업 카드에 「진화」 가 나옴(한 번). 무기는 레벨 +3 만큼 세지고, 구슬 · 고리는 +3 */
     const EVO = [["kunai", "spd", "그림자 쿠나이"], ["orbs", "max", "물방울 결계"], ["homing", "cool", "쌍둥이 드론"], ["fire", "dmg", "용암 웅덩이"], ["thunder", "rate", "천둥 폭풍"], ["aura", "magnet", "소용돌이 고리"], ["mj_star", "spd", "회오리 부메랑"], ["je_storm", "dmg", "거대 드릴"]];
-    EVO.forEach(([w, p, n]) => UPS.push({ k: "evo_" + w, evo: w, n, max: 1, d: UPS.find((u) => u.k === w).n + " 별 5개 → 궁극기", ok: () => false, /* 별 5개가 되면 저절로(카드로는 안 나옴) */
+    EVO.forEach(([w, p, n]) => UPS.push({ k: "evo_" + w, evo: w, n, max: 1, pair: p, d: UPS.find((u) => u.k === w).n + " 별 5개 + " + UPS.find((u) => u.k === p).n + " → 진화 ㆍ 훨씬 세져요", ok: () => (s.up[w] || 0) >= 5 && (s.up[p] || 0) > 0, /* 탕탕특공대처럼 무기 별 5개 + 짝 보조를 가지면 카드로(2026-10-28) */
       f: () => { s.evo[w] = 1; if (w === "orbs") s.orbs += 3; if (w === "aura") s.aura += 3; } }));
     const UP_ATK = (u) => u.skill || u.atk, UP_MAX_ATK = 6; // 공격 스킬은 한 판에 6가지까지
     let speed = 1;
@@ -3934,21 +3937,29 @@ body.game-full { overflow: hidden; }
       const box = el("div", "game-picks");
       picks.forEach((u) => {
         const have = s.up[u.k] || 0, b = el("button"); b.type = "button";
-        const tt = el("b", null, u.n), st = el("i", "pk-st", "★".repeat(have + 1) + "☆".repeat(Math.max(0, u.max - have - 1))); if (u.evo) { tt.appendChild(el("em", "pk-new evo", "진화")); st.textContent = "★"; } else if (!have) tt.appendChild(el("em", "pk-new", "NEW"));
-        b.classList.add(u.evo ? "pk-evo" : UP_ATK(u) ? "pk-atk" : "pk-sup"); const ty = u.evo ? ["진화", "evo"] : UP_ATK(u) ? ["자동 무기", "atk"] : u.k === "rate" ? ["평타 강화", "basic"] : u.k === "dmg" ? ["모든 공격", "all"] : u.k === "cool" ? ["무기 보조", "atk2"] : u.k === "max" ? ["체력", "hp"] : ["몸 강화", "body"]; st.appendChild(el("em", "pk-type t-" + ty[1], ty[0])); // 2026-10-28 "스킬인지 평타 기반인지 알 수가 없어"
-        b.append(icon(u.evo || u.k), tt, st, el("span", null, have && u.up ? u.up : u.d)); // 탕탕특공대처럼 — 별로 레벨 · 새 것은 NEW
+        const tt = el("b", null, u.n), st = el("i", "pk-st"); /* 별 5칸을 카드 아래에 ㆍ 이번에 오를 별은 깜빡(2026-10-28 탕탕특공대 레벨업 화면처럼) */
+        for (let i = 0; i < (u.evo ? 1 : u.max); i++) st.appendChild(el("u", i < have ? "on" : i === have ? "nw" : "", "★")); if (u.evo) { tt.appendChild(el("em", "pk-new evo", "진화")); } else if (!have) tt.appendChild(el("em", "pk-new", "NEW"));
+        b.classList.add(u.evo ? "pk-evo" : UP_ATK(u) ? "pk-atk" : "pk-sup"); const ty = u.evo ? ["진화", "evo"] : UP_ATK(u) ? ["자동 무기", "atk"] : u.k === "rate" ? ["평타 강화", "basic"] : u.k === "dmg" ? ["모든 공격", "all"] : u.k === "cool" ? ["무기 보조", "atk2"] : u.k === "max" ? ["체력", "hp"] : ["몸 강화", "body"]; if (!u.evo) tt.appendChild(el("em", "pk-type t-" + ty[1], ty[0])); // 2026-10-28 "스킬인지 평타 기반인지 알 수가 없어"
+        { const E = u.evo ? [] : UPS.filter((x) => x.evo && !s.up[x.k] && (x.evo === u.k || x.pair === u.k)); if (E.length) { const pr = el("span", "pk-pair"); E.slice(0, 2).forEach((x) => { const o = x.evo === u.k ? x.pair : x.evo, c = el("b", s.up[o] ? "on" : ""); c.appendChild(icon(o)); pr.appendChild(c); }); st.appendChild(pr); } } /* 진화 짝 — 가진 짝은 밝게(탕탕특공대처럼) */
+        b.append(icon(u.evo || u.k), tt, el("span", null, have && u.up ? u.up : u.d), st); // 탕탕특공대처럼 — 별로 레벨 · 새 것은 NEW
         b.onclick = () => take(u); box.appendChild(b);
       });
       /* "렙업하고 스킬 고를 때 몬스터가 때려서 자꾸 죽는다 ㆍ 일시정지로" (2026-10-26). 고르는 동안은 원래 멈춰 있었다 —
          죽는 것은 고른 직후 둘러싸여서 · 끌던 손가락을 떼며 잘못 눌려서. 그래서 「일시정지」 라고 보이고, 0.5초는 못 누르게, 고른 뒤 1.5초 보호막 */
       const bs = box.querySelectorAll("button"); bs.forEach((b) => { b.disabled = true; });
       setTimeout(() => bs.forEach((b) => { b.disabled = false; }), 500);
-      panel([el("h3", null, title || "Lv " + s.lv + " ㆍ 하나 고르세요"), el("p", "best", "⏸ 멈춤 ㆍ 고르면 1.5초 보호막과 함께 다시 시작"), box]);
+      panel([el("h3", null, title || "Lv " + s.lv + " ㆍ 하나 고르세요"), pkSlots(), el("p", "best", "⏸ 멈춤 ㆍ 고르면 1.5초 보호막과 함께 다시 시작"), box]);
+    }
+    /* 가진 스킬 칸 — 위에 무기 6칸 · 보조 6칸(2026-10-28 "탕탕특공대처럼 레벨업 할 때마다 저런 식으로"). 빈 칸은 흐리게, 진화한 무기는 금테 */
+    function pkSlots() {
+      const w = el("div", "pk-slots"), evoOf = {}; UPS.forEach((u) => { if (u.evo && s.up[u.k]) evoOf[u.evo] = 1; });
+      const grp = (list, cls) => { const g = el("div", "pk-grp " + cls); for (let i = 0; i < 6; i++) { const u = list[i], c = el("span", "pk-slot" + (u ? "" : " none") + (u && evoOf[u.k] ? " evo" : "")); if (u) { c.appendChild(icon(u.k)); c.appendChild(el("i", null, evoOf[u.k] ? "★" : String(s.up[u.k]))); } g.appendChild(c); } return g; };
+      w.append(grp(UPS.filter((u) => !u.evo && s.up[u.k] && UP_ATK(u)), "atk"), grp(UPS.filter((u) => !u.evo && s.up[u.k] && !UP_ATK(u)), "sup")); return w;
     }
     function take(u) {
       if (s.pickQ > 0) s.pickQ--;
       s.up[u.k] = (s.up[u.k] || 0) + 1;
-      if (UP_ATK(u) && !u.evo && s.up[u.k] >= u.max) { const E = UPS.find((x) => x.evo === u.k); if (E && !s.up[E.k]) { s.up[E.k] = 1; E.f(); msg("★ 궁극기 「" + E.n + "」 완성!"); s.fx.push({ x: s.x, y: s.y, r: 90, c: "#ffd23a", life: 0.6 }, { spr: "levelup", x: s.x, y: s.y + 22, size: 200, base: true, add: true, life: 1, dur: 1 }); SND.clear(); } } // 별 5개면 바로 궁극기
+      if (u.evo) { msg("★ 진화 「" + u.n + "」 완성!"); s.fx.push({ x: s.x, y: s.y, r: 90, c: "#ffd23a", life: 0.6 }, { spr: "levelup", x: s.x, y: s.y + 22, size: 200, base: true, add: true, life: 1, dur: 1 }); SND.clear(); } // 진화 카드를 고르면(무기 별 5개 + 짝 보조)
       if (u.f) u.f();
       if (u.skill && s.up[u.k] === 1) { s.skills.push(u.k); s.cd[u.k] = 0; }
       s.ward = Math.max(s.ward, 1.5);
@@ -4133,8 +4144,8 @@ body.game-full { overflow: hidden; }
       raf = 0;
       if (!running) return;
       const dt = Math.min(0.05, Math.max(0, (ts - last) / 1000)); last = ts;
-      for (let i = 0; i < speed && running; i++) step(dt); // 빠르기 1 · 2 · 3배 — 게임 시간을 그만큼 더 돌린다(점수는 단계 · 잡은 수라 그대로 공정)
-      draw(); hud(); snapSend(ts); // 운영자가 보는 중이면 상태 올리기
+      try { for (let i = 0; i < speed && running; i++) step(dt); } catch (e) { if (!loop.err) { loop.err = 1; console.error(e); } } // 빠르기 1 · 2 · 3배 — 게임 시간을 그만큼 더 돌린다(점수는 단계 · 잡은 수라 그대로 공정)
+      try { draw(); hud(); snapSend(ts); } catch (e) { if (!loop.err) { loop.err = 1; console.error(e); } } // 운영자가 보는 중이면 상태 올리기 · 그림 하나가 틀려도 게임은 안 멈추게(2026-10-28 실제 — 진화 때 멈춤)
       if (running) raf = requestAnimationFrame(loop);
     }
     function dir() {
@@ -5144,10 +5155,10 @@ body.game-full { overflow: hidden; }
             for (let i = 0; i < 6; i++) { const r = i * Math.PI / 3 + 0.3; g.moveTo(bx + Math.cos(r) * k * 0.35, by + Math.sin(r) * k * 0.35); g.lineTo(bx + Math.cos(r) * k, by + Math.sin(r) * k); }
             g.stroke(); g.lineWidth = 1;
           } else if (x.boom) {
-            const bx = x.x + ox, by = x.y + oy, r = x.r * (1 + (0.3 - x.life) * 3), gr = g.createRadialGradient(bx, by, 0, bx, by, r);
+            const bx = x.x + ox, by = x.y + oy, r = Math.max(1, x.r * (1 + (0.3 - x.life) * 3)), gr = g.createRadialGradient(bx, by, 0, bx, by, r);
             gr.addColorStop(0, "rgba(255,243,196,.95)"); gr.addColorStop(0.45, "rgba(255,138,42,.8)"); gr.addColorStop(1, "rgba(196,40,44,0)");
             g.fillStyle = gr; g.beginPath(); g.arc(bx, by, r, 0, Math.PI * 2); g.fill();
-          } else { g.beginPath(); g.arc(x.x + ox, x.y + oy, x.r * (1 + (0.3 - x.life) * 4), 0, Math.PI * 2); g.strokeStyle = x.c; g.stroke(); }
+          } else { g.beginPath(); g.arc(x.x + ox, x.y + oy, Math.max(1, x.r * (1 + (0.3 - Math.min(0.3, x.life)) * 4)), 0, Math.PI * 2); /* 수명 0.3 넘는 고리(진화 0.6)는 음수 반지름 → 그리기가 죽어 게임이 멈췄음 */ g.strokeStyle = x.c; g.stroke(); }
           g.globalAlpha = 1;
         });
         s.foes.forEach((f) => {
