@@ -1464,7 +1464,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610281014";
+  const BUILD = "202610281017";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -5447,14 +5447,14 @@ body.game-full { overflow: hidden; }
     const WPN_SOON = [["물대포", "w-water"], ["빙결 총", "w-ice2"], ["유도 미사일", "w-missile2"]]; // 자물쇠 없는 그림은 제미나이(시험/무기아이콘-자르기.cjs)
     const ITEMS = { exp: { n: "경험치 부스트", pic: "i-exp", d: "5판 동안 경험치 1.5배" }, gboost: { n: "골드 부스트", pic: "i-gboost", d: "5판 동안 골드 1.5배" }, luck: { n: "행운 부적", pic: "i-luck", d: "다음 장비 상자 3번 ㆍ 희귀 이상 확정" } }; // 2026-10-28 회복약 · 물약 · 부활권 없앰
     const LBI = (n) => "img/lb/" + n + ".webp?v=" + BUILD;
-    let LP = null, lobTab = "go", lobCh = 1, lobErr = "", lobBusy = false, lobT = 0, lobSel = null, lobRankTab = "all";
+    let LP = null, lobTab = "go", lobCh = 0, lobFront = 0, lobErr = "", lobBusy = false, lobT = 0, lobSel = null, lobRankTab = "all";
     const lobFree = () => !(me && token); // 손님 · 관리자 암호 — 저장 없이
     const px = (x, y, w, h) => "left:" + (x / 9.41) + "%;top:" + (y / 16.72) + "%;width:" + (w / 9.41) + "%;height:" + (h / 16.72) + "%"; // 로비 그림 941×1672 자리 → %
     /* 글자가 칸을 넘치면 글씨를 줄여 한 줄에(2026-10-28 "10장 · 큰 골드 · 무한의 탑 · 최고 1층 이 넘친다") */
     function lobFit(root) { requestAnimationFrame(() => root.querySelectorAll(".lb-nick, .lb-gold, #lbEn b, .lb-chn, .lb-chname, .lb-chsub, .lb-inf, .lb-wtag b, .lb-rw, .lb-msg, .lb-card b, .lb-card small, .lb-lv b, .lb-tr b, .lb-done").forEach((e) => { const box = e.parentElement && e.tagName === "B" && /lbEn/.test(e.parentElement.id || "") ? e.parentElement : e; let f = parseFloat(getComputedStyle(e).fontSize), n = 0; while (n++ < 30 && f > 6 && (box.scrollWidth > box.clientWidth + 1 || e.scrollWidth > e.clientWidth + 1)) { f *= 0.92; e.style.setProperty("font-size", f + "px", "important"); } })); }
     function lobLoad() {
       if (lobFree()) { LP = { free: true, en: 0, max: 30, gold: 0, ch: 10, chMax: 10, wpn: (LP && LP.wpn) || "bow", own: Object.keys(WPN), exp: 0, lv: { lv: 1, cur: 0, need: 100 }, items: {}, boost: 0, shop: { weapons: {}, items: {}, en: { n: 10, gold: 300 }, enLeft: 0 }, clears: {} }; lobDraw(); return; }
-      call("gameProfile", token).then((r) => { if (!r) throw new Error("내 정보를 못 불러왔어요"); LP = r; LP.got = Date.now(); if (!lobCh || lobCh > LP.ch) lobCh = LP.ch; lobDraw(); }).catch((e) => { lobErr = errMsg(e); lobDraw(); });
+      call("gameProfile", token).then((r) => { if (!r) throw new Error("내 정보를 못 불러왔어요"); LP = r; LP.got = Date.now(); if (lobCh > LP.ch) lobCh = LP.ch; lobDraw(); }).catch((e) => { lobErr = errMsg(e); lobDraw(); });
     }
     /* 로딩 — 처음 들어올 때 로비 · 탭 · 캐릭터 그림을 받는 동안(진짜 받은 만큼 막대가 참) */
     let lobLoaded = false;
@@ -5512,6 +5512,8 @@ body.game-full { overflow: hidden; }
     }
     function lobGo(P) {
       const MO = P.modeOpen || [1, 0, 0]; if (!MO[lobMode]) lobMode = 0; const M = lobMode, chM = (P.mch || [P.ch])[M] || 1, clr = (cc) => M ? (P.mcl || {})[M + ":" + cc] || 0 : (P.clears || {})[cc] || 0, mul = MODE_MUL[M];
+      /* 도전할 장을 저절로(2026-10-28 "1장을 깨면 2장 차례인데 새로고침하면 1장이 나온다") — 처음 열면 · 깨서 다음 장이 열리면 그 장으로 */
+      if (!lobCh || (lobFront && lobCh === lobFront && chM > lobFront)) lobCh = chM; lobFront = chM;
       const c = Math.max(1, Math.min(CH_N, lobCh)), open = c <= chM, need = !P.free && P.en < (P.cost || 5), first = !clr(c), out = [];
       const t = (cls, txt, css) => { const e = el("span", cls, txt); e.style.cssText = css; out.push(e); return e; };
       t("lb-chn", c + "장", px(410, 218, 108, 50)); t("lb-chname", CHAPS[c - 1], px(300, 286, 340, 94)); t("lb-chsub", CHSUB[c - 1], px(312, 396, 322, 41)); { const md = lobBtn("lb-diff d" + [1, 2, 4, 5][M] + (MODE_N[M].length > 3 ? " long" : ""), px(772, 212, 96, 40), () => { let n = M; do { n = (n + 1) % MODE_N.length; } while (!MO[n] && n !== M); if (n === M) { lobErr = "30장을 깨면 「보통」 이 열려요"; lobDraw(); return; } lobMode = n; lobErr = ""; lobCh = Math.min(lobCh, (P.mch || [P.ch])[n] || 1); lobDraw(); }, "난이도 바꾸기"); md.textContent = MODE_N[M]; out.push(md); } /* 그림의 「일반」 자리 — 난이도(누르면 바뀜, 2026-10-28 "30장 깨면 쉬움 > 어려움 > 매우 어려움") */
