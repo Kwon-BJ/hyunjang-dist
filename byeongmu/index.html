@@ -695,7 +695,18 @@ body.game-full { overflow: hidden; }
 .lb-home:not(.lb-big), .lb-mailbtn { display: grid !important; place-items: center; padding: 0 !important; border-radius: 50% !important; border: .55cqw solid #e8c46a !important; background: radial-gradient(circle at 50% 35%, #4a7f2c, #1d3a10 75%) !important; box-shadow: 0 .6cqw 0 #13240a, 0 .8cqw 1.6cqw rgba(0,0,0,.35); }
 .lb-home:not(.lb-big) { width: 6.2cqw; height: 6.2cqw; right: 2.6%; top: 10.6cqw; } .lb-home:not(.lb-big) svg, .lb-mailbtn svg { width: 4.6cqw; height: 4.6cqw; flex: none; filter: drop-shadow(0 .3cqw 0 rgba(0,0,0,.35)); }
 .lb-home:not(.lb-big):active, .lb-mailbtn:active { transform: translateY(.5cqw); box-shadow: 0 .1cqw 0 #13240a; } .lb-mailbtn.on { background: radial-gradient(circle at 50% 35%, #ffd86a, #b97a0a 75%) !important; }
-.lb-mailbtn { font-size: 4.4cqw !important; padding: 0; } .lb-mailbtn .lb-badge { position: absolute; right: -1.8cqw; top: -1.8cqw; min-width: 3.6cqw; height: 3.6cqw; font-size: 2.4cqw; } .lb-home { right: 2.5%; top: 6.4%; padding: .6cqw 2.4cqw; border-radius: 999px; border: .3cqw solid #355a22; background: rgba(20,36,12,.85); color: #fff; font-size: 2.8cqw !important; }
+.lb-mailbtn { font-size: 4.4cqw !important; padding: 0; } .lb-mailbtn /* 문파 채팅(2026-10-28) */
+.lb-chatbar { display: flex; align-items: center; gap: 1.4cqw; padding: 0 2cqw; border-radius: 999px; border: .45cqw solid #e8c46a; background: linear-gradient(#5a4026, #3e2a16); color: #f6e6c2; font-size: 2.9cqw !important; box-shadow: 0 .5cqw 0 #2a1a0a; z-index: 3; }
+.lb-chatbar span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; } .lb-chatbar b { min-width: 3.6cqw; padding: 0 .8cqw; border-radius: 999px; background: #e8382c; color: #fff; font-size: 2.4cqw; } .lb-chatbar b[hidden] { display: none; }
+.chat-win { position: absolute; left: 3%; right: 3%; bottom: 12%; height: 46%; z-index: 40; display: grid; grid-template-rows: auto 1fr auto; border-radius: 3cqw; border: .6cqw solid #c79a4a; background: linear-gradient(#f9eccb, #efdcab); box-shadow: 0 0 0 .5cqw #5a3a14, 0 2cqw 5cqw rgba(0,0,0,.5); overflow: hidden; font-family: "Jua", "Noto Sans KR", sans-serif; }
+.chat-win.top { left: 10px; right: 10px; top: calc(118px + env(safe-area-inset-top, 0px)); bottom: auto; height: 210px; border-radius: 14px; border: 2px solid #e8c46a; background: rgba(19,36,10,.82); box-shadow: 0 4px 14px rgba(0,0,0,.4); }
+.ch-hd { display: flex; align-items: center; justify-content: space-between; padding: 6px 12px; background: rgba(47,90,28,.95); color: #ffe36b; } .ch-hd button { border: 0; background: none; color: #fff; font-size: 18px; cursor: pointer; }
+.ch-list { overflow-y: auto; padding: 6px 10px; display: grid; align-content: start; gap: 4px; font-size: 14px; color: #3a2a10; } .chat-win.top .ch-list { color: #fff; font-size: 13px; }
+.ch-row b { margin-right: 6px; color: #2f5a1c; } .chat-win.top .ch-row b { color: #ffe36b; } .ch-row.me b { color: #b97a0a; } .ch-row span { overflow-wrap: anywhere; }
+.ch-in { display: grid; grid-template-columns: 1fr auto; gap: 6px; padding: 6px; background: rgba(0,0,0,.08); } .ch-in input { min-width: 0; padding: 8px 10px; border-radius: 10px; border: 1px solid #c79a4a; background: #fffaf0; color: #3a2a10; font-size: 15px; } .ch-in button { padding: 0 14px; border: 0; border-radius: 10px; background: linear-gradient(#ffe36b, #f2a91c); color: #4a2a06; font: inherit; }
+.game-hud .gchat { position: absolute; right: 10px; top: calc(118px + env(safe-area-inset-top, 0px)); width: 38px; height: 38px; border-radius: 50%; border: 2px solid #e8c46a; background: rgba(19,36,10,.7); font-size: 18px; pointer-events: auto; cursor: pointer; } .game-hud .gchat b { position: absolute; right: -4px; top: -4px; min-width: 16px; height: 16px; padding: 0 3px; border-radius: 8px; background: #e8382c; color: #fff; font: 700 10px/16px sans-serif; } .game-hud .gchat b[hidden] { display: none; }
+.gsklist { top: calc(162px + env(safe-area-inset-top, 0px)) !important; }
+.lb-badge { position: absolute; right: -1.8cqw; top: -1.8cqw; min-width: 3.6cqw; height: 3.6cqw; font-size: 2.4cqw; } .lb-home { right: 2.5%; top: 6.4%; padding: .6cqw 2.4cqw; border-radius: 999px; border: .3cqw solid #355a22; background: rgba(20,36,12,.85); color: #fff; font-size: 2.8cqw !important; }
 .lb-chn { display: flex; align-items: center; justify-content: center; font-size: 6.4cqw; color: #fff; -webkit-text-stroke: .8cqw #1f3d10; paint-order: stroke fill; }
 .lb-chname { display: flex; align-items: center; justify-content: center; font-size: 10.5cqw; color: #fff; -webkit-text-stroke: 1.4cqw #4a2a10; paint-order: stroke fill; white-space: nowrap; }
 .lb-chsub { display: flex; align-items: center; justify-content: center; font-size: 3.4cqw; color: #5a3a1a; white-space: nowrap; }
@@ -712,7 +723,7 @@ body.game-full { overflow: hidden; }
 .lb-rw { display: flex; align-items: center; justify-content: center; font-size: 4.2cqw; color: #2e4a1e; }
 .lb-go { border: 0; border-radius: 9cqw; background: transparent; } .lb-go:active { background: rgba(255,255,255,.18); } .lb-go:disabled { background: rgba(0,0,0,.45); cursor: default; }
 .lb-inf { border-radius: 999px; border: .4cqw solid #e8c46a; background: linear-gradient(#3b6b22, #224312); color: #fff; font-size: 3.2cqw !important; text-shadow: 0 1px 1px #000; } .lb-inf:disabled { opacity: .5; }
-.lb-msg { display: flex; align-items: center; justify-content: center; text-align: center; font-size: 2.8cqw; color: #fff; text-shadow: 0 1px 2px #000; } .lb-msg.bad { color: #ffd2c8; }
+.lb-msg { display: flex; align-items: center; justify-content: center; text-align: center; font-size: 2.8cqw; color: #fff; text-shadow: 0 1px 2px #000, 0 0 4px #000; pointer-events: none; } .lb-msg:empty { display: none; } .lb-msg.bad { color: #ffd2c8; }
 .lb-nav { left: 0; right: 0; top: 88.6%; bottom: 0; display: grid; grid-template-columns: 25% 25% 24.5% 25.5%; }
 .lb-nav.lb-nav5 { top: auto; bottom: .4%; left: 0; right: 0; height: 11%; padding: 0 4.5% 0 4.5%; gap: 0; grid-template-columns: repeat(5, 1fr); background: url(img/lb/navbar.webp) center / 100% 100% no-repeat; } /* 부장님 원본 아래 띠로 다시 짬(시험/아래칸-합치기.cjs) */ /* 제미나이 5칸 막대(2026-10-28) */
 .lb-nav5 button span { display: block !important; position: absolute; left: 0; right: 0; bottom: 15%; font-size: 3.6cqw; font-weight: 900; color: #fff; text-shadow: 0 0 .5cqw #000, 0 .3cqw .4cqw #000; }
@@ -816,7 +827,7 @@ body.game-full { overflow: hidden; }
 .lb-ghat { position: absolute; left: 50%; top: -9%; width: 60%; transform: translateX(-50%); pointer-events: none; filter: drop-shadow(0 .6cqw .4cqw rgba(0,0,0,.3)); }
 .lb-ghat.h-astro { top: -4%; width: 74%; } .lb-ghat.h-wizard { top: -24%; width: 62%; } .lb-ghat.h-chef { top: -17%; width: 52%; } .lb-ghat.h-king, .lb-ghat.h-ice { top: -14%; width: 54%; } .lb-ghat.h-santa { top: -12%; }
 .lb-gotter.sk-ice { filter: hue-rotate(185deg) saturate(.7) brightness(1.15); } .lb-gotter.sk-ice .lb-ghat { filter: hue-rotate(-185deg) saturate(1.4) brightness(.87); } .lb-gotter.sk-king { filter: drop-shadow(0 0 2cqw rgba(255,210,60,.9)); } .lb-gotter.sk-ninja { filter: brightness(.8) contrast(1.1); }
-.lb-skinpv { position: relative; height: 52cqw; border-radius: 3cqw; background: radial-gradient(circle at 50% 70%, #fff6d8, #e8d3a0); border: .5cqw solid #e2c58a; } .lb-skinpv .lb-o360w { bottom: 1cqw; }
+.lb-skinpv { position: relative; height: 60cqw; overflow: visible; border-radius: 3cqw; background: radial-gradient(circle at 50% 70%, #fff6d8, #e8d3a0); border: .5cqw solid #e2c58a; } .lb-skinpv .lb-o360w { bottom: 1cqw; height: 57cqw; } .lb-skinpv .lb-o360 { height: 49cqw; }
 .lb-skininfo { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 1.4cqw; padding: 2cqw; border-radius: 3cqw; border: .6cqw solid #9aa3ad; background: #fffaf0; } .lb-skininfo b { font-size: 4.6cqw; color: #3a2a10; } .lb-skininfo em { font-style: normal; padding: .4cqw 2cqw; border-radius: 999px; color: #fff; font-size: 3cqw; } .lb-rtabs.sk3 { grid-template-columns: repeat(3, 1fr); } .lb-skininfo .lb-buy { grid-column: 1 / -1; } .lb-skhide { grid-column: 1 / -1; padding: 1.6cqw; border: .4cqw solid #8a6a3a; border-radius: 2.4cqw; background: #fffaf0; color: #4a3210; font-size: 3.2cqw !important; } .lb-skhide.on { background: #4a3210; color: #fff; } .lb-skininfo .lb-skst { grid-column: 1 / -1; font-size: 3cqw; color: #2f5a1c; }
 .lb-card.skin img { object-fit: contain; background: radial-gradient(#fff, #f2e2bc); }
 .lb-awk { grid-column: 1 / -1; display: grid; grid-template-columns: auto auto 1fr auto; align-items: center; gap: 1.6cqw; margin-top: 1.4cqw; padding: 1.4cqw 2cqw; border-radius: 2.4cqw; background: #f6e2b0; } .lb-awk b { font-size: 3.6cqw; color: #4a2a06; white-space: nowrap; } .lb-awk small { font-size: 2.6cqw; color: #6a4a1e; } .lb-awk .lb-gmerge { padding: 1.2cqw 2.4cqw; font-size: 3.2cqw !important; white-space: nowrap; }
@@ -836,6 +847,17 @@ body.game-full { overflow: hidden; }
 .lb-mats i { font-style: normal; font-size: 4cqw; } .lb-mats b { font-size: 2.4cqw; white-space: nowrap; } .lb-mats em { font-style: normal; font-size: 3.6cqw; color: #2f5a1c; }
 .lb-bulk { display: grid; gap: 1.4cqw; } .lb-bulk > div { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 1.4cqw; padding: 1.4cqw 2cqw; border-radius: 2.4cqw; border: .5cqw solid #9aa3ad; background: #fffaf0; }
 .lb-bulk b { font-size: 3.4cqw; color: #3a2a10; white-space: nowrap; }
+/* 문파 채팅(2026-10-28) */
+.lb-chatbar { display: flex; align-items: center; gap: 1.4cqw; padding: 0 2cqw; border-radius: 999px; border: .45cqw solid #e8c46a; background: linear-gradient(#5a4026, #3e2a16); color: #f6e6c2; font-size: 2.9cqw !important; box-shadow: 0 .5cqw 0 #2a1a0a; z-index: 3; }
+.lb-chatbar span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; } .lb-chatbar b { min-width: 3.6cqw; padding: 0 .8cqw; border-radius: 999px; background: #e8382c; color: #fff; font-size: 2.4cqw; } .lb-chatbar b[hidden] { display: none; }
+.chat-win { position: absolute; left: 3%; right: 3%; bottom: 12%; height: 46%; z-index: 40; display: grid; grid-template-rows: auto 1fr auto; border-radius: 3cqw; border: .6cqw solid #c79a4a; background: linear-gradient(#f9eccb, #efdcab); box-shadow: 0 0 0 .5cqw #5a3a14, 0 2cqw 5cqw rgba(0,0,0,.5); overflow: hidden; font-family: "Jua", "Noto Sans KR", sans-serif; }
+.chat-win.top { left: 10px; right: 10px; top: calc(118px + env(safe-area-inset-top, 0px)); bottom: auto; height: 210px; border-radius: 14px; border: 2px solid #e8c46a; background: rgba(19,36,10,.82); box-shadow: 0 4px 14px rgba(0,0,0,.4); }
+.ch-hd { display: flex; align-items: center; justify-content: space-between; padding: 6px 12px; background: rgba(47,90,28,.95); color: #ffe36b; } .ch-hd button { border: 0; background: none; color: #fff; font-size: 18px; cursor: pointer; }
+.ch-list { overflow-y: auto; padding: 6px 10px; display: grid; align-content: start; gap: 4px; font-size: 14px; color: #3a2a10; } .chat-win.top .ch-list { color: #fff; font-size: 13px; }
+.ch-row b { margin-right: 6px; color: #2f5a1c; } .chat-win.top .ch-row b { color: #ffe36b; } .ch-row.me b { color: #b97a0a; } .ch-row span { overflow-wrap: anywhere; }
+.ch-in { display: grid; grid-template-columns: 1fr auto; gap: 6px; padding: 6px; background: rgba(0,0,0,.08); } .ch-in input { min-width: 0; padding: 8px 10px; border-radius: 10px; border: 1px solid #c79a4a; background: #fffaf0; color: #3a2a10; font-size: 15px; } .ch-in button { padding: 0 14px; border: 0; border-radius: 10px; background: linear-gradient(#ffe36b, #f2a91c); color: #4a2a06; font: inherit; }
+.game-hud .gchat { position: absolute; right: 10px; top: calc(118px + env(safe-area-inset-top, 0px)); width: 38px; height: 38px; border-radius: 50%; border: 2px solid #e8c46a; background: rgba(19,36,10,.7); font-size: 18px; pointer-events: auto; cursor: pointer; } .game-hud .gchat b { position: absolute; right: -4px; top: -4px; min-width: 16px; height: 16px; padding: 0 3px; border-radius: 8px; background: #e8382c; color: #fff; font: 700 10px/16px sans-serif; } .game-hud .gchat b[hidden] { display: none; }
+.gsklist { top: calc(162px + env(safe-area-inset-top, 0px)) !important; }
 .lb-badge { display: grid; place-items: center; min-width: 4.4cqw; height: 4.4cqw; padding: 0 1cqw; border-radius: 999px; background: #e8382c; color: #fff; font-size: 2.8cqw; }
 .lb-opbtn { padding: 3px 8px; font-size: 11px !important; border-radius: 999px; border: 2px solid #e8c46a; background: rgba(20,36,12,.9); color: #fff; font-weight: 800; white-space: nowrap; } .lb-opbtn.on { background: #b3261e; }
 .lb-live { position: absolute; z-index: 2; right: 8px; top: 18%; width: 170px; max-height: 60%; overflow: auto; padding: 10px; border-radius: 12px; background: rgba(12,20,8,.9); border: 2px solid #e8c46a; color: #fff; display: grid; gap: 6px; font-size: 13px; font-family: "Noto Sans KR", sans-serif; }
@@ -1300,7 +1322,7 @@ body.game-full { overflow: hidden; }
         <div class="game-hud" id="gameHud" hidden>
           <div class="xp"><i id="gXp"></i></div>
           <div class="row"><span id="gTime">4:00</span><div class="hpbar"><i id="gHp"></i></div><span class="gtest" id="gTest" hidden>🧪 TEST</span><span id="gStage">1단계</span><span id="gLv">Lv 1</span><span id="gKill">0</span>
-          <button class="tiny pause" type="button" id="gPause">멈춤</button><button class="tiny" type="button" id="gSnd" aria-label="소리 켜기 · 끄기">🔊</button><button class="tiny gspeed" type="button" id="gSpeed">▶ 1배속</button><button class="tiny gspeed gauto" type="button" id="gAuto" aria-pressed="false">🤖 자동</button><button class="tiny gspeed gheal" type="button" id="gHeal" hidden>❤ 0</button><button class="tiny gfull" type="button" id="gFull">⛶ 전체화면</button><button class="tiny gop" type="button" id="gLvUp" hidden>Lv+</button><button class="tiny gop" type="button" id="gGod" hidden aria-pressed="false">무적</button></div>
+          <button class="gchat" type="button" id="gChat" aria-label="문파 채팅">💬<b hidden></b></button><button class="tiny pause" type="button" id="gPause">멈춤</button><button class="tiny" type="button" id="gSnd" aria-label="소리 켜기 · 끄기">🔊</button><button class="tiny gspeed" type="button" id="gSpeed">▶ 1배속</button><button class="tiny gspeed gauto" type="button" id="gAuto" aria-pressed="false">🤖 자동</button><button class="tiny gspeed gheal" type="button" id="gHeal" hidden>❤ 0</button><button class="tiny gfull" type="button" id="gFull">⛶ 전체화면</button><button class="tiny gop" type="button" id="gLvUp" hidden>Lv+</button><button class="tiny gop" type="button" id="gGod" hidden aria-pressed="false">무적</button></div>
           <button class="grest" type="button" id="gRest" hidden></button>
           <div class="boss" id="gBoss" hidden><b id="gBossName"></b><div class="bar"><i id="gBossHp"></i></div></div>
           <div class="msg" id="gMsg" aria-live="polite"></div>
@@ -1429,7 +1451,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610280757";
+  const BUILD = "202610280812";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -3970,7 +3992,7 @@ body.game-full { overflow: hidden; }
     })();
     /* ── 한 판 ── */
     function begin(o) {
-      o = o || {}; runDrop(); SND.start(); ["it-crate", "it-crate2", "it-magnet", "it-bomb", "it-heal", "it-gold", "fx-fire"].forEach((n) => lbImg(n)); /* 맵 물건 그림 미리 */ ["it-crate", "it-crate2", "it-magnet", "it-bomb", "it-heal", "it-gold"].forEach((n) => lbImg(n)); /* 맵 물건 그림 미리 */ { const sb = $("gSnd"); if (sb) sb.textContent = SND.on ? "🔊" : "🔇"; } coverFull(true); /* 새 판 — 예전 이어하기는 지움 */ $("gLobby").hidden = true; // 로비에서 출전 — 게임판이 화면을 덮음(휴대폰 세로도)
+      o = o || {}; runDrop(); SND.start(); ["it-crate", "it-crate2", "it-magnet", "it-bomb", "it-heal", "it-gold", "fx-fire", "fx-thunder", "fx-boom", "fx-splash", "fx-rang", "fx-drill", "fx-kunai"].forEach((n) => lbImg(n)); /* 맵 물건 그림 미리 */ ["it-crate", "it-crate2", "it-magnet", "it-bomb", "it-heal", "it-gold"].forEach((n) => lbImg(n)); /* 맵 물건 그림 미리 */ { const sb = $("gSnd"); if (sb) sb.textContent = SND.on ? "🔊" : "🔇"; } coverFull(true); /* 새 판 — 예전 이어하기는 지움 */ $("gLobby").hidden = true; // 로비에서 출전 — 게임판이 화면을 덮음(휴대폰 세로도)
       s = { t: 0, hp: 100, max: 100, x: 0, y: 0, spd: 150, lv: 1, xp: 0, need: 6, kills: 0, foes: [], shots: [], ebs: [], gems: [], fx: [],
         spawn: 0, fire: 0, rate: 0.7, dmg: 10, multi: 1, pierce: 0, fan: 0, crit: 0, boom: 0, bounce: 0, bossPick: false, orbs: 0, orbA: 0, aura: 0, magnet: 60, regen: 0, hurt: 0,
         stage: 1, stageT: 0, boxes: [], boxT: 12, pools: [], advance: "", bossN: 0, bossNow: null, aim: Math.PI / 2, mvA: Math.PI / 2, dashT: 0, dashCd: 0, dashX: 0, dashY: 1, trail: [], lock: null, hitFx: 0, fields: [], homs: [], hz: [], walk: 0, moving: false, items: [], flash: 0, shotT: 0, bossKills: 0, up: {}, evo: {}, skills: [], cd: {}, cool: 1, ward: 0, msgT: 0, over: false,
@@ -3979,7 +4001,7 @@ body.game-full { overflow: hidden; }
       s.chap = o.ch || 0; s.run = o.run || ""; s.raid = !!o.raid; s.mode = s.chap ? o.mode || 0 : 0; { const CT = CH_TBL[s.chap] || CH_TBL[0]; s.chHp = CT[0] * MODE_HP[s.mode]; s.chDmg = CT[1] * MODE_DMG[s.mode]; s.chSp = CT[2] * MODE_SP[s.mode]; s.chCap = CT[3] * MODE_CAP[s.mode]; } setMap(s.chap ? chMap(s.chap) : mapFor(1)); // 장마다 맵(무한의 탑은 1장 맵부터) — 빠져 있어 늘 옛 어두운 맵이었다(2026-10-28)
       { const P0 = WPROF[heroKey] || WPROF.je; s.rate = P0.rate; s.range = Math.round(AIM_R * (P0.range || 1)); } // 무기마다 쏘는 빠르기 · 사거리
       const GS = o.gs || {}; if (GS.hp) { s.max += GS.hp; s.hp = s.max; } if (GS.atk) s.dmg *= 1 + GS.atk / 100; if (GS.spd) s.spd *= 1 + GS.spd / 100; s.defR = (GS.def || 0) / ((GS.def || 0) + 100); // 장비(2026-10-28)
-      s.wawk = GS.wawk || 0; if (GS.wawk) { s.dmg *= 1 + 0.25 * GS.wawk; if (WGRADE[heroKey] && WGRADE[heroKey][2] && WGRADE[heroKey][2].range && GS.wawk >= 1) {} const R0 = (WGRADE[heroKey] || [])[0]; if (R0 && R0.range) s.range = Math.round(s.range * R0.range); } s.skin = GS.skin || "basic"; /* 무기 각성 · 스킨(2026-10-28) · 숨기기면 창구가 basic 으로 줌 */ { const sg = GS.skinG || 0; if (sg) { s.max = Math.round(s.max * (1 + SKIN_HP[sg])); s.hp = s.max; s.dmg *= 1 + SKIN_ATK[sg]; } }
+      s.wawk = GS.wawk || 0; s.gearOn = (GS.set || 0) > 0; if (GS.wawk) { s.dmg *= 1 + 0.25 * GS.wawk; if (WGRADE[heroKey] && WGRADE[heroKey][2] && WGRADE[heroKey][2].range && GS.wawk >= 1) {} const R0 = (WGRADE[heroKey] || [])[0]; if (R0 && R0.range) s.range = Math.round(s.range * R0.range); } s.skin = GS.skin || "basic"; /* 무기 각성 · 스킨(2026-10-28) · 숨기기면 창구가 basic 으로 줌 */ { const sg = GS.skinG || 0; if (sg) { s.max = Math.round(s.max * (1 + SKIN_HP[sg])); s.hp = s.max; s.dmg *= 1 + SKIN_ATK[sg]; } }
       if (GS.set >= 2) s.dmg *= 1.15; if (GS.set >= 4) { s.max = Math.round(s.max * 1.2); s.hp = s.max; } if (GS.set >= 6) s.cool *= 0.9; // 세트 효과
       const U = o.used || {}, K = o.carry || {}; if (U.atk) s.dmg *= 1.2; if (U.spd) s.spd *= 1.15; s.heal = K.heal || 0; s.rev = K.rev || 0; s.healUsed = 0; s.revUsed = 0; healLabel(); // 상점 물건 setMap(s.chap || 1); // 장마다 맵 · 몬스터 세기
       renderSkills(); resume(); if (s.raid) { raidStart(); return; } msg(s.chap ? (s.mode ? "[" + MODE_N[s.mode] + "] " : "") + s.chap + "장 " + CHAPS[s.chap - 1] + " ㆍ 1단계!" : "1단계 ㆍ 죽을 때까지 버텨라!");
@@ -4562,7 +4584,7 @@ body.game-full { overflow: hidden; }
         if (s.aura && L < auraR + f.r) hurt(f, (6 + s.aura * 6) * dt);
         for (let i = 0; i < s.orbs && f.oc <= 0; i++) {
           const a = s.orbA + i * Math.PI * 2 / s.orbs, ox = s.x + Math.cos(a) * 70, oy = s.y + Math.sin(a) * 70;
-          if ((f.x - ox) ** 2 + (f.y - oy) ** 2 < (f.r + 9) ** 2) { hurt(f, 14 + s.dmg * 0.6, true); f.oc = 0.35; }
+          if ((f.x - ox) ** 2 + (f.y - oy) ** 2 < (f.r + 9) ** 2) { hurt(f, 14 + s.dmg * 0.6, true); f.oc = 0.35; if (s.fx.length < 150) s.fx.push({ nfx: "fx-splash", x: f.x, y: f.y, size: 56, life: 0.3, dur: 0.3 }); }
         }
       });
       s.foes = s.foes.filter((f) => {
@@ -4606,7 +4628,7 @@ body.game-full { overflow: hidden; }
         if (!m.tg || m.tg.hp <= 0 || !s.foes.includes(m.tg)) { let best = 1e12; m.tg = null; s.foes.forEach((f) => { const d = (f.x - m.x) ** 2 + (f.y - m.y) ** 2; if (d < best) { best = d; m.tg = f; } }); }
         if (m.tg) { let d = Math.atan2(m.tg.y - m.y, m.tg.x - m.x) - m.a; d = Math.atan2(Math.sin(d), Math.cos(d)); m.a += Math.max(-7 * dt, Math.min(7 * dt, d)); }
         m.px = m.x; m.py = m.y; m.x += Math.cos(m.a) * 380 * dt; m.y += Math.sin(m.a) * 380 * dt; m.life -= dt;
-        if (m.tg && (m.tg.x - m.x) ** 2 + (m.tg.y - m.y) ** 2 < (m.tg.r + 6) ** 2) { hurt(m.tg, m.dmg, true); s.fx.push({ spark: true, x: m.x, y: m.y, c: 2, life: 0.15 }); m.life = 0; }
+        if (m.tg && (m.tg.x - m.x) ** 2 + (m.tg.y - m.y) ** 2 < (m.tg.r + 6) ** 2) { hurt(m.tg, m.dmg, true); if (s.fx.length < 150) s.fx.push({ nfx: "fx-boom", x: m.x, y: m.y, size: 70, life: 0.35, dur: 0.35 }); s.fx.push({ spark: true, x: m.x, y: m.y, c: 2, life: 0.15 }); m.life = 0; }
       });
       s.homs = s.homs.filter((m) => m.life > 0);
       /* 날아가는 스킬 — 회오리(초당 300 · 잡귀를 함께 쓸어 감 · 불덩이 지움)와 캐릭터 스킬(검기 · 화살 · 표창 · 부적).
@@ -4726,8 +4748,10 @@ body.game-full { overflow: hidden; }
     function bgImg(n) { let i = BGI[n]; if (!i) { i = BGI[n] = new Image(); i.src = "img/bg/" + n + ".webp?v=" + BUILD; } return i.complete && i.naturalWidth ? i : null; }
     function bgPut(I, r, x, y, k, flip, ax, a) { const w = r[2] * k, h = r[3] * k; g.save(); g.translate(x, y); if (flip) g.scale(-1, 1); if (a != null) g.globalAlpha *= a; g.drawImage(I, r[0], r[1], r[2], r[3], -w * ax, -h, w, h); g.restore(); }
     /* 주인공 — 겨누는 쪽(왼 · 오)을 보고, 쏘면 평타 동작 · 스킬은 기술 동작 · 대시 · 맞기 · 쓰러짐 */
+    function otLook() { if (!s) return ""; const has = (n) => BGF["m_ot2_" + n] && bgImg("m_ot2_" + n); const k = s.skin && s.skin !== "basic" ? s.skin : "";
+      if (k && has(k)) return "_" + k; if (k && k.includes("-") && has(k.split("-")[0])) return "_" + k.split("-")[0]; return s.gearOn && has("gear") ? "_gear" : ""; }
     function bgHero(cx, cy, flip, dead) {
-      const skA = s && s.skin && s.skin !== "basic" && BGF["m_ot2_" + s.skin] && bgImg("m_ot2_" + s.skin) ? "_" + s.skin : "", b = "m_ot2" + skA, rx = "m_ot3" + skA, // 스킨 한 벌 입은 동작 그림이 있으면 그것(2026-10-28 "게임에서도 착용한 상태로") // 캐릭터는 하나(수달, 부장님 설정 그림 · 시험/수달-자르기.cjs) — 무기만 바뀜 (2026-10-28)
+      const skA = otLook(), /* 스킨이면 스킨 동작 · 아니면 장비 입은 동작(2026-10-28 "스킨 안 입었으면 입고 있는 장비를") */ b = "m_ot2" + skA, rx = "m_ot3" + skA, // 스킨 한 벌 입은 동작 그림이 있으면 그것(2026-10-28 "게임에서도 착용한 상태로") // 캐릭터는 하나(수달, 부장님 설정 그림 · 시험/수달-자르기.cjs) — 무기만 바뀜 (2026-10-28)
         F = BGF[b], M = BGF[b + "_meta"]; if (!F || !M) return false;
       const I = bgImg(b); if (!I) return false; const R = BGF[rx], RM = BGF[rx + "_meta"], I3 = R && bgImg(rx);
       const C = Object.assign({}, M.counts, I3 ? RM.counts : {}), at = (k, q) => k + Math.min(C[k] - 1, Math.max(0, Math.floor(q * C[k])));
@@ -5069,6 +5093,8 @@ body.game-full { overflow: hidden; }
           g.fillStyle = "#fff"; g.font = "800 9px sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(m.k === "heal" ? "+" : "HP", x, y + 2);
         });
         s.fx.forEach((x) => {
+          if (x.nfx || (x.bolt && lbImg("fx-thunder"))) { const I = lbImg(x.nfx || "fx-thunder"); if (I) { const fw = I.width / 4, p = 1 - x.life / (x.dur || 0.3), fr = Math.min(3, Math.floor(p * 4)), sz = x.nfx ? x.size || 90 : 120, w = sz, h = sz * I.height / fw; g.save(); g.globalAlpha = Math.min(1, x.life / 0.12 + 0.2);
+            g.drawImage(I, fr * fw, 0, fw, I.height, x.x + ox - w / 2, x.nfx ? x.y + oy - h / 2 : x.y + oy - h + 8, w, h); g.restore(); return; } }
           if (x.corpse) {
             if (ocMon({ cm: x.cm, k: x.boss ? "boss" : "", r: x.r, x: x.x, hp: 0, full: 1 }, x.x + ox, x.y + oy, null, 1 - x.life / x.dur)) return;
             if (bgMon({ skin: x.skin, k: x.boss ? "boss" : "", r: x.r, x: x.x, ph: 0 }, x.x + ox, x.y + oy, { sx: 1, sy: 1, a: Math.min(1, x.life / (x.dur * 0.4)) }, 1 - x.life / x.dur)) return;
@@ -5197,6 +5223,7 @@ body.game-full { overflow: hidden; }
         }
         s.tors.forEach((t) => { // 회오리 — 날아가는 그림
           const x = t.x + ox, y = t.y + oy, a = Math.min(1, t.life / 0.3);
+          { const NF = { arrow: "fx-kunai", mj_star: "fx-rang", je_storm: "fx-drill" }[t.spr], I = NF && lbImg(NF); if (I) { const fw = I.width / 4, fr = Math.floor((s.t + (t.ph || 0)) * 14) % 4, sz = t.spr === "arrow" ? 46 : t.size || 100, h = sz * I.height / fw; g.save(); g.translate(x, y); g.rotate(t.a); g.globalAlpha = t.back ? 1 : Math.min(1, t.life / 0.2); g.drawImage(I, fr * fw, 0, fw, I.height, -sz / 2, -h / 2, sz, h); g.restore(); return; } } /* 날아가는 스킬 영상 */
           if (t.spr === "arrow") { g.save(); g.translate(x, y); g.scale(1.6, 1.6); shotArt("arrow", 0, 0, t.a, 1); g.restore(); return; }
           if (t.spr) { fxDraw(t.spr, 0, x, y, t.size || 100, { rot: t.spin ? s.t * 14 : t.still ? 0 : t.a, fly: !t.spin && !t.still, alpha: t.back ? 1 : Math.min(1, t.life / 0.2) }); return; } // 그림이 오른쪽을 보고 있어 날아가는 쪽으로 돌림
 
@@ -5325,6 +5352,7 @@ body.game-full { overflow: hidden; }
     $("gGod").addEventListener("pointerdown", (e) => { e.preventDefault(); e.stopPropagation(); if (!isOp() || !s || s.over) return; s.cheat = true; s.god = !s.god; opTools(); });
     $("gDash").addEventListener("pointerdown", (e) => { e.preventDefault(); e.stopPropagation(); dash(); });
     $("gUpd").addEventListener("click", () => { if (window.__bmcGoNew) window.__bmcGoNew(); });
+    $("gChat").addEventListener("pointerdown", (e) => { e.preventDefault(); e.stopPropagation(); chatOpen(true); });
     $("gSnd").addEventListener("click", (e) => { e.stopPropagation(); $("gSnd").textContent = SND.toggle() ? "🔊" : "🔇"; });
 
     /* 점검용 — 주소에 ?bmctest=1 이 있을 때만 시험(시험/전체점검-시험.cjs)이 게임 상태를 보고 바꿀 수 있게 (2026-10-26 "오류 · 버그 전체 확인"). 보통 때는 없다 */
@@ -5458,6 +5486,7 @@ body.game-full { overflow: hidden; }
       else { const pg = el("div", "lb-page lb-" + lobTab); pg.append(...(lobTab === "wpn" ? lobWpn(P) : lobTab === "shop" ? lobShop(P) : lobTab === "op" ? lobOp() : lobTab === "mail" ? lobMail(P) : lobTab === "skin" ? lobSkin(P) : lobTab === "gear" ? lobGear(P) : lobTab === "dun" ? lobDun(P) : lobRank())); if (lobErr) pg.appendChild(el("p", "lb-err", lobErr)); art.appendChild(pg); }
       const nav = el("nav", "lb-nav lb-nav5"); [["shop", "상점"], ["gear", "장비"], ["go", "출전"], ["dun", "던전"], ["rank", "순위"]].forEach(([k, n]) => { const b = el("button", k === lobTab || (k === "gear" && lobTab === "skin") ? "on" : ""); b.type = "button"; b.setAttribute("aria-label", n); b.appendChild(el("span", null, n)); if (k === "gear" && lobTab === "wpn") b.className = "on"; b.onclick = () => { lobTab = k; lobErr = ""; lobSel = null; lobDraw(); if (k === "rank") loadRanks(); }; nav.appendChild(b); });
       if (P && !P.free) { const mb = lobBtn("lb-mailbtn" + (lobTab === "mail" ? " on" : ""), px(782, 100, 58, 58), () => { lobTab = lobTab === "mail" ? "go" : "mail"; lobErr = ""; lobDraw(); }, "우편함"); mb.innerHTML = `<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="12" width="36" height="25" rx="3" fill="#f9eccb" stroke="#5a3a14" stroke-width="2.5"/><path d="M7 14l17 13 17-13" fill="none" stroke="#5a3a14" stroke-width="2.5" stroke-linejoin="round"/><circle cx="24" cy="27" r="4.5" fill="#e8382c" stroke="#5a3a14" stroke-width="1.8"/></svg>`; /* 홈 왼쪽 · 글자 없이(2026-10-28) */ const n = (P.mail || []).length; if (n) mb.appendChild(el("b", "lb-badge", String(n))); art.appendChild(mb); }
+      if (P && !P.free) art.appendChild(chatBar());
       art.appendChild(nav); if (shopRw && lobTab === "shop") art.appendChild(lobRewardBox()); else shopRw = null; L.replaceChildren(art); lobFit(art); if (P && P.op) { (matchMedia("(max-width: 760px)").matches ? art : L).appendChild(lobLive()); /* 휴대폰은 그림 안 「← 홈」 옆 */ if (Date.now() - liveAt > 5000) loadLive(); } // 운영자만 오른쪽에 지금 하는 사람
     }
     function lobGo(P) {
@@ -5474,7 +5503,7 @@ body.game-full { overflow: hidden; }
       t("lb-rw", "x" + (120 * c * (first ? 2 : 1) * mul).toLocaleString(), px(282, 1168, 90, 40)); t("lb-rw", "x" + (50 * c * mul).toLocaleString(), px(430, 1168, 82, 40)); t("lb-rw", first ? "x1" : "—", px(582, 1168, 66, 40));
       const go = lobBtn("lb-go", px(210, 1262, 525, 178), () => lobStart(c, false, M), "출전 ㆍ 피로도 5"); go.disabled = !open || lobBusy || need; out.push(go);
       /* 무한의 탑 단추는 던전 칸에만(2026-10-28 "시나리오 창에 왜 넣었노") */
-      t("lb-msg" + (need || lobErr ? " bad" : ""), need ? "피로도가 모자라요 ㆍ 6분마다 1씩 차요 · ＋ 로 살 수 있어요" : lobErr || (P.free ? "로그인하면 피로도 · 골드 · 깬 장 · 무기가 저장돼요" : first ? (c % 10 === 0 && (P.chWpn || [])[M] && WPN[P.chWpn[M][c / 10 - 1]] ? "처음 깨면 무기 「" + WPN[P.chWpn[M][c / 10 - 1]].n + "」 + 골드 2배 + 두루마리" : "처음 깨면 골드 2배 + 두루마리(⚡10 + 물건 하나)") : ""), px(40, 1440, 861, 40));
+      t("lb-msg" + (need || lobErr ? " bad" : ""), need ? "피로도가 모자라요 ㆍ 6분마다 1씩 차요 · ＋ 로 살 수 있어요" : lobErr || (P.free ? "로그인하면 피로도 · 골드 · 깬 장 · 무기가 저장돼요" : first ? (c % 10 === 0 && (P.chWpn || [])[M] && WPN[P.chWpn[M][c / 10 - 1]] ? "처음 깨면 무기 「" + WPN[P.chWpn[M][c / 10 - 1]].n + "」 + 골드 2배 + 두루마리" : "처음 깨면 골드 2배 + 두루마리(⚡10 + 물건 하나)") : ""), px(40, 1408, 861, 36));
       return out;
     }
     let raidBoard = null, raidLoading = false;
@@ -5612,6 +5641,28 @@ body.game-full { overflow: hidden; }
     /* 모자 자리 — [머리 폭의 몇 배, 모자 아래 끝이 수달 키의 어디, 옆을 볼 때 앞쪽으로 얼마나] · 스킨 털빛 */
     const HAT_FIT = { _: [0.92, 0.3, 0.05], astro: [1.12, 0.47, 0.04], wizard: [0.88, 0.27, 0.05], chef: [0.78, 0.25, 0.04], king: [0.72, 0.21, 0.04], ice: [0.72, 0.21, 0.04], santa: [0.92, 0.29, 0.05], ninja: [0.95, 0.32, 0.05], pirate: [1.0, 0.29, 0.05], farmer: [1.12, 0.29, 0.05], navy: [0.92, 0.28, 0.05] };
     const SKIN_FX = { ice: "hue-rotate(185deg) saturate(.7) brightness(1.15)", ninja: "brightness(.8) contrast(1.1)", king: "drop-shadow(0 0 10px rgba(255,210,60,.9))" };
+    /* 문파 채팅(2026-10-28 "게임 안에 채팅창", 자리는 ChatGPT 추천대로) — 로비: 아래 메뉴 위 한 줄 · 전투: 오른쪽 위 💬(새 글 수만, 싸움을 가리지 않게). 열면 게임은 그대로 진행 */
+    const CHAT = { list: [], last: 0, seen: 0, at: 0, open: false, busy: false };
+    try { CHAT.seen = +localStorage.getItem("bmc-chat-seen") || 0; } catch (e) {}
+    function chatPull(force) { if (lobFree() || !token || CHAT.busy || (!force && Date.now() - CHAT.at < (CHAT.open ? 2500 : 10000))) return; CHAT.busy = true; CHAT.at = Date.now();
+      call("gameChatList", token, CHAT.last).then((r) => { CHAT.busy = false; (r.list || []).forEach((x) => { if (x.i > CHAT.last) { CHAT.list.push(x); CHAT.last = x.i; } }); if (CHAT.list.length > 60) CHAT.list.splice(0, CHAT.list.length - 60); chatPaint(); }).catch(() => { CHAT.busy = false; }); }
+    setInterval(() => chatPull(false), 1000);
+    const chatUnread = () => CHAT.list.filter((x) => x.i > CHAT.seen && !(me && x.n === me.gameId)).length;
+    function chatPaint() {
+      const n = chatUnread(), gb = $("gChat"); if (gb) { const b = gb.querySelector("b"); b.hidden = !n; b.textContent = n > 9 ? "9+" : String(n); }
+      const bar = document.querySelector(".lb-chatbar"); if (bar) { const L = CHAT.list[CHAT.list.length - 1]; bar.querySelector("span").textContent = L ? L.n + " ㆍ " + L.t : "문파 채팅 ㆍ 눌러서 이야기해요"; const b = bar.querySelector("b"); b.hidden = !n; b.textContent = n > 9 ? "9+" : String(n); }
+      const box = document.getElementById("chatList"); if (box) { box.replaceChildren(...CHAT.list.slice(-40).map((x) => { const r = el("div", "ch-row" + (me && x.n === me.gameId ? " me" : "")); r.append(el("b", null, x.n), el("span", null, x.t)); return r; })); box.scrollTop = box.scrollHeight;
+        if (CHAT.open && CHAT.last > CHAT.seen) { CHAT.seen = CHAT.last; try { localStorage.setItem("bmc-chat-seen", CHAT.seen); } catch (e) {} } }
+    }
+    function chatBar() { const b = el("button", "lb-chatbar"); b.type = "button"; b.style.cssText = px(40, 1446, 861, 34); b.append(el("i", null, "💬"), el("span", null, ""), el("b", null, "")); b.onclick = () => chatOpen(false); chatPull(false); setTimeout(chatPaint, 0); return b; }
+    function chatOpen(inGame) {
+      let w = document.getElementById("chatWin"); if (w) { w.remove(); CHAT.open = false; return; }
+      w = el("div", "chat-win" + (inGame ? " top" : "")); w.id = "chatWin"; const hd = el("div", "ch-hd"), x = el("button", null, "✕"); x.type = "button"; x.onclick = () => { w.remove(); CHAT.open = false; }; hd.append(el("b", null, "💬 문파 채팅"), x);
+      const list = el("div", "ch-list"); list.id = "chatList"; const f = el("form", "ch-in"), inp = document.createElement("input"); inp.maxLength = 120; inp.placeholder = "할 말 (120자)"; inp.enterKeyHint = "send"; const sb = el("button", null, "보내기"); sb.type = "submit"; f.append(inp, sb);
+      f.onsubmit = (e) => { e.preventDefault(); const t = inp.value.trim(); if (!t || lobFree()) return; sb.disabled = true; call("gameChat", token, t).then((r) => { sb.disabled = false; inp.value = ""; (r.list || []).forEach((y) => { if (y.i > CHAT.last) { CHAT.list.push(y); CHAT.last = y.i; } }); chatPaint(); }).catch((er) => { sb.disabled = false; setStatus(errMsg(er)); }); };
+      inp.addEventListener("keydown", (e) => e.stopPropagation()); // 게임 방향키 · 대시로 안 넘어가게
+      w.append(hd, list, f); (inGame ? $("gameBox") : document.querySelector("#gLobby .lb-art") || document.body).appendChild(w); CHAT.open = true; chatPull(true); chatPaint();
+    }
     function lobAct2(fn, a, b) { if (lobFree() || lobBusy) return; lobBusy = true; lobErr = ""; call(fn, token, a, b).then((r) => { lobBusy = false; LP = r; LP.got = Date.now(); lobDraw(); }).catch((e) => { lobBusy = false; lobErr = errMsg(e); lobDraw(); }); }
     /* 던전 탭 — 1~10장 · 무한의 탑 한눈에. 누르면 출전 화면 그 장으로 */
     function lobDun(P) {
@@ -5690,7 +5741,7 @@ body.game-full { overflow: hidden; }
     let watchOn = null;
     function snapOf() { return { x: Math.round(s.x), y: Math.round(s.y), hp: Math.round(s.hp), max: s.max, stage: s.stage, t: Math.round(s.t), lv: s.lv, kills: s.kills, map: mapIdx, aim: +(s.aim || 0).toFixed(2), mv: s.moving ? 1 : 0, walk: +(s.walk || 0).toFixed(1), shotT: +(s.shotT || 0).toFixed(2), hurt: s.hurt > 0 ? 1 : 0, wpn: heroKey, ch: s.chap || 0,
       /* 관전이 부드럽게(2026-10-28 "관전 모드 공격 모션도 안 보이고 자꾸 끊긴다") — 정확한 시각 · 몬스터 번호 · 총알 · 공격 동작 · 구슬 · 고리 · 불바다 */
-      tt: Math.round(s.t * 1000), shotC: s.shotC || 0, skin: s.skin || "basic", orbs: s.orbs || 0, orbA: +(s.orbA || 0).toFixed(2), aura: s.aura || 0, range: s.range,
+      tt: Math.round(s.t * 1000), shotC: s.shotC || 0, skin: s.skin || "basic", gearOn: s.gearOn ? 1 : 0, orbs: s.orbs || 0, orbA: +(s.orbA || 0).toFixed(2), aura: s.aura || 0, range: s.range,
       sh: s.shots.slice(0, 60).map((b) => [Math.round(b.x), Math.round(b.y), Math.round(b.vx), Math.round(b.vy), +b.a.toFixed(2), b.c || 0]),
       fl: s.fields.slice(0, 12).map((z) => [Math.round(z.x), Math.round(z.y), Math.round(z.r), +z.life.toFixed(1), z.full]),
       f: s.foes.slice(0, 150).map((f) => [Math.round(f.x), Math.round(f.y), f.skin, f.k === "boss" ? 1 : 0, f.r, +(f.hp / (f.full || 1)).toFixed(2), f.hit > 0 ? 1 : 0, f.near ? 1 : 0, f.sid || (f.sid = s.sidN = (s.sidN || 0) + 1)]) }; }
@@ -5709,7 +5760,7 @@ body.game-full { overflow: hidden; }
           if (W2.clock == null || Math.abs(late - W2.clock) > 4000) W2.clock = late; else W2.clock += dt * 1000 * Math.max(0.6, Math.min(1.5, 1 + (late - W2.clock) / 1500));
           let i = BF.findIndex((x) => x.tt > W2.clock); if (i < 0) i = BF.length - 1; const A = BF[Math.max(0, i - 1)], Bn = BF[i], P2 = A.S, C2 = Bn.S, k = Bn.tt > A.tt ? Math.max(0, Math.min(1, (W2.clock - A.tt) / (Bn.tt - A.tt))) : 1, L = (a, b) => a + (b - a) * k, el2 = Math.max(0, (W2.clock - A.tt) / 1000);
           s.x = L(P2.x, C2.x); s.y = L(P2.y, C2.y); s.hp = C2.hp; s.max = C2.max; s.stage = C2.stage; s.lv = C2.lv; s.kills = C2.kills; s.aim = P2.aim; s.moving = !!(P2.mv || C2.mv); s.walk = (s.walk || 0) + (s.moving ? dt * 9 : 0);
-          s.shotT = Math.max(0, P2.shotT - el2); s.shotC = P2.shotC; s.hurt = P2.hurt ? 0.1 : 0; heroKey = C2.wpn || heroKey; setMap(C2.map || 1); s.skin = C2.skin || "basic"; s.orbs = C2.orbs || 0; s.orbA = (s.orbA || 0) + dt * 3; s.aura = C2.aura || 0; s.range = C2.range || AIM_R;
+          s.shotT = Math.max(0, P2.shotT - el2); s.shotC = P2.shotC; s.hurt = P2.hurt ? 0.1 : 0; heroKey = C2.wpn || heroKey; setMap(C2.map || 1); s.skin = C2.skin || "basic"; s.gearOn = !!C2.gearOn; s.orbs = C2.orbs || 0; s.orbA = (s.orbA || 0) + dt * 3; s.aura = C2.aura || 0; s.range = C2.range || AIM_R;
           const pm = {}; (P2.f || []).forEach((a) => { pm[a[8]] = a; });
           s.foes = (C2.f || []).map((a, j) => { const p = pm[a[8]]; return { k: a[3] ? "boss" : "imp", skin: a[2], x: p ? L(p[0], a[0]) : a[0], y: p ? L(p[1], a[1]) : a[1], r: a[4], hp: a[5], full: 1, hit: a[6] ? 0.05 : 0, near: !!a[7], ph: j * 0.37, age: 1 }; });
           s.shots = (P2.sh || []).map((b) => ({ x: b[0] + b[2] * el2, y: b[1] + b[3] * el2, a: b[4], c: b[5], vx: 0, vy: 0, life: 1, hit: [] }));
