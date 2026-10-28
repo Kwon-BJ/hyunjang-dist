@@ -691,7 +691,10 @@ body.game-full { overflow: hidden; }
 #lbEn, .lb-gold { display: flex; align-items: center; justify-content: safe center; font-size: 3.9cqw; letter-spacing: -.1cqw; font-weight: 900; color: #fff; text-shadow: 0 1px 2px #000; font-variant-numeric: tabular-nums; }
 #lbEn small { position: absolute; top: 108%; left: 0; right: 0; text-align: center; font-size: 2.6cqw; color: #ffe27a; text-shadow: 0 1px 2px #000; }
 .lb-plus { border: 0; border-radius: 50%; background: transparent; }
-.lb-home.lb-big { right: auto; left: 57%; } .lb-home:not(.lb-big) { font-size: 4.4cqw !important; padding: .2cqw 2.2cqw; line-height: 1.15; }
+.lb-home.lb-big { right: auto; left: 64%; top: 6.4%; }
+.lb-home:not(.lb-big), .lb-mailbtn { display: grid !important; place-items: center; padding: 0 !important; border-radius: 50% !important; border: .55cqw solid #e8c46a !important; background: radial-gradient(circle at 50% 35%, #4a7f2c, #1d3a10 75%) !important; box-shadow: 0 .6cqw 0 #13240a, 0 .8cqw 1.6cqw rgba(0,0,0,.35); }
+.lb-home:not(.lb-big) { width: 6.2cqw; height: 6.2cqw; right: 2.6%; top: 10.6cqw; } .lb-home:not(.lb-big) svg, .lb-mailbtn svg { width: 4.6cqw; height: 4.6cqw; flex: none; filter: drop-shadow(0 .3cqw 0 rgba(0,0,0,.35)); }
+.lb-home:not(.lb-big):active, .lb-mailbtn:active { transform: translateY(.5cqw); box-shadow: 0 .1cqw 0 #13240a; } .lb-mailbtn.on { background: radial-gradient(circle at 50% 35%, #ffd86a, #b97a0a 75%) !important; }
 .lb-mailbtn { font-size: 4.4cqw !important; padding: 0; } .lb-mailbtn .lb-badge { position: absolute; right: -1.8cqw; top: -1.8cqw; min-width: 3.6cqw; height: 3.6cqw; font-size: 2.4cqw; } .lb-home { right: 2.5%; top: 6.4%; padding: .6cqw 2.4cqw; border-radius: 999px; border: .3cqw solid #355a22; background: rgba(20,36,12,.85); color: #fff; font-size: 2.8cqw !important; }
 .lb-chn { display: flex; align-items: center; justify-content: center; font-size: 6.4cqw; color: #fff; -webkit-text-stroke: .8cqw #1f3d10; paint-order: stroke fill; }
 .lb-chname { display: flex; align-items: center; justify-content: center; font-size: 10.5cqw; color: #fff; -webkit-text-stroke: 1.4cqw #4a2a10; paint-order: stroke fill; white-space: nowrap; }
@@ -815,7 +818,7 @@ body.game-full { overflow: hidden; }
 .lb-ghat.h-astro { top: -4%; width: 74%; } .lb-ghat.h-wizard { top: -24%; width: 62%; } .lb-ghat.h-chef { top: -17%; width: 52%; } .lb-ghat.h-king, .lb-ghat.h-ice { top: -14%; width: 54%; } .lb-ghat.h-santa { top: -12%; }
 .lb-gotter.sk-ice { filter: hue-rotate(185deg) saturate(.7) brightness(1.15); } .lb-gotter.sk-ice .lb-ghat { filter: hue-rotate(-185deg) saturate(1.4) brightness(.87); } .lb-gotter.sk-king { filter: drop-shadow(0 0 2cqw rgba(255,210,60,.9)); } .lb-gotter.sk-ninja { filter: brightness(.8) contrast(1.1); }
 .lb-skinpv { position: relative; height: 52cqw; border-radius: 3cqw; background: radial-gradient(circle at 50% 70%, #fff6d8, #e8d3a0); border: .5cqw solid #e2c58a; } .lb-skinpv .lb-o360w { bottom: 1cqw; }
-.lb-skininfo { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 1.4cqw; padding: 2cqw; border-radius: 3cqw; border: .6cqw solid #9aa3ad; background: #fffaf0; } .lb-skininfo b { font-size: 4.6cqw; color: #3a2a10; } .lb-skininfo em { font-style: normal; padding: .4cqw 2cqw; border-radius: 999px; color: #fff; font-size: 3cqw; } .lb-skininfo .lb-buy { grid-column: 1 / -1; } .lb-skhide { grid-column: 1 / -1; padding: 1.6cqw; border: .4cqw solid #8a6a3a; border-radius: 2.4cqw; background: #fffaf0; color: #4a3210; font-size: 3.2cqw !important; } .lb-skhide.on { background: #4a3210; color: #fff; } .lb-skininfo .lb-skst { grid-column: 1 / -1; font-size: 3cqw; color: #2f5a1c; }
+.lb-skininfo { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 1.4cqw; padding: 2cqw; border-radius: 3cqw; border: .6cqw solid #9aa3ad; background: #fffaf0; } .lb-skininfo b { font-size: 4.6cqw; color: #3a2a10; } .lb-skininfo em { font-style: normal; padding: .4cqw 2cqw; border-radius: 999px; color: #fff; font-size: 3cqw; } .lb-rtabs.sk3 { grid-template-columns: repeat(3, 1fr); } .lb-skininfo .lb-buy { grid-column: 1 / -1; } .lb-skhide { grid-column: 1 / -1; padding: 1.6cqw; border: .4cqw solid #8a6a3a; border-radius: 2.4cqw; background: #fffaf0; color: #4a3210; font-size: 3.2cqw !important; } .lb-skhide.on { background: #4a3210; color: #fff; } .lb-skininfo .lb-skst { grid-column: 1 / -1; font-size: 3cqw; color: #2f5a1c; }
 .lb-card.skin img { object-fit: contain; background: radial-gradient(#fff, #f2e2bc); }
 .lb-awk { grid-column: 1 / -1; display: grid; grid-template-columns: auto auto 1fr auto; align-items: center; gap: 1.6cqw; margin-top: 1.4cqw; padding: 1.4cqw 2cqw; border-radius: 2.4cqw; background: #f6e2b0; } .lb-awk b { font-size: 3.6cqw; color: #4a2a06; white-space: nowrap; } .lb-awk small { font-size: 2.6cqw; color: #6a4a1e; } .lb-awk .lb-gmerge { padding: 1.2cqw 2.4cqw; font-size: 3.2cqw !important; white-space: nowrap; }
 .lb-awk-st i { font-style: normal; font-size: 3.6cqw; color: #c9b48a; } .lb-awk-st i.on { color: #ffb300; text-shadow: 0 0 .8cqw #ffd23a; }
@@ -1426,7 +1429,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610280720";
+  const BUILD = "202610280740";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -5430,7 +5433,7 @@ body.game-full { overflow: hidden; }
       const gold = el("span", "lb-gold", P && !P.free ? (P.gold >= 1e8 ? (Math.floor(P.gold / 1e7) / 10) + "억" : P.gold >= 1e5 ? Math.floor(P.gold / 1e4).toLocaleString() + "만" : P.gold.toLocaleString()) : "—"); gold.style.cssText = px(792, 42, 76, 40); // 큰 수는 줄여서(ChatGPT 검토)
       const toShop = () => { lobTab = "shop"; lobSel = "en"; lobErr = ""; lobDraw(); };
       art.append(nk, lvb, lobEn(), gold, lobBtn("lb-plus", px(664, 44, 44, 40), toShop, "피로도 사기"), lobBtn("lb-plus", px(871, 44, 44, 40), toShop, "상점"), lobBtn("lb-home", "", () => { location.hash = "notice"; }, "홈으로"));
-      art.lastChild.textContent = "🏠"; /* 글자 없이 집만(2026-10-28) */
+      art.lastChild.innerHTML = `<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 23 24 8l18 15" fill="none" stroke="#5a3a14" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/><path d="M6 23 24 8l18 15" fill="none" stroke="#ffe36b" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><path d="M11 22v17a2 2 0 0 0 2 2h22a2 2 0 0 0 2-2V22L24 12z" fill="#f9eccb" stroke="#5a3a14" stroke-width="2.5" stroke-linejoin="round"/><rect x="20" y="28" width="8" height="13" rx="1.5" fill="#b97a0a" stroke="#5a3a14" stroke-width="2"/></svg>`; /* 글자 없이 집 그림 ㆍ 로비 화풍(초록 동그라미 · 금테 · 크림)으로(2026-10-28) */
       /* 화면 크게 — 폰 위 · 아래 막대(주소창 · 알림줄)를 숨겨 로비 · 게임을 더 크게(2026-10-28 갤럭시 폴드 "화면 크게 할 수 있으면") */
       { const de = document.documentElement, rq = de.requestFullscreen || de.webkitRequestFullscreen, fs = () => document.fullscreenElement || document.webkitFullscreenElement;
         if (rq) { const fb = lobBtn("lb-home lb-big", "", () => { if (fs()) (document.exitFullscreen || document.webkitExitFullscreen).call(document); else try { Promise.resolve(rq.call(de, { navigationUI: "hide" })).catch(() => {}); } catch (e) {} }, "화면 크게"); fb.textContent = fs() ? "⤡ 작게" : "⛶ 크게"; art.appendChild(fb); } }
@@ -5438,7 +5441,7 @@ body.game-full { overflow: hidden; }
       else if (lobTab === "go") art.append(...lobGo(P));
       else { const pg = el("div", "lb-page lb-" + lobTab); pg.append(...(lobTab === "wpn" ? lobWpn(P) : lobTab === "shop" ? lobShop(P) : lobTab === "op" ? lobOp() : lobTab === "mail" ? lobMail(P) : lobTab === "skin" ? lobSkin(P) : lobTab === "gear" ? lobGear(P) : lobTab === "dun" ? lobDun(P) : lobRank())); if (lobErr) pg.appendChild(el("p", "lb-err", lobErr)); art.appendChild(pg); }
       const nav = el("nav", "lb-nav lb-nav5"); [["shop", "상점"], ["gear", "장비"], ["go", "출전"], ["dun", "던전"], ["rank", "순위"]].forEach(([k, n]) => { const b = el("button", k === lobTab || (k === "gear" && lobTab === "skin") ? "on" : ""); b.type = "button"; b.setAttribute("aria-label", n); b.appendChild(el("span", null, n)); if (k === "gear" && lobTab === "wpn") b.className = "on"; b.onclick = () => { lobTab = k; lobErr = ""; lobSel = null; lobDraw(); if (k === "rank") loadRanks(); }; nav.appendChild(b); });
-      if (P && !P.free) { const mb = lobBtn("lb-mailbtn" + (lobTab === "mail" ? " on" : ""), px(712, 104, 64, 50), () => { lobTab = lobTab === "mail" ? "go" : "mail"; lobErr = ""; lobDraw(); }, "우편함"); mb.textContent = "📩"; /* 홈 왼쪽 · 글자 없이(2026-10-28) */ const n = (P.mail || []).length; if (n) mb.appendChild(el("b", "lb-badge", String(n))); art.appendChild(mb); }
+      if (P && !P.free) { const mb = lobBtn("lb-mailbtn" + (lobTab === "mail" ? " on" : ""), px(782, 100, 58, 58), () => { lobTab = lobTab === "mail" ? "go" : "mail"; lobErr = ""; lobDraw(); }, "우편함"); mb.innerHTML = `<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="12" width="36" height="25" rx="3" fill="#f9eccb" stroke="#5a3a14" stroke-width="2.5"/><path d="M7 14l17 13 17-13" fill="none" stroke="#5a3a14" stroke-width="2.5" stroke-linejoin="round"/><circle cx="24" cy="27" r="4.5" fill="#e8382c" stroke="#5a3a14" stroke-width="1.8"/></svg>`; /* 홈 왼쪽 · 글자 없이(2026-10-28) */ const n = (P.mail || []).length; if (n) mb.appendChild(el("b", "lb-badge", String(n))); art.appendChild(mb); }
       art.appendChild(nav); if (shopRw && lobTab === "shop") art.appendChild(lobRewardBox()); else shopRw = null; L.replaceChildren(art); lobFit(art); if (P && P.op) { (matchMedia("(max-width: 760px)").matches ? art : L).appendChild(lobLive()); /* 휴대폰은 그림 안 「← 홈」 옆 */ if (Date.now() - liveAt > 5000) loadLive(); } // 운영자만 오른쪽에 지금 하는 사람
     }
     function lobGo(P) {
@@ -5503,7 +5506,7 @@ body.game-full { overflow: hidden; }
     function lobGear(P) {
       const D = P.gdef || {}, eq = P.eq || {}, gear = P.gear || [], st = P.stats || {}, find = (u) => gear.find((x) => x.u === u), SELL = P.sellP || [100, 300, 800, 2000], MAXLV = P.maxLv || [10, 20, 30, 40], MATN = P.matN || ["낡은 부품", "튼튼한 부품", "빛나는 부품", "전설 부품"];
       const head = el("div", "lb-ghead"), skb = el("button", "lb-skinbtn", "👕 스킨"); skb.type = "button"; skb.onclick = () => { lobTab = "skin"; lobErr = ""; lobDraw(); }; head.append(el("b", null, "🐾 장비 착용"), skb, el("span", "lb-power", "전투력 " + (st.power || 0).toLocaleString()));
-      const stage = el("div", "lb-gstage"); stage.appendChild(otter360(P, P.skin, false));
+      const stage = el("div", "lb-gstage"); stage.appendChild(otter360(P, (P.stats || {}).skin || "basic", true));
       const slot = (key, label, side) => { const it = key === "weapon" ? null : find(eq[key]), b = el("button", "lb-gslot p-" + key); b.type = "button";
         if (key === "weapon") { const w = WPN[P.wpn] || WPN.bow, i = el("img"); i.src = LBI(w.pic); i.alt = ""; b.append(i, el("small", null, "무기")); b.onclick = () => { lobTab = "wpn"; lobSel = null; lobDraw(); }; b.style.borderColor = GRADE_C[3]; }
         else if (it) { const i = el("img"); i.src = LBI("g-" + it.k); i.alt = ""; b.append(i, el("small", null, GRADE_N[it.g])); b.style.borderColor = GRADE_C[it.g]; b.onclick = () => gTap(it.u); }
@@ -5541,15 +5544,23 @@ body.game-full { overflow: hidden; }
     function gTap(u) { const now = Date.now(); if (gTapAt.u === u && now - gTapAt.t < 400) { gTapAt = { u: "", t: 0 }; lobGsel = u; lobAct("gameEquip", u); return; } gTapAt = { u, t: now }; lobGsel = u; lobDraw(); } // 한 번 = 고르기 · 두 번 = 장착 / 해제
     /* 스킨(2026-10-28 "캐릭터 스킨 10개 정도 · 게임할 때 적용 · 등급 일반 > 희귀 > 영웅 > 전설, 능력치는 보류") — 모자 + 털빛, 골드로 사서 끼기 */
     const SKIN_HP = [0, 0.03, 0.05, 0.08], SKIN_ATK = [0, 0, 0.05, 0.08], skinStat = (g) => g ? "체력 +" + Math.round(SKIN_HP[g] * 100) + "%" + (SKIN_ATK[g] ? " · 공격 +" + Math.round(SKIN_ATK[g] * 100) + "%" : "") : "능력치 없음"; // 스킨 등급 능력치(2026-10-28 "13번까지 진행")
+    /* 스킨 — 한벌 · 상의 · 신발 3칸(2026-10-28 "모자만 말고 상의 · 신발, 한벌의상도"). 한벌은 다른 칸 위에 덮어 입음 · 상의 + 신발은 같이 입은 그림(ChatGPT) */
+    let lobSkinTab = "full";
+    const skinSlot = (D, k) => (D[k] || {}).slot || "full";
+    function skinLookOf(P, full, top, shoes) { if (full && full !== "basic") return full; return [top, shoes].filter(Boolean).join("-") || "basic"; }
     function lobSkin(P) {
-      const D = P.skinDef || {}, own = P.skins || ["basic"], cur = P.skin || "basic", sel = lobSel && D[lobSel] ? lobSel : cur;
+      const D = P.skinDef || {}, own = P.skins || ["basic"], worn = { full: P.skin || "basic", top: P.skinTop || "", shoes: P.skinShoes || "" };
+      const keys = Object.keys(D).filter((k) => skinSlot(D, k) === lobSkinTab).sort((a, b) => D[a].g - D[b].g), sel = lobSel && D[lobSel] && skinSlot(D, lobSel) === lobSkinTab ? lobSel : worn[lobSkinTab] || keys[0];
       const head = el("div", "lb-ghead"), back = el("button", "lb-skinbtn", "← 장비"); back.type = "button"; back.onclick = () => { lobTab = "gear"; lobSel = null; lobDraw(); }; head.append(el("b", null, "👕 스킨"), back);
-      const pv = el("div", "lb-skinpv"); pv.appendChild(otter360(P, sel, true));
-      const S = D[sel] || {}, info = el("div", "lb-skininfo"); info.append(el("b", null, S.n || ""), el("em", null, GRADE_N[S.g || 0]), el("small", "lb-skst", skinStat(S.g || 0))); info.style.borderColor = GRADE_C[S.g || 0]; info.querySelector("em").style.background = GRADE_C[S.g || 0];
-      const has = own.includes(sel), bb = el("button", "lb-buy", cur === sel ? "착용 중" : has ? "착용하기" : "사서 착용 💰 " + (S.gold || 0).toLocaleString()); bb.type = "button"; bb.disabled = cur === sel || P.free || (!has && P.gold < (S.gold || 0)); bb.onclick = () => lobAct("gameSkin", sel); info.appendChild(bb);
-      if (cur !== "basic") { const hb = el("button", "lb-skhide" + (P.skinHide ? " on" : ""), P.skinHide ? "🙈 스킨 숨김 중 ㆍ 보이기" : "👁 스킨 보이는 중 ㆍ 숨기기"); hb.type = "button"; hb.onclick = () => lobAct("gameSkin", "hide"); info.appendChild(hb); } /* 입고는 있되 겉모습만 장비로(능력치 그대로) */
-      const grid = el("div", "lb-grid g4"); Object.keys(D).sort((a, b) => D[a].g - D[b].g).forEach((k) => { const c = lobCard(k === "basic" ? "otter-front" : "hat-" + k, D[k].n, cur === k ? "✔ 착용" : own.includes(k) ? "보유" : "💰 " + D[k].gold.toLocaleString(), sel === k, false, () => { lobSel = k; lobDraw(); }); c.style.borderColor = GRADE_C[D[k].g]; c.classList.add("skin"); grid.appendChild(c); });
-      return [head, pv, info, grid, el("p", "lb-note", "등급 능력치 ㆍ 희귀 체력 +3% · 영웅 체력 +5% 공격 +5% · 전설 체력 +8% 공격 +8%")];
+      const tabs = el("div", "lb-rtabs sk3"); [["full", "한벌의상"], ["top", "상의"], ["shoes", "신발"]].forEach(([k, n]) => { const b = el("button", k === lobSkinTab ? "on" : "", n); b.type = "button"; b.onclick = () => { lobSkinTab = k; lobSel = null; lobDraw(); }; tabs.appendChild(b); });
+      const look = lobSkinTab === "full" ? skinLookOf(P, sel) : skinLookOf(P, "", lobSkinTab === "top" ? sel : worn.top, lobSkinTab === "shoes" ? sel : worn.shoes);
+      const pv = el("div", "lb-skinpv"); pv.appendChild(otter360(P, look, true));
+      const S = D[sel] || {}, isOn = sel && (lobSkinTab === "full" ? worn.full === sel : worn[lobSkinTab] === sel), info = el("div", "lb-skininfo"); info.append(el("b", null, S.n || ""), el("em", null, GRADE_N[S.g || 0]), el("small", "lb-skst", skinStat(S.g || 0))); info.style.borderColor = GRADE_C[S.g || 0]; info.querySelector("em").style.background = GRADE_C[S.g || 0];
+      const has = own.includes(sel), bb = el("button", "lb-buy", isOn ? (sel === "basic" ? "착용 중" : "벗기") : has ? "착용하기" : "사서 착용 💰 " + (S.gold || 0).toLocaleString()); bb.type = "button"; bb.disabled = !sel || (isOn && sel === "basic") || P.free || (!has && P.gold < (S.gold || 0)); bb.onclick = () => lobAct("gameSkin", sel); info.appendChild(bb);
+      if (worn.full !== "basic" || worn.top || worn.shoes) { const hb = el("button", "lb-skhide" + (P.skinHide ? " on" : ""), P.skinHide ? "🙈 스킨 숨김 중 ㆍ 보이기" : "👁 스킨 보이는 중 ㆍ 숨기기"); hb.type = "button"; hb.onclick = () => lobAct("gameSkin", "hide"); info.appendChild(hb); } /* 입고는 있되 겉모습만 장비로(능력치 그대로) */
+      if (lobSkinTab !== "full" && worn.full !== "basic") info.appendChild(el("small", "lb-skst", "한벌의상(" + (D[worn.full] || {}).n + ")을 입고 있어 상의 · 신발은 그 아래에 입어요"));
+      const grid = el("div", "lb-grid g4"); keys.forEach((k) => { const on = lobSkinTab === "full" ? worn.full === k : worn[lobSkinTab] === k, c = lobCard(k === "basic" ? "otter-front" : "sk-" + k, D[k].n, on ? "✔ 착용" : own.includes(k) ? "보유" : "💰 " + D[k].gold.toLocaleString(), sel === k, false, () => { lobSel = k; lobDraw(); }); c.style.borderColor = GRADE_C[D[k].g]; c.classList.add("skin"); grid.appendChild(c); });
+      return [head, tabs, pv, info, grid, el("p", "lb-note", "등급 능력치(입은 것 중 가장 높은 등급) ㆍ 희귀 체력 +3% · 영웅 체력 +5% 공격 +5% · 전설 체력 +8% 공격 +8%")];
     }
     /* 장비 화면 수달 — 360도 돌려 보기(2026-10-28 "마우스로 360도 돌려서 볼 수 있게, 그림으로 해 놓으니 보기 싫다").
        ChatGPT 턴어라운드 8방향(img/lb/otter-360 · 장비를 4칸 이상 끼면 otter-360g = 장비 입은 모습), 끌면 돌고 손대기 전엔 천천히 저절로 돔 */
