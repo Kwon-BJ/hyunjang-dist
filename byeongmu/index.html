@@ -639,6 +639,32 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
 .game-box.full { position: fixed; inset: 0; z-index: 60; border: 0; border-radius: 0; }
 .game-box.full canvas { height: 100vh; height: 100dvh; min-height: 0; }
 body.game-full { overflow: hidden; }
+/* ── 수달단 게임 화면 — 로비 그림과 같은 화풍(초록 판 · 금테 · 크림 · Jua 글씨) (2026-10-28 "정식 출시할 수 있게 완성도 높게") ── */
+.game-box.full .game-hud { font-family: "Jua", "Noto Sans KR", sans-serif; font-weight: 400; color: #fff; text-shadow: 0 1px 2px #000, 0 0 3px rgba(0,0,0,.6); }
+.game-box.full .game-hud .row { left: 10px; right: 10px; top: calc(8px + env(safe-area-inset-top, 0px)); gap: 6px; padding: 6px 8px; border-radius: 16px; border: 2px solid #e8c46a; background: linear-gradient(180deg, rgba(47,90,28,.92), rgba(29,58,16,.92)); box-shadow: 0 3px 0 #13240a, 0 6px 14px rgba(0,0,0,.35); font-size: 14px; }
+.game-box.full .game-hud .hpbar { height: 14px; border: 2px solid #13240a; border-radius: 999px; background: #13240a; box-shadow: inset 0 1px 2px rgba(0,0,0,.6); }
+.game-box.full .game-hud .hpbar i { background: linear-gradient(180deg, #ff8a7a, #e8382c 60%, #b8241b); border-radius: 999px; }
+.game-box.full .game-hud .xp { top: auto; bottom: 0; height: 6px; background: rgba(19,36,10,.8); } .game-box.full .game-hud .xp i { background: linear-gradient(90deg, #ffe36b, #f2a91c); }
+.game-box.full .game-hud .tiny { padding: 4px 10px; border: 2px solid #e8c46a; border-radius: 999px; background: linear-gradient(180deg, #4a7f2c, #2c5418); color: #fff; font: 400 13px "Jua", "Noto Sans KR", sans-serif; box-shadow: 0 2px 0 #13240a; text-shadow: 0 1px 1px #000; }
+.game-box.full .game-hud .tiny:active { transform: translateY(2px); box-shadow: none; }
+.game-box.full .game-hud .pause { background: linear-gradient(180deg, #ffe36b, #f2a91c); color: #4a2a06; text-shadow: none; border-color: #b97a0a; }
+.game-box.full .game-hud .gauto[aria-pressed="true"] { background: linear-gradient(180deg, #ffe36b, #f2a91c); color: #4a2a06; text-shadow: none; border-color: #b97a0a; }
+.game-box.full .game-hud .boss { top: calc(88px + env(safe-area-inset-top, 0px)); color: #fff; font-size: 15px; }
+.game-box.full .game-hud .boss .bar { height: 12px; border: 2px solid #3a0a06; background: #2a0a06; } .game-box.full .game-hud .boss .bar i { background: linear-gradient(180deg, #ff9a5a, #e8382c); }
+.game-box.full .game-hud .msg { font-family: "Jua", "Noto Sans KR", sans-serif; font-weight: 400; color: #fff; -webkit-text-stroke: 5px #2f5a1c; paint-order: stroke fill; text-shadow: 0 4px 0 #13240a; letter-spacing: 1px; }
+.game-box.full .game-hud .grest { border: 2px solid #b97a0a; background: linear-gradient(180deg, #ffe36b, #f2a91c); color: #4a2a06; font-family: "Jua", "Noto Sans KR", sans-serif; box-shadow: 0 3px 0 #8a5a08; }
+.game-box.full .gskill { border: 3px solid #e8c46a; background: conic-gradient(rgba(0,0,0,.6) calc(var(--cd, 0) * 1turn), #2c5418 0); color: #fff; font-family: "Jua", "Noto Sans KR", sans-serif; box-shadow: 0 3px 0 #13240a; }
+.game-box.full .gskill.ready { border-color: #ffe36b; box-shadow: 0 3px 0 #13240a, 0 0 14px rgba(255,227,107,.7); }
+.game-box.full .dashbtn { width: 70px; height: 70px; border-color: #e8c46a; background: radial-gradient(circle at 50% 35%, #6ab4ff, #2a6fd0 70%); }
+.game-box.full .dashbtn span { font-size: 15px; } .game-box.full .dashbtn small { color: #e5f1ff; }
+/* 결과 · 고르기 판 */
+.game-box.full .game-over { background: rgba(19,36,10,.72); }
+.game-box.full .game-over > div { padding: 18px 16px; border-radius: 22px; border: 3px solid #c79a4a; background: linear-gradient(180deg, #f9eccb, #efdcab); box-shadow: 0 0 0 3px #5a3a14, 0 12px 30px rgba(0,0,0,.5); color: #3a2a10; font-family: "Jua", "Noto Sans KR", sans-serif; }
+.game-box.full .game-over h3 { font-family: "Jua", "Noto Sans KR", sans-serif; font-weight: 400; color: #fff; -webkit-text-stroke: 5px #6a3e14; paint-order: stroke fill; font-size: 28px; }
+.game-box.full .game-over p, .game-box.full .game-over .best { color: #5a3a1a; }
+.game-box.full .game-card { border: 0; background: none; box-shadow: none; color: #3a2a10; } .game-box.full .game-card .k { color: #2f5a1c; } .game-box.full .game-card .sc { color: #fff; -webkit-text-stroke: 6px #b97a0a; paint-order: stroke fill; background: none; -webkit-background-clip: initial; font-family: "Jua", sans-serif; } .game-box.full .game-card .det, .game-box.full .game-card .rank { color: #5a3a1a; }
+.game-box.full .game-over .btn { padding: 12px 26px; border: 0; border-radius: 16px; background: linear-gradient(180deg, #ffe36b, #f2a91c); color: #4a2a06; font: 400 18px "Jua", "Noto Sans KR", sans-serif; box-shadow: 0 4px 0 #b97a0a; }
+.game-box.full .game-over .btn.ghost { background: linear-gradient(180deg, #4a7f2c, #2c5418); color: #fff; box-shadow: 0 4px 0 #13240a; }
 /* 수달단 로비 (2026-10-28) — 부장님 로비 그림(img/lobby.webp, 941×1672) 위에 숫자 · 단추를 얹음. 자리는 그림 기준 %, 글씨는 그림 폭 기준(cqw) */
 .globby, .globby *, .game-box.full, .game-box.full * { forced-color-adjust: none; -webkit-forced-color-adjust: none; color-scheme: only light; } /* 폰 강제 다크 모드 제외 */
 .globby { position: fixed; inset: 0; z-index: 61; display: grid; place-items: center; background: #1d3312; color: #3a2a12; overflow: hidden; font-family: "Jua", "Noto Sans KR", sans-serif; }
@@ -734,6 +760,7 @@ body.game-full { overflow: hidden; }
 .lb-admin { font-size: 13px; font-family: "Noto Sans KR", sans-serif; color: var(--ink); background: #1b1408; border-radius: 3cqw; padding: 2cqw; } .lb-admin summary { cursor: pointer; color: #ffe08a; } .lb-admin .game-rank, .lb-admin .game-live { margin: 8px 0 0; }
 .lb-note { margin: 0; padding: 3cqw; text-align: center; color: #7a5a2a; font-size: 3cqw; } .lb-err { margin: 0; text-align: center; color: #b3261e; font-size: 3.2cqw; }
 /* 로딩 — 부장님 로딩 그림(img/loading.webp), 막대는 진짜 받은 만큼 */
+.lb-login { position: relative; z-index: 1; width: min(100vw, calc(100dvh * 768 / 1024)); aspect-ratio: 768 / 1024; background: url(img/login.webp) center / 100% 100% no-repeat; } .lb-login button { position: absolute; border: 0; background: transparent; border-radius: 999px; cursor: pointer; } .lb-login .lg-btn:active { background: rgba(255,255,255,.2); } .lb-login .lg-agree { border-radius: 4px; } .lb-login .lg-agree:not(.on) { background: #fff; box-shadow: inset 0 0 0 2px #2f8a2f; } /* 숨김 로그인(정식 출시 때) */
 .lb-load { position: relative; z-index: 1; width: min(100vw, calc(100dvh * 760 / 1024)); aspect-ratio: 760 / 1024; background: url(img/loading.webp) center / 100% 100% no-repeat; container-type: inline-size; }
 .lb-lbar { position: absolute; left: 16.6%; width: 66.4%; top: 87.4%; height: 2.6%; border-radius: 999px; background: #10151c; border: .4cqw solid #000; overflow: hidden; }
 .lb-lbar i { display: block; height: 100%; width: 0; background: linear-gradient(#ffe36b, #f2b51c); transition: width .2s; } .lb-lbar b { position: absolute; inset: 0; display: grid; place-content: center; font-size: 2.8cqw; color: #4a2a06; }
@@ -1310,7 +1337,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610280245";
+  const BUILD = "202610280303";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -3712,7 +3739,7 @@ body.game-full { overflow: hidden; }
       const r = cv.getBoundingClientRect();
       if (!r.width) return;
       /* 휴대폰은 멀리서 보듯(캐릭터 · 몬스터 작게, 더 넓게) — "모바일에서 캐릭터들이 크다" (2026-10-28) */
-      ZM = Math.min(r.width, r.height) < 620 ? 0.62 : 1;
+      ZM = Math.min(r.width, r.height) < 620 ? 0.62 : 1; if (window.__zoomOverride) ZM = window.__zoomOverride; // 스토어 사진 찍을 때만(시험/스토어그림-만들기.cjs)
       if (mapOk) ZM = Math.max(ZM, r.height / (MAP.height * MAP_K - 4), r.width / (MAP.width * MAP_K - 4)); // 맵보다 넓게 보이면 검은 띠 — 세로 휴대폰은 맵 높이에 맞춤
       DPR = Math.min(2, window.devicePixelRatio || 1); W = r.width / ZM; H = r.height / ZM;
       cv.width = Math.round(r.width * DPR); cv.height = Math.round(r.height * DPR);
@@ -5144,10 +5171,22 @@ body.game-full { overflow: hidden; }
       let n = 0; const t0 = Date.now(), tick = () => { n++; const p = Math.round(n / list.length * 100); bar.style.width = p + "%"; pct.textContent = p + "%"; if (n >= list.length) setTimeout(() => { lobLoaded = true; done(); }, Math.max(300, 900 - (Date.now() - t0))); };
       list.forEach((u) => { const i = new Image(); i.onload = i.onerror = tick; i.src = u; });
     }
+    /* 정식 출시 로그인 화면 — 숨김(2026-10-28 부장님 "로그인 화면은 숨겨 둬라, 구글 스토어 올리기 전에 열어서 쓰면 된다").
+       켜기: SUDAL_LOGIN = true (미리 보기만: 주소 끝 ?login=1). 그림 img/login.webp(부장님 그림 · 시험/로그인그림-만들기.cjs). Google · Apple 은 출시 때 계정 연결, 지금은 안내만 */
+    const SUDAL_LOGIN = false;
+    let loginDone = false;
+    function lobLogin(next) {
+      if (loginDone || !(SUDAL_LOGIN || /[?&]login=1/.test(location.search))) return next();
+      const L = $("gLobby"), box = el("div", "lb-login"), pc = (x, y, w, h) => "left:" + x + "%;top:" + y + "%;width:" + w + "%;height:" + h + "%";
+      let agree = true; const ag = el("button", "lg-agree on"); ag.type = "button"; ag.style.cssText = pc(27.6, 87.9, 4.2, 3.1); ag.setAttribute("aria-label", "이용약관 동의"); ag.onclick = () => { agree = !agree; ag.classList.toggle("on", agree); };
+      const go = (how) => { if (!agree) { setStatus("이용약관에 동의해 주세요.", true); return; } if (how !== "guest") { setStatus((how === "google" ? "Google" : "Apple") + " 로그인은 정식 출시 때 열려요."); return; } loginDone = true; next(); };
+      [["google", 20.2, 62.4], ["apple", 20.2, 70.7], ["guest", 20.2, 79.2]].forEach(([k, x, y]) => { const b = el("button", "lg-btn"); b.type = "button"; b.style.cssText = pc(x, y, 59, 6.6); b.setAttribute("aria-label", { google: "Google로 로그인", apple: "Apple로 로그인", guest: "게스트로 시작하기" }[k]); b.onclick = () => go(k); box.appendChild(b); });
+      box.appendChild(ag); L.replaceChildren(box); L.hidden = false;
+    }
     function lobby() {
       running = false; stick = null; $("gameOver").hidden = true; $("gameHud").hidden = true; coverFull(false);
       $("gLobby").hidden = false; document.body.classList.add("game-full"); lobErr = ""; const tc = $("themeColor"); if (tc) tc.content = "#5c8f3a"; // 폰 위 띠 색도 로비에 맞게
-      lobLoading(() => { lobLoad(); lobDraw(); });
+      lobLoading(() => lobLogin(() => { lobLoad(); lobDraw(); }));
       clearInterval(lobT); lobT = setInterval(() => { if ($("gLobby").hidden) return clearInterval(lobT); const e = $("lbEn"); if (e && LP) { const n = lobEn(); n.style.cssText = e.style.cssText; e.replaceWith(n); lobFit(n.parentElement); } }, 1000); // 1초마다 새로 — 글씨 맞추기도(107/30 이 잘렸다)
     }
     function lobEn() { // 25/30 · 다음 1 까지 남은 시간
@@ -5360,7 +5399,7 @@ body.game-full { overflow: hidden; }
     function autoLabel() { const b = $("gAuto"); if (!b) return; b.textContent = autoSk ? "🤖 자동 켬" : "🤖 자동"; b.setAttribute("aria-pressed", String(autoSk)); }
     function autoCast() { if (!autoSk || !s || !s.skills) return; const near = s.foes.some((f) => (f.x - s.x) ** 2 + (f.y - s.y) ** 2 < 330 * 330); if (!near) return; s.skills.forEach((k) => { if (!(s.cd[k] > 0)) cast(k); }); }
     autoLabel();
-    if (/[?&]bmctest=1/.test(location.search)) window.__bmcGame = { get s() { return s; }, get LP() { return LP; }, lobby: lobby, mapIdx: () => mapIdx, running: () => running, setHero: (k) => { heroKey = k; }, lobStart: lobStart, setTab: (k) => { lobTab = k; lobDraw(); }, setCh: (c) => { lobTab = "go"; lobCh = c; lobDraw(); }, chapterClear: chapterClear, begin: begin, step: step, spawnBoss: spawnBoss, take: take, cast: cast, startStage: startStage, stageLen: stageLen, W: () => W, H: () => H, UPS: UPS, SK: SK, TEST_MUL: TEST_MUL, openBox: openBox, useItem: useItem, dash: dash, spawn: spawn, bullet: bullet, hazard: hazard, showPicks: showPicks };
+    if (/[?&]bmctest=1/.test(location.search)) window.__bmcGame = { get s() { return s; }, get LP() { return LP; }, lobby: lobby, mapIdx: () => mapIdx, running: () => running, size: () => size(), draw: draw, setHero: (k) => { heroKey = k; }, lobStart: lobStart, setTab: (k) => { lobTab = k; lobDraw(); }, setCh: (c) => { lobTab = "go"; lobCh = c; lobDraw(); }, chapterClear: chapterClear, begin: begin, step: step, spawnBoss: spawnBoss, take: take, cast: cast, startStage: startStage, stageLen: stageLen, W: () => W, H: () => H, UPS: UPS, SK: SK, TEST_MUL: TEST_MUL, openBox: openBox, useItem: useItem, dash: dash, spawn: spawn, bullet: bullet, hazard: hazard, showPicks: showPicks };
     return {
       /* 다른 메뉴로 가면 멈춘다. 처음 들어오면(또는 다른 사람이 들어오면) 시작 안내 */
       render() {
