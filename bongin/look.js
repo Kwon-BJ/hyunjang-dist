@@ -97,9 +97,9 @@ function drawSeq(g, hero, L, pose, sc, opt) {
   if (!r) { const st = pose.st; r = FR[base].idle0; if (Mm.ax2) axN = Mm.ax2.idle0; if (st === "hit" || st === "backstep") rot = -0.18; else if (st === "fall" || st === "down" || st === "dead") { rot = -1.45; lift = -6; } else if (st === "sprint" || st === "jump" || st === "airatk") { r = FR[base].walk2 || r; if (Mm.ax2) axN = Mm.ax2.walk2 != null ? Mm.ax2.walk2 : axN; } } // 반응 영상이 아직 없으면 몸짓으로
   const SK = opt && opt.gear && opt.gear.skin, P = motionPic(src, (L && L.mc) | 0, (L && L.mh) | 0, SK), k = sc * 124 / Mm.tall, st = pose.st, t = pose.t || 0, bob = st === "idle" ? Math.sin(t * 2.5) * 0.6 : 0;
   const G = opt && opt.gear, col = (opt && opt.glow && "rgba(255,230,140,1)") || SKIN_GLOW[SK] || (G && G.b && GEAR_COL[G.b]);
-  g.save(); g.translate(0, (-bob + lift) * sc); if (rot) g.rotate(rot); if (col) { g.shadowColor = col; g.shadowBlur = 14 * sc; }
+  g.save(); g.translate(0, (-bob + lift) * sc); if (rot) g.rotate(rot); // 둘레 빛(shadowBlur)은 뺌 — 휴대폰에서 한 장에 수백 ms 걸려 멈췄다(2026-10-28)
   g.drawImage(P, r[0], r[1], r[2], r[3], -r[2] * k * axN, -r[3] * k + 2, r[2] * k, r[3] * k);
-  if (SK === "gold") { g.shadowBlur = 0; g.globalCompositeOperation = "lighter"; g.globalAlpha *= 0.18 + 0.14 * Math.sin(performance.now() / 250); g.drawImage(P, r[0], r[1], r[2], r[3], -r[2] * k * axN, -r[3] * k + 2, r[2] * k, r[3] * k); } // 황금 의상 — 반짝임
+  if (SK === "gold") { g.globalCompositeOperation = "lighter"; g.globalAlpha *= 0.18 + 0.14 * Math.sin(performance.now() / 250); g.drawImage(P, r[0], r[1], r[2], r[3], -r[2] * k * axN, -r[3] * k + 2, r[2] * k, r[3] * k); } // 황금 의상 — 반짝임
   g.restore(); return true;
 }
 function drawMotion(g, hero, L, pose, sc, opt) {
@@ -110,7 +110,7 @@ function drawMotion(g, hero, L, pose, sc, opt) {
   if (st === "idle") bob = Math.sin(t * 2.5) * 1.2; else if (st === "walk" || st === "run" || st === "sprint") bob = Math.abs(Math.sin(pose.walk || t * 9)) * 2.5;
   if (st === "atk" && t < 0.06) sx = 1.06; // 휘두르는 순간 살짝 늘림 — 힘이 실린 느낌
   const G = opt && opt.gear, col = (opt && opt.glow && "rgba(255,230,140,1)") || (G && G.b && GEAR_COL[G.b]);
-  g.save(); g.translate(0, -bob * sc); g.scale(sx, 1); if (col) { g.shadowColor = col; g.shadowBlur = 14 * sc; }
+  g.save(); g.translate(0, -bob * sc); g.scale(sx, 1); if (col) { g.shadowColor = col; g.shadowBlur = 0; }
   g.drawImage(P, r[0], r[1], r[2], r[3], -r[2] * k * ax, -r[3] * k + 2, r[2] * k, r[3] * k); g.restore();
   return true;
 }
@@ -147,7 +147,7 @@ function drawMaster(g, L, pose, sc, opt) {
   else if (st === "hit" || st === "backstep") rot = -0.2;
   else if (st === "fall" || st === "down" || st === "dead") rot = -1.4;
   const G = opt && opt.gear, col = (opt && opt.glow && "rgba(255,230,140,1)") || (G && G.b && GEAR_COL[G.b]);
-  g.save(); g.translate(lx * sc, -bob * sc); g.rotate(rot); g.scale(sx, 1); if (col) { g.shadowColor = col; g.shadowBlur = 14 * sc; }
+  g.save(); g.translate(lx * sc, -bob * sc); g.rotate(rot); g.scale(sx, 1); if (col) { g.shadowColor = col; g.shadowBlur = 0; }
   g.drawImage(P, -r[2] * k / 2, -r[3] * k + 2, r[2] * k, r[3] * k); g.restore();
   return true;
 }
@@ -173,7 +173,7 @@ function drawHero(g, L, pose, sc, opt) {
   if (G && G.skin === "gold") { g.save(); g.globalAlpha *= 0.35 + 0.15 * Math.sin(now * 4); g.globalCompositeOperation = "lighter"; g.filter = SKIN.gold; g.drawImage(HERO_IMG, r[0], r[1], r[2], r[3], X, Y, r[2] * k, r[3] * k); g.restore(); }
   if (G && G.acc) for (let i = 0; i < G.acc; i++) { // 장신구 — 몸 둘레를 도는 금빛 구슬
     const a = now * 2.2 + i * Math.PI * 2 / G.acc, px = Math.cos(a) * 30 * sc, py = (-62 + Math.sin(a) * 9) * sc, front = Math.sin(a) > 0;
-    g.save(); g.globalAlpha = front ? 1 : 0.5; g.fillStyle = "rgba(255,225,120,.95)"; g.shadowColor = "rgba(255,200,60,1)"; g.shadowBlur = 8 * sc; g.beginPath(); g.arc(px, py, 3.2 * sc, 0, Math.PI * 2); g.fill(); g.restore(); }
+    g.save(); g.globalAlpha = front ? 1 : 0.5; g.fillStyle = "rgba(255,225,120,.95)"; g.shadowColor = "rgba(255,200,60,1)"; g.shadowBlur = 0; g.beginPath(); g.arc(px, py, 3.2 * sc, 0, Math.PI * 2); g.fill(); g.restore(); }
   return true;
 }
 
