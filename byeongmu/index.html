@@ -760,6 +760,12 @@ body.game-full { overflow: hidden; }
 .game-box .hero-pick canvas { width: 60px; height: 70px; min-height: 0; flex: none; } /* 게임판 canvas 규칙(min-height 360px)을 받지 않게 */
 /* 휴대폰 — 다섯 이름이 한 줄에 들어가게 글씨 · 그림을 조금 작게 (2026-10-27) */
 @media (max-width: 480px) { .hero-pick button { font-size: 11px; padding: 4px 1px 6px; letter-spacing: -.3px; word-break: keep-all; } .game-box .hero-pick canvas { width: 46px; height: 54px; } }
+.game-picks .sk-pic { grid-row: 1 / 4; width: 62px; height: 62px; border-radius: 14px; align-self: center; }
+.game-picks button.pk-atk, .game-picks button.pk-sup { grid-template-columns: 62px 1fr; border: 3px solid #e2c58a; border-radius: 16px; background: linear-gradient(#fffaf0, #f3e2b8); color: #3a2a10; box-shadow: 0 4px 0 #c9a45e; font-family: "Jua", "Noto Sans KR", sans-serif; }
+.game-picks button.pk-atk { border-color: #6ab4ff; } .game-picks button.pk-sup { border-color: #7fd36a; }
+.game-picks button.pk-atk b, .game-picks button.pk-sup b { font-size: 18px; color: #3a2a10; } .game-picks button.pk-atk span, .game-picks button.pk-sup span { color: #6a4a1a; font-size: 13px; }
+.pk-st { font-style: normal; color: #f5b419; letter-spacing: 1px; font-size: 14px; } .pk-new { margin-left: 6px; padding: 0 6px; border-radius: 999px; background: #ff5a4a; color: #fff; font-style: normal; font-size: 11px; vertical-align: 2px; }
+.gskill img.sk-pic { width: 34px; height: 34px; border-radius: 8px; margin: 0 auto 1px; }
 .game-picks button { display: grid; grid-template-columns: 46px 1fr; column-gap: 12px; row-gap: 2px; align-items: center; text-align: left; padding: 12px 14px; border: 1px solid var(--gold-lo); border-radius: 6px; background: var(--panel-hi); color: var(--ink); cursor: pointer; font: inherit; }
 .game-picks button:hover, .game-picks button:focus-visible { border-color: var(--gold); }
 .game-picks button:disabled { opacity: .55; cursor: wait; }
@@ -1266,7 +1272,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610272356";
+  const BUILD = "202610280018";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -3559,13 +3565,14 @@ body.game-full { overflow: hidden; }
     ];
     /* 스킬 — 단추(PC 는 1 · 2 · 3)로 쓴다. l 은 스킬 레벨 */
     const SK = {
-      thunder: { n: "낙뢰", cd: (l) => 9 - l * 0.8 },
+      grenade: { n: "수류탄", cd: (l) => 5 - l * 0.45 },
+      thunder: { n: "번개 사슬", cd: (l) => 9 - l * 0.8 },
       whirl: { n: "회오리", cd: (l) => 13 - l },
       ward: { n: "결계", cd: (l) => 22 - l * 2 },
       // "스킬 추가좀 더하고, 이미지도 추가하고, 조금더 퀄리티 있게" (2026-10-26)
-      fire: { n: "불바다", cd: (l) => 12 - l },
-      homing: { n: "유도 화살", cd: (l) => 9 - l * 0.8 },
-      frost: { n: "얼음 폭발", cd: (l) => 14 - l },
+      fire: { n: "불길 지대", cd: (l) => 12 - l },
+      homing: { n: "도움 드론", cd: (l) => 8 - l * 0.7 },
+      frost: { n: "얼음 폭탄", cd: (l) => 13 - l },
       /* 캐릭터마다 스킬 3가지 — "각 캐릭마다 스킬이 틀리게 이미지 만들었는데, 왜 다 똑같이 스킬을 배우고 있는지, 각각 배우는 스킬이 틀리게" (2026-10-27).
          그림은 부장님의 「캐릭터 스킬 효과」(img/hsk.png · 시험/캐릭터스킬-자르기.cjs). 위 6가지(낙뢰 …얼음 폭발)는 이제 안 나오고, 그 전 판을 이어 하는 사람만 쓴다 */
       kh_wave: { n: "화염 검기", cd: (l) => 8 - l * 0.7 },
@@ -3577,55 +3584,32 @@ body.game-full { overflow: hidden; }
       ds_bell: { n: "금종 결계", cd: (l) => 22 - l * 2 },
       ds_slam: { n: "대지 강타", cd: (l) => 9 - l * 0.7 },
       ds_aura: { n: "금강 기운", cd: (l) => 15 - l },
-      je_wind: { n: "질풍 화살", cd: (l) => 6 - l * 0.5 },
+      je_wind: { n: "레이저 빔", cd: (l) => 6 - l * 0.5 },
       je_rain: { n: "화살 연사", cd: (l) => 8 - l * 0.7 },
       je_storm: { n: "회오리 화살", cd: (l) => 12 - l },
       mj_shadow: { n: "그림자 질주", cd: (l) => 14 - l },
       mj_poison: { n: "독 안개", cd: (l) => 11 - l },
-      mj_star: { n: "거대 표창", cd: (l) => 8 - l * 0.7 },
+      mj_star: { n: "부메랑 조개", cd: (l) => 8 - l * 0.7 },
     };
     const UPS = [
-      /* 평타 강화 — "평타 스킬 강화할 수 있게, 멀티샷 같은 것도" (2026-10-26). 예전 「부적 …」 은 총잡이 · 검객에게 헷갈려 「평타 …」 로 */
-      { k: "dmg", n: "평타 위력", max: 8, d: "[평타] 피해 +10%", f: () => { s.dmg *= 1.1; } }, // 2026-10-26 +30% 는 너무 세다 → +10%
-      { k: "rate", n: "평타 속도", max: 6, d: "[평타] 쏘는 간격 −15%", f: () => { s.rate *= 0.85; } },
-      { k: "multi", n: "평타 한 발 더", max: 5, d: "[평타] 한 번에 한 발 더 — 다른 몬스터로", f: () => { s.multi++; } },
-      { k: "pierce", n: "평타 꿰뚫기", max: 4, d: "[평타] 몬스터를 하나 더 뚫고 가요", f: () => { s.pierce++; } },
-      { k: "fan", n: "평타 멀티샷", max: 2, d: "[평타] 한 발이 부채처럼 세 갈래로(레벨마다 +2 갈래)", f: () => { s.fan++; } },
-      { k: "crit", n: "평타 치명타", max: 4, d: "[평타] 15% 확률로 2.5배 피해(레벨마다 +15%)", f: () => { s.crit += 0.15; } },
-      { k: "boom", n: "평타 폭발", max: 3, d: "[평타] 맞은 자리 둘레 몬스터도 절반 피해", f: () => { s.boom++; } },
-      { k: "bounce", n: "평타 튕김", max: 3, d: "[평타] 맞히면 가까운 다른 몬스터로 튕겨 가요(레벨마다 +1번)", f: () => { s.bounce++; } },
-      { k: "range", n: "사거리 증가", max: 3, d: "자동 조준 범위 +1m (3m → 많아야 6m)", f: () => { s.range += 80; } }, // "사거리 증가도 1M씩 최대 3레벨" (2026-10-27)
-      { k: "dashx", n: "대쉬 충전", max: 3, d: "대쉬를 한 번 더 모아 둘 수 있어요(5초마다 하나씩 참)", f: () => { s.dashN = (s.dashN == null ? 1 : s.dashN) + 1; } },
-      { k: "orbs", n: "수호 구슬", max: 6, d: "몸 둘레를 도는 구슬 +1", f: () => { s.orbs++; } },
-      { k: "aura", n: "기운 영역", max: 5, d: "가까이 온 잡귀가 계속 다쳐요", f: () => { s.aura++; } },
-      { k: "spd", n: "날랜 발", max: 5, d: "이동 속도 +12%", f: () => { s.spd *= 1.12; } },
-      { k: "max", n: "튼튼한 몸", max: 6, d: "최대 체력 +25, 그만큼 회복", f: () => { s.max += 25; s.hp += 25; } },
-      { k: "magnet", n: "구슬 끌기", max: 4, d: "경험 구슬을 더 멀리서 끌어와요", f: () => { s.magnet *= 1.5; } },
-      { k: "regen", n: "숨 고르기", max: 4, d: "1초마다 체력 1 회복(맞은 뒤 2초는 안 참)", f: () => { s.regen++; } },
-      { k: "thunder", old: true, n: "낙뢰 부적", max: 5, skill: true, d: "[스킬] 가까운 잡귀 여럿에게 벼락", up: "벼락이 더 세고 · 더 많이 · 더 자주" },
-      { k: "whirl", old: true, n: "회오리", max: 5, skill: true, d: "[스킬] 공격하는 쪽으로 회오리가 나가 잡귀를 휩쓸고 불덩이를 지움", up: "더 크게 · 더 세게 · 더 자주" },
-      { k: "ward", old: true, n: "결계", max: 5, skill: true, d: "[스킬] 지름 2m 결계 — 잠깐 아무 피해도 안 받고, 잡귀 · 불덩이를 밀어내요", up: "지름 +1m · 더 오래 · 더 자주" },
-      { k: "fire", old: true, n: "불바다", max: 5, skill: true, d: "[스킬] 공격하는 쪽 땅이 4초 동안 불타요 — 들어온 몬스터가 계속 다쳐요", up: "더 넓게 · 더 뜨겁게 · 더 자주" },
-      { k: "homing", old: true, n: "유도 화살", max: 5, skill: true, d: "[스킬] 몬스터를 따라가는 화살 여러 발", up: "화살 더 많이 · 더 세게 · 더 자주" },
-      { k: "frost", old: true, n: "얼음 폭발", max: 5, skill: true, d: "[스킬] 공격하는 쪽에서 얼음이 터져 몬스터를 얼리고 다치게 해요", up: "더 넓게 · 더 오래 얼림 · 더 자주" },
-      /* 캐릭터 스킬 — hero 가 고른 캐릭터와 같을 때만 나온다 */
-      { k: "kh_wave", hero: "kh", n: "화염 검기", max: 5, skill: true, d: "[스킬] 공격하는 쪽으로 불타는 검기가 날아가 닿는 몬스터를 모두 베고 불덩이를 지워요", up: "더 크게 · 더 세게 · 더 자주" },
-      { k: "kh_ring", hero: "kh", n: "화염검 진", max: 5, skill: true, d: "[스킬] 불타는 검 여덟 자루가 몸 둘레를 돌며 몬스터를 베어요", up: "더 넓게 · 더 오래 · 더 세게" },
-      { k: "kh_dash", hero: "kh", n: "화염 돌진", max: 5, skill: true, d: "[스킬] 공격하는 쪽으로 돌진(그동안 안 맞음) — 지나간 몬스터를 베고 불길을 남겨요", up: "더 세게 · 불길 더 넓게 · 더 자주" },
-      { k: "hr_tali", hero: "hr", n: "뇌전 부적", max: 5, skill: true, d: "[스킬] 부적을 던져 맞은 자리에 번개가 터져요", up: "더 넓게 · 더 세게 · 더 자주" },
-      { k: "hr_bolt", hero: "hr", n: "낙뢰", max: 5, skill: true, d: "[스킬] 화면 안 가까운 몬스터 여럿에게 벼락", up: "벼락이 더 세고 · 더 많이 · 더 자주" },
-      { k: "hr_bagua", hero: "hr", n: "태극진", max: 5, skill: true, d: "[스킬] 공격하는 쪽 땅에 4초 동안 태극진 — 들어온 몬스터가 느려지고 계속 다쳐요", up: "더 넓게 · 더 세게 · 더 자주" },
-      { k: "ds_bell", hero: "ds", n: "금종 결계", max: 5, skill: true, d: "[스킬] 지름 2m 금종 — 잠깐 아무 피해도 안 받고, 잡귀 · 불덩이를 밀어내요", up: "지름 +1m · 더 오래 · 더 자주" },
-      { k: "ds_slam", hero: "ds", n: "대지 강타", max: 5, skill: true, d: "[스킬] 공격하는 쪽 땅을 내리쳐 둘레 몬스터를 크게 다치게 하고 묶어요", up: "더 넓게 · 더 세게 · 더 자주" },
-      { k: "ds_aura", hero: "ds", n: "금강 기운", max: 5, skill: true, d: "[스킬] 5초 동안 몸 둘레 금빛 기운 — 다가온 몬스터가 다치고 받는 피해는 절반", up: "더 넓게 · 더 세게 · 더 자주" },
-      { k: "je_wind", hero: "je", n: "질풍 화살", max: 5, skill: true, d: "[스킬] 바람을 두른 화살 — 공격하는 쪽 일직선 몬스터를 모두 꿰뚫어요", up: "더 굵게 · 더 세게 · 더 자주" },
-      { k: "je_rain", hero: "je", n: "화살 연사", max: 5, skill: true, d: "[스킬] 공격하는 쪽으로 화살 여러 발을 부채처럼, 하나하나 꿰뚫어요", up: "화살 더 많이 · 더 세게 · 더 자주" },
-      { k: "je_storm", hero: "je", n: "회오리 화살", max: 5, skill: true, d: "[스킬] 공격하는 쪽으로 초록 회오리 — 잡귀를 휩쓸어 가고 불덩이를 지워요", up: "더 크게 · 더 세게 · 더 자주" },
-      { k: "mj_shadow", hero: "mj", n: "그림자 질주", max: 5, skill: true, d: "[스킬] 그림자가 되어 돌진 — 지나간 몬스터를 베고 잠깐 숨어(안 맞음) 더 빨라져요", up: "더 오래 숨음 · 더 세게 · 더 자주" },
-      { k: "mj_poison", hero: "mj", n: "독 안개", max: 5, skill: true, d: "[스킬] 공격하는 쪽에 5초 동안 독 안개 — 들어온 몬스터가 계속 다쳐요", up: "더 넓게 · 더 독하게 · 더 자주" },
-      { k: "mj_star", hero: "mj", n: "거대 표창", max: 5, skill: true, d: "[스킬] 큰 표창을 던져 꿰뚫고 다시 돌아와요(오갈 때 한 번씩)", up: "더 크게 · 더 세게 · 더 자주" },
-      { k: "cool", n: "기 모으기", max: 4, d: "스킬 기다리는 시간 −10%", f: () => { s.cool *= 0.9; }, ok: () => s.skills.length > 0 },
+      /* 수달단 레벨업 카드 — 탕탕특공대처럼(2026-10-28 부장님 "레벨업 할 때마다 랜덤하게 뜨는 스킬들, 기존 스킬들은 다 없애라").
+         공격 스킬 8 · 보조 6, 다 Lv 5 까지. 공격 스킬은 한 판에 6가지까지. 스킬은 재사용 시간마다 단추로(🤖 자동을 켜면 저절로). 그림 = 제미나이 아이콘(img/lb/s-*.webp) */
+      { k: "grenade", n: "수류탄", max: 5, skill: true, d: "가까운 몬스터 무리에 수류탄 — 터지며 둘레를 크게 다치게", up: "더 넓게 · 더 세게 · 더 자주" },
+      { k: "homing", n: "도움 드론", max: 5, skill: true, d: "드론이 몬스터를 따라가는 미사일을 여러 발 쏴요", up: "미사일 더 많이 · 더 세게 · 더 자주" },
+      { k: "orbs", n: "물방울 구슬", max: 5, atk: true, d: "몸 둘레를 도는 물방울 구슬 +1 — 닿는 몬스터가 다쳐요", f: () => { s.orbs++; } },
+      { k: "thunder", n: "번개 사슬", max: 5, skill: true, d: "가까운 몬스터 여럿에게 번개가 이어서 떨어져요", up: "번개 더 많이 · 더 세게 · 더 자주" },
+      { k: "fire", n: "불길 지대", max: 5, skill: true, d: "공격하는 쪽 땅이 4초 동안 불타요 — 들어온 몬스터가 계속 다쳐요", up: "더 넓게 · 더 뜨겁게 · 더 자주" },
+      { k: "je_wind", n: "레이저 빔", max: 5, skill: true, d: "공격하는 쪽 일직선 몬스터를 모두 꿰뚫는 빔", up: "더 굵게 · 더 세게 · 더 자주" },
+      { k: "mj_star", n: "부메랑 조개", max: 5, skill: true, d: "던지면 꿰뚫고 다시 돌아오는 조개 — 오갈 때 한 번씩", up: "더 크게 · 더 세게 · 더 자주" },
+      { k: "frost", n: "얼음 폭탄", max: 5, skill: true, d: "터지며 둘레 몬스터를 얼려 느리게 하고 다치게", up: "더 넓게 · 더 오래 얼림 · 더 자주" },
+      { k: "rate", n: "탄창", max: 5, d: "평타 쏘는 간격 −12%", f: () => { s.rate *= 0.88; } },
+      { k: "dmg", n: "강화 탄환", max: 5, d: "평타 피해 +15%", f: () => { s.dmg *= 1.15; } },
+      { k: "max", n: "하트 물병", max: 5, d: "최대 체력 +20%, 그만큼 회복", f: () => { const m = Math.round(s.max * 0.2); s.max += m; s.hp += m; } },
+      { k: "spd", n: "날개 운동화", max: 5, d: "이동 속도 +10%", f: () => { s.spd *= 1.1; } },
+      { k: "magnet", n: "말발굽 자석", max: 5, d: "경험치 구슬을 더 멀리서 끌어와요(+40%)", f: () => { s.magnet *= 1.4; } },
+      { k: "cool", n: "모래시계", max: 5, d: "스킬 재사용 시간 −8%", f: () => { s.cool *= 0.92; }, ok: () => s.skills.length > 0 },
     ];
+    const UP_ATK = (u) => u.skill || u.atk, UP_MAX_ATK = 6; // 공격 스킬은 한 판에 6가지까지
     let speed = 1;
     try { speed = Math.min(3, Math.max(1, +localStorage.getItem("bmc-game-speed") || 1)); } catch (e) {}
     let ZM = 1, W = 0, H = 0, DPR = 1, s = null, raf = 0, last = 0, running = false, shown = "", stick = null;
@@ -3654,6 +3638,7 @@ body.game-full { overflow: hidden; }
     HSK.onload = () => { hskOk = true; };
     HSK.src = "img/hsk.png?v=" + BUILD;
     function icon(k) {
+      if (UPS.some((u) => u.k === k)) { const i = document.createElement("img"); i.className = "ic gico sk-pic"; i.alt = ""; i.setAttribute("aria-hidden", "true"); i.src = "img/lb/s-" + k + ".webp?v=" + BUILD; return i; } // 수달단 레벨업 스킬 — 제미나이 아이콘(시험/스킬아이콘-자르기.cjs)
       if (hskOk && HSKF[k]) {
         const fr = HSKF[k], c = document.createElement("canvas"), z = 112 / Math.max(fr[2], fr[3]); c.width = c.height = 112; c.className = "ic gico"; c.setAttribute("aria-hidden", "true");
         c.getContext("2d").drawImage(HSK, fr[0], fr[1], fr[2], fr[3], (112 - fr[2] * z) / 2, (112 - fr[3] * z) / 2, fr[2] * z, fr[3] * z);
@@ -3738,7 +3723,7 @@ body.game-full { overflow: hidden; }
       panel([el("h3", null, "멈춤"), el("p", null, mmss(s.t) + " 버팀 · " + s.stage + "단계 · 잡은 수 " + s.kills), el("p", "best", mine()), row]);
     }
     function showPicks(title) {
-      const pool = UPS.filter((u) => (s.up[u.k] || 0) < u.max && (!u.ok || u.ok()) && !u.old && (!u.hero || u.hero === heroKey)), picks = []; // 캐릭터 스킬은 내 캐릭터 것만 (2026-10-27)
+      const nAtk = UPS.filter((u) => UP_ATK(u) && s.up[u.k]).length, pool = UPS.filter((u) => (s.up[u.k] || 0) < u.max && (!u.ok || u.ok()) && !(UP_ATK(u) && !s.up[u.k] && nAtk >= UP_MAX_ATK)), picks = []; // 공격 스킬은 6가지까지 // 캐릭터 스킬은 내 캐릭터 것만 (2026-10-27)
       while (picks.length < 3 && pool.length) picks.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
       /* Lv 2 · 4 · 7 에는 아직 없는 스킬을 하나 꼭 보여 준다 — 스킬을 못 만나고 끝나지 않게 */
       if ([2, 4, 7, 10, 13, 16].includes(s.lv) && !picks.some((u) => u.skill && !s.up[u.k])) {
@@ -3748,8 +3733,8 @@ body.game-full { overflow: hidden; }
       const box = el("div", "game-picks");
       picks.forEach((u) => {
         const have = s.up[u.k] || 0, b = el("button"); b.type = "button";
-        const tt = el("b", null, u.n + (have ? " Lv " + have + " → " + (have + 1) : u.skill ? " · 새 스킬" : ""));
-        b.append(icon(u.k), tt, el("span", null, have && u.up ? u.up : u.d));
+        const tt = el("b", null, u.n), st = el("i", "pk-st", "★".repeat(have + 1) + "☆".repeat(Math.max(0, u.max - have - 1))); if (!have) tt.appendChild(el("em", "pk-new", "NEW"));
+        b.classList.add(UP_ATK(u) ? "pk-atk" : "pk-sup"); b.append(icon(u.k), tt, st, el("span", null, have && u.up ? u.up : u.d)); // 탕탕특공대처럼 — 별로 레벨 · 새 것은 NEW
         b.onclick = () => take(u); box.appendChild(b);
       });
       /* "렙업하고 스킬 고를 때 몬스터가 때려서 자꾸 죽는다 — 일시정지로" (2026-10-26). 고르는 동안은 원래 멈춰 있었다 —
@@ -4116,6 +4101,9 @@ body.game-full { overflow: hidden; }
         /* 회오리 — 공격하는 쪽으로 1.6초 동안 날아가며 닿은 잡귀를 한 번씩 다치게 하고 함께 쓸어 간다 · 불덩이를 지운다 */
         const P = aimAt(200);
         s.tors.push({ x: s.x + Math.cos(P.a) * 20, y: s.y + Math.sin(P.a) * 20, a: P.a, R: 55 + 12 * l, dmg: 25 + 20 * l, life: 1.6, full: 1.6, hit: [] });
+      } else if (k === "grenade") { // 수류탄 — 가까운 몬스터(없으면 공격하는 쪽)에 던져 터짐
+        const n = s.foes.filter((f) => (f.x - s.x) ** 2 + (f.y - s.y) ** 2 < 340 * 340).sort((p, q) => ((p.x - s.x) ** 2 + (p.y - s.y) ** 2) - ((q.x - s.x) ** 2 + (q.y - s.y) ** 2))[0], P = n ? { x: n.x, y: n.y } : aimAt(160), R = 70 + 14 * l;
+        blast(P.x, P.y, R, 40 + 28 * l); s.fx.push({ boom: true, spr: "smoke", x: P.x, y: P.y, r: R / 2, c: "#ffb347", size: R * 2.4, life: 0.5, dur: 0.5 }, { spr: "quake", x: P.x, y: P.y, size: R * 2.2, life: 0.4, dur: 0.4 }); s.hitFx = Math.max(s.hitFx, 0.2);
       } else if (k === "fire") {
         const P = aimAt(150);
         s.fields.push({ x: P.x, y: P.y, r: 80 + 15 * l, dps: 22 + 12 * l, life: 4, full: 4 });
@@ -5070,11 +5058,11 @@ body.game-full { overflow: hidden; }
     const CHAPS = ["이끼 숲", "사막 유적", "설원", "화산", "독 늪", "묘지", "얼음 동굴", "황금 신전", "성벽 광장", "하늘 섬"];
     const CHSUB = ["숲속의 첫 번째 생존 전투", "모래바람 속 옛 유적", "얼어붙은 눈밭의 사투", "불타는 용암 위 결전", "독기 가득한 늪지대", "망자가 깨어나는 묘지", "수정빛 얼음 동굴", "황금 신전의 수호자", "성벽 광장 최후의 방어", "구름 위 하늘 섬 결전"];
     /* 무기(총) — 열쇠는 창구와 같게. hero = 공격 방식(예전 캐릭터 평타 · 스킬), 그림 = img/lb/w-*.webp. 물대포 · 빙결 총 · 유도 미사일은 준비 중 */
-    const WPN = { bow: { n: "기본 총", hero: "je", pic: "w-basic", shot: "연사 탄", d: "가장 기본적인 무기 · 빠르게 쏘고 바람 · 화살비 · 폭풍 스킬" },
-      sword: { n: "화염방사기", hero: "kh", pic: "w-fire", shot: "불꽃 탄", d: "불꽃으로 태우는 화염 스킬 — 화염 검기 · 화염진 · 화염 돌진" },
-      tali: { n: "전기 건", hero: "hr", pic: "w-elec", shot: "전기 부적", d: "번개를 부르는 전기 스킬 — 뇌전 부적 · 낙뢰 · 태극진" },
-      club: { n: "로켓포", hero: "ds", pic: "w-rocket", shot: "충격탄", d: "터지는 폭발 스킬 — 금종 결계 · 대지 강타 · 금강 기운" },
-      dagger: { n: "메이저 건", hero: "mj", pic: "w-major", shot: "독 표창탄", d: "그림자 · 독 스킬 — 그림자 질주 · 독 안개 · 거대 표창" } };
+    const WPN = { bow: { n: "기본 총", hero: "je", pic: "w-basic", shot: "연사 탄", d: "가장 기본적인 무기 — 곧게 날아가는 연사 탄" },
+      sword: { n: "화염방사기", hero: "kh", pic: "w-fire", shot: "불꽃 탄", d: "넓게 베는 불꽃 탄 — 가까운 무리에 강해요" },
+      tali: { n: "전기 건", hero: "hr", pic: "w-elec", shot: "전기 부적", d: "전기를 두른 탄 — 맞은 몬스터를 찌릿하게" },
+      club: { n: "로켓포", hero: "ds", pic: "w-rocket", shot: "충격탄", d: "묵직한 충격탄 — 한 방이 세요" },
+      dagger: { n: "메이저 건", hero: "mj", pic: "w-major", shot: "독 표창탄", d: "독을 묻힌 표창탄 — 빠르고 날카로워요" } };
     const WPN_SOON = [["물대포", "w-water"], ["빙결 총", "w-ice"], ["유도 미사일", "w-missile"]];
     const ITEMS = { heal: { n: "체력 회복약", pic: "i-heal", d: "판 중에 ❤ 단추로 체력 30% 회복" }, atk: { n: "공격력 증가 물약", pic: "i-atk", d: "다음 판 공격력 +20% (출전할 때 저절로 씀)" }, spd: { n: "이동속도 증가 물약", pic: "i-spd", d: "다음 판 이동속도 +15% (출전할 때 저절로 씀)" }, rev: { n: "부활권", pic: "i-rev", d: "쓰러지면 한 번 체력 50% 로 일어남" }, exp: { n: "경험치 부스트", pic: "i-exp", d: "5판 동안 경험치 1.5배" } };
     const LBI = (n) => "img/lb/" + n + ".webp?v=" + BUILD;
@@ -5152,8 +5140,7 @@ body.game-full { overflow: hidden; }
       keys.forEach((k) => { const w = WPN[k], own = P.own.includes(k); grid.appendChild(lobCard(w.pic, w.n, P.wpn === k ? "✔ 끼는 중" : own ? "가짐" : "💰 " + ((P.shop.weapons || {})[k] || 0).toLocaleString(), sel === k, !own, () => { lobSel = k; lobDraw(); })); });
       WPN_SOON.forEach(([n, pic]) => grid.appendChild(lobCard(pic, n, "준비 중", false, true, null)));
       const w = WPN[sel], own = P.own.includes(sel), det = el("div", "lb-det"), di = el("img"); di.src = LBI(w.pic); di.alt = "";
-      const sk = UPS.filter((u) => u.hero === w.hero).map((u) => u.n).join(" · ");
-      det.append(di, el("b", null, w.n), el("p", null, w.d), el("small", null, "평타 " + w.shot + " · 스킬 " + sk));
+      det.append(di, el("b", null, w.n), el("p", null, w.d), el("small", null, "평타 " + w.shot + " · 스킬은 판 안에서 레벨업으로 골라요"));
       let b;
       if (P.wpn === sel) { b = el("button", "lb-buy eq", "장착중"); b.disabled = true; }
       else if (own) { b = el("button", "lb-buy", "장착하기"); b.onclick = () => lobAct("gameWeapon", sel, () => { LP.wpn = sel; }); }
@@ -5210,7 +5197,7 @@ body.game-full { overflow: hidden; }
     function healLabel() { const b = $("gHeal"); if (!b) return; b.hidden = !(s && s.heal > 0); if (s) b.textContent = "❤ " + (s.heal || 0); }
     function useHeal() { if (!running || !(s.heal > 0) || s.hp >= s.max) return; s.heal--; s.healUsed = (s.healUsed || 0) + 1; s.hp = Math.min(s.max, s.hp + s.max * 0.3); msg("체력 회복약 — 체력 30% 회복!"); healLabel(); }
     /* 스킬 자동 — "수동으로 나가게 하되 자동 버튼, 한 번 켜면 직접 끄지 않는 한 계속" (2026-10-28). 이 기기에 기억 */
-    let autoSk = false; try { autoSk = localStorage.getItem("bmc-game-auto") === "1"; } catch (e) {}
+    let autoSk = true; try { autoSk = localStorage.getItem("bmc-game-auto") !== "0"; } catch (e) {} // 탕탕특공대처럼 처음엔 자동 켬(끄면 기억)
     function autoLabel() { const b = $("gAuto"); if (!b) return; b.textContent = autoSk ? "🤖 자동 켬" : "🤖 자동"; b.setAttribute("aria-pressed", String(autoSk)); }
     function autoCast() { if (!autoSk || !s || !s.skills) return; const near = s.foes.some((f) => (f.x - s.x) ** 2 + (f.y - s.y) ** 2 < 330 * 330); if (!near) return; s.skills.forEach((k) => { if (!(s.cd[k] > 0)) cast(k); }); }
     autoLabel();
