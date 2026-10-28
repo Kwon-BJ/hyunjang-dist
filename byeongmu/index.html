@@ -1416,7 +1416,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610280441";
+  const BUILD = "202610280453";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -4082,7 +4082,8 @@ body.game-full { overflow: hidden; }
     const MAPS = ["img/map2.jpg"].concat(Array.from({ length: 10 }, (_, i) => "img/maps/m" + (i + 1) + ".jpg"));
     let mapIdx = 0;
     function mapFor(n) { return 1 + Math.floor(Math.max(0, (n || 1) - 1) / 10) % 10; } // 무한의 탑도 1~10장 맵을 10층마다 차례로(2026-10-28 "지금 맵은 너무 어둡다")
-    function setMap(i) { if (i === mapIdx) return; mapIdx = i; const N = new Image(); N.onload = () => { MAP = N; mapFit(); }; N.src = MAPS[i] + "?v=" + BUILD; }
+    function setMap(i) { if (i === mapIdx) return; mapIdx = i; const N = new Image(); N.onload = () => { if (mapOk && MAP && MAP.width === N.width && MAP.height === N.height) { MAP_PREV = MAP; MAP_FADE = performance.now(); } MAP = N; mapFit(); }; N.src = MAPS[i] + "?v=" + BUILD; }
+    let MAP_PREV = null, MAP_FADE = 0;
 
     /* "좀더 어두운 용암맵으로 바꿔라 몹이 잘안보인다" (2026-10-26) — 숲 맵 색만 바꾼 용암 맵(무료, 시험/용암맵-만들기.cjs). 숲 맵(map.jpg)은 남겨 둠 */
     /* 맵 바꿈 — 부장님이 주신 어두운 돌바닥 법진 맵 (2026-10-26, img/map2.jpg · 시험/맵2-만들기.cjs). 크기 · 시작 자리는 MAP.onload 에서 그림에 맞춘다 */
@@ -4162,7 +4163,7 @@ body.game-full { overflow: hidden; }
       if (s.chap && s.stage >= 10) { chapterClear(); return; } // 10단계 대장까지 — 장을 깸
       s.rest = REST; msg(s.stage + "단계 통과! " + REST + "초 쉬어요");
     }
-    function startStage() { s.rest = 0; s.stage++; setMap(s.chap ? chMap(s.chap) : mapFor(s.stage)); s.stageT = 0; s.cleanT = 0; s.bossDone = false; horde(); msg(s.stage + "단계 (" + stageLen(s.stage) + "초) — 잡귀가 몰려온다!"); }
+    function startStage() { s.rest = 0; s.stage++; setMap(s.chap ? chMap(s.chap) : mapFor(s.stage)); s.stageT = 0; s.cleanT = 0; s.bossDone = false; horde(); msg(!s.chap && !s.raid && (s.stage - 1) % 10 === 0 ? s.stage + "층 — " + CHAPS[Math.min(CH_N, Math.ceil(s.stage / 10)) - 1] + "!" : s.stage + "단계 (" + stageLen(s.stage) + "초) — 잡귀가 몰려온다!"); }
     function arenaClamp(p) { const A = s.arena; if (!A) return; p.x = Math.min(A.x + A.h, Math.max(A.x - A.h, p.x)); p.y = Math.min(A.y + A.h, Math.max(A.y - A.h, p.y)); }
     const OCB = ["나무 정령 왕", "황금 전갈 여왕", "얼음 왕관 예티", "불꽃 날개 용", "독 두꺼비 왕", "해골 리치", "수정 얼음 용", "황금 파라오 골렘", "고블린 왕 기사", "천둥 폭풍 정령 왕"]; // 맵마다 대장 이름(그림 img/lb/boss-N)
     function spawnBoss(i) {
@@ -4919,7 +4920,9 @@ body.game-full { overflow: hidden; }
       if (mapOk) {
         const mx = ox - MAP_O[0] * MAP_K, my = oy - MAP_O[1] * MAP_K;
         const sx = Math.max(0, -mx / MAP_K), sy = Math.max(0, -my / MAP_K), sw = Math.min(MAP.width - sx, W / MAP_K + 2), sh = Math.min(MAP.height - sy, H / MAP_K + 2);
-        if (sw > 0 && sh > 0) { g.imageSmoothingQuality = "high"; g.drawImage(MAP, sx, sy, sw, sh, mx + sx * MAP_K, my + sy * MAP_K, sw * MAP_K, sh * MAP_K); }
+        if (sw > 0 && sh > 0) { g.imageSmoothingQuality = "high"; const fa = MAP_PREV ? Math.min(1, (performance.now() - MAP_FADE) / 1600) : 1;
+          if (fa < 1) { g.drawImage(MAP_PREV, sx, sy, sw, sh, mx + sx * MAP_K, my + sy * MAP_K, sw * MAP_K, sh * MAP_K); g.globalAlpha = fa * fa * (3 - 2 * fa); } else MAP_PREV = null;
+          g.drawImage(MAP, sx, sy, sw, sh, mx + sx * MAP_K, my + sy * MAP_K, sw * MAP_K, sh * MAP_K); g.globalAlpha = 1; }
         g.fillStyle = "rgba(0,0,0,.12)"; g.fillRect(0, 0, W, H); // 용암 맵이 이미 어두워 조금만
       } else {
         g.strokeStyle = "rgba(214,176,98,.08)"; g.lineWidth = 1; g.beginPath();
@@ -5293,7 +5296,7 @@ body.game-full { overflow: hidden; }
       "고대 나무 정령의 분노", "잠든 왕들의 무덤", "녹지 않는 빙하의 끝", "화산 한가운데 불의 심장", "독룡이 사는 깊은 늪", "죽은 자들이 다스리는 땅", "얼어붙은 여왕의 궁전", "황금 제국의 마지막 수호자", "수달단 최후의 방어선", "하늘 꼭대기 마지막 결전"];
     const CH_N = 30, chMap = (c) => ((c - 1) % 10) + 1;
     /* 난이도 모드 — 30장을 깨면 어려움, 어려움 30장을 깨면 매우 어려움(창구 GP_MODES). 몬스터 체력 · 공격 × */
-    const MODE_N = ["쉬움", "어려움", "매우 어려움"], MODE_HP = [1, 2.5, 6], MODE_DMG = [1, 1.8, 3], MODE_MUL = [1, 2, 3];
+    const MODE_N = ["쉬움", "보통", "어려움", "매우 어려움"], MODE_HP = [1, 2, 4, 8], MODE_DMG = [1, 1.5, 2.2, 3.2], MODE_MUL = [1, 1.5, 2, 3]; /* 4단계(2026-10-28) */
     let lobMode = 0;
     /* 무기(총) — 열쇠는 창구와 같게. hero = 공격 방식(예전 캐릭터 평타 · 스킬), 그림 = img/lb/w-*.webp. 물대포 · 빙결 총 · 유도 미사일은 준비 중 */
     const WPN = { bow: { n: "기본 총", hero: "je", pic: "w-basic", shot: "연사 탄", d: "곧게 날아가는 한 발 — 무난한 기본 무기" },
@@ -5370,7 +5373,7 @@ body.game-full { overflow: hidden; }
       const MO = P.modeOpen || [1, 0, 0]; if (!MO[lobMode]) lobMode = 0; const M = lobMode, chM = (P.mch || [P.ch])[M] || 1, clr = (cc) => M ? (P.mcl || {})[M + ":" + cc] || 0 : (P.clears || {})[cc] || 0, mul = MODE_MUL[M];
       const c = Math.max(1, Math.min(CH_N, lobCh)), open = c <= chM, need = !P.free && P.en < (P.cost || 5), first = !clr(c), out = [];
       const t = (cls, txt, css) => { const e = el("span", cls, txt); e.style.cssText = css; out.push(e); return e; };
-      t("lb-chn", c + "장", px(410, 218, 108, 50)); t("lb-chname", CHAPS[c - 1], px(300, 286, 340, 94)); t("lb-chsub", CHSUB[c - 1], px(312, 396, 322, 41)); { const md = lobBtn("lb-diff d" + (M * 2 + 1) + (MODE_N[M].length > 3 ? " long" : ""), px(772, 212, 96, 40), () => { let n = M; do { n = (n + 1) % 3; } while (!MO[n] && n !== M); if (n === M) { lobErr = "30장을 깨면 「어려움」 이 열려요"; lobDraw(); return; } lobMode = n; lobErr = ""; lobCh = Math.min(lobCh, (P.mch || [P.ch])[n] || 1); lobDraw(); }, "난이도 바꾸기"); md.textContent = MODE_N[M]; out.push(md); } /* 그림의 「일반」 자리 — 난이도(누르면 바뀜, 2026-10-28 "30장 깨면 쉬움 > 어려움 > 매우 어려움") */
+      t("lb-chn", c + "장", px(410, 218, 108, 50)); t("lb-chname", CHAPS[c - 1], px(300, 286, 340, 94)); t("lb-chsub", CHSUB[c - 1], px(312, 396, 322, 41)); { const md = lobBtn("lb-diff d" + [1, 2, 4, 5][M] + (MODE_N[M].length > 3 ? " long" : ""), px(772, 212, 96, 40), () => { let n = M; do { n = (n + 1) % MODE_N.length; } while (!MO[n] && n !== M); if (n === M) { lobErr = "30장을 깨면 「보통」 이 열려요"; lobDraw(); return; } lobMode = n; lobErr = ""; lobCh = Math.min(lobCh, (P.mch || [P.ch])[n] || 1); lobDraw(); }, "난이도 바꾸기"); md.textContent = MODE_N[M]; out.push(md); } /* 그림의 「일반」 자리 — 난이도(누르면 바뀜, 2026-10-28 "30장 깨면 쉬움 > 어려움 > 매우 어려움") */
       if (c > 1) { const m = el("div", "lb-map"); m.style.cssText = px(612, 812, 250, 150); m.style.backgroundImage = "url(img/maps/m" + chMap(c) + ".jpg?v=" + BUILD + ")"; m.appendChild(el("small", null, "전장")); out.push(m); }
       if (!open) t("lb-lock", "🔒 " + (c - 1) + "장 클리어 시 열림", px(62, 470, 820, 120));
       else if (!first) t("lb-done", "✔ 깼음 × " + clr(c), px(727, 268, 148, 34));
@@ -5633,7 +5636,7 @@ body.game-full { overflow: hidden; }
     function lobReward(rw, clear, ch, run) {
       if (lobFree() || !s.run) { rw.textContent = "로그인하면 보상이 저장돼요"; return; }
       call("gameEnd", token, { run: s.run, clear: !!clear, stage: s.stage, kills: s.kills, bosses: s.bossKills || 0, healUsed: s.healUsed || 0, revUsed: s.revUsed || 0 }).then((r) => { LP = r; LP.got = Date.now(); if (run !== s) return; const R = r.reward || {};
-        rw.textContent = "💰 +" + (R.gold || 0).toLocaleString() + " · EXP +" + (R.exp || 0) + (R.en ? " · ⚡ +" + R.en : "") + ((R.scroll || []).length ? " · 두루마리: " + R.scroll.map((k) => (ITEMS[k] || {}).n || k).join(", ") : "") + (clear && ch && ch < CH_N ? " · " + (ch + 1) + "장 열림" : "") + (R.wpn ? " · 🎁 무기 「" + ((WPN[R.wpn] || {}).n || R.wpn) + "」!" : "") + (clear && ch === CH_N && !s.mode ? " · 「어려움」 열림!" : clear && ch === CH_N && s.mode === 1 ? " · 「매우 어려움」 열림!" : ""); })
+        rw.textContent = "💰 +" + (R.gold || 0).toLocaleString() + " · EXP +" + (R.exp || 0) + (R.en ? " · ⚡ +" + R.en : "") + ((R.scroll || []).length ? " · 두루마리: " + R.scroll.map((k) => (ITEMS[k] || {}).n || k).join(", ") : "") + (clear && ch && ch < CH_N ? " · " + (ch + 1) + "장 열림" : "") + (R.wpn ? " · 🎁 무기 「" + ((WPN[R.wpn] || {}).n || R.wpn) + "」!" : "") + (clear && ch === CH_N && s.mode < MODE_N.length - 1 ? " · 「" + MODE_N[s.mode + 1] + "」 열림!" : ""); })
         .catch((e) => { if (run === s) rw.textContent = "보상을 못 받았어요 — " + errMsg(e); });
     }
     function lobEnd(clear) {
