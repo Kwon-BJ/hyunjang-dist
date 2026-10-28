@@ -833,7 +833,7 @@ body.game-full { overflow: hidden; }
 .lb-live b { color: #ffe08a; } .lb-live.min > :not(.lb-ophd) { display: none; } .lb-live.min .lb-ophd { font-size: 11px; white-space: nowrap; cursor: pointer; } .lb-live.min { width: auto; } .lb-lrow { display: grid; } .lb-lrow small, .lb-live > small { color: #cfe8b8; font-size: 11px; }
 @media (max-width: 760px) { .lb-live { width: 150px; top: auto; bottom: 15%; right: 6px; font-size: 11px; padding: 6px; } .lb-live.min { display: block; width: auto; padding: 4px 8px; } .lb-art > .lb-live { position: absolute; right: 21%; top: 6.2%; bottom: auto; } .lb-art > .lb-live:not(.min) { top: 9.6%; right: 2%; width: 170px; } } /* 휴대폰 — 아래 칸 바로 위 오른쪽에 한 줄로(그림을 안 가리게)
 .lb-sel { padding: 2cqw; border-radius: 2cqw; border: .4cqw solid #c79a4a; font-size: 3.6cqw; }
-.lb-give { display: grid; grid-template-columns: 1fr 1fr; gap: 1.6cqw; } .lb-give label { display: grid; gap: .6cqw; font-size: 3cqw; color: #5a3a1a; } .lb-give input, .lb-sel { background: #fffaf0; color: #3a2a10; } .lb-give input { padding: 1.6cqw; border-radius: 1.6cqw; border: .3cqw solid #c79a4a; font-size: 3.6cqw; width: 100%; box-sizing: border-box; }
+.lb-give { display: grid; grid-template-columns: 1fr 1fr; gap: 1.6cqw; } .lb-give > label { display: grid !important; grid-template-columns: 1fr !important; align-items: start; } .lb-give > label input { width: 100%; box-sizing: border-box; } /* 실제 화면 시험(2026-10-28) — 이름과 칸이 어긋나 보이던 것 */ .lb-give label { display: grid; gap: .6cqw; font-size: 3cqw; color: #5a3a1a; } .lb-give input, .lb-sel { background: #fffaf0; color: #3a2a10; } .lb-give input { padding: 1.6cqw; border-radius: 1.6cqw; border: .3cqw solid #c79a4a; font-size: 3.6cqw; width: 100%; box-sizing: border-box; }
 .lb-wchk { display: flex; flex-wrap: wrap; gap: 2cqw; font-size: 3.2cqw; color: #3a2a10; } .lb-wchk label { display: flex; align-items: center; gap: 1cqw; }
 .lb-admin { font-size: 13px; font-family: "Noto Sans KR", sans-serif; color: var(--ink); background: #1b1408; border-radius: 3cqw; padding: 2cqw; } .lb-admin summary { cursor: pointer; color: #ffe08a; } .lb-admin .game-rank, .lb-admin .game-live { margin: 8px 0 0; }
 .lb-note { margin: 0; padding: 3cqw; text-align: center; color: #7a5a2a; font-size: 3cqw; } .lb-err { margin: 0; text-align: center; color: #b3261e; font-size: 3.2cqw; }
@@ -1416,7 +1416,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610280453";
+  const BUILD = "202610280500";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -5078,7 +5078,7 @@ body.game-full { overflow: hidden; }
           g.fillStyle = "rgba(" + z.c + ",.35)"; g.beginPath(); g.arc(x, y, z.r * p, 0, Math.PI * 2); g.fill(); g.lineWidth = 1;
           if (z.fx === "meteor" && z.t < 0.6) { const q = z.t / 0.6; fxDraw("meteor_fly", z.t < 0.3 ? 1 : 0, x - 150 * q, y - 260 * q, z.r * 1.6); } // 떨어지는 운석
         });
-        s.ebs.forEach((b) => { const x = b.x + ox, y = b.y + oy, r = b.r || 5;
+        s.ebs.forEach((b) => { const x = b.x + ox, y = b.y + oy, r = (b.r || 5) * 1.4; /* 2026-10-28 "몹 공격 유도체 너무 작아서 눈 아프다" — 그림만 1.4배(맞는 범위는 그대로) */
           { const R2 = r * 1.6 + 7, pul = 0.75 + 0.25 * Math.sin(s.t * 14 + (b.ph || 0) * 6); g.fillStyle = "rgba(255,40,60," + (0.32 * pul).toFixed(2) + ")"; g.beginPath(); g.arc(x, y, R2, 0, Math.PI * 2); g.fill(); g.strokeStyle = "rgba(255,255,255," + (0.85 * pul).toFixed(2) + ")"; g.lineWidth = 2; g.stroke(); g.lineWidth = 1; } /* 2026-10-28 "몹이 녹색 공격 안 보인다" — 맵 색과 상관없이 보이게 */
           if (sprOf((b.fx || "orb") + "_fly")) { fxDraw((b.fx || "orb") + "_fly", 1, x, y, r * 4 + 14, { rot: Math.atan2(b.vy, b.vx) }); return; } // 날아가는 그림 — 꼬리가 뒤로
           if (r <= 8) { g.fillStyle = "rgba(255,59,141,.3)"; g.beginPath(); g.arc(x, y, r + 4, 0, Math.PI * 2); g.fill(); } g.fillStyle = b.c || "#ff3b8d"; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); if (r > 8) { g.strokeStyle = "#3b332c"; g.lineWidth = 2; g.stroke(); g.lineWidth = 1; } });
@@ -5609,7 +5609,7 @@ body.game-full { overflow: hidden; }
       out.push(sel);
       if (lobGiveRes) out.push(el("p", "lb-note", "지금 — ⚡ " + lobGiveRes.en + " · 💰 " + lobGiveRes.gold.toLocaleString() + " · Lv " + lobGiveRes.lv.lv + " · " + lobGiveRes.ch + "장까지 · 무기 " + lobGiveRes.own.map((k) => (WPN[k] || {}).n || k).join(", ")));
       const f = el("div", "lb-give"), inp = {}, num = (k, n) => { const l = el("label", null, n), i = document.createElement("input"); i.type = "number"; i.inputMode = "numeric"; i.value = ""; i.placeholder = "0"; inp[k] = i; l.appendChild(i); f.appendChild(l); };
-      num("en", "⚡ 피로도"); num("gold", "💰 골드"); num("exp", "EXP 경험치"); num("ch", "열 장(1~10)"); Object.keys(ITEMS).forEach((k) => num("i_" + k, ITEMS[k].n));
+      num("en", "⚡ 피로도"); num("gold", "💰 골드"); num("exp", "EXP 경험치"); num("ch", "열 장(1~30)"); Object.keys(ITEMS).forEach((k) => num("i_" + k, ITEMS[k].n));
       const wb = el("div", "lb-wchk"); Object.keys(WPN).filter((k) => k !== "bow").forEach((k) => { const l = el("label"), c = document.createElement("input"); c.type = "checkbox"; c.value = k; l.append(c, WPN[k].n); wb.appendChild(l); });
       out.push(f, el("small", "lb-note", "무기 주기"), wb);
       const go = el("button", "lb-buy", "주기"); go.type = "button"; go.disabled = !lobGiveTo || lobBusy; // 우편은 받는 사람 없이도
