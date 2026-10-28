@@ -1425,7 +1425,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610280609";
+  const BUILD = "202610280616";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -3910,12 +3910,16 @@ body.game-full { overflow: hidden; }
       panel([el("h3", null, title || "Lv " + s.lv + " ㆍ 하나 고르세요"), el("p", "best", "⏸ 멈춤 ㆍ 고르면 1.5초 보호막과 함께 다시 시작"), box]);
     }
     function take(u) {
+      if (s.pickQ > 0) s.pickQ--;
       s.up[u.k] = (s.up[u.k] || 0) + 1;
       if (u.f) u.f();
       if (u.skill && s.up[u.k] === 1) { s.skills.push(u.k); s.cd[u.k] = 0; }
       s.ward = Math.max(s.ward, 1.5);
       s.foes.forEach((f) => { const dx = f.x - s.x, dy = f.y - s.y, L = Math.hypot(dx, dy) || 1; if (L < 110 && f.k !== "boss") { f.x += dx / L * (110 - L); f.y += dy / L * (110 - L); } });
-      renderSkills(); resume();
+      renderSkills();
+      if (s.pickQ > 0) { s.lv++; showPicks("보스 레이드 준비 ㆍ 스킬 " + (10 - s.pickQ) + "/9"); return; } // 레이드 Lv 10 까지 미리 고르기
+      if (s.raid && s.lv < 10) s.lv = 10;
+      resume();
     }
     function showResult(score, when) {
       const card = el("div", "game-card");
@@ -4420,7 +4424,7 @@ body.game-full { overflow: hidden; }
     }
     function step(dt) {
       s.t += dt; autoCast();
-      if (s.raid && s.raidB) { s.raidT -= dt; s.raidB.dps = s.raidB.dps0 * (1 + (RAID_SEC - s.raidT) / 45); if (s.raidT <= 0 || !s.foes.includes(s.raidB)) { raidEnd(); return; } }
+      if (s.raid && s.raidB) { s.raidT -= dt; s.raidB.dps = s.raidB.dps0 * (1 + (RAID_SEC - s.raidT) / 45); if (s.raidT <= 0 || !s.foes.includes(s.raidB) || s.raidB.hp <= 0) { raidEnd(); return; } }
       const [mx, my] = dir();
       const sp0 = s.spd * (s.stealth > 0 ? 1.4 : 1); s.x += mx * sp0 * dt; s.y += my * sp0 * dt; // 그림자 질주로 숨은 동안 1.4배
       s.moving = !!(mx || my); if (s.moving) { s.walk += dt * 12; s.mvA = Math.atan2(my, mx); }
@@ -4459,7 +4463,7 @@ body.game-full { overflow: hidden; }
       }
       /* 1단계 초당 1마리 → 8단계 13마리 → 많아야 20마리. 단계 시간 안에만, 대장이 있으면 안 나옴, 한 번에 많아야 aliveCap 마리 —
          못 잡으면 더 안 쌓인다 */
-      if (!s.rest && (!bossOn || s.raid) && s.stageT < stageLen(s.stage)) {
+      if (!s.rest && !bossOn && !s.raid && s.stageT < stageLen(s.stage)) {
         s.spawn += dt * Math.min(20, s.stage * 1.6 + 0.4) * (s.chSp || 1);
         while (s.spawn >= 1) { s.spawn--; if (s.foes.length < aliveCap()) spawn(); }
       }
@@ -4517,6 +4521,7 @@ body.game-full { overflow: hidden; }
         if (s.wardR && f.k !== "boss" && L < s.wardR + f.r) { f.x = s.x - dx / L * (s.wardR + f.r); f.y = s.y - dy / L * (s.wardR + f.r); return; }
         let sp = f.spd;
         if (f.slow > 0) { f.slow -= dt; sp *= 0.3; }
+        if (f.wind > 0) sp = 0; // 기 모으는 동안 멈춤
         if (f.dash > 0) { f.dash -= dt; sp *= 3.5; if (f.dash <= 0 && f.combo > 0) { f.combo--; f.dash = 0.35; } }
         if (f.rage > 0) { f.rage -= dt; sp *= 1.6; }
         /* 대장 분노 — 45초 안에 못 잡으면 점점 빠르고 세진다(잡귀도 다시 다 나옴). 피해 다니며 숨 고르기로만 버텨 안 죽던 것 (2026-10-26) */
@@ -4527,7 +4532,10 @@ body.game-full { overflow: hidden; }
         f.x += dx / L * sp * dt; f.y += dy / L * sp * dt;
         if (f.k === "boss") arenaClamp(f);
         f.hit = Math.max(0, f.hit - dt); f.oc -= dt; f.age = (f.age || 0) + dt; f.near = L < f.r + 45;
-        if ((f.k === "spit" || f.k === "mage" || f.k === "boss") && (f.cd -= dt) <= 0) act(f, dx / L, dy / L);
+        if (f.k === "boss") { f.atkT = Math.max(0, (f.atkT || 0) - dt);
+          if (f.wind > 0) { if ((f.wind -= dt) <= 0) { f.wind = 0; f.atkT = 0.4; act(f, dx / L, dy / L); } }
+          else if ((f.cd -= dt) <= 0) { f.wind = 0.65; f.cd = 99; } } /* 2026-10-28 "보스 움직임 · 스킬이 봉인검록처럼 자연스럽게" — 기 모으기 → 공격 */
+        else if ((f.k === "spit" || f.k === "mage") && (f.cd -= dt) <= 0) act(f, dx / L, dy / L);
         if (L < f.r + 15 && (f.k === "boss" ? ouch(Math.min(f.dps * (1 + enr / 30), s.max * 0.35) * dt) : ouch(f.dps * dt))) {
           if ((f.sw = (f.sw || 0) - dt) <= 0) { f.sw = 0.7; const k = MELEE[f.skin] || "spark"; s.fx.push({ spr: k, x: s.x - dx / L * 10, y: s.y - dy / L * 10, rot: Math.atan2(dy, dx), size: k === "spark" ? 40 : 54, life: 0.3, dur: 0.3 }); }
         }
@@ -4851,7 +4859,9 @@ body.game-full { overflow: hidden; }
       const dx0 = s.x - f.x; if (f.face == null || Math.abs(dx0) > 10) f.face = dx0 >= 0 ? 1 : -1;
       const anim = !!ocImg((boss ? "mb-" : "ma-") + (f.cm || 1)); // 동작 그림이 있으면 흔들기는 아주 조금만
       let rot = st * (anim ? 0.015 : boss ? 0.04 : 0.08), y = -Math.abs(st) * hh * (anim ? 0.01 : boss ? 0.025 : 0.045), dx = 0;
-      if (f.near) { const b = Math.max(0, Math.sin(t * (boss ? 5 : 9))); dx = f.face * b * hh * (anim ? 0.05 : 0.08); rot = anim ? 0 : f.face * b * 0.16; y = -b * hh * 0.02; } // 무는 동작
+      if (boss && f.wind > 0) { dx = -f.face * hh * 0.04; rot = 0; y = 0; } // 기 모으기 ㆍ 뒤로 살짝
+      else if (boss && f.atkT > 0) { dx = f.face * hh * 0.08 * (f.atkT / 0.4); rot = 0; } // 공격 ㆍ 앞으로 덮침
+      else if (f.near && !boss) { const b = Math.max(0, Math.sin(t * 9)); dx = f.face * b * hh * (anim ? 0.05 : 0.08); rot = anim ? 0 : f.face * b * 0.16; y = -b * hh * 0.02; } // 무는 동작
       if (f.hit > 0) dx -= f.face * hh * 0.05; // 맞으면 뒤로
       const grow = Math.min(1, (f.age || 0) / 0.35);
       return { y: y + (1 - grow) * hh * 0.35, rot, sx: 1, sy: 1, a: grow, dx, face: f.face };
@@ -4862,13 +4872,13 @@ body.game-full { overflow: hidden; }
       const boss = f.k === "boss", n = f.cm || (f.cm = Math.max(1, Math.min(10, mapIdx || 1))), I0 = ocImg((boss ? "boss-" : "mon-") + n), A = ocImg((boss ? "mb-" : "ma-") + n); if (!I0 && !A) return false;
       /* 동작 그림(ChatGPT 6칸: 걷기 4 · 공격 준비 · 공격, 오른쪽 봄) — 있으면 걸을 땐 1~4, 붙으면 5 · 6 번갈아(2026-10-28 "탕탕특공대처럼 자연스럽게"). 없으면 그림 한 장 */
       let I = I0, sx0 = 0, sw0 = I0 ? I0.naturalWidth : 0, ih = I0 ? I0.naturalHeight : 0;
-      if (A) { const cw = A.naturalWidth / 6, t = s.t + f.ph, fr = dead != null ? 0 : f.near ? 4 + (Math.floor(t * (boss ? 2.6 : 4)) % 2) : Math.floor(t * (boss ? 5 : 8)) % 4; I = A; sx0 = fr * cw; sw0 = cw; ih = A.naturalHeight; }
+      if (A) { const cw = A.naturalWidth / 6, t = s.t + f.ph, fr = dead != null ? 0 : boss && f.wind > 0 ? 4 : boss && f.atkT > 0 ? 5 : !boss && f.near ? 4 + (Math.floor(t * 4) % 2) : Math.floor(t * (boss ? 5 : 8)) % 4; I = A; sx0 = fr * cw; sw0 = cw; ih = A.naturalHeight; }
       const hh = f.r * (boss ? 5 : 3.8), k = hh / Math.max(sw0, ih), w = sw0 * k, h = ih * k, flip = s.x > f.x;
       g.fillStyle = "rgba(0,0,0,.3)"; g.beginPath(); g.ellipse(x, y + hh * 0.42, w * 0.34, hh * 0.08, 0, 0, Math.PI * 2); g.fill();
       g.save(); g.translate(x + (m && m.dx ? m.dx : 0), y + hh * 0.42 + (m ? m.y : 0)); if (dead != null) { g.rotate((flip ? -1 : 1) * Math.min(1.4, dead * 2.4)); g.globalAlpha = Math.max(0, 1 - dead * 1.2); } else { g.rotate((m ? m.rot : 0) + (m && m.lean ? m.lean * (flip ? 1 : -1) * 0.5 : 0)); g.scale(m ? m.sx : 1, m ? m.sy : 1); g.globalAlpha = m ? m.a : 1; }
       if (A ? (m && m.face != null ? m.face < 0 : !flip) : (m && m.face != null ? m.face > 0 : flip)) g.scale(-1, 1); // 동작 그림은 오른쪽을, 한 장 그림은 왼쪽을 봄
       { const cy = cycOf(); if (cy) g.filter = CYC_MON[cy]; }
-      if (boss) { g.shadowColor = "rgba(255,60,40,.9)"; g.shadowBlur = 0; }
+      if (boss) { g.shadowColor = "rgba(255,60,40,.9)"; g.shadowBlur = f.wind > 0 ? 18 + Math.sin(s.t * 30) * 8 : 0; } // 기 모을 때 붉게 빛남
       g.drawImage(I, sx0, 0, sw0, ih, -w / 2, -h, w, h);
       if (f.hit > 0) { g.globalCompositeOperation = "lighter"; g.globalAlpha *= 0.5; g.drawImage(I, sx0, 0, sw0, ih, -w / 2, -h, w, h); }
       g.restore(); g.filter = "none"; g.globalAlpha = 1; g.globalCompositeOperation = "source-over";
@@ -5229,7 +5239,7 @@ body.game-full { overflow: hidden; }
       $("gXp").style.width = Math.min(100, 100 * s.xp / s.need) + "%";
       const B = s.bossNow;
       $("gBoss").hidden = !B; SND.boss(B);
-      if (B && s.raid) { $("gStage").textContent = "보스 레이드 · " + mmss(Math.max(0, s.raidT)); $("gBossName").textContent = B.name + " ㆍ 피해 " + raidDmg().toLocaleString(); $("gBossHp").style.width = Math.max(0, 100 * s.raidT / RAID_SEC) + "%"; }
+      if (B && s.raid) { $("gStage").textContent = "보스 레이드 ㆍ " + mmss(Math.max(0, s.raidT)); $("gBossName").textContent = B.name + " ㆍ 피해 " + raidDmg().toLocaleString(); $("gBossHp").style.width = Math.max(0, 100 * B.hp / B.full) + "%"; }
       else if (B) { $("gBossName").textContent = B.name; $("gBossHp").style.width = Math.max(0, 100 * B.hp / B.full) + "%"; }
       $("gDash").style.setProperty("--cd", s.dashCd > 0 ? s.dashCd / DASH_CD : 0);
       $("gDash").classList.toggle("ready", (s.dashN == null ? 1 : s.dashN) > 0);
@@ -5553,7 +5563,7 @@ body.game-full { overflow: hidden; }
     function o360Img(n) { let i = O360[n]; if (!i) { i = O360[n] = new Image(); i.onload = () => { if (!$("gLobby").hidden && lobTab === "gear") lobDraw(); }; i.src = LBI(n); } return i.complete && i.naturalWidth ? i : null; }
     function otter360(P, skin) {
       const sk = skin && skin !== "basic" ? skin : "", box = el("div", "lb-o360" + (sk ? " sk-" + sk : "")), cv = document.createElement("canvas"); box.appendChild(cv);
-      const name = "otter-360"; /* 장비는 부위마다 따로 겹쳐 그림(2026-10-28 "각 장비마다 따로") */
+      const name = Object.keys(P.eq || {}).length ? "otter-360g" : "otter-360"; /* 장비를 끼면 장비를 입혀 그린 수달(ChatGPT 8방향) ㆍ 겹쳐 붙이던 그림은 뺌(2026-10-28 "엄청 부자연스럽다") */
       const worn = [], eqs = P.eq || {}; Object.keys(eqs).forEach((sl) => { const it = (P.gear || []).find((x) => x.u === eqs[sl]); if (it && GE_POS[it.k]) worn.push(it.k); }); worn.sort((a, b) => GE_POS[a].z - GE_POS[b].z);
       const wpic = "wp-" + (P.wpn || "bow"); /* 배경 없는 옆모습 무기(ChatGPT) */
       if (sk) { const h = el("img", "lb-ghat h-" + sk); h.src = LBI("hat-" + sk); h.alt = ""; box.appendChild(h); }
@@ -5562,9 +5572,9 @@ body.game-full { overflow: hidden; }
         const put = (key) => { if (key === "weapon") { const WI = wpic && o360Img(wpic); if (!WI || i === 4) return; const ww = M.bw * 0.95 * k, wh = ww * WI.naturalHeight / WI.naturalWidth, side = i >= 5 ? -1 : 1, hx = ox + (M.bx + side * M.bw * (i === 0 ? 0.42 : 0.18)) * k, hy = oy + M.top * k + M.h * 0.6 * k; gx.save(); gx.translate(hx, hy); if (side < 0) gx.scale(-1, 1); gx.drawImage(WI, -ww * 0.3, -wh / 2, ww, wh); gx.restore(); return; }
           const G = GE_POS[key], GI = o360Img("ge-" + key); if (!GI) return; const gw0 = GI.naturalWidth / 8, gh0 = GI.naturalHeight, h = M.h * G.h * k, w = h * gw0 / gh0, cx = ox + (G.r === "head" ? M.hx : M.bx) * k, y = oy + (M.top + M.h * G.y) * k - h * G.ay;
           gx.drawImage(GI, i * gw0, 0, gw0, gh0, cx - w / 2, y, w, h); };
-        if (front) worn.filter((x) => GE_POS[x].back).forEach(put); else put("weapon");
+        
         gx.drawImage(I, i * cw, 0, cw, ch, ox, oy, cw * k, ch * k);
-        worn.filter((x) => !(front && GE_POS[x].back)).forEach(put); if (front) put("weapon");
+        
         const hat = box.querySelector(".lb-ghat"); if (hat) hat.style.display = i === 3 || i === 4 || i === 5 ? "none" : ""; }; // 뒤를 볼 땐 모자 그림(앞모습)을 숨김
       let drag = null; box.addEventListener("pointerdown", (e) => { drag = { x: e.clientX, a: o360Ang }; o360Touched = true; box.setPointerCapture(e.pointerId); box.classList.add("on"); });
       box.addEventListener("pointermove", (e) => { if (!drag) return; o360Ang = drag.a - (e.clientX - drag.x) * 1.1; draw(); });
@@ -5758,7 +5768,9 @@ body.game-full { overflow: hidden; }
     const RAID_SEC = 120, raidWeek = () => Math.floor((Date.now() + 9 * 3600e3 + 3 * 864e5) / 6048e5) % 10; // 월요일마다 바뀜
     function raidDmg() { const B = s.raidB; return B ? Math.max(0, Math.round(B.full - B.hp)) : 0; }
     function raidStart() {
-      const i = raidWeek(); setMap(i + 1); s.raidT = RAID_SEC; s.need = 14; /* 레이드는 레벨업 창이 덜 뜨게(30초에 3번 멈추던 것) */ spawnBoss(i); const B = s.foes[s.foes.length - 1]; B.hp = B.full = 1e12; B.raid = true; B.name = OCB[i]; B.dps0 = B.dps; s.raidB = B;
+      /* 2026-10-28 "레이드는 10레벨로 시작, 잔몹 없음, 보스 체력 ×999 로 딜을 얼마나 넣었는지" — 탕탕특공대 보스전처럼: 시작 전에 스킬 9개 고르고 대장 하나와만 */
+      const i = raidWeek(); setMap(i + 1); s.raidT = RAID_SEC; s.foes = []; s.need = 999999; s.lv = 1; s.pickQ = 9; spawnBoss(i); const B = s.foes[s.foes.length - 1]; B.hp = B.full = B.full * 999; B.raid = true; B.name = OCB[i]; B.wake = 2.5;
+      running = false; stick = null; hud(); s.lv = 2; showPicks("보스 레이드 준비 ㆍ 스킬 1/9"); B.dps0 = B.dps; s.raidB = B;
       msg("보스 레이드 ㆍ " + B.name + "! 120초 동안 최대한 때려라");
     }
     function raidEnd() {
