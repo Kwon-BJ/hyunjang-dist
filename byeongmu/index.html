@@ -685,7 +685,7 @@ body.game-full { overflow: hidden; }
 #lbEn, .lb-gold { display: flex; align-items: center; justify-content: safe center; font-size: 3.9cqw; letter-spacing: -.1cqw; font-weight: 900; color: #fff; text-shadow: 0 1px 2px #000; font-variant-numeric: tabular-nums; }
 #lbEn small { position: absolute; top: 108%; left: 0; right: 0; text-align: center; font-size: 2.6cqw; color: #ffe27a; text-shadow: 0 1px 2px #000; }
 .lb-plus { border: 0; border-radius: 50%; background: transparent; }
-.lb-home { right: 2.5%; top: 6.4%; padding: .6cqw 2.4cqw; border-radius: 999px; border: .3cqw solid #355a22; background: rgba(20,36,12,.85); color: #fff; font-size: 2.8cqw !important; }
+.lb-home.lb-big { right: auto; left: 64%; } .lb-home { right: 2.5%; top: 6.4%; padding: .6cqw 2.4cqw; border-radius: 999px; border: .3cqw solid #355a22; background: rgba(20,36,12,.85); color: #fff; font-size: 2.8cqw !important; }
 .lb-chn { display: flex; align-items: center; justify-content: center; font-size: 6.4cqw; color: #fff; -webkit-text-stroke: .8cqw #1f3d10; paint-order: stroke fill; }
 .lb-chname { display: flex; align-items: center; justify-content: center; font-size: 10.5cqw; color: #fff; -webkit-text-stroke: 1.4cqw #4a2a10; paint-order: stroke fill; white-space: nowrap; }
 .lb-chsub { display: flex; align-items: center; justify-content: center; font-size: 3.4cqw; color: #5a3a1a; white-space: nowrap; }
@@ -1382,7 +1382,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610280355";
+  const BUILD = "202610280358";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -3825,6 +3825,7 @@ body.game-full { overflow: hidden; }
       try { Promise.resolve(req.call(gbox)).catch(() => coverFull(true)); } catch (e) { coverFull(true); }
     }
     function fullLabel() { document.querySelectorAll(".gfull").forEach((b) => { b.textContent = isFull() ? "전체화면 끄기" : "⛶ 전체화면"; }); }
+    document.addEventListener("fullscreenchange", () => { if (!$("gLobby").hidden) setTimeout(lobDraw, 60); }); // 로비 크기 다시
     document.addEventListener("fullscreenchange", fullLabel); document.addEventListener("webkitfullscreenchange", fullLabel);
     function intro() {
       $("gameHud").hidden = true;
@@ -5278,6 +5279,9 @@ body.game-full { overflow: hidden; }
       const toShop = () => { lobTab = "shop"; lobSel = "en"; lobErr = ""; lobDraw(); };
       art.append(nk, lvb, lobEn(), gold, lobBtn("lb-plus", px(664, 44, 44, 40), toShop, "피로도 사기"), lobBtn("lb-plus", px(871, 44, 44, 40), toShop, "상점"), lobBtn("lb-home", "", () => { location.hash = "notice"; }, "홈으로"));
       art.lastChild.textContent = "← 홈";
+      /* 화면 크게 — 폰 위 · 아래 막대(주소창 · 알림줄)를 숨겨 로비 · 게임을 더 크게(2026-10-28 갤럭시 폴드 "화면 크게 할 수 있으면") */
+      { const de = document.documentElement, rq = de.requestFullscreen || de.webkitRequestFullscreen, fs = () => document.fullscreenElement || document.webkitFullscreenElement;
+        if (rq) { const fb = lobBtn("lb-home lb-big", "", () => { if (fs()) (document.exitFullscreen || document.webkitExitFullscreen).call(document); else try { Promise.resolve(rq.call(de, { navigationUI: "hide" })).catch(() => {}); } catch (e) {} }, "화면 크게"); fb.textContent = fs() ? "⤡ 작게" : "⛶ 크게"; art.appendChild(fb); } }
       if (!P && lobTab !== "rank") art.appendChild(el("div", "lb-page", lobErr || "불러오는 중…")); // 순위는 내 정보 없이도
       else if (lobTab === "go") art.append(...lobGo(P));
       else { const pg = el("div", "lb-page lb-" + lobTab); pg.append(...(lobTab === "wpn" ? lobWpn(P) : lobTab === "shop" ? lobShop(P) : lobTab === "op" ? lobOp() : lobTab === "mail" ? lobMail(P) : lobTab === "gear" ? lobGear(P) : lobTab === "dun" ? lobDun(P) : lobRank())); if (lobErr) pg.appendChild(el("p", "lb-err", lobErr)); art.appendChild(pg); }
