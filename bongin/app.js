@@ -158,7 +158,7 @@ const APP = (() => {
       const I = A.items[it.key], r = el("div", "item"), eq = isEq(it.uid);
       { const ic = el("span", "slot ico g" + (I.grade || 0)); ic.appendChild(icon(it.key, 40)); r.appendChild(ic); } // 아이콘
       const nm = el("span", null, itemName(it) + (eq ? " (끼는 중)" : "")); nm.style.color = GRADE[I.grade];
-      const stat = el("small", null, I.atk ? "공격 " + Math.round(I.atk * (1 + (it.plus || 0) * 0.1)) : I.def ? "방어 " + Math.round(I.def * (1 + (it.plus || 0) * 0.1)) : I.heal ? "체력 40% 회복" : "재료");
+      const stat = el("small", null, I.atk ? "공격 " + Math.round(I.atk * plusMul(it.plus || 0)) : I.def ? "방어 " + Math.round(I.def * plusMul(it.plus || 0)) : I.heal ? "체력 40% 회복" : "재료");
       r.append(nm, stat);
       if (where === "char" && (I.kind === "weapon" || I.kind === "armor")) r.appendChild(btn(eq ? "빼기" : "끼기", () => send({ t: "equip", uid: it.uid }), "tiny"));
       if (where === "shop" && !eq) r.appendChild(btn("팔기 " + Math.floor(I.price / 2) * (it.n || 1) + "G", () => send({ t: "sell", uid: it.uid }), "tiny"));
@@ -359,7 +359,8 @@ const APP = (() => {
   const SLOT_NAMES = { skin: "스킨", weapon: "무기", armor: "갑옷", pants: "하의", greave: "각반", shoes: "신발", gloves: "장갑", ring: "반지", earring: "귀걸이", bracelet: "팔찌", necklace: "목걸이" };
   const isEq = (uid) => !!uid && Object.values((A.char && A.char.equip) || {}).includes(uid); // 끼고 있는지(10칸)
   const isGear = (k) => !!SLOT_NAMES[(A.items[k] || {}).kind];
-  function statText(it) { const I = A.items[it.key], m = 1 + (it.plus || 0) * 0.1, s = []; if (I.atk) s.push("공격 " + Math.round(I.atk * m)); if (I.def) s.push("방어 " + Math.round(I.def * m)); if (I.hp) s.push("체력 " + Math.round(I.hp * m));
+  const plusMul = (p) => 1 + Math.min(p, 20) * 0.1 + Math.max(0, p - 20) * 0.05; // 서버와 같게(+20 까지 10%, 그 뒤 5%)
+  function statText(it) { const I = A.items[it.key], m = plusMul(it.plus || 0), s = []; if (I.atk) s.push("공격 " + Math.round(I.atk * m)); if (I.def) s.push("방어 " + Math.round(I.def * m)); if (I.hp) s.push("체력 " + Math.round(I.hp * m));
     if (I.kind === "potion") s.push(I.mana ? "마력 " + Math.round(I.mana * 100) + "% 회복" : I.heal >= 1 && I.guard ? "체력 가득 · 3초 무적" : I.heal >= 1 ? "체력 가득 회복" : I.heal ? "체력 " + Math.round(I.heal * 100) + "% 회복" : I.regen ? "6초 동안 체력 " + Math.round(I.regen * 100) + "%" : "스킬 기다림 없앰");
     return (SLOT_NAMES[I.kind] ? SLOT_NAMES[I.kind] + " · " : "") + (s.join(" · ") || "재료 · 상인에게 팔 수 있어요"); }
   const bagUI = { tab: "bag", sort: "kind", shut: {}, sel: null };
