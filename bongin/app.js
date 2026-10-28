@@ -266,7 +266,7 @@ const APP = (() => {
   const GLOW = ["rgba(230,230,240,.5)", "rgba(90,160,255,.6)", "rgba(190,120,255,.65)", "rgba(255,200,70,.7)"];
   const GROUND_MS = 3 * 60 * 1000; // 바닥 물건 남는 시간(서버와 같게)
   function drawGround(o, cx) {
-    const x = o.x - cx; if (x < -60 || x > VW + 60) return; const left = GROUND_MS - (Date.now() - (o.lt || Date.now())); if (left < 20000 && Math.floor(performance.now() / 200) % 2) return; // 사라지기 20초 전 깜빡임 const I = A.items[o.key] || {}, r = FR.items && FR.items[o.key], bob = Math.sin(performance.now() / 400 + o.x) * 3;
+    const x = o.x - cx; if (x < -60 || x > VW + 60) return; const left = GROUND_MS - (Date.now() - (o.lt || Date.now())); if (left < 20000 && Math.floor(performance.now() / 200) % 2) return; /* 사라지기 20초 전 깜빡임 */ const I = A.items[o.key] || {}, r = FR.items && FR.items[o.key], bob = Math.sin(performance.now() / 400 + o.x) * 3;
     g.fillStyle = "rgba(0,0,0,.35)"; g.beginPath(); g.ellipse(x, o.z, 18, 5, 0, 0, Math.PI * 2); g.fill();
     const gr = g.createRadialGradient(x, o.z - 20 + bob, 2, x, o.z - 20 + bob, 26); gr.addColorStop(0, GLOW[I.grade || 0]); gr.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = gr; g.beginPath(); g.arc(x, o.z - 20 + bob, 26, 0, Math.PI * 2); g.fill();
     if (r && ITEM_IMG.complete) { const k = 36 / Math.max(r[2], r[3]); g.drawImage(ITEM_IMG, r[0], r[1], r[2], r[3], x - r[2] * k / 2, o.z - 38 + bob, r[2] * k, r[3] * k); }
