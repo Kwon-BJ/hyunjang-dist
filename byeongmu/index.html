@@ -1416,7 +1416,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610280500";
+  const BUILD = "202610280512";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -5617,7 +5617,9 @@ body.game-full { overflow: hidden; }
         lobBusy = true; call("gameGive", token, lobGiveTo, g).then((r) => { lobBusy = false; lobGiveRes = r; lobErr = ""; setStatus(r.nick + " 님에게 줬어요."); lobDraw(); }).catch((e) => { lobBusy = false; lobErr = errMsg(e); lobDraw(); }); };
       const best = el("button", "lb-buy", "👑 최고 장비 한 벌 주기(전설 Lv 40 · 무기 다)"); best.type = "button"; best.disabled = !lobGiveTo || lobBusy; // 2026-10-28 "기준량은 제일 좋은 아이템 다 착용시켜 놔라, 1개씩 만드는 거 귀찮다"
       best.onclick = () => { lobBusy = true; call("gameGive", token, lobGiveTo, { best: 1 }).then((r) => { lobBusy = false; lobGiveRes = r; lobErr = ""; setStatus(r.nick + " 님에게 최고 장비 한 벌을 끼워 줬어요."); if (me && lobGiveTo === me.id) call("gameProfile", token).then((p2) => { LP = p2; LP.got = Date.now(); lobDraw(); }).catch(() => {}); lobDraw(); }).catch((e) => { lobBusy = false; lobErr = errMsg(e); lobDraw(); }); };
-      out.push(go, best, el("small", "lb-note", "빼려면 앞에 − (예: −5)"));
+      /* 운영 시험용 — 모든 장 · 난이도 깬 걸로 · 무기 사본(2026-10-28 "기준량은 다 깨라", "운영 권한 있으니 템 복사해서 해 봐라") */
+      const opB = (txt, g, done) => { const b = el("button", "lb-buy", txt); b.type = "button"; b.disabled = !lobGiveTo || lobBusy; b.onclick = () => { lobBusy = true; call("gameGive", token, lobGiveTo, g).then((r) => { lobBusy = false; lobGiveRes = r; lobErr = ""; setStatus(r.nick + " 님 — " + done); if (me && lobGiveTo === me.id) call("gameProfile", token).then((p2) => { LP = p2; LP.got = Date.now(); lobDraw(); }).catch(() => {}); lobDraw(); }).catch((e) => { lobBusy = false; lobErr = errMsg(e); lobDraw(); }); }; return b; };
+      out.push(go, best, opB("🏁 모든 장 · 모든 난이도 깬 걸로", { allClear: 1 }, "30장 · 4단계 모두 열었어요."), opB("🧬 무기 사본 +6씩(각성 재료)", { wcopy: 6 }, "무기마다 사본 6개를 줬어요."), el("small", "lb-note", "빼려면 앞에 − (예: −5)"));
       /* 모든 유저에게 우편 — 위 칸에 넣은 선물 그대로 */
       const tt = document.createElement("input"); tt.className = "lb-sel"; tt.placeholder = "우편 제목 (예: 출시 기념 선물)"; tt.maxLength = 40;
       const mall = el("button", "lb-buy", "📬 모든 유저에게 우편 보내기"); mall.type = "button";
