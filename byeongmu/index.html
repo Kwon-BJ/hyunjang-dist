@@ -755,7 +755,7 @@ body.game-full { overflow: hidden; }
 .lb-nav button.on::after { content: ""; position: absolute; inset: 2% 4% 3%; border-radius: 3cqw; background: radial-gradient(ellipse at 50% 60%, rgba(255,214,90,.28), rgba(255,214,90,0) 70%); box-shadow: 0 0 0 .4cqw rgba(255,210,74,.75); pointer-events: none; }
 .lb-nav button:nth-child(3).on::after { display: none; } /* 출전은 그림에 이미 금빛 칸 — 덧그리면 수달 머리를 가림(2026-10-28) */
 /* 탭 화면(상점 · 무기 · 순위) — 부장님 탭 그림처럼: 나무 간판 · 양피지 판 · 크림색 칸 · 오른쪽(아래) 자세히 */
-.lb-page { left: 2.5%; right: 2.5%; top: 9.6%; bottom: 12%; overflow-y: auto; scrollbar-width: none; padding: 0 3cqw 3cqw; display: flex; flex-direction: column; gap: 2.2cqw; border-radius: 4cqw; border: .7cqw solid #c79a4a; background: linear-gradient(#f9eccb, #efdcab); box-shadow: 0 0 0 .5cqw #5a3a14, 0 2cqw 5cqw rgba(0,0,0,.45); font-size: 3.4cqw; }
+.lb-page { left: 2.5%; right: 2.5%; top: 9.6%; bottom: 14.2%; overflow-y: auto; scrollbar-width: none; padding: 0 3cqw 3cqw; display: flex; flex-direction: column; gap: 2.2cqw; border-radius: 4cqw; border: .7cqw solid #c79a4a; background: linear-gradient(#f9eccb, #efdcab); box-shadow: 0 0 0 .5cqw #5a3a14, 0 2cqw 5cqw rgba(0,0,0,.45); font-size: 3.4cqw; }
 .lb-page::-webkit-scrollbar { display: none; } .lb-page > * { flex-shrink: 0; } /* 안 눌리게(2026-10-28) */
 .lb-head { position: sticky; top: 0; z-index: 2; margin: 0 -3cqw; padding: 1.4cqw 3cqw .6cqw; background: linear-gradient(#f9eccb 80%, rgba(249,236,203,0)); text-align: center; }
 .lb-head img { width: 74%; display: block; margin: 0 auto; } .lb-head p { margin: .6cqw 0 0; font-size: 3.2cqw; color: #5a3a1a; }
@@ -828,10 +828,14 @@ body.game-full { overflow: hidden; }
 .lb-ghat.h-astro { top: -4%; width: 74%; } .lb-ghat.h-wizard { top: -24%; width: 62%; } .lb-ghat.h-chef { top: -17%; width: 52%; } .lb-ghat.h-king, .lb-ghat.h-ice { top: -14%; width: 54%; } .lb-ghat.h-santa { top: -12%; }
 .lb-gotter.sk-ice { filter: hue-rotate(185deg) saturate(.7) brightness(1.15); } .lb-gotter.sk-ice .lb-ghat { filter: hue-rotate(-185deg) saturate(1.4) brightness(.87); } .lb-gotter.sk-king { filter: drop-shadow(0 0 2cqw rgba(255,210,60,.9)); } .lb-gotter.sk-ninja { filter: brightness(.8) contrast(1.1); }
 .lb-skinpv { position: relative; height: 60cqw; overflow: visible; border-radius: 3cqw; background: radial-gradient(circle at 50% 70%, #fff6d8, #e8d3a0); border: .5cqw solid #e2c58a; } .lb-skinpv .lb-o360w { bottom: 1cqw; height: 57cqw; } .lb-skinpv .lb-o360 { height: 49cqw; }
-.lb-skininfo { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 1.4cqw; padding: 2cqw; border-radius: 3cqw; border: .6cqw solid #9aa3ad; background: #fffaf0; } .lb-skininfo b { font-size: 4.6cqw; color: #3a2a10; } .lb-skininfo em { font-style: normal; padding: .4cqw 2cqw; border-radius: 999px; color: #fff; font-size: 3cqw; } .lb-rtabs.sk3 { grid-template-columns: repeat(3, 1fr); } .lb-skininfo .lb-buy { grid-column: 1 / -1; } .lb-skhide { grid-column: 1 / -1; padding: 1.6cqw; border: .4cqw solid #8a6a3a; border-radius: 2.4cqw; background: #fffaf0; color: #4a3210; font-size: 3.2cqw !important; } .lb-skhide.on { background: #4a3210; color: #fff; } .lb-skininfo .lb-skst { grid-column: 1 / -1; font-size: 3cqw; color: #2f5a1c; }
+.lb-skininfo { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 1.4cqw; padding: 2cqw; border-radius: 3cqw; border: .6cqw solid #9aa3ad; background: #fffaf0; } .lb-skininfo b { font-size: 4.6cqw; color: #3a2a10; } .lb-skininfo em { font-style: normal; padding: .4cqw 2cqw; border-radius: 999px; color: #fff; font-size: 3cqw; } .lb-card.sk2 { position: relative; padding: 0; gap: 0; overflow: visible; } .sk-pick { display: grid; justify-items: center; gap: .3cqw; width: 100%; padding: 1.4cqw 1cqw .6cqw; border: 0; background: none; color: inherit; } .sk-pick img { width: 86%; aspect-ratio: 1; object-fit: contain; } .sk-pick b { font-size: 2.8cqw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.sk-eq { width: 86%; margin: 0 auto 1.4cqw; height: 6cqw; border: .4cqw solid #c9b48a; border-radius: 999px; background: #fffaf0; color: #2f8f1c; font-size: 3.6cqw !important; display: grid; place-items: center; } .sk-eq.on { background: linear-gradient(#8fe36b, #3fae2c); border-color: #23701a; color: #fff; text-shadow: 0 .2cqw 0 #1a5010; } .sk-eq.buy { color: #7a5a2a; font-size: 2.6cqw !important; } .sk-eq:disabled { opacity: .55; }
+.sk-eye { position: absolute; right: -1.6cqw; top: -1.6cqw; width: 7cqw; height: 7cqw; border-radius: 50%; border: .45cqw solid #e8c46a; background: radial-gradient(circle at 50% 35%, #4a7f2c, #1d3a10 75%); font-size: 3.6cqw !important; display: grid; place-items: center; box-shadow: 0 .4cqw 0 #13240a; z-index: 2; } .sk-eye.off { filter: grayscale(.6); }
+.lb-rtabs.sk3 { grid-template-columns: repeat(3, 1fr); } .lb-skininfo .lb-buy { grid-column: 1 / -1; } .lb-skhide { grid-column: 1 / -1; padding: 1.6cqw; border: .4cqw solid #8a6a3a; border-radius: 2.4cqw; background: #fffaf0; color: #4a3210; font-size: 3.2cqw !important; } .lb-skhide.on { background: #4a3210; color: #fff; } .lb-skininfo .lb-skst { grid-column: 1 / -1; font-size: 3cqw; color: #2f5a1c; }
 .lb-card.skin img { object-fit: contain; background: radial-gradient(#fff, #f2e2bc); }
 .lb-awk { grid-column: 1 / -1; display: grid; grid-template-columns: auto auto 1fr auto; align-items: center; gap: 1.6cqw; margin-top: 1.4cqw; padding: 1.4cqw 2cqw; border-radius: 2.4cqw; background: #f6e2b0; } .lb-awk b { font-size: 3.6cqw; color: #4a2a06; white-space: nowrap; } .lb-awk small { font-size: 2.6cqw; color: #6a4a1e; } .lb-awk .lb-gmerge { padding: 1.2cqw 2.4cqw; font-size: 3.2cqw !important; white-space: nowrap; }
 .lb-awk-tr { grid-column: 1 / -1; display: grid; gap: .3cqw; } .lb-awk-tr small { font-size: 2.7cqw; color: #8a6a3a; } .lb-awk-tr small.on { color: #2f5a1c; font-weight: 700; }
+.lb-awk-cost { grid-column: 1 / -1; display: flex; gap: 1.2cqw; } .lb-awk-cost span { flex: 1; display: flex; align-items: center; justify-content: center; gap: .8cqw; padding: .6cqw 1cqw; border-radius: 999px; border: .4cqw solid #c79a4a; background: #fffaf0; font-size: 2.9cqw; } .lb-awk-cost span i { font-style: normal; } .lb-awk-cost span.no b { color: #d8392c; } .lb-awk-cost span.ok b { color: #2f5a1c; }
 .lb-awk-st i { font-style: normal; font-size: 3.6cqw; color: #c9b48a; } .lb-awk-st i.on { color: #ffb300; text-shadow: 0 0 .8cqw #ffd23a; }
 .lb-gact.two { grid-template-columns: 1fr 1fr; }
 .lb-gup, .lb-gmerge { display: grid; gap: .2cqw; padding: 1.4cqw 1cqw; border: 0; border-radius: 2.4cqw; color: #fff; text-shadow: 0 .2cqw 0 rgba(0,0,0,.4); min-width: 0; }
@@ -1322,7 +1326,7 @@ body.game-full { overflow: hidden; }
         <div class="game-hud" id="gameHud" hidden>
           <div class="xp"><i id="gXp"></i></div>
           <div class="row"><span id="gTime">4:00</span><div class="hpbar"><i id="gHp"></i></div><span class="gtest" id="gTest" hidden>🧪 TEST</span><span id="gStage">1단계</span><span id="gLv">Lv 1</span><span id="gKill">0</span>
-          <button class="gchat" type="button" id="gChat" aria-label="문파 채팅">💬<b hidden></b></button><button class="tiny pause" type="button" id="gPause">멈춤</button><button class="tiny" type="button" id="gSnd" aria-label="소리 켜기 · 끄기">🔊</button><button class="tiny gspeed" type="button" id="gSpeed">▶ 1배속</button><button class="tiny gspeed gauto" type="button" id="gAuto" aria-pressed="false">🤖 자동</button><button class="tiny gspeed gheal" type="button" id="gHeal" hidden>❤ 0</button><button class="tiny gfull" type="button" id="gFull">⛶ 전체화면</button><button class="tiny gop" type="button" id="gLvUp" hidden>Lv+</button><button class="tiny gop" type="button" id="gGod" hidden aria-pressed="false">무적</button></div>
+          <button class="gchat" type="button" id="gChat" aria-label="전체 채팅">💬<b hidden></b></button><button class="tiny pause" type="button" id="gPause">멈춤</button><button class="tiny" type="button" id="gSnd" aria-label="소리 켜기 · 끄기">🔊</button><button class="tiny gspeed" type="button" id="gSpeed">▶ 1배속</button><button class="tiny gspeed gauto" type="button" id="gAuto" aria-pressed="false">🤖 자동</button><button class="tiny gspeed gheal" type="button" id="gHeal" hidden>❤ 0</button><button class="tiny gfull" type="button" id="gFull">⛶ 전체화면</button><button class="tiny gop" type="button" id="gLvUp" hidden>Lv+</button><button class="tiny gop" type="button" id="gGod" hidden aria-pressed="false">무적</button></div>
           <button class="grest" type="button" id="gRest" hidden></button>
           <div class="boss" id="gBoss" hidden><b id="gBossName"></b><div class="bar"><i id="gBossHp"></i></div></div>
           <div class="msg" id="gMsg" aria-live="polite"></div>
@@ -1451,7 +1455,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610280812";
+  const BUILD = "202610280837";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -3799,7 +3803,7 @@ body.game-full { overflow: hidden; }
       f: () => { s.evo[w] = 1; if (w === "orbs") s.orbs += 3; if (w === "aura") s.aura += 3; } }));
     const UP_ATK = (u) => u.skill || u.atk, UP_MAX_ATK = 6; // 공격 스킬은 한 판에 6가지까지
     let speed = 1;
-    try { speed = Math.min(3, Math.max(1, +localStorage.getItem("bmc-game-speed") || 1)); } catch (e) {}
+    /* 게임을 시작할 때는 늘 1배속 · 2 · 3배속은 판 안에서 직접(2026-10-28) */
     let ZM = 1, W = 0, H = 0, DPR = 1, s = null, raf = 0, last = 0, running = false, shown = "", stick = null;
     const keys = {};
     const MOVE = { ArrowUp: [0, -1], KeyW: [0, -1], ArrowDown: [0, 1], KeyS: [0, 1], ArrowLeft: [-1, 0], KeyA: [-1, 0], ArrowRight: [1, 0], KeyD: [1, 0] };
@@ -3992,7 +3996,7 @@ body.game-full { overflow: hidden; }
     })();
     /* ── 한 판 ── */
     function begin(o) {
-      o = o || {}; runDrop(); SND.start(); ["it-crate", "it-crate2", "it-magnet", "it-bomb", "it-heal", "it-gold", "fx-fire", "fx-thunder", "fx-boom", "fx-splash", "fx-rang", "fx-drill", "fx-kunai"].forEach((n) => lbImg(n)); /* 맵 물건 그림 미리 */ ["it-crate", "it-crate2", "it-magnet", "it-bomb", "it-heal", "it-gold"].forEach((n) => lbImg(n)); /* 맵 물건 그림 미리 */ { const sb = $("gSnd"); if (sb) sb.textContent = SND.on ? "🔊" : "🔇"; } coverFull(true); /* 새 판 — 예전 이어하기는 지움 */ $("gLobby").hidden = true; // 로비에서 출전 — 게임판이 화면을 덮음(휴대폰 세로도)
+      o = o || {}; runDrop(); speed = 1; speedLabel(); SND.start(); ["it-crate", "it-crate2", "it-magnet", "it-bomb", "it-heal", "it-gold", "fx-fire", "fx-thunder", "fx-boom", "fx-splash", "fx-rang", "fx-drill", "fx-kunai"].forEach((n) => lbImg(n)); /* 맵 물건 그림 미리 */ ["it-crate", "it-crate2", "it-magnet", "it-bomb", "it-heal", "it-gold"].forEach((n) => lbImg(n)); /* 맵 물건 그림 미리 */ { const sb = $("gSnd"); if (sb) sb.textContent = SND.on ? "🔊" : "🔇"; } coverFull(true); /* 새 판 — 예전 이어하기는 지움 */ $("gLobby").hidden = true; // 로비에서 출전 — 게임판이 화면을 덮음(휴대폰 세로도)
       s = { t: 0, hp: 100, max: 100, x: 0, y: 0, spd: 150, lv: 1, xp: 0, need: 6, kills: 0, foes: [], shots: [], ebs: [], gems: [], fx: [],
         spawn: 0, fire: 0, rate: 0.7, dmg: 10, multi: 1, pierce: 0, fan: 0, crit: 0, boom: 0, bounce: 0, bossPick: false, orbs: 0, orbA: 0, aura: 0, magnet: 60, regen: 0, hurt: 0,
         stage: 1, stageT: 0, boxes: [], boxT: 12, pools: [], advance: "", bossN: 0, bossNow: null, aim: Math.PI / 2, mvA: Math.PI / 2, dashT: 0, dashCd: 0, dashX: 0, dashY: 1, trail: [], lock: null, hitFx: 0, fields: [], homs: [], hz: [], walk: 0, moving: false, items: [], flash: 0, shotT: 0, bossKills: 0, up: {}, evo: {}, skills: [], cd: {}, cool: 1, ward: 0, msgT: 0, over: false,
@@ -5337,7 +5341,7 @@ body.game-full { overflow: hidden; }
     $("gPause").onclick = pause;
     /* 게임 빠르기 — "속도 2배속 3배속까지 선택해서 할 수 있게" (2026-10-26). 누를 때마다 1 → 2 → 3 → 1, 이 기기에 기억 */
     function speedLabel() { $("gSpeed").textContent = "▶".repeat(speed) + " " + speed + "배속"; document.querySelectorAll(".gspeed-pick button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.v === speed))); }
-    function setSpeed(v) { speed = v; try { localStorage.setItem("bmc-game-speed", String(v)); } catch (e) {} speedLabel(); }
+    function setSpeed(v) { speed = v; speedLabel(); }
     $("gSpeed").onclick = () => setSpeed(speed % 3 + 1);
     $("gHeal").onclick = () => useHeal();
     $("gAuto").onclick = () => { autoSk = !autoSk; try { localStorage.setItem("bmc-game-auto", autoSk ? "1" : "0"); } catch (e) {} autoLabel(); };
@@ -5540,9 +5544,11 @@ body.game-full { overflow: hidden; }
       b.type = "button"; det.appendChild(b);
       /* 각성(2026-10-28 "같은 무기끼리 각성 ㆍ 일반 0 · 희귀 1 · 영웅 2 · 전설 3회") — 같은 무기 사본 (각성 횟수+1)개 → 한 등급 위 · 평타 피해 +25%씩 */
       if (own) { const a = AW[sel] || 0, nd = a + 1, have = DUP[sel] || 0, aw = el("div", "lb-awk"), st = el("div", "lb-awk-st"); for (let i = 0; i < 3; i++) st.appendChild(el("i", i < a ? "on" : "", "★"));
-        aw.append(el("b", null, "각성 · " + GRADE_N[a]), st, el("small", null, "평타 피해 +" + a * 25 + "%" + (a < 3 ? " → +" + nd * 25 + "% · 같은 무기 " + have + "/" + nd : " · 최고")));
+        aw.append(el("b", null, "각성 · " + GRADE_N[a]), st, el("small", null, "평타 피해 +" + a * 25 + "%" + (a < 3 ? " → +" + nd * 25 + "%" : " · 최고")));
+        const AC = AWK_COST[a]; if (AC) { const cost = el("div", "lb-awk-cost"), mt = (P.mats || [])[AC.tier] || 0; /* 각성 비용 — 아이콘 + 가진 것/필요 */
+          [["⚔", have, AC.dup], ["💰", P.gold || 0, AC.gold], ["🔩", mt, AC.n]].forEach(([ic, h0, n0], ci) => { const sp = el("span", h0 >= n0 ? "ok" : "no"); if (ci === 2) sp.style.borderColor = GRADE_C[AC.tier]; sp.append(el("i", null, ic), el("b", null, ci === 1 ? n0.toLocaleString() : h0 + "/" + n0)); cost.appendChild(sp); }); aw.appendChild(cost); }
         { const GL = el("div", "lb-awk-tr"); (WGRADE[(WPN[sel] || {}).hero] || []).forEach((g0, gi) => GL.appendChild(el("small", gi < a ? "on" : "", (gi < a ? "✔ " : "🔒 ") + GRADE_N[gi + 1] + " ㆍ " + g0.t))); aw.appendChild(GL); } /* 등급마다 바뀌는 평타 */
-        const ab = el("button", "lb-gmerge", a >= 3 ? "전설 완성" : "✨ 각성"); ab.type = "button"; ab.disabled = a >= 3 || have < nd || P.free; ab.onclick = () => lobAct("gameAwaken", sel); aw.appendChild(ab); det.appendChild(aw); }
+        const ab = el("button", "lb-gmerge", a >= 3 ? "전설 완성" : "✨ 각성"); ab.type = "button"; ab.disabled = a >= 3 || P.free || !AC || have < AC.dup || (P.gold || 0) < AC.gold || ((P.mats || [])[AC.tier] || 0) < AC.n; ab.onclick = () => lobAct("gameAwaken", sel); aw.appendChild(ab); det.appendChild(aw); }
       det.appendChild(el("small", "lb-ghint", "같은 무기는 무기 상자 · 10장마다 깨기 보상으로 얻어요"));
       return [lobHead("sign-wpn", "다양한 무기를 장착하고 더 강력하게!"), grid, det];
     }
@@ -5596,17 +5602,19 @@ body.game-full { overflow: hidden; }
     function skinLookOf(P, full, top, shoes) { if (full && full !== "basic") return full; return [top, shoes].filter(Boolean).join("-") || "basic"; }
     function lobSkin(P) {
       const D = P.skinDef || {}, own = P.skins || ["basic"], worn = { full: P.skin || "basic", top: P.skinTop || "", shoes: P.skinShoes || "" };
-      const keys = Object.keys(D).filter((k) => skinSlot(D, k) === lobSkinTab).sort((a, b) => D[a].g - D[b].g), sel = lobSel && D[lobSel] && skinSlot(D, lobSel) === lobSkinTab ? lobSel : worn[lobSkinTab] || keys[0];
+      const SO = { full: 0, top: 1, shoes: 2 }, keys = Object.keys(D).sort((a, b) => SO[skinSlot(D, a)] - SO[skinSlot(D, b)] || D[a].g - D[b].g), sel = lobSel && D[lobSel] ? lobSel : worn.full !== "basic" ? worn.full : worn.top || worn.shoes || "basic", sl = skinSlot(D, sel), wornOf = (k) => { const z = skinSlot(D, k); return z === "full" ? worn.full === k : worn[z] === k; };
       const head = el("div", "lb-ghead"), back = el("button", "lb-skinbtn", "← 장비"); back.type = "button"; back.onclick = () => { lobTab = "gear"; lobSel = null; lobDraw(); }; head.append(el("b", null, "👕 스킨"), back);
-      const tabs = el("div", "lb-rtabs sk3"); [["full", "한벌의상"], ["top", "상의"], ["shoes", "신발"]].forEach(([k, n]) => { const b = el("button", k === lobSkinTab ? "on" : "", n); b.type = "button"; b.onclick = () => { lobSkinTab = k; lobSel = null; lobDraw(); }; tabs.appendChild(b); });
-      const look = lobSkinTab === "full" ? skinLookOf(P, sel) : skinLookOf(P, "", lobSkinTab === "top" ? sel : worn.top, lobSkinTab === "shoes" ? sel : worn.shoes);
+      /* 위 칸(한벌 · 상의 · 신발)도 뺌 — 카드만(2026-10-28 "굳이 필요 없는 거 만들지 마라") */
+      const look = sl === "full" ? skinLookOf(P, sel) : skinLookOf(P, "", sl === "top" ? sel : worn.top, sl === "shoes" ? sel : worn.shoes);
       const pv = el("div", "lb-skinpv"); pv.appendChild(otter360(P, look, true));
-      const S = D[sel] || {}, isOn = sel && (lobSkinTab === "full" ? worn.full === sel : worn[lobSkinTab] === sel), info = el("div", "lb-skininfo"); info.append(el("b", null, S.n || ""), el("em", null, GRADE_N[S.g || 0]), el("small", "lb-skst", skinStat(S.g || 0))); info.style.borderColor = GRADE_C[S.g || 0]; info.querySelector("em").style.background = GRADE_C[S.g || 0];
-      const has = own.includes(sel), bb = el("button", "lb-buy", isOn ? (sel === "basic" ? "착용 중" : "벗기") : has ? "착용하기" : "사서 착용 💰 " + (S.gold || 0).toLocaleString()); bb.type = "button"; bb.disabled = !sel || (isOn && sel === "basic") || P.free || (!has && P.gold < (S.gold || 0)); bb.onclick = () => lobAct("gameSkin", sel); info.appendChild(bb);
-      if (worn.full !== "basic" || worn.top || worn.shoes) { const hb = el("button", "lb-skhide" + (P.skinHide ? " on" : ""), P.skinHide ? "🙈 스킨 숨김 중 ㆍ 보이기" : "👁 스킨 보이는 중 ㆍ 숨기기"); hb.type = "button"; hb.onclick = () => lobAct("gameSkin", "hide"); info.appendChild(hb); } /* 입고는 있되 겉모습만 장비로(능력치 그대로) */
-      if (lobSkinTab !== "full" && worn.full !== "basic") info.appendChild(el("small", "lb-skst", "한벌의상(" + (D[worn.full] || {}).n + ")을 입고 있어 상의 · 신발은 그 아래에 입어요"));
-      const grid = el("div", "lb-grid g4"); keys.forEach((k) => { const on = lobSkinTab === "full" ? worn.full === k : worn[lobSkinTab] === k, c = lobCard(k === "basic" ? "otter-front" : "sk-" + k, D[k].n, on ? "✔ 착용" : own.includes(k) ? "보유" : "💰 " + D[k].gold.toLocaleString(), sel === k, false, () => { lobSel = k; lobDraw(); }); c.style.borderColor = GRADE_C[D[k].g]; c.classList.add("skin"); grid.appendChild(c); });
-      return [head, tabs, pv, info, grid, el("p", "lb-note", "등급 능력치(입은 것 중 가장 높은 등급) ㆍ 희귀 체력 +3% · 영웅 체력 +5% 공격 +5% · 전설 체력 +8% 공격 +8%")];
+      const S = D[sel] || {}, info = el("div", "lb-skininfo"); info.append(el("b", null, S.n || ""), el("em", null, GRADE_N[S.g || 0]), el("small", "lb-skst", skinStat(S.g || 0))); info.style.borderColor = GRADE_C[S.g || 0]; info.querySelector("em").style.background = GRADE_C[S.g || 0];
+      /* 착용 · 해제는 카드 아래 자리(✔), 보이기 · 숨기기는 입은 카드 오른쪽 위 눈(2026-10-28 "글자 단추 말고") */
+      const grid = el("div", "lb-grid g4"); keys.forEach((k) => { const on = wornOf(k), has = own.includes(k), c = el("div", "lb-card skin sk2" + (sel === k ? " on" : ""));
+        const im = el("img"); im.src = LBI(k === "basic" ? "otter-front" : "sk-" + k); im.alt = ""; const pick = el("button", "sk-pick"); pick.type = "button"; pick.setAttribute("aria-label", D[k].n); pick.append(im, el("b", null, D[k].n)); pick.onclick = () => { lobSel = k; lobDraw(); };
+        const eq = el("button", "sk-eq" + (on ? " on" : has ? "" : " buy")); eq.type = "button"; eq.setAttribute("aria-label", on ? "벗기" : has ? "입기" : "사서 입기"); eq.textContent = on ? "✔" : has ? "" : "💰 " + D[k].gold.toLocaleString(); eq.disabled = P.free || (on && k === "basic") || (!has && P.gold < D[k].gold); eq.onclick = () => lobAct("gameSkin", k);
+        c.append(pick, eq); if (on && k !== "basic") { const eye = el("button", "sk-eye" + (P.skinHide ? " off" : "")); eye.type = "button"; eye.setAttribute("aria-label", P.skinHide ? "보이기" : "숨기기"); eye.innerHTML = /* 눈 그림(이모지는 폰마다 달라서) */ '<svg viewBox="0 0 24 24" width="88%" height="88%" fill="none" stroke="#ffe9a8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3" fill="#ffe9a8"/>' + (P.skinHide ? '<path d="M3 3l18 18" stroke="#ff6b5a" stroke-width="3"/>' : "") + "</svg>"; eye.onclick = () => lobAct("gameSkin", "hide"); c.appendChild(eye); }
+        c.style.borderColor = GRADE_C[D[k].g]; grid.appendChild(c); });
+      return [head, pv, info, grid];
     }
     /* 장비 화면 수달 — 360도 돌려 보기(2026-10-28 "마우스로 360도 돌려서 볼 수 있게, 그림으로 해 놓으니 보기 싫다").
        ChatGPT 턴어라운드 8방향(img/lb/otter-360 · 장비를 4칸 이상 끼면 otter-360g = 장비 입은 모습), 끌면 돌고 손대기 전엔 천천히 저절로 돔 */
@@ -5620,7 +5628,7 @@ body.game-full { overflow: hidden; }
       let top = ch; for (let y = 0; y < ch && top === ch; y++) for (let x = 0; x < c.width; x++) if (d[(y * c.width + x) * 4 + 3] > 40) { top = y; break; }
       const H = ch - top, band = (a, b) => { let L = c.width, R = 0; for (let y = Math.round(top + H * a); y < top + H * b; y++) for (let x = 0; x < c.width; x++) if (d[(y * c.width + x) * 4 + 3] > 40) { if (x < L) L = x; if (x > R) R = x; } return [L, Math.max(L, R)]; };
       const [hl, hr] = band(0.05, 0.3), [bl, br] = band(0.45, 0.62); return (O360M[key] = { top, h: H, hx: (hl + hr) / 2, hw: hr - hl, bx: (bl + br) / 2, bw: br - bl }); }
-    function o360Img(n) { let i = O360[n]; if (!i) { i = O360[n] = new Image(); i.onload = () => { if (!$("gLobby").hidden && lobTab === "gear") lobDraw(); }; i.src = LBI(n); } return i.complete && i.naturalWidth ? i : null; }
+    function o360Img(n) { let i = O360[n]; if (!i) { i = O360[n] = new Image(); i.onload = () => { if (!$("gLobby").hidden && (lobTab === "gear" || lobTab === "skin")) lobDraw(); }; i.src = LBI(n); } return i.complete && i.naturalWidth ? i : null; }
     function otter360(P, skin, preview) {
       /* 2026-10-28 "자동으로 돌지 말고, 캐릭 아래 좌우 화살표로 직접 돌려 보게" · "모자 스킨 사서 껴도 적용이 안 된다" —
          장비 입은 수달(ChatGPT 8방향) 위에 모자를 머리 자리(칸마다 그림에서 잰 머리 가운데 · 폭)에 맞춰 씌움, 왼쪽을 볼 땐 뒤집음. 끌어도 돌아감 */
@@ -5641,7 +5649,7 @@ body.game-full { overflow: hidden; }
     /* 모자 자리 — [머리 폭의 몇 배, 모자 아래 끝이 수달 키의 어디, 옆을 볼 때 앞쪽으로 얼마나] · 스킨 털빛 */
     const HAT_FIT = { _: [0.92, 0.3, 0.05], astro: [1.12, 0.47, 0.04], wizard: [0.88, 0.27, 0.05], chef: [0.78, 0.25, 0.04], king: [0.72, 0.21, 0.04], ice: [0.72, 0.21, 0.04], santa: [0.92, 0.29, 0.05], ninja: [0.95, 0.32, 0.05], pirate: [1.0, 0.29, 0.05], farmer: [1.12, 0.29, 0.05], navy: [0.92, 0.28, 0.05] };
     const SKIN_FX = { ice: "hue-rotate(185deg) saturate(.7) brightness(1.15)", ninja: "brightness(.8) contrast(1.1)", king: "drop-shadow(0 0 10px rgba(255,210,60,.9))" };
-    /* 문파 채팅(2026-10-28 "게임 안에 채팅창", 자리는 ChatGPT 추천대로) — 로비: 아래 메뉴 위 한 줄 · 전투: 오른쪽 위 💬(새 글 수만, 싸움을 가리지 않게). 열면 게임은 그대로 진행 */
+    /* 전체 채팅(2026-10-28 "문파채팅이 아니라 전체 채팅으로", 승인된 모든 회원이 한 방)ㆍ처음 "게임 안에 채팅창", 자리는 ChatGPT 추천대로) — 로비: 아래 메뉴 위 한 줄 · 전투: 오른쪽 위 💬(새 글 수만, 싸움을 가리지 않게). 열면 게임은 그대로 진행 */
     const CHAT = { list: [], last: 0, seen: 0, at: 0, open: false, busy: false };
     try { CHAT.seen = +localStorage.getItem("bmc-chat-seen") || 0; } catch (e) {}
     function chatPull(force) { if (lobFree() || !token || CHAT.busy || (!force && Date.now() - CHAT.at < (CHAT.open ? 2500 : 10000))) return; CHAT.busy = true; CHAT.at = Date.now();
@@ -5650,19 +5658,20 @@ body.game-full { overflow: hidden; }
     const chatUnread = () => CHAT.list.filter((x) => x.i > CHAT.seen && !(me && x.n === me.gameId)).length;
     function chatPaint() {
       const n = chatUnread(), gb = $("gChat"); if (gb) { const b = gb.querySelector("b"); b.hidden = !n; b.textContent = n > 9 ? "9+" : String(n); }
-      const bar = document.querySelector(".lb-chatbar"); if (bar) { const L = CHAT.list[CHAT.list.length - 1]; bar.querySelector("span").textContent = L ? L.n + " ㆍ " + L.t : "문파 채팅 ㆍ 눌러서 이야기해요"; const b = bar.querySelector("b"); b.hidden = !n; b.textContent = n > 9 ? "9+" : String(n); }
+      const bar = document.querySelector(".lb-chatbar"); if (bar) { const L = CHAT.list[CHAT.list.length - 1]; bar.querySelector("span").textContent = L ? L.n + " ㆍ " + L.t : "전체 채팅 ㆍ 눌러서 이야기해요"; const b = bar.querySelector("b"); b.hidden = !n; b.textContent = n > 9 ? "9+" : String(n); }
       const box = document.getElementById("chatList"); if (box) { box.replaceChildren(...CHAT.list.slice(-40).map((x) => { const r = el("div", "ch-row" + (me && x.n === me.gameId ? " me" : "")); r.append(el("b", null, x.n), el("span", null, x.t)); return r; })); box.scrollTop = box.scrollHeight;
         if (CHAT.open && CHAT.last > CHAT.seen) { CHAT.seen = CHAT.last; try { localStorage.setItem("bmc-chat-seen", CHAT.seen); } catch (e) {} } }
     }
     function chatBar() { const b = el("button", "lb-chatbar"); b.type = "button"; b.style.cssText = px(40, 1446, 861, 34); b.append(el("i", null, "💬"), el("span", null, ""), el("b", null, "")); b.onclick = () => chatOpen(false); chatPull(false); setTimeout(chatPaint, 0); return b; }
     function chatOpen(inGame) {
       let w = document.getElementById("chatWin"); if (w) { w.remove(); CHAT.open = false; return; }
-      w = el("div", "chat-win" + (inGame ? " top" : "")); w.id = "chatWin"; const hd = el("div", "ch-hd"), x = el("button", null, "✕"); x.type = "button"; x.onclick = () => { w.remove(); CHAT.open = false; }; hd.append(el("b", null, "💬 문파 채팅"), x);
+      w = el("div", "chat-win" + (inGame ? " top" : "")); w.id = "chatWin"; const hd = el("div", "ch-hd"), x = el("button", null, "✕"); x.type = "button"; x.onclick = () => { w.remove(); CHAT.open = false; }; hd.append(el("b", null, "💬 전체 채팅"), x);
       const list = el("div", "ch-list"); list.id = "chatList"; const f = el("form", "ch-in"), inp = document.createElement("input"); inp.maxLength = 120; inp.placeholder = "할 말 (120자)"; inp.enterKeyHint = "send"; const sb = el("button", null, "보내기"); sb.type = "submit"; f.append(inp, sb);
       f.onsubmit = (e) => { e.preventDefault(); const t = inp.value.trim(); if (!t || lobFree()) return; sb.disabled = true; call("gameChat", token, t).then((r) => { sb.disabled = false; inp.value = ""; (r.list || []).forEach((y) => { if (y.i > CHAT.last) { CHAT.list.push(y); CHAT.last = y.i; } }); chatPaint(); }).catch((er) => { sb.disabled = false; setStatus(errMsg(er)); }); };
       inp.addEventListener("keydown", (e) => e.stopPropagation()); // 게임 방향키 · 대시로 안 넘어가게
       w.append(hd, list, f); (inGame ? $("gameBox") : document.querySelector("#gLobby .lb-art") || document.body).appendChild(w); CHAT.open = true; chatPull(true); chatPaint();
     }
+    const AWK_COST = [{ dup: 1, gold: 5000, tier: 1, n: 5 }, { dup: 2, gold: 20000, tier: 2, n: 10 }, { dup: 3, gold: 60000, tier: 3, n: 15 }]; /* 워커와 같게 */
     function lobAct2(fn, a, b) { if (lobFree() || lobBusy) return; lobBusy = true; lobErr = ""; call(fn, token, a, b).then((r) => { lobBusy = false; LP = r; LP.got = Date.now(); lobDraw(); }).catch((e) => { lobBusy = false; lobErr = errMsg(e); lobDraw(); }); }
     /* 던전 탭 — 1~10장 · 무한의 탑 한눈에. 누르면 출전 화면 그 장으로 */
     function lobDun(P) {
