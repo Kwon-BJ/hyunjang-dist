@@ -1400,7 +1400,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610280404";
+  const BUILD = "202610280408";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -3906,7 +3906,7 @@ body.game-full { overflow: hidden; }
 
     /* ── 한 판 ── */
     function begin(o) {
-      o = o || {}; coverFull(true); $("gLobby").hidden = true; // 로비에서 출전 — 게임판이 화면을 덮음(휴대폰 세로도)
+      o = o || {}; runDrop(); coverFull(true); /* 새 판 — 예전 이어하기는 지움 */ $("gLobby").hidden = true; // 로비에서 출전 — 게임판이 화면을 덮음(휴대폰 세로도)
       s = { t: 0, hp: 100, max: 100, x: 0, y: 0, spd: 150, lv: 1, xp: 0, need: 6, kills: 0, foes: [], shots: [], ebs: [], gems: [], fx: [],
         spawn: 0, fire: 0, rate: 0.7, dmg: 10, multi: 1, pierce: 0, fan: 0, crit: 0, boom: 0, bounce: 0, bossPick: false, orbs: 0, orbA: 0, aura: 0, magnet: 60, regen: 0, hurt: 0,
         stage: 1, stageT: 0, boxes: [], boxT: 12, pools: [], advance: "", bossN: 0, bossNow: null, aim: Math.PI / 2, mvA: Math.PI / 2, dashT: 0, dashCd: 0, dashX: 0, dashY: 1, trail: [], lock: null, hitFx: 0, fields: [], homs: [], hz: [], walk: 0, moving: false, items: [], flash: 0, shotT: 0, bossKills: 0, up: {}, evo: {}, skills: [], cd: {}, cool: 1, ward: 0, msgT: 0, over: false,
@@ -5208,17 +5208,30 @@ body.game-full { overflow: hidden; }
     window.__bmcSaveGame = () => {
       if (!s || s.over) return false;
       try {
-        const data = JSON.stringify(s, (k, v) => (k === "bossNow" || k === "lock" || k === "tg") ? undefined : (k === "hit" && Array.isArray(v)) ? [] : v);
-        sessionStorage.setItem("bmc-game-save", JSON.stringify({ at: Date.now(), b: BUILD, boss: s.foes.indexOf(s.bossNow), hero: heroKey, s: data }));
+        sessionStorage.setItem("bmc-game-save", saveBlob());
         return true;
       } catch (e) { return false; }
     };
+    function saveBlob() {
+      const data = JSON.stringify(s, (k, v) => (k === "bossNow" || k === "lock" || k === "tg" || k === "raidB" || k === "fx" || k === "trail") ? undefined : (k === "hit" && Array.isArray(v)) ? [] : v);
+      return JSON.stringify({ at: Date.now(), b: BUILD, boss: s.foes.indexOf(s.bossNow), raid: s.foes.indexOf(s.raidB), hero: heroKey, s: data });
+    }
+    /* 새로고침 · 다시 접속해도 이어하기(2026-10-28 "업데이트 때 중단시키는 건 좋은데 새로고침하고 재접속하면 이어서 하기도") —
+       하는 판을 5초마다 · 창을 닫을 때 이 기기(localStorage, 회원마다)에 저장, 30분 안에 다시 들어오면 「멈춤」 상태로 그 판에서 이어서. 끝난 판 · 새 판이면 지움 */
+    const RUN_KEY = () => "bmc-game-run:" + ((me && me.id) || "guest");
+    function runSave() { try { if (s && !s.over && !s.watchView && s.t > 3) localStorage.setItem(RUN_KEY(), saveBlob()); else if (s && s.over) localStorage.removeItem(RUN_KEY()); } catch (e) {} }
+    function runDrop() { try { localStorage.removeItem(RUN_KEY()); } catch (e) {} }
+    setInterval(() => { if (s && (running || s.over)) runSave(); }, 5000);
+    window.addEventListener("pagehide", runSave); document.addEventListener("visibilitychange", () => { if (document.hidden) runSave(); });
     function restoreGame() {
       let sv = null;
+      let local = false;
       try { sv = JSON.parse(sessionStorage.getItem("bmc-game-save") || "null"); sessionStorage.removeItem("bmc-game-save"); } catch (e) {}
-      if (!sv || Date.now() - sv.at > 120000) return false;
-      try { s = JSON.parse(sv.s); } catch (e) { return false; }
-      s.bossNow = sv.boss >= 0 ? s.foes[sv.boss] || null : null; s.lock = null;
+      if (!sv) try { sv = JSON.parse(localStorage.getItem(RUN_KEY()) || "null"); local = !!sv; } catch (e) {}
+      if (!sv || Date.now() - sv.at > (local ? 30 * 60e3 : 120000)) { runDrop(); return false; }
+      try { s = JSON.parse(sv.s); } catch (e) { runDrop(); return false; }
+      s.bossNow = sv.boss >= 0 ? s.foes[sv.boss] || null : null; s.lock = null; s.fx = []; s.trail = []; if (s.raid) s.raidB = sv.raid >= 0 ? s.foes[sv.raid] || null : null; s.over = false;
+      coverFull(true); $("gLobby").hidden = true;
       if (HEROES[sv.hero]) heroKey = sv.hero; setMap(s.chap || mapFor(s.stage)); // 장이면 그 장 맵(예전엔 단계로 골라 이어하기 뒤 다른 맵이 됐다, 2026-10-28)
       s.ward = Math.max(s.ward || 0, 2); $("gTest").hidden = !s.test;
       // 2026-10-27 전 판에서 저장된 게임 — 새로 생긴 값 채움(사거리 · 회오리 · 휴식 · 상자 체력)
@@ -5229,7 +5242,9 @@ body.game-full { overflow: hidden; }
          끝낸다(점수는 순위표에). 앞으로의 업데이트는 다시 이어서 */
       const FORCE_END = "202610261101";
       if (!/^\d{12}$/.test(sv.b || "") || sv.b < FORCE_END) { renderSkills(); end(); const k = $("gameOverIn").querySelector(".game-card"); if (k) k.prepend(el("div", "rank", "관리자가 게임을 종료했어요")); return true; }
-      renderSkills(); resume(); msg("업데이트 적용 — 이어서!");
+      renderSkills(); s.skKey = null;
+      if (local) { $("gameHud").hidden = false; running = false; hud(); draw(); showPause(); $("gameOverIn").prepend(el("p", "best", "▶ 하던 판을 이어서 할 수 있어요 — 「계속」")); return true; } // 새로고침 · 재접속 — 멈춘 채로
+      resume(); msg("업데이트 적용 — 이어서!");
       return true;
     }
     /* ── 수달단 로비 (2026-10-28 부장님 "탕탕특공대처럼 — 로비 · 상점 · 장별 시작 · 피로도 · 휴대폰 세로 · 캐릭터 하나(수달) · 무기에 따라 공격 방식",
