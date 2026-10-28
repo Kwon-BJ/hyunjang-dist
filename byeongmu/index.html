@@ -653,6 +653,7 @@ body.game-full { overflow: hidden; }
 .game-box.full .game-hud .boss .bar { height: 12px; border: 2px solid #3a0a06; background: #2a0a06; } .game-box.full .game-hud .boss .bar i { background: linear-gradient(180deg, #ff9a5a, #e8382c); }
 .game-box.full .game-hud .msg { font-family: "Jua", "Noto Sans KR", sans-serif; font-weight: 400; color: #fff; -webkit-text-stroke: 5px #2f5a1c; paint-order: stroke fill; text-shadow: 0 4px 0 #13240a; letter-spacing: 1px; }
 .game-box.full .game-hud .grest { border: 2px solid #b97a0a; background: linear-gradient(180deg, #ffe36b, #f2a91c); color: #4a2a06; font-family: "Jua", "Noto Sans KR", sans-serif; box-shadow: 0 3px 0 #8a5a08; }
+.game-box.full .game-hud .skills, .game-box.full .game-hud .gauto { display: none !important; } /* 무기는 모두 저절로(탕탕특공대처럼, 2026-10-28) */
 .game-box.full .gskill { border: 3px solid #e8c46a; background: conic-gradient(rgba(0,0,0,.6) calc(var(--cd, 0) * 1turn), #2c5418 0); color: #fff; font-family: "Jua", "Noto Sans KR", sans-serif; box-shadow: 0 3px 0 #13240a; }
 .game-box.full .gskill.ready { border-color: #ffe36b; box-shadow: 0 3px 0 #13240a, 0 0 14px rgba(255,227,107,.7); }
 .game-box.full .dashbtn { width: 70px; height: 70px; border-color: #e8c46a; background: radial-gradient(circle at 50% 35%, #6ab4ff, #2a6fd0 70%); }
@@ -747,6 +748,11 @@ body.game-full { overflow: hidden; }
 .lb-tr .lb-del { border: 0; background: none; font-size: 3.6cqw; cursor: pointer; white-space: nowrap; padding: 0; } .lb-tr .lb-del[data-sure="1"] { font-size: 2.6cqw; color: #b3261e; font-weight: 800; } .lb-table.op .lb-tr { grid-template-columns: 12cqw 1fr 12cqw 20cqw 8cqw; }
 .lb-reset { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4cqw; align-items: center; padding: 2.4cqw; border-radius: 3cqw; border: .5cqw solid #e2c58a; background: linear-gradient(#3b6b22, #224312); color: #fff; } .lb-reset b { grid-column: 1 / -1; font-size: 3.4cqw; text-align: center; color: #ffe08a; text-shadow: 0 1px 1px #000; }
 .lb-reset .lb-btn { padding: 1.8cqw .6cqw; border: 0; border-radius: 2.4cqw; background: linear-gradient(#ffe36b, #f2a91c); color: #4a2a06; font-size: 3cqw !important; box-shadow: 0 .8cqw 0 #b97a0a; white-space: normal; }
+.lb-mailbtn { display: flex; align-items: center; justify-content: center; gap: 1cqw; border-radius: 999px; border: .4cqw solid #e8c46a; background: rgba(20,36,12,.88); color: #fff; font-size: 3.2cqw !important; white-space: nowrap; } .lb-mailbtn.on { background: #b97a0a; }
+.lb-mrow { display: grid; grid-template-columns: 13cqw 1fr auto; align-items: center; gap: 2cqw; margin-top: 2cqw; padding: 2cqw; border-radius: 3cqw; border: .5cqw solid #e2c58a; background: linear-gradient(#fffaf0, #f6e6c2); box-shadow: 0 .8cqw 0 #d9bb7c; color: #4a3210; }
+.lb-mrow img { width: 13cqw; height: 13cqw; object-fit: contain; } .lb-mtx { display: grid; gap: .6cqw; min-width: 0; } .lb-mtx b { font-size: 4cqw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .lb-mtx small { font-size: 3cqw; color: #7a5a2a; overflow-wrap: anywhere; } .lb-mtx small.dt { font-size: 2.6cqw; color: #a08050; }
+.lb-mget { padding: 2cqw 3.6cqw; border: 0; border-radius: 2.6cqw; background: linear-gradient(#ffe36b, #f2a91c); color: #4a2a06; font-size: 3.8cqw !important; box-shadow: 0 .7cqw 0 #b97a0a; white-space: nowrap; } .lb-mget:active { transform: translateY(.5cqw); box-shadow: none; }
+.lb-badge { display: grid; place-items: center; min-width: 4.4cqw; height: 4.4cqw; padding: 0 1cqw; border-radius: 999px; background: #e8382c; color: #fff; font-size: 2.8cqw; }
 .lb-opbtn { padding: 3px 8px; font-size: 11px !important; border-radius: 999px; border: 2px solid #e8c46a; background: rgba(20,36,12,.9); color: #fff; font-weight: 800; white-space: nowrap; } .lb-opbtn.on { background: #b3261e; }
 .lb-live { position: absolute; z-index: 2; right: 8px; top: 18%; width: 170px; max-height: 60%; overflow: auto; padding: 10px; border-radius: 12px; background: rgba(12,20,8,.9); border: 2px solid #e8c46a; color: #fff; display: grid; gap: 6px; font-size: 13px; font-family: "Noto Sans KR", sans-serif; }
 .gwatch { position: absolute; left: 50%; top: 10px; transform: translateX(-50%); z-index: 5; display: flex; gap: 8px; align-items: center; padding: 6px 12px; border-radius: 999px; background: rgba(20,10,30,.85); border: 1px solid #b58aff; color: #e9dcff; font-size: 13px; font-weight: 700; max-width: 92%; }
@@ -1337,7 +1343,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610280303";
+  const BUILD = "202610280313";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -3630,13 +3636,13 @@ body.game-full { overflow: hidden; }
     ];
     /* 스킬 — 단추(PC 는 1 · 2 · 3)로 쓴다. l 은 스킬 레벨 */
     const SK = {
-      grenade: { n: "수류탄", cd: (l) => 5 - l * 0.45 },
-      thunder: { n: "번개 사슬", cd: (l) => 9 - l * 0.8 },
+      kunai: { n: "쿠나이", cd: (l) => 1.6 - l * 0.12 },
+      thunder: { n: "번개 발생기", cd: (l) => 9 - l * 0.8 },
       whirl: { n: "회오리", cd: (l) => 13 - l },
       ward: { n: "결계", cd: (l) => 22 - l * 2 },
       // "스킬 추가좀 더하고, 이미지도 추가하고, 조금더 퀄리티 있게" (2026-10-26)
-      fire: { n: "불길 지대", cd: (l) => 12 - l },
-      homing: { n: "도움 드론", cd: (l) => 8 - l * 0.7 },
+      fire: { n: "화염병", cd: (l) => 12 - l },
+      homing: { n: "드론", cd: (l) => 8 - l * 0.7 },
       frost: { n: "얼음 폭탄", cd: (l) => 13 - l },
       /* 캐릭터마다 스킬 3가지 — "각 캐릭마다 스킬이 틀리게 이미지 만들었는데, 왜 다 똑같이 스킬을 배우고 있는지, 각각 배우는 스킬이 틀리게" (2026-10-27).
          그림은 부장님의 「캐릭터 스킬 효과」(img/hsk.png · 시험/캐릭터스킬-자르기.cjs). 위 6가지(낙뢰 …얼음 폭발)는 이제 안 나오고, 그 전 판을 이어 하는 사람만 쓴다 */
@@ -3651,28 +3657,27 @@ body.game-full { overflow: hidden; }
       ds_aura: { n: "금강 기운", cd: (l) => 15 - l },
       je_wind: { n: "레이저 빔", cd: (l) => 6 - l * 0.5 },
       je_rain: { n: "화살 연사", cd: (l) => 8 - l * 0.7 },
-      je_storm: { n: "회오리 화살", cd: (l) => 12 - l },
+      je_storm: { n: "드릴 샷", cd: (l) => 12 - l },
       mj_shadow: { n: "그림자 질주", cd: (l) => 14 - l },
       mj_poison: { n: "독 안개", cd: (l) => 11 - l },
-      mj_star: { n: "부메랑 조개", cd: (l) => 8 - l * 0.7 },
+      mj_star: { n: "부메랑", cd: (l) => 8 - l * 0.7 },
     };
     const UPS = [
-      /* 수달단 레벨업 카드 — 탕탕특공대처럼(2026-10-28 부장님 "레벨업 할 때마다 랜덤하게 뜨는 스킬들, 기존 스킬들은 다 없애라").
-         공격 스킬 8 · 보조 6, 다 Lv 5 까지. 공격 스킬은 한 판에 6가지까지. 스킬은 재사용 시간마다 단추로(🤖 자동을 켜면 저절로). 그림 = 제미나이 아이콘(img/lb/s-*.webp) */
-      { k: "grenade", n: "수류탄", max: 5, skill: true, d: "가까운 몬스터 무리에 수류탄 — 터지며 둘레를 크게 다치게", up: "더 넓게 · 더 세게 · 더 자주" },
-      { k: "homing", n: "도움 드론", max: 5, skill: true, d: "드론이 몬스터를 따라가는 미사일을 여러 발 쏴요", up: "미사일 더 많이 · 더 세게 · 더 자주" },
-      { k: "orbs", n: "물방울 구슬", max: 5, atk: true, d: "몸 둘레를 도는 물방울 구슬 +1 — 닿는 몬스터가 다쳐요", f: () => { s.orbs++; } },
-      { k: "thunder", n: "번개 사슬", max: 5, skill: true, d: "가까운 몬스터 여럿에게 번개가 이어서 떨어져요", up: "번개 더 많이 · 더 세게 · 더 자주" },
-      { k: "fire", n: "불길 지대", max: 5, skill: true, d: "공격하는 쪽 땅이 4초 동안 불타요 — 들어온 몬스터가 계속 다쳐요", up: "더 넓게 · 더 뜨겁게 · 더 자주" },
-      { k: "je_wind", n: "레이저 빔", max: 5, skill: true, d: "공격하는 쪽 일직선 몬스터를 모두 꿰뚫는 빔", up: "더 굵게 · 더 세게 · 더 자주" },
-      { k: "mj_star", n: "부메랑 조개", max: 5, skill: true, d: "던지면 꿰뚫고 다시 돌아오는 조개 — 오갈 때 한 번씩", up: "더 크게 · 더 세게 · 더 자주" },
-      { k: "frost", n: "얼음 폭탄", max: 5, skill: true, d: "터지며 둘레 몬스터를 얼려 느리게 하고 다치게", up: "더 넓게 · 더 오래 얼림 · 더 자주" },
-      { k: "rate", n: "탄창", max: 5, d: "평타 쏘는 간격 −12%", f: () => { s.rate *= 0.88; } },
-      { k: "dmg", n: "강화 탄환", max: 5, d: "평타 피해 +15%", f: () => { s.dmg *= 1.15; } },
+      /* 수달단 레벨업 — 탕탕특공대처럼 다시(2026-10-28 "스킬도 탕탕특공대 비슷하게, 지금 스킬 다 없애고"). 공격 무기는 모두 저절로 나감(단추 없음) · 공격 6가지 · 보조 6가지까지 · 다 Lv 5 */
+      { k: "kunai", n: "쿠나이", max: 5, skill: true, d: "가까운 몬스터에게 쿠나이를 여러 개 던져요", up: "쿠나이 +1 · 더 세게 · 더 자주" },
+      { k: "orbs", n: "수호자", max: 5, atk: true, d: "몸 둘레를 도는 수호 구슬 +1 — 닿는 몬스터가 다쳐요", f: () => { s.orbs++; } },
+      { k: "homing", n: "드론", max: 5, skill: true, d: "드론이 몬스터를 따라가는 미사일을 쏴요", up: "미사일 더 많이 · 더 세게 · 더 자주" },
+      { k: "fire", n: "화염병", max: 5, skill: true, d: "몬스터 무리에 화염병 — 땅이 4초 동안 불타요", up: "더 넓게 · 더 뜨겁게 · 더 자주" },
+      { k: "thunder", n: "번개 발생기", max: 5, skill: true, d: "화면 안 몬스터 여럿에게 번개가 떨어져요", up: "번개 더 많이 · 더 세게 · 더 자주" },
+      { k: "aura", n: "역장", max: 5, atk: true, d: "몸 둘레 역장 — 가까이 온 몬스터가 계속 다쳐요", f: () => { s.aura++; } },
+      { k: "mj_star", n: "부메랑", max: 5, skill: true, d: "던지면 꿰뚫고 다시 돌아오는 조개 부메랑", up: "더 크게 · 더 세게 · 더 자주" },
+      { k: "je_storm", n: "드릴 샷", max: 5, skill: true, d: "몬스터를 꿰뚫고 끌고 가는 드릴 로켓", up: "더 크게 · 더 세게 · 더 자주" },
+      { k: "rate", n: "탄약 추진기", max: 5, d: "평타 쏘는 간격 −12%", f: () => { s.rate *= 0.88; } },
+      { k: "dmg", n: "강화 탄환", max: 5, d: "모든 피해 +15%", f: () => { s.dmg *= 1.15; } },
       { k: "max", n: "하트 물병", max: 5, d: "최대 체력 +20%, 그만큼 회복", f: () => { const m = Math.round(s.max * 0.2); s.max += m; s.hp += m; } },
-      { k: "spd", n: "날개 운동화", max: 5, d: "이동 속도 +10%", f: () => { s.spd *= 1.1; } },
-      { k: "magnet", n: "말발굽 자석", max: 5, d: "경험치 구슬을 더 멀리서 끌어와요(+40%)", f: () => { s.magnet *= 1.4; } },
-      { k: "cool", n: "모래시계", max: 5, d: "스킬 재사용 시간 −8%", f: () => { s.cool *= 0.92; }, ok: () => s.skills.length > 0 },
+      { k: "spd", n: "운동화", max: 5, d: "이동 속도 +10%", f: () => { s.spd *= 1.1; } },
+      { k: "magnet", n: "자석", max: 5, d: "경험치 구슬을 더 멀리서 끌어와요(+40%)", f: () => { s.magnet *= 1.4; } },
+      { k: "cool", n: "에너지 큐브", max: 5, d: "무기 재사용 시간 −8%", f: () => { s.cool *= 0.92; }, ok: () => s.skills.length > 0 },
     ];
     const UP_ATK = (u) => u.skill || u.atk, UP_MAX_ATK = 6; // 공격 스킬은 한 판에 6가지까지
     let speed = 1;
@@ -4132,7 +4137,7 @@ body.game-full { overflow: hidden; }
       if (k === "kh_ring" || k === "ds_aura") return near(140);
       if (k === "kh_dash" || k === "mj_shadow") return s.hitFx > 0 || near(Math.min(s.range, 200));
       if (k === "ds_bell") return s.hitFx > 0 || near(40);
-      if (k === "thunder" || k === "homing" || k === "hr_bolt") return s.foes.some((f) => Math.abs(f.x - s.x) < W / 2 && Math.abs(f.y - s.y) < H / 2);
+      if (k === "thunder" || k === "homing" || k === "hr_bolt" || k === "kunai" || k === "je_storm" || k === "mj_star") return s.foes.some((f) => Math.abs(f.x - s.x) < W / 2 && Math.abs(f.y - s.y) < H / 2);
       if (k === "ward") return s.hitFx > 0 || near(40);
       return near(s.range); // 회오리 · 얼음 폭발 · 불바다 — 조준 동그라미 안에 몬스터가 있으면
     }
@@ -4171,6 +4176,9 @@ body.game-full { overflow: hidden; }
         /* 회오리 — 공격하는 쪽으로 1.6초 동안 날아가며 닿은 잡귀를 한 번씩 다치게 하고 함께 쓸어 간다 · 불덩이를 지운다 */
         const P = aimAt(200);
         s.tors.push({ x: s.x + Math.cos(P.a) * 20, y: s.y + Math.sin(P.a) * 20, a: P.a, R: 55 + 12 * l, dmg: 25 + 20 * l, life: 1.6, full: 1.6, hit: [] });
+      } else if (k === "kunai") { // 쿠나이 — 가까운 몬스터 쪽으로 여러 개(탕탕특공대)
+        const T = s.foes.filter((f) => f.hp > 0).sort((p, q) => ((p.x - s.x) ** 2 + (p.y - s.y) ** 2) - ((q.x - s.x) ** 2 + (q.y - s.y) ** 2)), n = 1 + l;
+        for (let i = 0; i < n; i++) { const f = T[i % Math.max(1, T.length)], a = f ? Math.atan2(f.y - s.y, f.x - s.x) + (i >= T.length ? (i - T.length + 1) * 0.15 : 0) : s.aim + (i - (n - 1) / 2) * 0.2; fly("arrow", { a }, { v: 680, R: 14, dmg: 22 + 14 * l, life: 0.9 }); }
       } else if (k === "grenade") { // 수류탄 — 가까운 몬스터(없으면 공격하는 쪽)에 던져 터짐
         const n = s.foes.filter((f) => (f.x - s.x) ** 2 + (f.y - s.y) ** 2 < 340 * 340).sort((p, q) => ((p.x - s.x) ** 2 + (p.y - s.y) ** 2) - ((q.x - s.x) ** 2 + (q.y - s.y) ** 2))[0], P = n ? { x: n.x, y: n.y } : aimAt(160), R = 70 + 14 * l;
         blast(P.x, P.y, R, 40 + 28 * l); s.fx.push({ boom: true, spr: "smoke", x: P.x, y: P.y, r: R / 2, c: "#ffb347", size: R * 2.4, life: 0.5, dur: 0.5 }, { spr: "quake", x: P.x, y: P.y, size: R * 2.2, life: 0.4, dur: 0.4 }); s.hitFx = Math.max(s.hitFx, 0.2);
@@ -4318,7 +4326,8 @@ body.game-full { overflow: hidden; }
         while (s.spawn >= 1) { s.spawn--; if (s.foes.length < aliveCap()) spawn(); }
       }
       s.fire -= dt;
-      if (s.fire <= 0 && (s.foes.length || boxTargets().length)) { s.fire = s.rate; shoot(); }
+      const seen = s.foes.some((f) => f.hp > 0 && Math.abs(f.x - s.x) < W / 2 + f.r && Math.abs(f.y - s.y) < H / 2 + f.r); // 화면 안에 몬스터가 있을 때만 쏨(2026-10-28 "몬스터 나오기 전에는 공격 안 나가게")
+      if (s.fire <= 0 && (seen || boxTargets().length)) { s.fire = s.rate; shoot(); } else if (s.fire < 0) s.fire = 0;
       s.shots.forEach((b) => {
         b.x += b.vx * dt; b.y += b.vy * dt; b.life -= dt;
         for (const f of s.foes) {
@@ -4694,7 +4703,7 @@ body.game-full { overflow: hidden; }
     const OCM = {}; function ocImg(n) { let i = OCM[n]; if (!i) { i = OCM[n] = new Image(); i.src = "img/lb/" + n + ".webp?v=" + BUILD; } return i.complete && i.naturalWidth ? i : null; } // mon-N · boss-N(맵마다 대장, 2026-10-28)
     function ocMon(f, x, y, m, dead) {
       const boss = f.k === "boss", n = f.cm || (f.cm = Math.max(1, Math.min(10, mapIdx || 1))), I = ocImg((boss ? "boss-" : "mon-") + n); if (!I) return false;
-      const hh = f.r * (boss ? 3.6 : 2.6), k = hh / Math.max(I.naturalWidth, I.naturalHeight), w = I.naturalWidth * k, h = I.naturalHeight * k, flip = s.x > f.x;
+      const hh = f.r * (boss ? 5 : 3.8), k = hh / Math.max(I.naturalWidth, I.naturalHeight), w = I.naturalWidth * k, h = I.naturalHeight * k, flip = s.x > f.x;
       g.fillStyle = "rgba(0,0,0,.3)"; g.beginPath(); g.ellipse(x, y + hh * 0.42, w * 0.34, hh * 0.08, 0, 0, Math.PI * 2); g.fill();
       g.save(); g.translate(x, y + hh * 0.42 + (m ? m.y : 0)); if (dead != null) { g.rotate((flip ? -1 : 1) * Math.min(1.4, dead * 2.4)); g.globalAlpha = Math.max(0, 1 - dead * 1.2); } else { g.rotate((m ? m.rot : 0) + (m && m.lean ? m.lean * (flip ? 1 : -1) * 0.5 : 0)); g.scale(m ? m.sx : 1, m ? m.sy : 1); g.globalAlpha = m ? m.a : 1; }
       if (flip) g.scale(-1, 1);
@@ -5207,8 +5216,9 @@ body.game-full { overflow: hidden; }
       art.lastChild.textContent = "← 홈";
       if (!P && lobTab !== "rank") art.appendChild(el("div", "lb-page", lobErr || "불러오는 중…")); // 순위는 내 정보 없이도
       else if (lobTab === "go") art.append(...lobGo(P));
-      else { const pg = el("div", "lb-page lb-" + lobTab); pg.append(...(lobTab === "wpn" ? lobWpn(P) : lobTab === "shop" ? lobShop(P) : lobTab === "op" ? lobOp() : lobTab === "gear" ? lobGear(P) : lobTab === "dun" ? lobDun(P) : lobRank())); if (lobErr) pg.appendChild(el("p", "lb-err", lobErr)); art.appendChild(pg); }
+      else { const pg = el("div", "lb-page lb-" + lobTab); pg.append(...(lobTab === "wpn" ? lobWpn(P) : lobTab === "shop" ? lobShop(P) : lobTab === "op" ? lobOp() : lobTab === "mail" ? lobMail(P) : lobTab === "gear" ? lobGear(P) : lobTab === "dun" ? lobDun(P) : lobRank())); if (lobErr) pg.appendChild(el("p", "lb-err", lobErr)); art.appendChild(pg); }
       const nav = el("nav", "lb-nav lb-nav5"); [["shop", "상점"], ["gear", "장비"], ["go", "출전"], ["dun", "던전"], ["rank", "순위"]].forEach(([k, n]) => { const b = el("button", k === lobTab ? "on" : ""); b.type = "button"; b.setAttribute("aria-label", n); b.appendChild(el("span", null, n)); if (k === "gear" && lobTab === "wpn") b.className = "on"; b.onclick = () => { lobTab = k; lobErr = ""; lobSel = null; lobDraw(); if (k === "rank") loadRanks(); }; nav.appendChild(b); });
+      if (P && !P.free) { const mb = lobBtn("lb-mailbtn" + (lobTab === "mail" ? " on" : ""), px(24, 148, 128, 44), () => { lobTab = lobTab === "mail" ? "go" : "mail"; lobErr = ""; lobDraw(); }, "우편함"); mb.textContent = "✉ 우편"; const n = (P.mail || []).length; if (n) mb.appendChild(el("b", "lb-badge", String(n))); art.appendChild(mb); }
       art.appendChild(nav); L.replaceChildren(art); lobFit(art); if (P && P.op) { (matchMedia("(max-width: 760px)").matches ? art : L).appendChild(lobLive()); /* 휴대폰은 그림 안 「← 홈」 옆 */ if (Date.now() - liveAt > 5000) loadLive(); } // 운영자만 오른쪽에 지금 하는 사람
     }
     function lobGo(P) {
@@ -5341,6 +5351,16 @@ body.game-full { overflow: hidden; }
     function watchStop(quiet) { if (!watchOn) return; clearInterval(watchOn.poll); cancelAnimationFrame(watchOn.raf); watchOn.bar.remove(); watchOn = null; s = null; if (!quiet) lobby(); }
     /* 운영자만 — 오른쪽에 지금 게임하는 사람(2026-10-28 "게임 진행 중인 사람들은 나만 우측 화면에 볼 수 있게") */
     let lobLiveMin = matchMedia("(max-width: 760px)").matches; // 휴대폰은 접어 둠(누르면 펼침)
+    /* 우편함(2026-10-28 "운영자가 모든 유저에게 우편으로 선물") — 받기 · 모두 받기 */
+    function giftText(g) { const a = []; if (g.gold) a.push("💰 " + (+g.gold).toLocaleString()); if (g.en) a.push("⚡ " + g.en); if (g.exp) a.push("EXP " + (+g.exp).toLocaleString()); Object.keys(g.items || {}).forEach((k) => { if (+g.items[k] > 0) a.push(((ITEMS[k] || {}).n || k) + " × " + g.items[k]); }); (g.wpn || []).forEach((k) => a.push("무기 「" + ((WPN[k] || {}).n || k) + "」")); return a.join(" · ") || "선물"; }
+    function lobMail(P) {
+      const out = [el("div", "lb-ghead")]; out[0].append(el("b", null, "✉ 우편함"), el("span", "lb-power", (P.mail || []).length + "통"));
+      const claim = (id) => { if (lobBusy) return; lobBusy = true; call("gameMailClaim", token, id).then((r) => { lobBusy = false; LP = r; LP.got = Date.now(); setStatus("우편 " + r.claimed + "통을 받았어요!"); lobDraw(); }).catch((e) => { lobBusy = false; lobErr = errMsg(e); lobDraw(); }); };
+      (P.mail || []).forEach((m) => { const row = el("div", "lb-mrow"), tx = el("div", "lb-mtx"), d = new Date(m.at), ic = el("img"); ic.src = LBI("box-gold"); ic.alt = ""; tx.append(el("b", null, m.t), el("small", null, giftText(m.g)), el("small", "dt", (d.getMonth() + 1) + "/" + d.getDate())); const b = el("button", "lb-mget", "받기"); b.type = "button"; b.disabled = P.free; b.onclick = () => claim(m.id); row.append(ic, tx, b); out.push(row); });
+      if ((P.mail || []).length > 1) { const all = el("button", "lb-buy", "모두 받기"); all.type = "button"; all.onclick = () => claim("all"); out.push(all); }
+      if (!(P.mail || []).length) out.push(el("p", "lb-note", "새 우편이 없어요"));
+      return out;
+    }
     function lobLive() {
       const box = el("aside", "lb-live"), on = (live || []).filter((p) => !p.end), ob = el("button", "lb-opbtn" + (lobTab === "op" ? " on" : ""), lobTab === "op" ? "🛠 닫기" : "🛠 운영"); ob.type = "button"; ob.onclick = () => { lobTab = lobTab === "op" ? "go" : "op"; lobErr = ""; lobDraw(); }; box.appendChild(el("b", "lb-optitle", "운영자 권한"));
       const n1 = el("div", "lb-oprow"); n1.append(el("span", null, "1. 운영권"), ob); box.appendChild(n1);
@@ -5364,10 +5384,17 @@ body.game-full { overflow: hidden; }
       num("en", "⚡ 피로도"); num("gold", "💰 골드"); num("exp", "EXP 경험치"); num("ch", "열 장(1~10)"); Object.keys(ITEMS).forEach((k) => num("i_" + k, ITEMS[k].n));
       const wb = el("div", "lb-wchk"); Object.keys(WPN).filter((k) => k !== "bow").forEach((k) => { const l = el("label"), c = document.createElement("input"); c.type = "checkbox"; c.value = k; l.append(c, WPN[k].n); wb.appendChild(l); });
       out.push(f, el("small", "lb-note", "무기 주기"), wb);
-      const go = el("button", "lb-buy", "주기"); go.type = "button"; go.disabled = !lobGiveTo || lobBusy;
+      const go = el("button", "lb-buy", "주기"); go.type = "button"; go.disabled = !lobGiveTo || lobBusy; // 우편은 받는 사람 없이도
       go.onclick = () => { const g = { en: inp.en.value, gold: inp.gold.value, exp: inp.exp.value, ch: inp.ch.value, items: {}, wpn: [...wb.querySelectorAll("input:checked")].map((c) => c.value) }; Object.keys(ITEMS).forEach((k) => { if (inp["i_" + k].value) g.items[k] = inp["i_" + k].value; });
         lobBusy = true; call("gameGive", token, lobGiveTo, g).then((r) => { lobBusy = false; lobGiveRes = r; lobErr = ""; setStatus(r.nick + " 님에게 줬어요."); lobDraw(); }).catch((e) => { lobBusy = false; lobErr = errMsg(e); lobDraw(); }); };
       out.push(go, el("small", "lb-note", "빼려면 앞에 − (예: −5)"));
+      /* 모든 유저에게 우편 — 위 칸에 넣은 선물 그대로 */
+      const tt = document.createElement("input"); tt.className = "lb-sel"; tt.placeholder = "우편 제목 (예: 출시 기념 선물)"; tt.maxLength = 40;
+      const mall = el("button", "lb-buy", "📬 모든 유저에게 우편 보내기"); mall.type = "button";
+      mall.onclick = () => { if (mall.dataset.sure !== "1") { mall.dataset.sure = "1"; mall.textContent = "정말 모두에게 보낼까요?"; setTimeout(() => { mall.dataset.sure = ""; mall.textContent = "📬 모든 유저에게 우편 보내기"; }, 3000); return; }
+        const g = { en: inp.en.value, gold: inp.gold.value, exp: inp.exp.value, items: {}, wpn: [...wb.querySelectorAll("input:checked")].map((c) => c.value) }; Object.keys(ITEMS).forEach((k) => { if (inp["i_" + k].value) g.items[k] = inp["i_" + k].value; });
+        lobBusy = true; call("gameMailSend", token, tt.value, g).then(() => { lobBusy = false; setStatus("모든 유저에게 우편을 보냈어요."); lobLoad(); }).catch((e) => { lobBusy = false; lobErr = errMsg(e); lobDraw(); }); };
+      out.push(el("h3", "lb-h", "📬 모든 유저에게 우편"), tt, mall, el("small", "lb-note", "위 칸에 넣은 선물이 모든 유저 우편함으로 가요(받을 사람은 안 골라도 돼요)"));
       return out;
     }
     const LOB_LIVE = $("liveBox"), LOB_RANK = document.querySelector(".game-rank");
