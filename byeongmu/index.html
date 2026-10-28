@@ -1425,7 +1425,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610280555";
+  const BUILD = "202610280609";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -5540,14 +5540,31 @@ body.game-full { overflow: hidden; }
     }
     /* 장비 화면 수달 — 360도 돌려 보기(2026-10-28 "마우스로 360도 돌려서 볼 수 있게, 그림으로 해 놓으니 보기 싫다").
        ChatGPT 턴어라운드 8방향(img/lb/otter-360 · 장비를 4칸 이상 끼면 otter-360g = 장비 입은 모습), 끌면 돌고 손대기 전엔 천천히 저절로 돔 */
-    let o360Ang = 0, o360Touched = false; const O360 = {};
+    let o360Ang = 0, o360Touched = false; const O360 = {}, O360M = {};
+    /* 장비 겹쳐 그리기 자리 — r: 머리 · 몸 기준, w: 그 폭의 몇 배, y: 수달 키의 어디(위 0 · 아래 1), ay: 장비의 어디를 그 자리에(위 0 · 가운데 .5 · 아래 1), z: 그리는 순서, back: 앞에서 볼 땐 몸 뒤 */
+    const GE_POS = { bag: { r: "body", h: 0.3, y: 0.42, ay: 0, z: 0, back: 1 }, boots: { r: "body", h: 0.15, y: 1.0, ay: 1, z: 1 }, armor: { r: "body", h: 0.42, y: 0.38, ay: 0, z: 2 }, belt: { r: "body", h: 0.09, y: 0.7, ay: 0.5, z: 3 },
+      gloves: { r: "body", h: 0.2, y: 0.6, ay: 0.5, z: 4 }, scarf: { r: "head", h: 0.12, y: 0.4, ay: 0.5, z: 5 }, goggle: { r: "head", h: 0.1, y: 0.2, ay: 0.5, z: 6 }, helm: { r: "head", h: 0.33, y: -0.07, ay: 0, z: 7 } }; /* h: 수달 키의 몇 배(2026-10-28 장갑이 너무 크던 것) */
+    /* 수달 칸마다 머리 · 몸 가운데와 폭(그림에서 잼, 한 번만) */
+    function o360Met(I, i, cw, ch) { const key = I.src + ":" + i; if (O360M[key]) return O360M[key];
+      const c = document.createElement("canvas"); c.width = Math.round(cw); c.height = ch; const g2 = c.getContext("2d"); g2.drawImage(I, i * cw, 0, cw, ch, 0, 0, cw, ch); const d = g2.getImageData(0, 0, c.width, ch).data;
+      let top = ch; for (let y = 0; y < ch && top === ch; y++) for (let x = 0; x < c.width; x++) if (d[(y * c.width + x) * 4 + 3] > 40) { top = y; break; }
+      const H = ch - top, band = (a, b) => { let L = c.width, R = 0; for (let y = Math.round(top + H * a); y < top + H * b; y++) for (let x = 0; x < c.width; x++) if (d[(y * c.width + x) * 4 + 3] > 40) { if (x < L) L = x; if (x > R) R = x; } return [L, Math.max(L, R)]; };
+      const [hl, hr] = band(0.05, 0.3), [bl, br] = band(0.45, 0.62); return (O360M[key] = { top, h: H, hx: (hl + hr) / 2, hw: hr - hl, bx: (bl + br) / 2, bw: br - bl }); }
     function o360Img(n) { let i = O360[n]; if (!i) { i = O360[n] = new Image(); i.onload = () => { if (!$("gLobby").hidden && lobTab === "gear") lobDraw(); }; i.src = LBI(n); } return i.complete && i.naturalWidth ? i : null; }
     function otter360(P, skin) {
       const sk = skin && skin !== "basic" ? skin : "", box = el("div", "lb-o360" + (sk ? " sk-" + sk : "")), cv = document.createElement("canvas"); box.appendChild(cv);
-      const name = ((P.stats || {}).set || 0) >= 4 ? "otter-360g" : "otter-360";
+      const name = "otter-360"; /* 장비는 부위마다 따로 겹쳐 그림(2026-10-28 "각 장비마다 따로") */
+      const worn = [], eqs = P.eq || {}; Object.keys(eqs).forEach((sl) => { const it = (P.gear || []).find((x) => x.u === eqs[sl]); if (it && GE_POS[it.k]) worn.push(it.k); }); worn.sort((a, b) => GE_POS[a].z - GE_POS[b].z);
+      const wpic = "wp-" + (P.wpn || "bow"); /* 배경 없는 옆모습 무기(ChatGPT) */
       if (sk) { const h = el("img", "lb-ghat h-" + sk); h.src = LBI("hat-" + sk); h.alt = ""; box.appendChild(h); }
       const draw = () => { const I = o360Img(name) || o360Img("otter-360"); if (!I || !cv.isConnected) return; const r = box.getBoundingClientRect(), d = Math.min(2, devicePixelRatio || 1), W2 = Math.max(1, Math.round(r.width * d)), H2 = Math.max(1, Math.round(r.height * d)); if (cv.width !== W2 || cv.height !== H2) { cv.width = W2; cv.height = H2; }
-        const n = 8, cw = I.naturalWidth / n, ch = I.naturalHeight, i = ((Math.round(o360Ang / 45) % n) + n) % n, k = Math.min(W2 / cw, H2 / ch), gx = cv.getContext("2d"); gx.clearRect(0, 0, W2, H2); gx.imageSmoothingQuality = "high"; gx.drawImage(I, i * cw, 0, cw, ch, (W2 - cw * k) / 2, H2 - ch * k, cw * k, ch * k);
+        const n = 8, cw = I.naturalWidth / n, ch = I.naturalHeight, i = ((Math.round(o360Ang / 45) % n) + n) % n, k = Math.min(W2 / cw, H2 / ch), gx = cv.getContext("2d"); gx.clearRect(0, 0, W2, H2); gx.imageSmoothingQuality = "high"; const ox = (W2 - cw * k) / 2, oy = H2 - ch * k, M = o360Met(I, i, cw, ch), front = i <= 2 || i >= 6;
+        const put = (key) => { if (key === "weapon") { const WI = wpic && o360Img(wpic); if (!WI || i === 4) return; const ww = M.bw * 0.95 * k, wh = ww * WI.naturalHeight / WI.naturalWidth, side = i >= 5 ? -1 : 1, hx = ox + (M.bx + side * M.bw * (i === 0 ? 0.42 : 0.18)) * k, hy = oy + M.top * k + M.h * 0.6 * k; gx.save(); gx.translate(hx, hy); if (side < 0) gx.scale(-1, 1); gx.drawImage(WI, -ww * 0.3, -wh / 2, ww, wh); gx.restore(); return; }
+          const G = GE_POS[key], GI = o360Img("ge-" + key); if (!GI) return; const gw0 = GI.naturalWidth / 8, gh0 = GI.naturalHeight, h = M.h * G.h * k, w = h * gw0 / gh0, cx = ox + (G.r === "head" ? M.hx : M.bx) * k, y = oy + (M.top + M.h * G.y) * k - h * G.ay;
+          gx.drawImage(GI, i * gw0, 0, gw0, gh0, cx - w / 2, y, w, h); };
+        if (front) worn.filter((x) => GE_POS[x].back).forEach(put); else put("weapon");
+        gx.drawImage(I, i * cw, 0, cw, ch, ox, oy, cw * k, ch * k);
+        worn.filter((x) => !(front && GE_POS[x].back)).forEach(put); if (front) put("weapon");
         const hat = box.querySelector(".lb-ghat"); if (hat) hat.style.display = i === 3 || i === 4 || i === 5 ? "none" : ""; }; // 뒤를 볼 땐 모자 그림(앞모습)을 숨김
       let drag = null; box.addEventListener("pointerdown", (e) => { drag = { x: e.clientX, a: o360Ang }; o360Touched = true; box.setPointerCapture(e.pointerId); box.classList.add("on"); });
       box.addEventListener("pointermove", (e) => { if (!drag) return; o360Ang = drag.a - (e.clientX - drag.x) * 1.1; draw(); });
