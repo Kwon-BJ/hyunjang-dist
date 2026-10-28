@@ -1483,7 +1483,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610281110";
+  const BUILD = "202610281120";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -4961,7 +4961,7 @@ body.game-full { overflow: hidden; }
       /* 동작 그림(ChatGPT 6칸: 걷기 4 · 공격 준비 · 공격, 오른쪽 봄) — 있으면 걸을 땐 1~4, 붙으면 5 · 6 번갈아(2026-10-28 "탕탕특공대처럼 자연스럽게"). 없으면 그림 한 장 */
       let I = I0, sx0 = 0, sw0 = I0 ? I0.naturalWidth : 0, ih = I0 ? I0.naturalHeight : 0;
       if (A) { const cw = A.naturalWidth / 6, t = s.t + f.ph, fr = dead != null ? 0 : boss && f.wind > 0 ? 4 : boss && f.atkT > 0 ? 5 : !boss && f.near ? 4 + (Math.floor(t * 4) % 2) : Math.floor(t * (boss ? 5 : 8)) % 4; I = A; sx0 = fr * cw; sw0 = cw; ih = A.naturalHeight; }
-      const hh = boss ? f.r * 5 : MON_H, k = hh / Math.max(sw0, ih), w = sw0 * k, h = ih * k, flip = s.x > f.x;
+      const hh = boss ? f.r * 5 : MON_H, k = A ? hh / (ih * 1.1) : hh / Math.max(sw0, ih), w = sw0 * k, h = ih * k, flip = s.x > f.x; /* 동작 그림은 키로 맞춤(2026-10-28 덩어리로 다시 잘라 칸 너비가 동작마다 달라짐) */
       g.fillStyle = "rgba(0,0,0,.3)"; g.beginPath(); g.ellipse(x, y + hh * 0.42, w * 0.34, hh * 0.08, 0, 0, Math.PI * 2); g.fill();
       g.save(); g.translate(x + (m && m.dx ? m.dx : 0), y + hh * 0.42 + (m ? m.y : 0)); if (dead != null) { g.rotate((flip ? -1 : 1) * Math.min(1.4, dead * 2.4)); g.globalAlpha = Math.max(0, 1 - dead * 1.2); } else { g.rotate((m ? m.rot : 0) + (m && m.lean ? m.lean * (flip ? 1 : -1) * 0.5 : 0)); g.scale(m ? m.sx : 1, m ? m.sy : 1); g.globalAlpha = m ? m.a : 1; }
       if (A ? (m && m.face != null ? m.face < 0 : !flip) : (m && m.face != null ? m.face > 0 : flip)) g.scale(-1, 1); // 동작 그림은 오른쪽을, 한 장 그림은 왼쪽을 봄
