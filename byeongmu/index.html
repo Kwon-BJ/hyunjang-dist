@@ -1464,7 +1464,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610281025";
+  const BUILD = "202610281027";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -5529,9 +5529,9 @@ body.game-full { overflow: hidden; }
       t("lb-rw", "x" + (120 * c * (first ? 2 : 1) * mul).toLocaleString(), px(282, 1168, 90, 40)); t("lb-rw", "x" + (50 * c * mul).toLocaleString(), px(430, 1168, 82, 40)); t("lb-rw", first ? "x1" : "—", px(582, 1168, 66, 40));
       /* 아래 칸(2026-10-28 "출전 크기를 줄이고 채팅창을 더 키워라") ㆍ 왼쪽 큰 채팅(최근 글 여러 줄) · 오른쪽 작은 출전 */
       { const dk = el("div", "lb-dock"); dk.style.cssText = px(28, 1238, 885, 204); out.push(dk); if (!P.free) out.push(chatBox()); }
-      const go = lobBtn("lb-go sm", P.free ? px(270, 1256, 400, 136) : px(614, 1254, 286, 97), () => lobStart(c, false, M), "출전 ㆍ 피로도 5"); go.disabled = !open || lobBusy || need; out.push(go);
+      const go = lobBtn("lb-go sm", P.free ? px(270, 1256, 400, 136) : px(614, 1254, 286, 97), () => lobStart(c, false, M), "출전 ㆍ 피로도 5"); const done = !first && !P.op && !P.free; go.disabled = !open || lobBusy || need || done; if (done) go.classList.add("done"); /* 깬 장은 다시 못 함(2026-10-28 "탕탕특공대처럼 클리어한 거는 못 하게") */ out.push(go);
       /* 무한의 탑 단추는 던전 칸에만(2026-10-28 "시나리오 창에 왜 넣었노") */
-      t("lb-msg" + (need || lobErr ? " bad" : ""), need ? "피로도가 모자라요 ㆍ 6분마다 1씩 차요 · ＋ 로 살 수 있어요" : lobErr || (P.free ? "로그인하면 피로도 · 골드 · 깬 장 · 무기가 저장돼요" : first ? (c % 10 === 0 && (P.chWpn || [])[M] && WPN[P.chWpn[M][c / 10 - 1]] ? "처음 깨면 무기 「" + WPN[P.chWpn[M][c / 10 - 1]].n + "」 + 골드 2배 + 두루마리" : "처음 깨면 골드 2배 + 두루마리(⚡10 + 물건 하나)") : ""), P.free ? px(60, 1392, 821, 44) : px(606, 1350, 302, 86));
+      t("lb-msg" + (need || lobErr ? " bad" : ""), !first && !P.op && !P.free ? "✔ 깬 장이에요 ㆍ " + (chM > c ? chM + "장에 도전해요" : "다음 난이도에 도전해요") : need ? "피로도가 모자라요 ㆍ 6분마다 1씩 차요 · ＋ 로 살 수 있어요" : lobErr || (P.free ? "로그인하면 피로도 · 골드 · 깬 장 · 무기가 저장돼요" : first ? (c % 10 === 0 && (P.chWpn || [])[M] && WPN[P.chWpn[M][c / 10 - 1]] ? "처음 깨면 무기 「" + WPN[P.chWpn[M][c / 10 - 1]].n + "」 + 골드 2배 + 두루마리" : "처음 깨면 골드 2배 + 두루마리(⚡10 + 물건 하나)") : ""), P.free ? px(60, 1392, 821, 44) : px(606, 1350, 302, 86));
       return out;
     }
     let raidBoard = null, raidLoading = false;
