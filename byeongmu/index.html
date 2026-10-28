@@ -1487,7 +1487,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610281218";
+  const BUILD = "202610281231";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -3786,12 +3786,12 @@ body.game-full { overflow: hidden; }
     /* 스킬 — 단추(PC 는 1 · 2 · 3)로 쓴다. l 은 스킬 레벨 */
     const SK = {
       kunai: { n: "쿠나이", cd: (l) => 1.6 - l * 0.12 },
-      thunder: { n: "번개 구름", cd: (l) => 9 - l * 0.8 },
+      thunder: { n: "번개 구름", cd: (l) => 3.4 - l * 0.25 }, /* 2026-10-28 "탕탕특공대랑 똑같이" — 스킬이 1~4초마다 계속 나가게(전에는 7~12초) */
       whirl: { n: "회오리", cd: (l) => 13 - l },
       ward: { n: "결계", cd: (l) => 22 - l * 2 },
       // "스킬 추가좀 더하고, 이미지도 추가하고, 조금더 퀄리티 있게" (2026-10-26)
-      fire: { n: "화염병", cd: (l) => 12 - l },
-      homing: { n: "드론", cd: (l) => 8 - l * 0.7 },
+      fire: { n: "화염병", cd: (l) => 4.6 - l * 0.3 },
+      homing: { n: "드론", cd: (l) => 2.4 - l * 0.15 },
       frost: { n: "얼음 폭탄", cd: (l) => 13 - l },
       /* 캐릭터마다 스킬 3가지 — "각 캐릭마다 스킬이 틀리게 이미지 만들었는데, 왜 다 똑같이 스킬을 배우고 있는지, 각각 배우는 스킬이 틀리게" (2026-10-27).
          그림은 부장님의 「캐릭터 스킬 효과」(img/hsk.png · 시험/캐릭터스킬-자르기.cjs). 위 6가지(낙뢰 …얼음 폭발)는 이제 안 나오고, 그 전 판을 이어 하는 사람만 쓴다 */
@@ -3806,22 +3806,22 @@ body.game-full { overflow: hidden; }
       ds_aura: { n: "금강 기운", cd: (l) => 15 - l },
       je_wind: { n: "레이저 빔", cd: (l) => 6 - l * 0.5 },
       je_rain: { n: "화살 연사", cd: (l) => 8 - l * 0.7 },
-      je_storm: { n: "회전 드릴", cd: (l) => 12 - l },
+      je_storm: { n: "회전 드릴", cd: (l) => 5 - l * 0.3 },
       mj_shadow: { n: "그림자 질주", cd: (l) => 14 - l },
       mj_poison: { n: "독 안개", cd: (l) => 11 - l },
-      mj_star: { n: "부메랑", cd: (l) => 8 - l * 0.7 },
+      mj_star: { n: "부메랑", cd: (l) => 3.2 - l * 0.2 },
     };
     const UPS = [
       /* 수달단 레벨업 — 탕탕특공대처럼 다시(2026-10-28 "스킬도 탕탕특공대 비슷하게, 지금 스킬 다 없애고"). 공격 무기는 모두 저절로 나감(단추 없음) · 공격 6가지 · 보조 6가지까지 · 다 Lv 5.
          이름 · 진화 짝은 우리 것으로(2026-10-28 "조사해서 저작권 위반 안 되게") — 장르 공통 틀(자동 무기 + 보조, 무기 Lv 5 + 짝 보조 → 진화)만 따름 */
       { k: "kunai", n: "쿠나이", max: 5, skill: true, d: "1.5초마다 가까운 몬스터에게 쿠나이 2개를 던져요", up: "쿠나이 +1개 · 피해 +14 · 조금 더 자주" },
       { k: "orbs", n: "물방울 구슬", max: 5, atk: true, d: "내 몸 둘레를 계속 도는 물방울 1개 ㆍ 닿는 몬스터가 다쳐요", up: "도는 물방울 +1개", f: () => { s.orbs++; } },
-      { k: "homing", n: "드론", max: 5, skill: true, d: "7초마다 드론이 몬스터를 따라가는 미사일 4발", up: "미사일 +1발 · 피해 +15 · 더 자주" },
-      { k: "fire", n: "화염병", max: 5, skill: true, d: "11초마다 몬스터 쪽에 화염병 ㆍ 땅이 4초 동안 불타요", up: "불 범위 넓게 · 피해 +12 · 더 자주" },
-      { k: "thunder", n: "번개 구름", max: 5, skill: true, d: "8초마다 가까운 몬스터 4마리에게 번개", up: "번개 +1마리 · 피해 +25 · 더 자주" },
+      { k: "homing", n: "드론", max: 5, skill: true, d: "2초마다 드론이 몬스터를 따라가는 미사일 2발", up: "2레벨마다 미사일 +1발 · 피해 +12 · 더 자주" },
+      { k: "fire", n: "화염병", max: 5, skill: true, d: "4초마다 가까운 몬스터 쪽에 화염병 ㆍ 땅이 불타요", up: "2레벨마다 화염병 +1병 · 불 넓게 · 더 자주" },
+      { k: "thunder", n: "번개 구름", max: 5, skill: true, d: "3초마다 가까운 몬스터 2마리에게 번개", up: "번개 +1마리 · 피해 +18 · 더 자주" },
       { k: "aura", n: "물결 고리", max: 5, atk: true, d: "내 몸 둘레 물결 고리 ㆍ 안에 들어온 몬스터가 계속 다쳐요", up: "고리 넓게 · 초당 피해 +6", f: () => { s.aura++; } },
-      { k: "mj_star", n: "부메랑", max: 5, skill: true, d: "7초마다 몬스터를 꿰뚫고 다시 돌아오는 부메랑", up: "더 크게 · 피해 +25 · 더 자주" },
-      { k: "je_storm", n: "회전 드릴", max: 5, skill: true, d: "11초마다 몬스터를 꿰뚫고 끌고 가는 드릴", up: "더 크게 · 피해 +20 · 더 자주" },
+      { k: "mj_star", n: "부메랑", max: 5, skill: true, d: "3초마다 가까운 몬스터 쪽으로 부메랑 ㆍ 꿰뚫고 돌아와요", up: "2레벨마다 부메랑 +1개 · 피해 +16 · 더 자주" },
+      { k: "je_storm", n: "회전 드릴", max: 5, skill: true, d: "5초마다 드릴 발사 ㆍ 화면 끝에 튕기며 몬스터를 꿰뚫어요", up: "더 오래 · 더 크게 · 피해 +10" },
       { k: "rate", n: "빠른 장전", max: 5, d: "평타(총) 쏘는 속도 +12% ㆍ 자동 무기에는 안 들어가요", f: () => { s.rate *= 0.88; } },
       { k: "dmg", n: "단단한 탄환", max: 5, d: "평타 · 자동 무기 피해 모두 +15%", f: () => { s.dmg *= 1.15; s.allMul = (s.allMul || 1) * 1.15; } },
       { k: "max", n: "하트 물병", max: 5, d: "최대 체력(피통) +20% ㆍ 늘어난 만큼 바로 채워 줘요", f: () => { const m = Math.round(s.max * 0.2); s.max += m; s.hp += m; } },
@@ -4377,8 +4377,8 @@ body.game-full { overflow: hidden; }
       if (HSKF[k]) { s.castT = 0.3; return heroCast(k, l); }
       if (k === "thunder") {
         s.foes.filter((f) => Math.abs(f.x - s.x) < W / 2 + 20 && Math.abs(f.y - s.y) < H / 2 + 20)
-          .sort((p, q) => ((p.x - s.x) ** 2 + (p.y - s.y) ** 2) - ((q.x - s.x) ** 2 + (q.y - s.y) ** 2)).slice(0, 3 + l)
-          .forEach((f) => { hurt(f, 35 + 25 * l, true); const v = !!FXV["fxv-thunder"]; s.fx.push({ bolt: true, spr: "thunder", x: f.x, y: f.y + f.r * (v ? 0.2 : 1), size: 96, base: true, add: true, life: v ? 0.65 : 0.3, dur: v ? 0.65 : 0.3, vw: s.evo && s.evo.thunder ? 220 : 170 }); }); /* 영상 번개는 0.65초 · 진화하면 크게 */
+          .sort((p, q) => ((p.x - s.x) ** 2 + (p.y - s.y) ** 2) - ((q.x - s.x) ** 2 + (q.y - s.y) ** 2)).slice(0, 1 + l)
+          .forEach((f) => { hurt(f, 30 + 18 * l, true); const v = !!FXV["fxv-thunder"]; s.fx.push({ bolt: true, spr: "thunder", x: f.x, y: f.y + f.r * (v ? 0.2 : 1), size: 96, base: true, add: true, life: v ? 0.65 : 0.3, dur: v ? 0.65 : 0.3, vw: s.evo && s.evo.thunder ? 220 : 170 }); }); /* 영상 번개는 0.65초 · 진화하면 크게 */
       } else if (k === "whirl") {
         /* 회오리 — 공격하는 쪽으로 1.6초 동안 날아가며 닿은 잡귀를 한 번씩 다치게 하고 함께 쓸어 간다 · 불덩이를 지운다 */
         const P = aimAt(200);
@@ -4389,11 +4389,11 @@ body.game-full { overflow: hidden; }
       } else if (k === "grenade") { // 수류탄 — 가까운 몬스터(없으면 공격하는 쪽)에 던져 터짐
         const n = s.foes.filter((f) => (f.x - s.x) ** 2 + (f.y - s.y) ** 2 < 340 * 340).sort((p, q) => ((p.x - s.x) ** 2 + (p.y - s.y) ** 2) - ((q.x - s.x) ** 2 + (q.y - s.y) ** 2))[0], P = n ? { x: n.x, y: n.y } : aimAt(160), R = 70 + 14 * l;
         blast(P.x, P.y, R, 40 + 28 * l); s.fx.push({ boom: true, spr: "smoke", x: P.x, y: P.y, r: R / 2, c: "#ffb347", size: R * 2.4, life: 0.5, dur: 0.5 }, { spr: "quake", x: P.x, y: P.y, size: R * 2.2, life: 0.4, dur: 0.4 }); s.hitFx = Math.max(s.hitFx, 0.2);
-      } else if (k === "fire") {
-        const P = aimAt(150);
-        s.fields.push({ x: P.x, y: P.y, r: 80 + 15 * l, dps: 22 + 12 * l, life: 4, full: 4 });
+      } else if (k === "fire") { /* 화염병 — 가까운 몬스터 쪽으로 1~3병, 땅이 2.5초 불탐(탕탕특공대처럼 자주 · 여러 병) */
+        const T = s.foes.filter((f) => f.hp > 0 && (f.x - s.x) ** 2 + (f.y - s.y) ** 2 < 330 * 330).sort(() => Math.random() - 0.5), n = 1 + Math.floor(l / 2);
+        for (let i = 0; i < n; i++) { const f = T[i], P = f ? { x: f.x, y: f.y } : (() => { const a = Math.random() * Math.PI * 2, d = 90 + Math.random() * 120; return { x: s.x + Math.cos(a) * d, y: s.y + Math.sin(a) * d }; })(); s.fields.push({ x: P.x, y: P.y, r: 46 + 6 * l, dps: 20 + 10 * l, life: 2.5, full: 2.5 }); }
       } else if (k === "homing") {
-        for (let i = 0; i < 3 + l; i++) { const a = -Math.PI / 2 + (i - (2 + l) / 2) * 0.5; s.homs.push({ x: s.x, y: s.y - 8, a: a, life: 3, dmg: 30 + 15 * l, tg: null, px: s.x, py: s.y }); }
+        { const n = 2 + Math.floor(l / 2); for (let i = 0; i < n; i++) { const a = -Math.PI / 2 + (i - (n - 1) / 2) * 0.5; s.homs.push({ x: s.x, y: s.y - 8, a: a, life: 3, dmg: 24 + 12 * l, tg: null, px: s.x, py: s.y }); } }
       } else if (k === "frost") {
         const R = 110 + 15 * l, P = aimAt(160);
         s.foes.forEach((f) => { if ((f.x - P.x) ** 2 + (f.y - P.y) ** 2 < (R + f.r) ** 2) { hurt(f, 15 + 10 * l, true); f.slow = (2 + 0.3 * l) * (f.k === "boss" ? 0.5 : 1); } });
@@ -4430,12 +4430,12 @@ body.game-full { overflow: hidden; }
         const P = aimAt(200), n = 5 + l;
         for (let i = 0; i < n; i++) fly("arrow", { a: P.a + (i - (n - 1) / 2) * 0.12 }, { v: 620, R: 16, dmg: 25 + 12 * l, life: 0.8 });
         s.fx.push({ spr: k, x: s.x + Math.cos(P.a) * 70, y: s.y + Math.sin(P.a) * 70, rot: P.a, size: 140, life: 0.35, dur: 0.35 });
-      } else if (k === "je_storm") fly(k, aimAt(200), { v: 300, R: 55 + 12 * l, dmg: 25 + 20 * l, life: 1.6, carry: true, eat: true, size: 150 + 20 * l });
+      } else if (k === "je_storm") { const n = l >= 8 ? 2 : 1; for (let i = 0; i < n; i++) { const P = aimAt(200); fly(k, { a: P.a + i * Math.PI }, { v: 380, R: 26 + 3 * l, dmg: 18 + 10 * l, life: 3 + 0.4 * l, bounce: true, rehit: 0.45, eat: true, size: 66 + 6 * l }); } } /* 드릴 — 화면 끝에 튕기며 3~5초 돌아다님 · 꿰뚫음(탕탕특공대처럼) · 진화하면 2개 */
       else if (k === "mj_shadow") {
         const P = aimAt(220), x0 = s.x, y0 = s.y; rush(P, 230, 40 + 20 * l); s.stealth = 2 + 0.4 * l;
         s.fx.push({ spr: k, x: x0 + Math.cos(P.a) * 90, y: y0 + Math.sin(P.a) * 90, rot: P.a, size: 230, life: 0.7, dur: 0.7 });
       } else if (k === "mj_poison") { const P = aimAt(150); s.fields.push({ x: P.x, y: P.y, r: 90 + 15 * l, dps: 20 + 12 * l, life: 5, full: 5, spr: k, col: "170,60,220" }); }
-      else if (k === "mj_star") fly(k, aimAt(200), { v: 420, R: 36 + 6 * l, dmg: 45 + 25 * l, life: 1.6, back: true, spin: true, size: 90 + 10 * l });
+      else if (k === "mj_star") { const T = s.foes.filter((f) => f.hp > 0).sort((p, q) => ((p.x - s.x) ** 2 + (p.y - s.y) ** 2) - ((q.x - s.x) ** 2 + (q.y - s.y) ** 2)), n = 1 + Math.floor(l / 2); for (let i = 0; i < n; i++) { const f = T[i % Math.max(1, T.length)], a = f ? Math.atan2(f.y - s.y, f.x - s.x) + (i >= T.length ? i * 0.6 : 0) : s.aim + i * 0.6; fly(k, { a }, { v: 420, R: 30 + 5 * l, dmg: 30 + 16 * l, life: 1.5, back: true, spin: true, size: 80 + 8 * l, ph: i * 0.3 }); } } /* 부메랑 — 가까운 몬스터 쪽으로 1~3개, 돌아옴 */
     }
     /* 테스트 모드 — "너랑 나는(기준량)은 플레이할 때 테스트용으로 공격력 쌔지게, 단계별로 테스트할 수 있게" (2026-10-26).
        기준량 · 관리자 계정(문주 빼고) · 관리자 암호로 들어온 사람에게만 시작 안내에 보인다. 켜면 모든 공격 10배, 순위표에는 안 올린다 */
@@ -4682,6 +4682,8 @@ body.game-full { overflow: hidden; }
         const v = t.v || 300; t.life -= dt;
         if (t.back && t.life < t.full / 2) { if (!t.turned) { t.turned = true; t.hit = []; } t.a = Math.atan2(s.y - t.y, s.x - t.x); if ((s.x - t.x) ** 2 + (s.y - t.y) ** 2 < 900) t.life = 0; }
         t.x += Math.cos(t.a) * v * dt; t.y += Math.sin(t.a) * v * dt;
+        if (t.bounce) { const hw = W / 2 - 20, hh = H / 2 - 20; if (t.x < s.x - hw || t.x > s.x + hw) { t.a = Math.PI - t.a; t.x = Math.max(s.x - hw, Math.min(s.x + hw, t.x)); } if (t.y < s.y - hh || t.y > s.y + hh) { t.a = -t.a; t.y = Math.max(s.y - hh, Math.min(s.y + hh, t.y)); } } /* 화면 끝에 튕김 */
+        if (t.rehit && (t.rh = (t.rh || 0) - dt) <= 0) { t.rh = t.rehit; t.hit = []; } /* 오래 도는 것은 같은 몬스터를 다시 때림 */
         if (t.boom && !t.boomed) { if (t.life <= 0 || s.foes.some((f) => (f.x - t.x) ** 2 + (f.y - t.y) ** 2 < (t.R + f.r) ** 2)) { t.boomed = true; t.life = 0; blast(t.x, t.y, t.boom.R, t.boom.dmg); s.fx.push({ spr: t.boom.spr, x: t.x, y: t.y + t.boom.R * 0.5, size: t.boom.R * 2, base: true, add: true, life: 0.4, dur: 0.4 }, { x: t.x, y: t.y, r: t.boom.R / 2.2, c: "#9cc8ff", life: 0.3 }); } return; }
         s.foes.forEach((f) => {
           if ((f.x - t.x) ** 2 + (f.y - t.y) ** 2 > (t.R + f.r) ** 2) return;
@@ -5102,7 +5104,7 @@ body.game-full { overflow: hidden; }
           const x = z.x + ox, y = z.y + oy, a = Math.min(1, z.life / 0.5) * (0.85 + Math.random() * 0.15), gr = g.createRadialGradient(x, y, 0, x, y, z.r);
           gr.addColorStop(0, "rgba(255,210,90," + (0.55 * a).toFixed(2) + ")"); gr.addColorStop(0.6, "rgba(255,90,20," + (0.4 * a).toFixed(2) + ")"); gr.addColorStop(1, "rgba(180,20,10,0)");
           g.fillStyle = gr; g.beginPath(); g.arc(x, y, z.r, 0, Math.PI * 2); g.fill();
-          { const FI = lbImg("fx-fire"), age = z.full - z.life; if (FI) { const n = 4, fw = FI.width / n, fr = age < 0.3 ? 0 : age < 0.6 ? 1 : 2 + (Math.floor(age * 7) % 2), w = z.r * 2.3, h = w * FI.height / fw; g.globalAlpha = Math.min(1, z.life / 0.5); g.drawImage(FI, fr * fw, 0, fw, FI.height, x - w / 2, y + z.r * 0.45 - h, w, h); g.globalAlpha = 1; } } /* 새 불바다(ChatGPT 4장면, 2026-10-28 "불꽃 스킬 옛날 것 지우고 최신으로") */
+          { const FI = lbImg("fx-fire"), age = z.full - z.life; if (FI) { const n = 4, fw = FI.width / n, fr = age < 0.3 ? 0 : age < 0.6 ? 1 : 2 + (Math.floor(age * 7) % 2), w = z.r * 1.9, h = w * FI.height / fw; g.globalAlpha = Math.min(1, z.life / 0.5); g.drawImage(FI, fr * fw, 0, fw, FI.height, x - w / 2, y + z.r * 0.45 - h, w, h); g.globalAlpha = 1; } } /* 새 불바다(ChatGPT 4장면, 2026-10-28 "불꽃 스킬 옛날 것 지우고 최신으로") */
         });
         if (!s.watchView) { g.save(); g.setLineDash([7, 9]); g.lineDashOffset = -s.t * 12; g.strokeStyle = "rgba(255,255,255,.32)"; g.lineWidth = 2; g.beginPath(); g.arc(hx, hy, s.range, 0, Math.PI * 2); g.stroke(); g.restore(); } // 평타 사거리 원(2026-10-28 "평타 사거리 원형도")
         if (s.aura) { g.beginPath(); g.arc(hx, hy, 55 + s.aura * 12, 0, Math.PI * 2); g.fillStyle = "rgba(214,176,98,.07)"; g.fill(); g.strokeStyle = "rgba(214,176,98,.35)"; g.stroke(); }
