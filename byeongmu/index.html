@@ -1487,7 +1487,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610281127";
+  const BUILD = "202610281139";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -4378,7 +4378,7 @@ body.game-full { overflow: hidden; }
       if (k === "thunder") {
         s.foes.filter((f) => Math.abs(f.x - s.x) < W / 2 + 20 && Math.abs(f.y - s.y) < H / 2 + 20)
           .sort((p, q) => ((p.x - s.x) ** 2 + (p.y - s.y) ** 2) - ((q.x - s.x) ** 2 + (q.y - s.y) ** 2)).slice(0, 3 + l)
-          .forEach((f) => { hurt(f, 35 + 25 * l, true); s.fx.push({ bolt: true, spr: "thunder", x: f.x, y: f.y + f.r, size: 96, base: true, add: true, life: 0.3, dur: 0.3 }); });
+          .forEach((f) => { hurt(f, 35 + 25 * l, true); const v = !!FXV["fxv-thunder"]; s.fx.push({ bolt: true, spr: "thunder", x: f.x, y: f.y + f.r * (v ? 0.2 : 1), size: 96, base: true, add: true, life: v ? 0.65 : 0.3, dur: v ? 0.65 : 0.3, vw: s.evo && s.evo.thunder ? 220 : 170 }); }); /* 영상 번개는 0.65초 · 진화하면 크게 */
       } else if (k === "whirl") {
         /* 회오리 — 공격하는 쪽으로 1.6초 동안 날아가며 닿은 잡귀를 한 번씩 다치게 하고 함께 쓸어 간다 · 불덩이를 지운다 */
         const P = aimAt(200);
@@ -4787,7 +4787,8 @@ body.game-full { overflow: hidden; }
     /* ── 봉인검록 영상 그림 (2026-10-28 부장님 "연병장도 봉인검록처럼 몬스터 · 캐릭터가 자연스럽게 움직이고 총 쏘고 스킬 쏘게") ──
        img/bg/ = 봉인검록에서 가져온 것(시험/봉인그림-가져오기.cjs): m_<사람>2(서기 · 걷기 · 평타 · 스킬) · m_<사람>3(대시 · 맞기 · 쓰러짐) ·
        mm_<몬스터>(걷기 · 힘 모으기 · 공격 · 맞기 · 쓰러짐) · sfx/sk_*(스킬 영상, 검은 바탕이라 더해 그림). 못 읽으면 예전 그림 그대로 */
-    const BGF = {}, BGI = {};
+    const BGF = {}, BGI = {}, FXV = {}, FXV_AT = { "fxv-thunder": [0.49, 0.55] };
+    fetch("img/lb/fxv.json?v=" + BUILD).then((r) => r.json()).then((j) => { Object.assign(FXV, j); Object.keys(j).forEach((n) => lbImg(n)); }).catch(() => {});
     fetch("img/bg/frames.json?v=" + BUILD).then((r) => r.json()).then((j) => { Object.assign(BGF, j); }).catch(() => {});
     function lbImg(n) { let i = BGI["lb:" + n]; if (!i) { i = BGI["lb:" + n] = new Image(); i.src = "img/lb/" + n + ".webp?v=" + BUILD; } return i.complete && i.naturalWidth ? i : null; } // 맵 물건 그림(ChatGPT, 보관/로비그림/맵물건6-gpt.png)
     function bgImg(n) { let i = BGI[n]; if (!i) { i = BGI[n] = new Image(); i.src = "img/bg/" + n + ".webp?v=" + BUILD; } return i.complete && i.naturalWidth ? i : null; }
@@ -4803,13 +4804,14 @@ body.game-full { overflow: hidden; }
       let nm;
       if (dead) nm = I3 ? "dead" + (C.dead - 1) : "down";
       else if (s && s.hurt > 0.02 && I3) nm = at("hit", 1 - s.hurt / 0.15);
-      else if (s && s.dashT > 0 && I3) nm = at("dash", 1 - s.dashT / 0.2);
+      else if (s && s.dashT > 0) nm = "walk" + (Math.floor(s.t * 24) % C.walk); /* 대시 = 달리는 동작(2026-10-28 "대쉬할 때는 저렇게 뛰는 모션") */
       else if (s && s.castT > 0) nm = at("cast", 1 - s.castT / 0.3);
       else if (s && s.shotT > 0.14) nm = at(["atk1", "atk2", "atk3"][(s.shotC || 0) % 3], (0.5 - s.shotT) / 0.36);
-      else if (s && s.moving && (running || s.watchView)) nm = "walk" + (Math.floor(s.walk * 1.5) % C.walk);
+      else if (s && s.moving && (running || s.watchView)) { const k4 = "m_ot4" + skA, I4 = BGF[k4] && BGF[k4 + "_meta"] && bgImg(k4); nm = I4 ? "step" + (Math.floor(s.walk * 0.9) % BGF[k4 + "_meta"].counts.step) : "walk" + (Math.floor(s.walk * 1.5) % C.walk); } /* 걷기 = 오른발 · 왼발 번갈아(2026-10-28 "달려가는 게 아니라 자연스럽게 걸어가게") — 걷기 그림(m_ot4)이 있으면 그것 */
       else nm = "idle" + (Math.floor((s ? s.t : performance.now() / 1000) * 6) % C.idle);
       let img = I, r = F[nm], ax = M.ax2 ? M.ax2[nm] : 0.5;
       if (I3 && R[nm]) { img = I3; r = R[nm]; ax = RM.ax2[nm]; }
+      if (/^step/.test(nm)) { const k4 = "m_ot4" + skA; img = bgImg(k4); r = BGF[k4][nm]; ax = BGF[k4 + "_meta"].ax2[nm]; }
       if (!r) { r = F.idle0; ax = M.ax2 ? M.ax2.idle0 : 0.5; }
       if (ax == null) ax = 0.5;
       const k = 76 / M.tall, idle = /^idle/.test(nm) && !dead;
@@ -5138,6 +5140,9 @@ body.game-full { overflow: hidden; }
           g.fillStyle = "#fff"; g.font = "800 9px sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(m.k === "heal" ? "+" : "HP", x, y + 2);
         });
         s.fx.forEach((x) => {
+          /* 스킬 효과 영상(2026-10-28 "봉인검록처럼 동영상으로 · 입체감") — Google Flow 검은 바탕 영상을 칸으로(시험/효과영상-자르기.cjs). 검정은 lighter 로 더해 안 보임 · 꽂히는 자리(FXV_AT)를 몬스터 발에 */
+          if (x.bolt && FXV["fxv-thunder"]) { const V = FXV["fxv-thunder"], I = lbImg("fxv-thunder"); if (I) { const p = Math.min(0.999, 1 - x.life / (x.dur || 0.65)), fr = Math.floor(p * V.n), sx = (fr % V.cols) * V.w, sy = Math.floor(fr / V.cols) * V.h, w = x.vw || 170, hh = w * V.h / V.w, A = FXV_AT["fxv-thunder"];
+            g.save(); g.globalCompositeOperation = "lighter"; g.globalAlpha = Math.min(1, x.life / 0.15); g.drawImage(I, sx, sy, V.w, V.h, x.x + ox - w * A[0], x.y + oy - hh * A[1], w, hh); g.restore(); return; } }
           if (x.nfx || (x.bolt && lbImg("fx-thunder"))) { const I = lbImg(x.nfx || "fx-thunder"); if (I) { const fw = I.width / 4, p = 1 - x.life / (x.dur || 0.3), fr = Math.min(3, Math.floor(p * 4)), sz = x.nfx ? x.size || 90 : 120, w = sz, h = sz * I.height / fw; g.save(); g.globalAlpha = Math.min(1, x.life / 0.12 + 0.2);
             g.drawImage(I, fr * fw, 0, fw, I.height, x.x + ox - w / 2, x.nfx ? x.y + oy - h / 2 : x.y + oy - h + 8, w, h); g.restore(); return; } }
           if (x.corpse) {
