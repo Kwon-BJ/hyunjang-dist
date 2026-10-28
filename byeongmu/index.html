@@ -698,7 +698,7 @@ body.game-full { overflow: hidden; }
 .lb-mailbtn { font-size: 4.4cqw !important; padding: 0; } .lb-mailbtn /* 문파 채팅(2026-10-28) */
 .lb-chatbar { display: flex; align-items: center; gap: 1.4cqw; padding: 0 2cqw; border-radius: 999px; border: .45cqw solid #e8c46a; background: linear-gradient(#5a4026, #3e2a16); color: #f6e6c2; font-size: 2.9cqw !important; box-shadow: 0 .5cqw 0 #2a1a0a; z-index: 3; }
 .lb-chatbar span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; } .lb-chatbar b { min-width: 3.6cqw; padding: 0 .8cqw; border-radius: 999px; background: #e8382c; color: #fff; font-size: 2.4cqw; } .lb-chatbar b[hidden] { display: none; }
-.chat-win { position: absolute; left: 3%; right: 3%; bottom: 12%; height: 46%; z-index: 40; display: grid; grid-template-rows: auto 1fr auto; border-radius: 3cqw; border: .6cqw solid #c79a4a; background: linear-gradient(#f9eccb, #efdcab); box-shadow: 0 0 0 .5cqw #5a3a14, 0 2cqw 5cqw rgba(0,0,0,.5); overflow: hidden; font-family: "Jua", "Noto Sans KR", sans-serif; }
+.chat-win { position: absolute; left: 3%; right: 3%; bottom: 12%; height: 62%; z-index: 40; display: grid; grid-template-rows: auto 1fr auto; border-radius: 3cqw; border: .6cqw solid #c79a4a; background: linear-gradient(#f9eccb, #efdcab); box-shadow: 0 0 0 .5cqw #5a3a14, 0 2cqw 5cqw rgba(0,0,0,.5); overflow: hidden; font-family: "Jua", "Noto Sans KR", sans-serif; }
 .chat-win.top { left: 10px; right: 10px; top: calc(118px + env(safe-area-inset-top, 0px)); bottom: auto; height: 210px; border-radius: 14px; border: 2px solid #e8c46a; background: rgba(19,36,10,.82); box-shadow: 0 4px 14px rgba(0,0,0,.4); }
 .ch-hd { display: flex; align-items: center; justify-content: space-between; padding: 6px 12px; background: rgba(47,90,28,.95); color: #ffe36b; } .ch-hd button { border: 0; background: none; color: #fff; font-size: 18px; cursor: pointer; }
 .ch-list { overflow-y: auto; padding: 6px 10px; display: grid; align-content: start; gap: 4px; font-size: 14px; color: #3a2a10; } .chat-win.top .ch-list { color: #fff; font-size: 13px; }
@@ -723,6 +723,12 @@ body.game-full { overflow: hidden; }
 .lb-rw { display: flex; align-items: center; justify-content: center; font-size: 4.2cqw; color: #2e4a1e; }
 .lb-go { border: 0; border-radius: 9cqw; background: transparent; } .lb-go:active { background: rgba(255,255,255,.18); } .lb-go:disabled { background: rgba(0,0,0,.45); cursor: default; }
 .lb-inf { border-radius: 999px; border: .4cqw solid #e8c46a; background: linear-gradient(#3b6b22, #224312); color: #fff; font-size: 3.2cqw !important; text-shadow: 0 1px 1px #000; } .lb-inf:disabled { opacity: .5; }
+.lb-dock { border-radius: 4cqw; border: .7cqw solid #c79a4a; background: linear-gradient(#f9eccb, #efdcab); box-shadow: 0 0 0 .5cqw #5a3a14, 0 1.4cqw 3cqw rgba(0,0,0,.45); }
+.lb-chatbox { display: grid; grid-template-rows: auto 1fr; padding: 1cqw 1.6cqw; border: .4cqw solid #d9bd84; border-radius: 2.6cqw; background: #fffaf0; text-align: left; overflow: hidden; color: #3a2a10; }
+.cb-hd { display: flex; align-items: center; gap: 1cqw; font-size: 3cqw; color: #2f5a1c; border-bottom: .3cqw dashed #e0c896; padding-bottom: .6cqw; } .cb-hd span { flex: 1; } .cb-hd b { min-width: 3.6cqw; padding: 0 .8cqw; border-radius: 999px; background: #e8382c; color: #fff; font-size: 2.4cqw; text-align: center; } .cb-hd b[hidden] { display: none; }
+.cb-list { display: flex; flex-direction: column; justify-content: flex-end; gap: .2cqw; padding-top: .6cqw; min-height: 0; overflow: hidden; font-size: 2.7cqw; } .cb-row { flex: none; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .cb-row b { margin-right: 1cqw; color: #2f5a1c; } .cb-row.me b { color: #b97a0a; } .cb-empty { color: #a08458; align-self: center; text-align: center; }
+.lb-go.sm { background: url(img/lb/gobtn.webp) center / 100% 100% no-repeat; border-radius: 99cqw; box-shadow: 0 .8cqw 0 #9a5a06; } .lb-go.sm:active { transform: translateY(.4cqw); background-color: transparent; } .lb-go.sm:disabled { filter: grayscale(.7) brightness(.8); background-color: transparent; }
+.lb-dock ~ .lb-msg { white-space: normal; word-break: keep-all; color: #6a4a1c; text-shadow: none; font-size: 2.35cqw !important; line-height: 1.2; } .lb-dock ~ .lb-msg.bad { color: #c8321e; }
 .lb-msg { display: flex; align-items: center; justify-content: center; text-align: center; font-size: 2.8cqw; color: #fff; text-shadow: 0 1px 2px #000, 0 0 4px #000; pointer-events: none; } .lb-msg:empty { display: none; } .lb-msg.bad { color: #ffd2c8; }
 .lb-nav { left: 0; right: 0; top: 88.6%; bottom: 0; display: grid; grid-template-columns: 25% 25% 24.5% 25.5%; }
 .lb-nav.lb-nav5 { top: auto; bottom: .4%; left: 0; right: 0; height: 11%; padding: 0 4.5% 0 4.5%; gap: 0; grid-template-columns: repeat(5, 1fr); background: url(img/lb/navbar.webp) center / 100% 100% no-repeat; } /* 부장님 원본 아래 띠로 다시 짬(시험/아래칸-합치기.cjs) */ /* 제미나이 5칸 막대(2026-10-28) */
@@ -854,7 +860,7 @@ body.game-full { overflow: hidden; }
 /* 문파 채팅(2026-10-28) */
 .lb-chatbar { display: flex; align-items: center; gap: 1.4cqw; padding: 0 2cqw; border-radius: 999px; border: .45cqw solid #e8c46a; background: linear-gradient(#5a4026, #3e2a16); color: #f6e6c2; font-size: 2.9cqw !important; box-shadow: 0 .5cqw 0 #2a1a0a; z-index: 3; }
 .lb-chatbar span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; } .lb-chatbar b { min-width: 3.6cqw; padding: 0 .8cqw; border-radius: 999px; background: #e8382c; color: #fff; font-size: 2.4cqw; } .lb-chatbar b[hidden] { display: none; }
-.chat-win { position: absolute; left: 3%; right: 3%; bottom: 12%; height: 46%; z-index: 40; display: grid; grid-template-rows: auto 1fr auto; border-radius: 3cqw; border: .6cqw solid #c79a4a; background: linear-gradient(#f9eccb, #efdcab); box-shadow: 0 0 0 .5cqw #5a3a14, 0 2cqw 5cqw rgba(0,0,0,.5); overflow: hidden; font-family: "Jua", "Noto Sans KR", sans-serif; }
+.chat-win { position: absolute; left: 3%; right: 3%; bottom: 12%; height: 62%; z-index: 40; display: grid; grid-template-rows: auto 1fr auto; border-radius: 3cqw; border: .6cqw solid #c79a4a; background: linear-gradient(#f9eccb, #efdcab); box-shadow: 0 0 0 .5cqw #5a3a14, 0 2cqw 5cqw rgba(0,0,0,.5); overflow: hidden; font-family: "Jua", "Noto Sans KR", sans-serif; }
 .chat-win.top { left: 10px; right: 10px; top: calc(118px + env(safe-area-inset-top, 0px)); bottom: auto; height: 210px; border-radius: 14px; border: 2px solid #e8c46a; background: rgba(19,36,10,.82); box-shadow: 0 4px 14px rgba(0,0,0,.4); }
 .ch-hd { display: flex; align-items: center; justify-content: space-between; padding: 6px 12px; background: rgba(47,90,28,.95); color: #ffe36b; } .ch-hd button { border: 0; background: none; color: #fff; font-size: 18px; cursor: pointer; }
 .ch-list { overflow-y: auto; padding: 6px 10px; display: grid; align-content: start; gap: 4px; font-size: 14px; color: #3a2a10; } .chat-win.top .ch-list { color: #fff; font-size: 13px; }
@@ -1455,7 +1461,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610280837";
+  const BUILD = "202610280854";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -5490,7 +5496,7 @@ body.game-full { overflow: hidden; }
       else { const pg = el("div", "lb-page lb-" + lobTab); pg.append(...(lobTab === "wpn" ? lobWpn(P) : lobTab === "shop" ? lobShop(P) : lobTab === "op" ? lobOp() : lobTab === "mail" ? lobMail(P) : lobTab === "skin" ? lobSkin(P) : lobTab === "gear" ? lobGear(P) : lobTab === "dun" ? lobDun(P) : lobRank())); if (lobErr) pg.appendChild(el("p", "lb-err", lobErr)); art.appendChild(pg); }
       const nav = el("nav", "lb-nav lb-nav5"); [["shop", "상점"], ["gear", "장비"], ["go", "출전"], ["dun", "던전"], ["rank", "순위"]].forEach(([k, n]) => { const b = el("button", k === lobTab || (k === "gear" && lobTab === "skin") ? "on" : ""); b.type = "button"; b.setAttribute("aria-label", n); b.appendChild(el("span", null, n)); if (k === "gear" && lobTab === "wpn") b.className = "on"; b.onclick = () => { lobTab = k; lobErr = ""; lobSel = null; lobDraw(); if (k === "rank") loadRanks(); }; nav.appendChild(b); });
       if (P && !P.free) { const mb = lobBtn("lb-mailbtn" + (lobTab === "mail" ? " on" : ""), px(782, 100, 58, 58), () => { lobTab = lobTab === "mail" ? "go" : "mail"; lobErr = ""; lobDraw(); }, "우편함"); mb.innerHTML = `<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="12" width="36" height="25" rx="3" fill="#f9eccb" stroke="#5a3a14" stroke-width="2.5"/><path d="M7 14l17 13 17-13" fill="none" stroke="#5a3a14" stroke-width="2.5" stroke-linejoin="round"/><circle cx="24" cy="27" r="4.5" fill="#e8382c" stroke="#5a3a14" stroke-width="1.8"/></svg>`; /* 홈 왼쪽 · 글자 없이(2026-10-28) */ const n = (P.mail || []).length; if (n) mb.appendChild(el("b", "lb-badge", String(n))); art.appendChild(mb); }
-      if (P && !P.free) art.appendChild(chatBar());
+      if (P && !P.free && lobTab !== "go") art.appendChild(chatBar());
       art.appendChild(nav); if (shopRw && lobTab === "shop") art.appendChild(lobRewardBox()); else shopRw = null; L.replaceChildren(art); lobFit(art); if (P && P.op) { (matchMedia("(max-width: 760px)").matches ? art : L).appendChild(lobLive()); /* 휴대폰은 그림 안 「← 홈」 옆 */ if (Date.now() - liveAt > 5000) loadLive(); } // 운영자만 오른쪽에 지금 하는 사람
     }
     function lobGo(P) {
@@ -5505,9 +5511,11 @@ body.game-full { overflow: hidden; }
       if (c > 1) { const a = lobBtn("lb-arr", px(62, 548, 68, 68 * 941 / 1672 * 1672 / 941), () => { lobCh = c - 1; lobDraw(); }, "앞 장"); a.textContent = "‹"; out.push(a); }
       if (c < CH_N) { const a = lobBtn("lb-arr r", px(812, 548, 68, 68 * 941 / 1672 * 1672 / 941), () => { lobCh = c + 1; lobDraw(); }, "다음 장"); a.textContent = "›"; out.push(a); }
       t("lb-rw", "x" + (120 * c * (first ? 2 : 1) * mul).toLocaleString(), px(282, 1168, 90, 40)); t("lb-rw", "x" + (50 * c * mul).toLocaleString(), px(430, 1168, 82, 40)); t("lb-rw", first ? "x1" : "—", px(582, 1168, 66, 40));
-      const go = lobBtn("lb-go", px(210, 1262, 525, 178), () => lobStart(c, false, M), "출전 ㆍ 피로도 5"); go.disabled = !open || lobBusy || need; out.push(go);
+      /* 아래 칸(2026-10-28 "출전 크기를 줄이고 채팅창을 더 키워라") ㆍ 왼쪽 큰 채팅(최근 글 여러 줄) · 오른쪽 작은 출전 */
+      { const dk = el("div", "lb-dock"); dk.style.cssText = px(28, 1238, 885, 204); out.push(dk); if (!P.free) out.push(chatBox()); }
+      const go = lobBtn("lb-go sm", P.free ? px(270, 1256, 400, 136) : px(614, 1254, 286, 97), () => lobStart(c, false, M), "출전 ㆍ 피로도 5"); go.disabled = !open || lobBusy || need; out.push(go);
       /* 무한의 탑 단추는 던전 칸에만(2026-10-28 "시나리오 창에 왜 넣었노") */
-      t("lb-msg" + (need || lobErr ? " bad" : ""), need ? "피로도가 모자라요 ㆍ 6분마다 1씩 차요 · ＋ 로 살 수 있어요" : lobErr || (P.free ? "로그인하면 피로도 · 골드 · 깬 장 · 무기가 저장돼요" : first ? (c % 10 === 0 && (P.chWpn || [])[M] && WPN[P.chWpn[M][c / 10 - 1]] ? "처음 깨면 무기 「" + WPN[P.chWpn[M][c / 10 - 1]].n + "」 + 골드 2배 + 두루마리" : "처음 깨면 골드 2배 + 두루마리(⚡10 + 물건 하나)") : ""), px(40, 1408, 861, 36));
+      t("lb-msg" + (need || lobErr ? " bad" : ""), need ? "피로도가 모자라요 ㆍ 6분마다 1씩 차요 · ＋ 로 살 수 있어요" : lobErr || (P.free ? "로그인하면 피로도 · 골드 · 깬 장 · 무기가 저장돼요" : first ? (c % 10 === 0 && (P.chWpn || [])[M] && WPN[P.chWpn[M][c / 10 - 1]] ? "처음 깨면 무기 「" + WPN[P.chWpn[M][c / 10 - 1]].n + "」 + 골드 2배 + 두루마리" : "처음 깨면 골드 2배 + 두루마리(⚡10 + 물건 하나)") : ""), P.free ? px(60, 1392, 821, 44) : px(606, 1350, 302, 86));
       return out;
     }
     let raidBoard = null, raidLoading = false;
@@ -5659,10 +5667,12 @@ body.game-full { overflow: hidden; }
     function chatPaint() {
       const n = chatUnread(), gb = $("gChat"); if (gb) { const b = gb.querySelector("b"); b.hidden = !n; b.textContent = n > 9 ? "9+" : String(n); }
       const bar = document.querySelector(".lb-chatbar"); if (bar) { const L = CHAT.list[CHAT.list.length - 1]; bar.querySelector("span").textContent = L ? L.n + " ㆍ " + L.t : "전체 채팅 ㆍ 눌러서 이야기해요"; const b = bar.querySelector("b"); b.hidden = !n; b.textContent = n > 9 ? "9+" : String(n); }
+      const cb = document.querySelector(".lb-chatbox"); if (cb) { const b = cb.querySelector(".cb-hd b"); b.hidden = !n; b.textContent = n > 9 ? "9+" : String(n); const L = cb.querySelector(".cb-list"); L.replaceChildren(...(CHAT.list.length ? CHAT.list.slice(-3).map((x) => { const r = el("div", "cb-row" + (me && x.n === me.gameId ? " me" : "")); r.append(el("b", null, x.n), el("span", null, x.t)); return r; }) : [el("div", "cb-empty", "눌러서 이야기해요")])); }
       const box = document.getElementById("chatList"); if (box) { box.replaceChildren(...CHAT.list.slice(-40).map((x) => { const r = el("div", "ch-row" + (me && x.n === me.gameId ? " me" : "")); r.append(el("b", null, x.n), el("span", null, x.t)); return r; })); box.scrollTop = box.scrollHeight;
         if (CHAT.open && CHAT.last > CHAT.seen) { CHAT.seen = CHAT.last; try { localStorage.setItem("bmc-chat-seen", CHAT.seen); } catch (e) {} } }
     }
     function chatBar() { const b = el("button", "lb-chatbar"); b.type = "button"; b.style.cssText = px(40, 1446, 861, 34); b.append(el("i", null, "💬"), el("span", null, ""), el("b", null, "")); b.onclick = () => chatOpen(false); chatPull(false); setTimeout(chatPaint, 0); return b; }
+    function chatBox() { const b = el("button", "lb-chatbox"); b.type = "button"; b.style.cssText = px(44, 1252, 556, 176); const hd = el("div", "cb-hd"); hd.append(el("i", null, "💬"), el("span", null, "전체 채팅"), el("b", null, "")); b.append(hd, el("div", "cb-list")); b.onclick = () => chatOpen(false); chatPull(false); setTimeout(chatPaint, 0); return b; }
     function chatOpen(inGame) {
       let w = document.getElementById("chatWin"); if (w) { w.remove(); CHAT.open = false; return; }
       w = el("div", "chat-win" + (inGame ? " top" : "")); w.id = "chatWin"; const hd = el("div", "ch-hd"), x = el("button", null, "✕"); x.type = "button"; x.onclick = () => { w.remove(); CHAT.open = false; }; hd.append(el("b", null, "💬 전체 채팅"), x);
