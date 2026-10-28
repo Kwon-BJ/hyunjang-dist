@@ -670,10 +670,10 @@ body.game-full { overflow: hidden; }
 .lb-inf { border-radius: 999px; border: .4cqw solid #e8c46a; background: linear-gradient(#3b6b22, #224312); color: #fff; font-size: 3.2cqw !important; text-shadow: 0 1px 1px #000; } .lb-inf:disabled { opacity: .5; }
 .lb-msg { display: flex; align-items: center; justify-content: center; text-align: center; font-size: 2.8cqw; color: #fff; text-shadow: 0 1px 2px #000; } .lb-msg.bad { color: #ffd2c8; }
 .lb-nav { left: 0; right: 0; top: 88.6%; bottom: 0; display: grid; grid-template-columns: 25% 25% 24.5% 25.5%; }
-.lb-nav.lb-nav5 { top: auto; bottom: 0; height: 13%; padding: 1.4% 2.6% 1.8%; gap: 0 1.9%; grid-template-columns: repeat(5, 1fr); background: url(img/lb/navbar.webp) center / 100% 100% no-repeat, #1f3a14; } /* 제미나이 5칸 막대(2026-10-28) */
-.lb-nav5 button span { display: block !important; position: absolute; left: 0; right: 0; bottom: 4%; font-size: 3cqw; font-weight: 900; color: #fff; text-shadow: 0 0 .5cqw #000, 0 .3cqw .4cqw #000; }
+.lb-nav.lb-nav5 { top: auto; bottom: 0; left: 0; right: 0; height: 11.5%; padding: 0 6.3% 0 6.2%; gap: 0; grid-template-columns: repeat(5, 1fr); background: url(img/lb/navbar.webp) center / 100% 100% no-repeat; } /* 부장님 원본 아래 띠로 다시 짬(시험/아래칸-합치기.cjs) */ /* 제미나이 5칸 막대(2026-10-28) */
+.lb-nav5 button span { display: block !important; position: absolute; left: 0; right: 0; bottom: 13%; font-size: 3.6cqw; font-weight: 900; color: #fff; text-shadow: 0 0 .5cqw #000, 0 .3cqw .4cqw #000; }
 @media (max-width: 760px) { .lb-live { display: none !important; } } /* 휴대폰은 운영자 권한 안 보임(2026-10-28) */
-.lb-nav5 button.on::after { inset: 4% 2%; border-radius: 2.4cqw; background: none; box-shadow: 0 0 0 .5cqw #ffd24a, 0 0 2cqw rgba(255,210,74,.8); }
+.lb-nav5 button.on::after { inset: 14% 4% 8%; border-radius: 2.4cqw; background: none; box-shadow: 0 0 0 .5cqw #ffd24a, 0 0 2cqw rgba(255,210,74,.8); }
 .lb-nav5 button:nth-child(3).on::after { display: block; }
 .lb-ghead { display: flex; align-items: center; justify-content: space-between; gap: 2cqw; padding: 2cqw 0 0; } .lb-ghead b { padding: 1cqw 3cqw; border-radius: 3cqw; background: linear-gradient(#8a5a2a, #5a3a14); color: #fff; font-size: 4.4cqw; text-shadow: 0 1px 2px #000; white-space: nowrap; }
 .lb-power { padding: 1cqw 3cqw; border-radius: 3cqw; background: #1d2f12; color: #ffe36b; font-size: 3.6cqw; font-weight: 900; white-space: nowrap; }
@@ -693,7 +693,7 @@ body.game-full { overflow: hidden; }
 .lb-nav button.on::after { content: ""; position: absolute; inset: 2% 4% 3%; border-radius: 3cqw; background: radial-gradient(ellipse at 50% 60%, rgba(255,214,90,.28), rgba(255,214,90,0) 70%); box-shadow: 0 0 0 .4cqw rgba(255,210,74,.75); pointer-events: none; }
 .lb-nav button:nth-child(3).on::after { display: none; } /* 출전은 그림에 이미 금빛 칸 — 덧그리면 수달 머리를 가림(2026-10-28) */
 /* 탭 화면(상점 · 무기 · 순위) — 부장님 탭 그림처럼: 나무 간판 · 양피지 판 · 크림색 칸 · 오른쪽(아래) 자세히 */
-.lb-page { left: 2.5%; right: 2.5%; top: 9.6%; bottom: 13.4%; overflow-y: auto; scrollbar-width: none; padding: 0 3cqw 3cqw; display: flex; flex-direction: column; gap: 2.2cqw; border-radius: 4cqw; border: .7cqw solid #c79a4a; background: linear-gradient(#f9eccb, #efdcab); box-shadow: 0 0 0 .5cqw #5a3a14, 0 2cqw 5cqw rgba(0,0,0,.45); font-size: 3.4cqw; }
+.lb-page { left: 2.5%; right: 2.5%; top: 9.6%; bottom: 12%; overflow-y: auto; scrollbar-width: none; padding: 0 3cqw 3cqw; display: flex; flex-direction: column; gap: 2.2cqw; border-radius: 4cqw; border: .7cqw solid #c79a4a; background: linear-gradient(#f9eccb, #efdcab); box-shadow: 0 0 0 .5cqw #5a3a14, 0 2cqw 5cqw rgba(0,0,0,.45); font-size: 3.4cqw; }
 .lb-page::-webkit-scrollbar { display: none; } .lb-page > * { flex-shrink: 0; } /* 안 눌리게(2026-10-28) */
 .lb-head { position: sticky; top: 0; z-index: 2; margin: 0 -3cqw; padding: 1.4cqw 3cqw .6cqw; background: linear-gradient(#f9eccb 80%, rgba(249,236,203,0)); text-align: center; }
 .lb-head img { width: 74%; display: block; margin: 0 auto; } .lb-head p { margin: .6cqw 0 0; font-size: 3.2cqw; color: #5a3a1a; }
@@ -1308,7 +1308,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610280151";
+  const BUILD = "202610280205";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -3758,6 +3758,7 @@ body.game-full { overflow: hidden; }
       row.append(gBtn("계속", resume), gBtn("그만하기", end, "ghost"));
       panel([el("h3", null, "멈춤"), el("p", null, mmss(s.t) + " 버팀 · " + s.stage + "단계 · 잡은 수 " + s.kills), el("p", "best", mine()), row]);
     }
+    function canPick() { const nAtk = UPS.filter((u) => UP_ATK(u) && s.up[u.k]).length; return UPS.some((u) => (s.up[u.k] || 0) < u.max && (!u.ok || u.ok()) && !(UP_ATK(u) && !s.up[u.k] && nAtk >= UP_MAX_ATK)); } // 고를 카드가 남았나(2026-10-28 "59레벨에 스킬을 못 배워 진행이 안 된다")
     function showPicks(title) {
       const nAtk = UPS.filter((u) => UP_ATK(u) && s.up[u.k]).length, pool = UPS.filter((u) => (s.up[u.k] || 0) < u.max && (!u.ok || u.ok()) && !(UP_ATK(u) && !s.up[u.k] && nAtk >= UP_MAX_ATK)), picks = []; // 공격 스킬은 6가지까지 // 캐릭터 스킬은 내 캐릭터 것만 (2026-10-27)
       while (picks.length < 3 && pool.length) picks.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
@@ -4429,8 +4430,8 @@ body.game-full { overflow: hidden; }
       if (s.hp <= 0 && s.rev > 0) { s.rev--; s.revUsed = (s.revUsed || 0) + 1; s.hp = s.max * 0.5; s.ward = Math.max(s.ward || 0, 3); msg("부활권 — 다시 일어났다!"); } // 부활권
       if (s.hp <= 0) { s.hp = 0; return end(); }
       /* 대장 보상 — 대장을 잡으면 강화 · 스킬 하나 고르기 (2026-10-26) */
-      if (s.bossPick) { s.bossPick = false; running = false; stick = null; hud(); showPicks("대장 보상 — 하나 고르세요"); return; }
-      if (s.xp >= s.need) { s.fx.push({ x: s.x, y: s.y, r: 30, c: "#ffe08a", life: 0.3 }, { spr: "levelup", x: s.x, y: s.y + 22, size: 120, base: true, add: true, life: 0.8, dur: 0.8 }); s.xp -= s.need; s.lv++; s.need = Math.round(s.need * 1.22 + 2); running = false; stick = null; hud(); showPicks(); }
+      if (s.bossPick) { s.bossPick = false; if (!canPick()) { s.hp = Math.min(s.max, s.hp + s.max * 0.3); msg("대장 보상 — 체력 +30%"); } else { running = false; stick = null; hud(); showPicks("대장 보상 — 하나 고르세요"); return; } }
+      if (s.xp >= s.need) { s.fx.push({ x: s.x, y: s.y, r: 30, c: "#ffe08a", life: 0.3 }, { spr: "levelup", x: s.x, y: s.y + 22, size: 120, base: true, add: true, life: 0.8, dur: 0.8 }); s.xp -= s.need; s.lv++; s.need = Math.round(s.need * 1.22 + 2); if (!canPick()) { s.hp = Math.min(s.max, s.hp + s.max * 0.1); msg("Lv " + s.lv + " — 스킬 모두 최대! 체력 +10%"); } else { running = false; stick = null; hud(); showPicks(); } } // 다 배웠으면 멈추지 않고 계속
     }
 
     /* ── 그리기 — 모두 도형 ── */
@@ -5095,7 +5096,7 @@ body.game-full { overflow: hidden; }
       if (!sv || Date.now() - sv.at > 120000) return false;
       try { s = JSON.parse(sv.s); } catch (e) { return false; }
       s.bossNow = sv.boss >= 0 ? s.foes[sv.boss] || null : null; s.lock = null;
-      if (HEROES[sv.hero]) heroKey = sv.hero; setMap(mapFor(s.stage));
+      if (HEROES[sv.hero]) heroKey = sv.hero; setMap(s.chap || mapFor(s.stage)); // 장이면 그 장 맵(예전엔 단계로 골라 이어하기 뒤 다른 맵이 됐다, 2026-10-28)
       s.ward = Math.max(s.ward || 0, 2); $("gTest").hidden = !s.test;
       // 2026-10-27 전 판에서 저장된 게임 — 새로 생긴 값 채움(사거리 · 회오리 · 휴식 · 상자 체력)
       s.range = s.range || AIM_R; s.tors = s.tors || []; s.wardR = s.wardR || 0; s.rest = s.rest || 0; s.cleanT = s.cleanT || 0;
@@ -5181,7 +5182,7 @@ body.game-full { overflow: hidden; }
       if (c < 10) { const a = lobBtn("lb-arr r", px(812, 548, 68, 68 * 941 / 1672 * 1672 / 941), () => { lobCh = c + 1; lobDraw(); }, "다음 장"); a.textContent = "›"; out.push(a); }
       t("lb-rw", "x" + (120 * c * (first ? 2 : 1)), px(282, 1168, 90, 40)); t("lb-rw", "x" + 50 * c, px(430, 1168, 82, 40)); t("lb-rw", first ? "x1" : "—", px(582, 1168, 66, 40));
       const go = lobBtn("lb-go", px(210, 1262, 525, 178), () => lobStart(c), "출전 — 피로도 5"); go.disabled = !open || lobBusy || need; out.push(go);
-      const inf = lobBtn("lb-inf", px(80, 914, 250, 50), () => lobStart(0), "무한의 탑"); inf.textContent = "🗼 무한의 탑" + (P.tower ? " · 최고 " + P.tower + "층" : ""); inf.disabled = lobBusy || need; out.push(inf);
+      /* 무한의 탑 단추는 던전 칸에만(2026-10-28 "시나리오 창에 왜 넣었노") */
       t("lb-msg" + (need || lobErr ? " bad" : ""), need ? "피로도가 모자라요 — 6분마다 1씩 차요 · ＋ 로 살 수 있어요" : lobErr || (P.free ? "로그인하면 피로도 · 골드 · 깬 장 · 무기가 저장돼요" : first ? "처음 깨면 골드 2배 + 두루마리(⚡10 + 물건 하나)" : ""), px(40, 1440, 861, 40));
       return out;
     }
@@ -5357,13 +5358,13 @@ body.game-full { overflow: hidden; }
     function autoLabel() { const b = $("gAuto"); if (!b) return; b.textContent = autoSk ? "🤖 자동 켬" : "🤖 자동"; b.setAttribute("aria-pressed", String(autoSk)); }
     function autoCast() { if (!autoSk || !s || !s.skills) return; const near = s.foes.some((f) => (f.x - s.x) ** 2 + (f.y - s.y) ** 2 < 330 * 330); if (!near) return; s.skills.forEach((k) => { if (!(s.cd[k] > 0)) cast(k); }); }
     autoLabel();
-    if (/[?&]bmctest=1/.test(location.search)) window.__bmcGame = { get s() { return s; }, get LP() { return LP; }, lobby: lobby, setHero: (k) => { heroKey = k; }, lobStart: lobStart, setTab: (k) => { lobTab = k; lobDraw(); }, setCh: (c) => { lobTab = "go"; lobCh = c; lobDraw(); }, chapterClear: chapterClear, begin: begin, step: step, spawnBoss: spawnBoss, take: take, cast: cast, startStage: startStage, stageLen: stageLen, W: () => W, H: () => H, UPS: UPS, SK: SK, TEST_MUL: TEST_MUL, openBox: openBox, useItem: useItem, dash: dash, spawn: spawn, bullet: bullet, hazard: hazard, showPicks: showPicks };
+    if (/[?&]bmctest=1/.test(location.search)) window.__bmcGame = { get s() { return s; }, get LP() { return LP; }, lobby: lobby, mapIdx: () => mapIdx, running: () => running, setHero: (k) => { heroKey = k; }, lobStart: lobStart, setTab: (k) => { lobTab = k; lobDraw(); }, setCh: (c) => { lobTab = "go"; lobCh = c; lobDraw(); }, chapterClear: chapterClear, begin: begin, step: step, spawnBoss: spawnBoss, take: take, cast: cast, startStage: startStage, stageLen: stageLen, W: () => W, H: () => H, UPS: UPS, SK: SK, TEST_MUL: TEST_MUL, openBox: openBox, useItem: useItem, dash: dash, spawn: spawn, bullet: bullet, hazard: hazard, showPicks: showPicks };
     return {
       /* 다른 메뉴로 가면 멈춘다. 처음 들어오면(또는 다른 사람이 들어오면) 시작 안내 */
       render() {
         if (view !== "game") { if (watchOn) watchStop(true); pause(); if (isFull()) toggleFull(); $("gLobby").hidden = true; document.body.classList.remove("game-full"); return; }
-        else if (!running && $("gLobby").hidden && (!s || (s.over && $("gameOver").hidden))) lobby(); // 로비 — 멈춘 판 · 결과 화면은 그대로 // 다른 메뉴로 가면 전체화면도 끈다
-        if (shown !== nick()) { shown = nick(); s = null; running = false; stick = null; if (!restoreGame()) lobby(); drawRanks(); }
+        if (shown !== nick()) { shown = nick(); if (!(s && running)) { s = null; running = false; stick = null; if (!restoreGame()) lobby(); } drawRanks(); } // 이어하기로 이미 도는 판은 두기(닉이 손님→회원으로 바뀔 때 로비가 덮었다, 2026-10-28)
+        if (!running && $("gLobby").hidden && (!s || (s.over && $("gameOver").hidden))) lobby(); // 로비 — 멈춘 판 · 결과 화면은 그대로 // 다른 메뉴로 가면 전체화면도 끈다
         drawResetTools();
         if (Date.now() - ranksAt > 30000) loadRanks();
         if (Date.now() - liveAt > 3000) loadLive(); // 연병장에 들어올 때마다 바로
