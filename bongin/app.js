@@ -45,7 +45,7 @@ const APP = (() => {
       A.re = 0; A.me = m.me; A.char = m.char; $("hudOp").hidden = !m.me.op; toast("다시 연결됐어요.", "good");
       if (A.scene === "town") { A.others = {}; enterTown(); } else if (A.scene === "dungeon" && A.run && !A.watch) send({ t: "dresume", run: A.run }); else if (A.scene !== "dungeon") charScreen();
       return; }
-    if (m.t === "hello") { A.re = 0; A.me = m.me; $("hudOp").hidden = !m.me.op; A.items = m.items; A.shop = m.shop; A.dungeons = m.dungeons; A.char = m.char; return m.char ? charScreen() : createScreen(); }
+    if (m.t === "hello") { A.re = 0; A.me = m.me; $("hudOp").hidden = !m.me.op; A.items = m.items; A.shop = m.shop; A.smith = m.smith || []; A.dungeons = m.dungeons; A.char = m.char; return m.char ? charScreen() : createScreen(); }
     if (m.t === "char") { const first = !A.char && m.char; A.char = m.char; if (!m.char) return createScreen(); if (first) return charScreen(); refresh(); return; }
     if (m.t === "err") return toast(m.text, "bad");
     if (m.t === "opok") return toast(m.text, "good");
@@ -332,13 +332,16 @@ const APP = (() => {
   }
   function smithTalk() {
     refreshFn = smithTalk;
-    panel([el("h2", null, "대장장이 철산 — 「칼은 두드릴수록 단단해지지」"), el("p", "sub", "강화는 +" + (A.char.maxPlus || 10) + " 까지. +5 까지는 실패해도 그대로, +6 부터는 실패하면 한 단계 내려가요. 장비가 깨지지는 않아요. 가진 돈 " + A.char.gold.toLocaleString() + " G"), bagList("smith"), row(btn("닫기", () => { refreshFn = null; closePanel(); }, "ghost"))], true);
+    /* 장비 사기 — 대장장이가 모든 장비를 판다(2026-10-28). 등급순, 내 직업 무기만 무기 칸에 */
+    const myW = { kh: "sword", hr: "tali", ds: "club", je: "bow", mj: "dagger" }[(A.char.look && A.char.look.hero) || "kh"], buy = el("div", "bag");
+    (A.smith || []).filter((k) => { const I = A.items[k]; return I && (I.kind !== "weapon" || (I.wt || "sword") === myW); }).sort((a, b) => (A.items[a].grade - A.items[b].grade) || (A.items[a].price - A.items[b].price)).forEach((k) => { const I = A.items[k], r = el("div", "item"), ic = el("span", "slot ico g" + (I.grade || 0)); ic.appendChild(icon(k, 40)); r.appendChild(ic); const nm = el("span", null, I.name); nm.style.color = GRADE[I.grade]; r.append(nm, el("small", null, I.price.toLocaleString() + " G"), btn("사기", () => send({ t: "buy", key: k, n: 1 }), "tiny" + (A.char.gold < I.price ? " ghost" : ""))); buy.appendChild(r); });
+    panel([el("h2", null, "대장장이 철산 — 「칼은 두드릴수록 단단해지지」"), el("b", null, "장비 사기"), buy, el("b", null, "강화"), el("p", "sub", "강화는 +" + (A.char.maxPlus || 10) + " 까지. +5 까지는 실패해도 그대로, +6 부터는 실패하면 한 단계 내려가요. 장비가 깨지지는 않아요. 가진 돈 " + A.char.gold.toLocaleString() + " G"), bagList("smith"), row(btn("닫기", () => { refreshFn = null; closePanel(); }, "ghost"))], true);
   }
   function masterTalk(k) { // 스승 — 그 사람의 스킬 셋을 알려 줌(내 캐릭터가 그 사람이면 그 스킬을 씀)
     const N = { kh: "강혁", hr: "혜린", ds: "대성", je: "지은", mj: "무진" }, J = { kh: "무사", hr: "도사", ds: "수호자", je: "사수", mj: "자객" }, sk = Dungeon.SKILLS[k];
     const mine = A.char && A.char.look && (A.char.look.hero || "kh") === k;
     panel([el("h2", null, "스승 " + N[k] + " — " + J[k]), el("p", "story", mine ? "나와 같은 길을 걷는구나. 내 기술을 가르쳐 주마." : "내 기술은 이렇다네. 나와 같은 모습으로 길을 시작하면 쓸 수 있지."),
-      el("p", null, sk.map((s, i) => s.name + " " + KEYS.label(["s1", "s2", "s3", "s4", "s5", "s6", "ult"][i])).join(" · ")), el("p", "sub", "평타 " + KEYS.label("atk") + " (3타째 띄우기) · 점프 " + KEYS.label("jump") + " · 구르기 " + KEYS.label("roll") + " · 물약 " + KEYS.label("potion")), row(mine ? btn("스킬 배우기", skillPanel) : el("span"), btn("명심하겠습니다", closePanel, mine ? "ghost" : ""))]);
+      el("p", null, sk.map((s, i) => s.name + " " + KEYS.label(["s1", "s2", "s3", "s4", "s5", "s6", "ult"][i])).join(" · ")), el("p", "sub", "평타 " + KEYS.label("atk") + " (3타째 띄우기) · 점프 " + KEYS.label("jump") + " · 대시 " + KEYS.label("dash") + " · 물약 " + KEYS.label("potion")), row(mine ? btn("스킬 배우기", skillPanel) : el("span"), btn("명심하겠습니다", closePanel, mine ? "ghost" : ""))]);
   }
 
   function gateTalk() {
@@ -616,7 +619,7 @@ const APP = (() => {
     SK.forEach((s, i) => { const r = el("div", "item"), ic = skPic(s, 44);
       ic.style.cssText = "width:44px;height:44px;border-radius:8px;background:" + (i === 6 ? "#5a3a0a" : "#1b1e2a"); const got = op || L.includes(i), q = REQ[i] || { lv: 1, cost: 0 };
       const txt = el("div"); txt.style.flex = "1"; txt.append(el("b", null, (i === 6 ? "궁극기 · " : i + 1 + ". ") + s.name), el("small", null, " " + (KIND_TXT[s.kind] || "") + " · 기다림 " + s.cd + "초 · 키 " + KEYS.label(["s1", "s2", "s3", "s4", "s5", "s6", "ult"][i])));
-      r.append(ic, txt, got ? el("small", "reward", op ? "운영자 ✔" : "배움 ✔") : btn("배우기 · Lv " + q.lv + (q.cost ? " · " + q.cost.toLocaleString() + "G" : ""), () => send({ t: "learn", i }), "tiny" + (C.lv < q.lv || C.gold < q.cost ? " ghost" : ""))); list.appendChild(r); });
+      r.append(ic, txt, got ? el("small", "reward", op ? "운영자 ✔" : "배움 ✔") : btn("배우기 · " + (q.cost ? q.cost.toLocaleString() + " G" : "무료"), () => send({ t: "learn", i }), "tiny" + (C.gold < q.cost ? " ghost" : ""))); list.appendChild(r); });
     /* 스킬 칸 — 아래 스킬을 끌어다 칸에 놓기 · 칸에서 밖으로 끌면 빼기 · 눌러 고르고 칸 누르기(휴대폰도) */
     const SL = (C.skillSlots || [0, 1, 2, 3, 4, 5, 6]).slice(), save = () => send({ t: "setSlots", s: SL });
     const iconOf = (i, sz) => skPic(ALL[i], sz);
