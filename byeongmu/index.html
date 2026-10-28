@@ -630,7 +630,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
 .game-hud .hpbar i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, var(--red), #ff6a4a); }
 .game-hud .row { position: absolute; left: 8px; right: 8px; top: 8px; display: flex; gap: 6px 10px; flex-wrap: wrap; align-items: center; }
 .game-hud .xp { position: absolute; left: 0; right: 0; top: 0; height: 4px; background: rgba(0,0,0,.6); }
-.game-hud .xp i { display: block; height: 100%; width: 0; background: var(--gold); }
+.game-hud .xp i { display: block; height: 100%; width: 0; background: var(--gold); } .game-hud .xp b { display: none; } .game-box.full .game-hud .xp b { display: block; }
 .game-hud .pause { pointer-events: auto; margin-left: auto; }
 /* 전체화면 (2026-10-26) — 브라우저 전체화면(게임판만), 안 되는 곳(아이폰)은 게임판이 화면을 덮는다(.full) */
 .game-hud .gfull, .game-hud .gspeed { pointer-events: auto; }
@@ -642,17 +642,21 @@ body.game-full { overflow: hidden; }
 /* ── 수달단 게임 화면 — 로비 그림과 같은 화풍(초록 판 · 금테 · 크림 · Jua 글씨) (2026-10-28 "정식 출시할 수 있게 완성도 높게") ── */
 .game-box.full .game-hud { font-family: "Jua", "Noto Sans KR", sans-serif; font-weight: 400; color: #fff; text-shadow: 0 1px 2px #000, 0 0 3px rgba(0,0,0,.6); }
 .game-box.full .game-hud .row #gTime, .game-box.full .game-hud .row #gStage { font-size: 16px; } /* 핵심 숫자 크게(ChatGPT 검토) */
-.game-box.full .game-hud .row { left: 10px; right: 10px; top: calc(8px + env(safe-area-inset-top, 0px)); gap: 6px; padding: 6px 8px; border-radius: 16px; border: 2px solid #e8c46a; background: linear-gradient(180deg, rgba(47,90,28,.92), rgba(29,58,16,.92)); box-shadow: 0 3px 0 #13240a, 0 6px 14px rgba(0,0,0,.35); font-size: 14px; }
+.game-box.full .game-hud .row { left: 10px; right: 10px; top: calc(30px + env(safe-area-inset-top, 0px)); gap: 6px; padding: 6px 8px; border-radius: 16px; border: 2px solid #e8c46a; background: linear-gradient(180deg, rgba(47,90,28,.92), rgba(29,58,16,.92)); box-shadow: 0 3px 0 #13240a, 0 6px 14px rgba(0,0,0,.35); font-size: 14px; }
 .game-box.full .game-hud .hpbar { height: 14px; border: 2px solid #13240a; border-radius: 999px; background: #13240a; box-shadow: inset 0 1px 2px rgba(0,0,0,.6); }
 .game-box.full .game-hud .hpbar i { background: linear-gradient(180deg, #ff8a7a, #e8382c 60%, #b8241b); border-radius: 999px; }
-.game-box.full .game-hud .xp { top: auto; bottom: 0; height: 6px; background: rgba(19,36,10,.8); } .game-box.full .game-hud .xp i { background: linear-gradient(90deg, #ffe36b, #f2a91c); }
+/* 경험치 바 — 탕탕특공대처럼 맨 위 가로로 길게, 왼쪽에 레벨(2026-10-28 "맨 밑 말고 탕탕특공대랑 똑같은 위치") */
+.game-box.full .game-hud .xp { top: calc(6px + env(safe-area-inset-top, 0px)); bottom: auto; left: 10px; right: 10px; height: 18px; border-radius: 9px; border: 2px solid #0e2a52; background: rgba(8,20,40,.75); box-shadow: 0 2px 0 rgba(0,0,0,.35); overflow: hidden; }
+.game-box.full .game-hud .xp i { border-radius: 7px; background: linear-gradient(180deg, #7fd0ff, #2f8bff 55%, #1e66d8); box-shadow: inset 0 1px 0 rgba(255,255,255,.5); transition: width .15s; }
+.game-box.full .game-hud .row #gLv { display: none; } /* 레벨은 경험치 바에 */
+.game-box.full .game-hud .xp b { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font: 400 12px/1 "Jua", sans-serif; color: #fff; text-shadow: 0 1px 2px #000, 0 0 3px #000; white-space: nowrap; }
 .game-box.full .game-hud .tiny { padding: 4px 10px; border: 2px solid #e8c46a; border-radius: 999px; background: linear-gradient(180deg, #4a7f2c, #2c5418); color: #fff; font: 400 13px "Jua", "Noto Sans KR", sans-serif; box-shadow: 0 2px 0 #13240a; text-shadow: 0 1px 1px #000; }
 .game-box.full .game-hud .tiny:active { transform: translateY(2px); box-shadow: none; }
 .game-box.full .game-hud .pause { background: linear-gradient(180deg, #ffe36b, #f2a91c); color: #4a2a06; text-shadow: none; border-color: #b97a0a; }
 .game-box.full .game-hud .gauto[aria-pressed="true"] { background: linear-gradient(180deg, #ffe36b, #f2a91c); color: #4a2a06; text-shadow: none; border-color: #b97a0a; }
-.game-box.full .game-hud .boss { top: calc(88px + env(safe-area-inset-top, 0px)); color: #fff; font-size: 15px; }
+.game-box.full .game-hud .boss { top: calc(110px + env(safe-area-inset-top, 0px)); color: #fff; font-size: 15px; }
 .game-box.full .game-hud .boss .bar { height: 12px; border: 2px solid #3a0a06; background: #2a0a06; } .game-box.full .game-hud .boss .bar i { background: linear-gradient(180deg, #ff9a5a, #e8382c); }
-.gsklist { position: absolute; right: 8px; top: calc(118px + env(safe-area-inset-top, 0px)); display: grid; gap: 4px; justify-items: end; pointer-events: none; }
+.gsklist { position: absolute; right: 8px; top: calc(140px + env(safe-area-inset-top, 0px)); display: grid; gap: 4px; justify-items: end; pointer-events: none; }
 .gsk { position: relative; width: 34px; height: 34px; border-radius: 9px; border: 2px solid #6ab4ff; background: rgba(255,250,240,.88); box-shadow: 0 2px 0 rgba(0,0,0,.35); }
 .gsk.sup { width: 28px; height: 28px; border-color: #7fd36a; } .gsk.evo { border-color: #ffd23a; box-shadow: 0 0 8px #ffd23a; }
 .gsk img { width: 100%; height: 100%; object-fit: contain; display: block; } .gsk i { position: absolute; right: -4px; bottom: -4px; min-width: 14px; height: 14px; padding: 0 2px; border-radius: 7px; background: #2c5418; color: #fff; font: 400 10px/14px "Jua", sans-serif; font-style: normal; text-align: center; }
@@ -699,13 +703,13 @@ body.game-full { overflow: hidden; }
 .lb-chatbar { display: flex; align-items: center; gap: 1.4cqw; padding: 0 2cqw; border-radius: 999px; border: .45cqw solid #e8c46a; background: linear-gradient(#5a4026, #3e2a16); color: #f6e6c2; font-size: 2.9cqw !important; box-shadow: 0 .5cqw 0 #2a1a0a; z-index: 3; }
 .lb-chatbar span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; } .lb-chatbar b { min-width: 3.6cqw; padding: 0 .8cqw; border-radius: 999px; background: #e8382c; color: #fff; font-size: 2.4cqw; } .lb-chatbar b[hidden] { display: none; }
 .chat-win { position: absolute; left: 3%; right: 3%; bottom: 12%; height: 62%; z-index: 40; display: grid; grid-template-rows: auto 1fr auto; border-radius: 3cqw; border: .6cqw solid #c79a4a; background: linear-gradient(#f9eccb, #efdcab); box-shadow: 0 0 0 .5cqw #5a3a14, 0 2cqw 5cqw rgba(0,0,0,.5); overflow: hidden; font-family: "Jua", "Noto Sans KR", sans-serif; }
-.chat-win.top { left: 10px; right: 10px; top: calc(118px + env(safe-area-inset-top, 0px)); bottom: auto; height: 210px; border-radius: 14px; border: 2px solid #e8c46a; background: rgba(19,36,10,.82); box-shadow: 0 4px 14px rgba(0,0,0,.4); }
+.chat-win.top { left: 10px; right: 10px; top: calc(140px + env(safe-area-inset-top, 0px)); bottom: auto; height: 210px; border-radius: 14px; border: 2px solid #e8c46a; background: rgba(19,36,10,.82); box-shadow: 0 4px 14px rgba(0,0,0,.4); }
 .ch-hd { display: flex; align-items: center; justify-content: space-between; padding: 6px 12px; background: rgba(47,90,28,.95); color: #ffe36b; } .ch-hd button { border: 0; background: none; color: #fff; font-size: 18px; cursor: pointer; }
 .ch-list { overflow-y: auto; padding: 6px 10px; display: grid; align-content: start; gap: 4px; font-size: 14px; color: #3a2a10; } .chat-win.top .ch-list { color: #fff; font-size: 13px; }
 .ch-row b { margin-right: 6px; color: #2f5a1c; } .chat-win.top .ch-row b { color: #ffe36b; } .ch-row.me b { color: #b97a0a; } .ch-row span { overflow-wrap: anywhere; }
 .ch-in { display: grid; grid-template-columns: 1fr auto; gap: 6px; padding: 6px; background: rgba(0,0,0,.08); } .ch-in input { min-width: 0; padding: 8px 10px; border-radius: 10px; border: 1px solid #c79a4a; background: #fffaf0; color: #3a2a10; font-size: 15px; } .ch-in button { padding: 0 14px; border: 0; border-radius: 10px; background: linear-gradient(#ffe36b, #f2a91c); color: #4a2a06; font: inherit; }
-.game-hud .gchat { position: absolute; right: 10px; top: calc(118px + env(safe-area-inset-top, 0px)); width: 38px; height: 38px; border-radius: 50%; border: 2px solid #e8c46a; background: rgba(19,36,10,.7); font-size: 18px; pointer-events: auto; cursor: pointer; } .game-hud .gchat b { position: absolute; right: -4px; top: -4px; min-width: 16px; height: 16px; padding: 0 3px; border-radius: 8px; background: #e8382c; color: #fff; font: 700 10px/16px sans-serif; } .game-hud .gchat b[hidden] { display: none; }
-.gsklist { top: calc(162px + env(safe-area-inset-top, 0px)) !important; }
+.game-hud .gchat { position: absolute; right: 10px; top: calc(140px + env(safe-area-inset-top, 0px)); width: 38px; height: 38px; border-radius: 50%; border: 2px solid #e8c46a; background: rgba(19,36,10,.7); font-size: 18px; pointer-events: auto; cursor: pointer; } .game-hud .gchat b { position: absolute; right: -4px; top: -4px; min-width: 16px; height: 16px; padding: 0 3px; border-radius: 8px; background: #e8382c; color: #fff; font: 700 10px/16px sans-serif; } .game-hud .gchat b[hidden] { display: none; }
+.gsklist { top: calc(184px + env(safe-area-inset-top, 0px)) !important; }
 .lb-badge { position: absolute; right: -1.8cqw; top: -1.8cqw; min-width: 3.6cqw; height: 3.6cqw; font-size: 2.4cqw; } .lb-home { right: 2.5%; top: 6.4%; padding: .6cqw 2.4cqw; border-radius: 999px; border: .3cqw solid #355a22; background: rgba(20,36,12,.85); color: #fff; font-size: 2.8cqw !important; }
 .lb-chn { display: flex; align-items: center; justify-content: center; font-size: 6.4cqw; color: #fff; -webkit-text-stroke: .8cqw #1f3d10; paint-order: stroke fill; }
 .lb-chname { display: flex; align-items: center; justify-content: center; font-size: 10.5cqw; color: #fff; -webkit-text-stroke: 1.4cqw #4a2a10; paint-order: stroke fill; white-space: nowrap; }
@@ -880,13 +884,13 @@ body.game-full { overflow: hidden; }
 .lb-chatbar { display: flex; align-items: center; gap: 1.4cqw; padding: 0 2cqw; border-radius: 999px; border: .45cqw solid #e8c46a; background: linear-gradient(#5a4026, #3e2a16); color: #f6e6c2; font-size: 2.9cqw !important; box-shadow: 0 .5cqw 0 #2a1a0a; z-index: 3; }
 .lb-chatbar span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; } .lb-chatbar b { min-width: 3.6cqw; padding: 0 .8cqw; border-radius: 999px; background: #e8382c; color: #fff; font-size: 2.4cqw; } .lb-chatbar b[hidden] { display: none; }
 .chat-win { position: absolute; left: 3%; right: 3%; bottom: 12%; height: 62%; z-index: 40; display: grid; grid-template-rows: auto 1fr auto; border-radius: 3cqw; border: .6cqw solid #c79a4a; background: linear-gradient(#f9eccb, #efdcab); box-shadow: 0 0 0 .5cqw #5a3a14, 0 2cqw 5cqw rgba(0,0,0,.5); overflow: hidden; font-family: "Jua", "Noto Sans KR", sans-serif; }
-.chat-win.top { left: 10px; right: 10px; top: calc(118px + env(safe-area-inset-top, 0px)); bottom: auto; height: 210px; border-radius: 14px; border: 2px solid #e8c46a; background: rgba(19,36,10,.82); box-shadow: 0 4px 14px rgba(0,0,0,.4); }
+.chat-win.top { left: 10px; right: 10px; top: calc(140px + env(safe-area-inset-top, 0px)); bottom: auto; height: 210px; border-radius: 14px; border: 2px solid #e8c46a; background: rgba(19,36,10,.82); box-shadow: 0 4px 14px rgba(0,0,0,.4); }
 .ch-hd { display: flex; align-items: center; justify-content: space-between; padding: 6px 12px; background: rgba(47,90,28,.95); color: #ffe36b; } .ch-hd button { border: 0; background: none; color: #fff; font-size: 18px; cursor: pointer; }
 .ch-list { overflow-y: auto; padding: 6px 10px; display: grid; align-content: start; gap: 4px; font-size: 14px; color: #3a2a10; } .chat-win.top .ch-list { color: #fff; font-size: 13px; }
 .ch-row b { margin-right: 6px; color: #2f5a1c; } .chat-win.top .ch-row b { color: #ffe36b; } .ch-row.me b { color: #b97a0a; } .ch-row span { overflow-wrap: anywhere; }
 .ch-in { display: grid; grid-template-columns: 1fr auto; gap: 6px; padding: 6px; background: rgba(0,0,0,.08); } .ch-in input { min-width: 0; padding: 8px 10px; border-radius: 10px; border: 1px solid #c79a4a; background: #fffaf0; color: #3a2a10; font-size: 15px; } .ch-in button { padding: 0 14px; border: 0; border-radius: 10px; background: linear-gradient(#ffe36b, #f2a91c); color: #4a2a06; font: inherit; }
-.game-hud .gchat { position: absolute; right: 10px; top: calc(118px + env(safe-area-inset-top, 0px)); width: 38px; height: 38px; border-radius: 50%; border: 2px solid #e8c46a; background: rgba(19,36,10,.7); font-size: 18px; pointer-events: auto; cursor: pointer; } .game-hud .gchat b { position: absolute; right: -4px; top: -4px; min-width: 16px; height: 16px; padding: 0 3px; border-radius: 8px; background: #e8382c; color: #fff; font: 700 10px/16px sans-serif; } .game-hud .gchat b[hidden] { display: none; }
-.gsklist { top: calc(162px + env(safe-area-inset-top, 0px)) !important; }
+.game-hud .gchat { position: absolute; right: 10px; top: calc(140px + env(safe-area-inset-top, 0px)); width: 38px; height: 38px; border-radius: 50%; border: 2px solid #e8c46a; background: rgba(19,36,10,.7); font-size: 18px; pointer-events: auto; cursor: pointer; } .game-hud .gchat b { position: absolute; right: -4px; top: -4px; min-width: 16px; height: 16px; padding: 0 3px; border-radius: 8px; background: #e8382c; color: #fff; font: 700 10px/16px sans-serif; } .game-hud .gchat b[hidden] { display: none; }
+.gsklist { top: calc(184px + env(safe-area-inset-top, 0px)) !important; }
 .lb-badge { display: grid; place-items: center; min-width: 4.4cqw; height: 4.4cqw; padding: 0 1cqw; border-radius: 999px; background: #e8382c; color: #fff; font-size: 2.8cqw; }
 .lb-opbtn { padding: 3px 8px; font-size: 11px !important; border-radius: 999px; border: 2px solid #e8c46a; background: rgba(20,36,12,.9); color: #fff; font-weight: 800; white-space: nowrap; } .lb-opbtn.on { background: #b3261e; }
 .lb-live { position: absolute; z-index: 2; right: 8px; top: 18%; width: 170px; max-height: 60%; overflow: auto; padding: 10px; border-radius: 12px; background: rgba(12,20,8,.9); border: 2px solid #e8c46a; color: #fff; display: grid; gap: 6px; font-size: 13px; font-family: "Noto Sans KR", sans-serif; }
@@ -1352,7 +1356,7 @@ body.game-full { overflow: hidden; }
       <div class="game-box" id="gameBox">
         <canvas id="gameCv" aria-label="수달단 게임 화면"></canvas>
         <div class="game-hud" id="gameHud" hidden>
-          <div class="xp"><i id="gXp"></i></div>
+          <div class="xp"><i id="gXp"></i><b id="gXpLv">Lv 1</b></div>
           <div class="row"><span id="gTime">4:00</span><div class="hpbar"><i id="gHp"></i></div><span class="gtest" id="gTest" hidden>🧪 TEST</span><span id="gStage">1단계</span><span id="gLv">Lv 1</span><span id="gKill">0</span>
           <button class="gchat" type="button" id="gChat" aria-label="전체 채팅">💬<b hidden></b></button><button class="tiny pause" type="button" id="gPause">멈춤</button><button class="tiny" type="button" id="gSnd" aria-label="소리 켜기 · 끄기">🔊</button><button class="tiny gspeed" type="button" id="gSpeed">▶ 1배속</button><button class="tiny gspeed gauto" type="button" id="gAuto" aria-pressed="false">🤖 자동</button><button class="tiny gspeed gheal" type="button" id="gHeal" hidden>❤ 0</button><button class="tiny gfull" type="button" id="gFull">⛶ 전체화면</button><button class="tiny gop" type="button" id="gLvUp" hidden>Lv+</button><button class="tiny gop" type="button" id="gGod" hidden aria-pressed="false">무적</button></div>
           <button class="grest" type="button" id="gRest" hidden></button>
@@ -1483,7 +1487,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610281120";
+  const BUILD = "202610281127";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -5327,7 +5331,7 @@ body.game-full { overflow: hidden; }
       hT("gLv", "Lv " + s.lv + (s.chap && s.lv >= lvCap() ? " MAX" : ""));
       { const key = Object.keys(s.up).filter((k) => s.up[k]).map((k) => k + s.up[k] + (s.evo[UPS.find((u) => u.k === k) && UPS.find((u) => u.k === k).evo] ? "e" : "")).join(); if (key !== s.skKey) { s.skKey = key; skList(); } }
       hT("gKill", "잡은 수 " + s.kills); hH("gKill", !!s.raid); // 레이드는 위 판을 덜 붐비게
-      hW("gXp", Math.min(100, 100 * s.xp / s.need) + "%");
+      hW("gXp", Math.min(100, 100 * s.xp / s.need) + "%"); hT("gXpLv", "Lv " + s.lv + (s.chap && s.lv >= lvCap() ? " MAX" : ""));
       const B = s.bossNow;
       hH("gBoss", !B); SND.boss(B);
       if (B && s.raid) { hT("gStage", "보스 레이드 ㆍ " + mmss(Math.max(0, s.raidT))); hT("gBossName", B.name + " ㆍ 피해 " + raidDmg().toLocaleString()); hW("gBossHp", Math.max(0, 100 * B.hp / B.full) + "%"); }
