@@ -667,12 +667,13 @@ const APP = (() => {
 
   /* ── 움직임 입력 — 키(설정한 키) · 휴대폰 막대. 같은 쪽 두 번 = 달리기 ── */
   let stick = null, runOn = false; const lastTap = {};
-  /* 방향키를 빨리 두 번 = 대시(그 쪽으로 순간 이동하듯 · 잠깐 무적). 던전 · 마을 모두 */
-  let dashReq = 0; const dash = () => { const d = dashReq; dashReq = 0; return d; };
-  addEventListener("keydown", (e) => { if (e.repeat || /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return; if (e.code === KEYS.key("left") || e.code === KEYS.key("right")) { const now = performance.now(); if (now - (lastTap[e.code] || 0) < 260) dashReq = e.code === KEYS.key("left") ? -1 : 1; lastTap[e.code] = now; } });
+  /* 방향키를 빨리 두 번 = 빠르게 걷기(그 키를 놓을 때까지), 대시는 스페이스(키 설정 「대시」) — 2026-10-28 부장님 "두 번 누르면 대쉬가 아니라 빠르게 걷기, 대쉬는 스페이스" */
+  let runKey = ""; const dash = () => { if (!KEYS.take("dash")) return 0; const ax = axis()[0]; if (ax) return Math.sign(ax); const H = A.scene === "dungeon" && Dungeon.S ? Dungeon.S.hero : A.hero; return (H && H.face) || 1; };
+  addEventListener("keydown", (e) => { if (e.repeat || /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return; if (e.code === KEYS.key("left") || e.code === KEYS.key("right")) { const now = performance.now(); if (now - (lastTap[e.code] || 0) < 260) runKey = e.code; else if (runKey !== e.code) runKey = ""; lastTap[e.code] = now; } });
+  addEventListener("keyup", (e) => { if (e.code === runKey) runKey = ""; });
   function axis() {
     if (stick) { const dx = stick.x - stick.ox, dy = stick.y - stick.oy, L = Math.hypot(dx, dy); if (L < 8) return [0, 0, false]; const m = Math.min(1, L / 45); return [dx / L * m, dy / L * m, L > 60]; }
-    const D = KEYS.down; return [(D.right ? 1 : 0) - (D.left ? 1 : 0), (D.down ? 1 : 0) - (D.up ? 1 : 0), false];
+    const D = KEYS.down; return [(D.right ? 1 : 0) - (D.left ? 1 : 0), (D.down ? 1 : 0) - (D.up ? 1 : 0), !!runKey];
   }
   function local(e) { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * VW, (e.clientY - r.top) / r.height * VH]; }
   /* 차원의 문 누르기 — 던전 방 끝 문 · 마을 오른쪽 끝 던전 입구 (2026-10-27 "우측으로 완전히 가는 게 아니라 차원의 문을 ↑ 로 들어가거나 클릭해서") */
