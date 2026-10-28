@@ -1420,7 +1420,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610280529";
+  const BUILD = "202610280531";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -4711,7 +4711,7 @@ body.game-full { overflow: hidden; }
       if (!r) { r = F.idle0; ax = M.ax2 ? M.ax2.idle0 : 0.5; }
       if (ax == null) ax = 0.5;
       const k = 76 / M.tall, idle = /^idle/.test(nm) && !dead;
-      g.save(); g.translate(cx, cy + 19); if (dead) g.rotate(-Math.PI / 2 * (flip < 0 ? -1 : 1)); else if (idle) g.scale(1, 1 + Math.sin((s ? s.t : 0) * 4) * 0.035); // 대기는 숨 쉬듯 · 쓰러지면 눕기
+      g.save(); g.translate(cx, cy + 19); if (dead) g.rotate(-Math.PI / 2 * (flip < 0 ? -1 : 1)); else if (idle) g.scale(1, 1 + Math.sin((s ? s.t : 0) * 3) * 0.012); // 대기는 숨 쉬듯 · 쓰러지면 눕기
       const SK = s && s.skin && s.skin !== "basic" ? s.skin : ""; if (SK === "ice") g.filter = "hue-rotate(185deg) saturate(.7) brightness(1.15)"; else if (SK === "ninja") g.filter = "brightness(.8) contrast(1.1)"; else if (SK === "king") { g.shadowColor = "rgba(255,210,60,.9)"; g.shadowBlur = 14; }
       bgPut(img, r, 0, 0, k, flip < 0, ax); g.filter = "none"; g.shadowBlur = 0;
       if (SK && !dead) { const hi = lbImg("hat-" + SK); if (hi) { const H0 = r[3] * k, W0 = r[2] * k, hx = (0.5 - ax) * W0 * (flip < 0 ? -1 : 1) + (flip < 0 ? -3 : 3), hw = { astro: 44, wizard: 42, chef: 32, king: 32, ice: 32 }[SK] || 36, hh = hw * hi.height / hi.width, top = -H0 + ({ astro: 0.30, wizard: -0.06, chef: 0.06 }[SK] != null ? { astro: 0.30, wizard: -0.06, chef: 0.06 }[SK] : 0.11) * H0; // 머리 위에 모자(2026-10-28 스킨)
@@ -4838,14 +4838,26 @@ body.game-full { overflow: hidden; }
       if (f.hit) { sx *= 1.12; sy *= 0.88; }       // 맞을 때 찌그러짐
       return { y: y * grow, rot: rot, sx: sx * (0.4 + grow * 0.6), sy: sy * (0.2 + grow * 0.8), a: 0.3 + grow * 0.7, lean: f.near ? 0.22 : 0 };
     }
+    /* 수달단 몬스터 움직임 — 크기는 그대로(2026-10-28 "보스 · 몬스터가 커졌다 작아졌다, 탕탕특공대처럼 자연스럽게").
+       걷기: 좌우로 뒤뚱(기울기) + 발걸음마다 살짝 튐 · 붙으면 몸을 앞으로 내밀며 무는 동작 · 맞으면 뒤로 살짝 밀리고 하얗게 번쩍 · 나올 땐 땅에서 올라오며 나타남.
+       대장은 느리고 묵직한 걸음, 보는 쪽은 실제로 움직이는 쪽(흔들림 없이) */
+    function walkMotion(f, hh) {
+      const boss = f.k === "boss", t = s.t + f.ph, fq = boss ? 3.2 : 7.5 + (f.ph % 1) * 2, st = Math.sin(t * fq);
+      const dx0 = s.x - f.x; if (f.face == null || Math.abs(dx0) > 10) f.face = dx0 >= 0 ? 1 : -1;
+      let rot = st * (boss ? 0.04 : 0.08), y = -Math.abs(st) * hh * (boss ? 0.025 : 0.045), dx = 0;
+      if (f.near) { const b = Math.max(0, Math.sin(t * (boss ? 5 : 9))); dx = f.face * b * hh * 0.08; rot = f.face * b * 0.16; y = -b * hh * 0.02; } // 무는 동작
+      if (f.hit > 0) dx -= f.face * hh * 0.05; // 맞으면 뒤로
+      const grow = Math.min(1, (f.age || 0) / 0.35);
+      return { y: y + (1 - grow) * hh * 0.35, rot, sx: 1, sy: 1, a: grow, dx, face: f.face };
+    }
     /* 수달단 몬스터 — 맵(장)마다 그 맵 몬스터 하나(2026-10-28 "기존 몬스터는 다 없애고 맵별로 어울리는 몬스터"). 그림은 한 장이라 motion() 으로 흔듦 */
     const OCM = {}; function ocImg(n) { let i = OCM[n]; if (!i) { i = OCM[n] = new Image(); i.src = "img/lb/" + n + ".webp?v=" + BUILD; } return i.complete && i.naturalWidth ? i : null; } // mon-N · boss-N(맵마다 대장, 2026-10-28)
     function ocMon(f, x, y, m, dead) {
       const boss = f.k === "boss", n = f.cm || (f.cm = Math.max(1, Math.min(10, mapIdx || 1))), I = ocImg((boss ? "boss-" : "mon-") + n); if (!I) return false;
       const hh = f.r * (boss ? 5 : 3.8), k = hh / Math.max(I.naturalWidth, I.naturalHeight), w = I.naturalWidth * k, h = I.naturalHeight * k, flip = s.x > f.x;
       g.fillStyle = "rgba(0,0,0,.3)"; g.beginPath(); g.ellipse(x, y + hh * 0.42, w * 0.34, hh * 0.08, 0, 0, Math.PI * 2); g.fill();
-      g.save(); g.translate(x, y + hh * 0.42 + (m ? m.y : 0)); if (dead != null) { g.rotate((flip ? -1 : 1) * Math.min(1.4, dead * 2.4)); g.globalAlpha = Math.max(0, 1 - dead * 1.2); } else { g.rotate((m ? m.rot : 0) + (m && m.lean ? m.lean * (flip ? 1 : -1) * 0.5 : 0)); g.scale(m ? m.sx : 1, m ? m.sy : 1); g.globalAlpha = m ? m.a : 1; }
-      if (flip) g.scale(-1, 1);
+      g.save(); g.translate(x + (m && m.dx ? m.dx : 0), y + hh * 0.42 + (m ? m.y : 0)); if (dead != null) { g.rotate((flip ? -1 : 1) * Math.min(1.4, dead * 2.4)); g.globalAlpha = Math.max(0, 1 - dead * 1.2); } else { g.rotate((m ? m.rot : 0) + (m && m.lean ? m.lean * (flip ? 1 : -1) * 0.5 : 0)); g.scale(m ? m.sx : 1, m ? m.sy : 1); g.globalAlpha = m ? m.a : 1; }
+      if (m && m.face != null ? m.face < 0 : flip) g.scale(-1, 1);
       { const cy = cycOf(); if (cy) g.filter = CYC_MON[cy]; }
       if (boss) { g.shadowColor = "rgba(255,60,40,.9)"; g.shadowBlur = 0; }
       g.drawImage(I, -w / 2, -h, w, h);
@@ -4855,7 +4867,7 @@ body.game-full { overflow: hidden; }
       return true;
     }
     function monster(f, x, y) {
-      if (ocMon(f, x, y, motion(f))) return;
+      if (ocMon(f, x, y, walkMotion(f, f.r * (f.k === "boss" ? 5 : 3.8)))) return;
       if (bgMon(f, x, y, motion(f))) { if (f.k === "boss") { const hh = f.r * 3.2 * 0.45; g.fillStyle = "rgba(0,0,0,.6)"; g.fillRect(x - 30, y + hh + 4, 60, 5); g.fillStyle = "#ff6a4a"; g.fillRect(x - 30, y + hh + 4, 60 * Math.max(0, f.hp) / f.full, 5); } return; }
       const f2 = frame2(f), IMG = f2 ? MON2 : MON, fr = f2 || MF[f.skin], base = f2 ? MF2[SKIN2[f.skin]].move[0] : fr;
       const k = f.r * 2.8 / Math.max(base[2], base[3]), w = fr[2] * k, h = fr[3] * k, m = motion(f), dir = s.x < f.x ? -1 : 1, face = f2 ? FACE2[SKIN2[f.skin]] : FACE_R[f.skin];
