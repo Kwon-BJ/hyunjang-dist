@@ -745,10 +745,10 @@ const Dungeon = (() => {
   }
   /* 휴대폰 단추 자리(게임 화면 좌표) — 공격 둘레에 스킬 두 줄(안 1·2·3, 밖 궁극·4·5·6) · 아래 줄 점프·백스텝·물약·마력
      스킬 칸은 그림 · 쿨타임을 화면에 그리고, 누르는 칸은 app.js 가 같은 자리에 투명하게 깐다 (2026-10-28 부장님 "스킬창 더럽다, 스킬 그림 넣어라") */
-  const TPAD = [["atk", 872, 452, 62, "공격"], ["s1", 850, 326, 34], ["s2", 782, 362, 34], ["s3", 746, 430, 34], ["ult", 846, 242, 38], ["s4", 763, 270, 34], ["s5", 698, 330, 34], ["s6", 664, 412, 34], ["jump", 700, 500, 32, "점프"], ["back", 630, 506, 28, "백스텝"], ["potion", 568, 506, 26, "물약"], ["mpot", 510, 506, 26, "마력"]]; // 회피 단추 뺌(2026-10-28 부장님)
+  const TPAD = [["atk", 872, 452, 62, "공격"], ["s1", 850, 326, 34], ["s2", 782, 362, 34], ["s3", 746, 430, 34], ["ult", 846, 242, 38], ["s4", 763, 270, 34], ["s5", 698, 330, 34], ["s6", 664, 412, 34], ["jump", 700, 500, 32, "점프"], ["back", 630, 506, 28, "백스텝"], ["potion", 568, 506, 26, "물약"], ["mpot", 510, 506, 26, "마력"], ["dash", 918, 88, 30, ""]]; // dash = 위 오른쪽 대시 칸 자리(그림은 대시 칸이 그림) // 회피 단추 뺌(2026-10-28 부장님)
   const TSLOT = ["s1", "s2", "s3", "s4", "s5", "s6", "ult"];
   function drawPad(g, skill, slots, cd, learned) {
-    TPAD.forEach(([a, x, y, r, t]) => { const slot = TSLOT.indexOf(a), ult = a === "ult";
+    TPAD.forEach(([a, x, y, r, t]) => { if (a === "dash") return; const slot = TSLOT.indexOf(a), ult = a === "ult";
       g.save(); g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fillStyle = a === "atk" ? "rgba(70,24,16,.55)" : "rgba(15,12,20,.6)"; g.fill();
       g.lineWidth = ult ? 3 : 2; g.strokeStyle = ult ? "#ffcf4a" : a === "mpot" ? "rgba(90,140,220,.85)" : a === "potion" ? "rgba(220,80,80,.85)" : "rgba(232,200,140,.65)"; if (ult) { g.shadowColor = "rgba(255,200,60,.9)"; g.shadowBlur = 0; } g.stroke(); g.shadowBlur = 0;
       if (slot >= 0) { const i = slots[slot], sk = skill[i]; g.clip(); if (sk) { const c = cd ? cd[i] || 0 : 0, lock = learned && !learned.includes(i); skIcon(g, sk, x, y, r * 2, lock ? 0.15 : c > 0 ? 0.4 : 1);
@@ -775,15 +775,15 @@ const Dungeon = (() => {
     if (S.bannerT > 0) { g.textAlign = "center"; g.font = "800 26px 'Noto Sans KR', sans-serif"; g.globalAlpha = Math.min(1, S.bannerT / 0.4); g.lineWidth = 5; g.strokeStyle = "rgba(0,0,0,.8)"; g.strokeText(S.banner, VW / 2, 170); g.fillStyle = "#fff1d0"; g.fillText(S.banner, VW / 2, 170); g.globalAlpha = 1; }
     if (H.hp <= 0 && C.party && !S.over) { g.textAlign = "center"; g.font = "800 20px 'Noto Sans KR', sans-serif"; g.fillStyle = "#ff8a7a"; g.fillText("쓰러졌어요 — 파티원이 이기면 같이 보상을 받아요", VW / 2, 220); }
     if (!touch) { // 물약 빠른 칸 — 가운데 아래(휴대폰은 「물약」 단추 하나로)
-      const x0 = 150, y0 = VH - 58, W8 = POTS.length * 50 - 4, cxm = x0 + W8 / 2;
-      g.fillStyle = "rgba(10,8,8,.55)"; if (g.roundRect) { g.beginPath(); g.roundRect(x0 - 8, y0 - 36, W8 + 16, 94, 10); g.fill(); } else g.fillRect(x0 - 8, y0 - 36, W8 + 16, 94);
-      gauge(g, "hp", x0 - 8, y0 - 37, W8 / 2 + 12, H.hp / H.max, Math.ceil(H.hp) + " / " + H.max, H.hp / H.max > 0.3 ? "hp" : "low"); gauge(g, "mp", x0 + W8 / 2 - 4, y0 - 37, W8 / 2 + 12, H.mp / H.mpMax, Math.floor(H.mp) + " / " + H.mpMax); // 체력 · 마력 나란히
-      POTS.forEach((k, i) => { const x = x0 + i * 50, y = y0, r = FR.items && FR.items[k], n = S.potions[k] || 0;
-        g.fillStyle = "rgba(30,26,30,.85)"; g.fillRect(x, y, 46, 40); g.strokeStyle = n ? (k.startsWith("mp") ? "#4a7ac8" : "#8a7a5a") : "#3a3434"; g.lineWidth = 1; g.strokeRect(x, y, 46, 40);
-        if (r && IMG.items.complete) { const kk = 32 / Math.max(r[2], r[3]); g.globalAlpha = n ? 1 : 0.3; g.drawImage(IMG.items, r[0], r[1], r[2], r[3], x + 23 - r[2] * kk / 2, y + 20 - r[3] * kk / 2, r[2] * kk, r[3] * kk); g.globalAlpha = 1; }
-        if (S.potCd > 0 && n) { g.fillStyle = "rgba(0,0,0,.5)"; g.fillRect(x, y + 40 * (1 - S.potCd), 46, 40 * S.potCd); }
-        g.textAlign = "right"; g.font = "800 12px 'Noto Sans KR', sans-serif"; g.lineWidth = 3; g.strokeStyle = "#000"; g.strokeText(String(n), x + 44, y + 38); g.fillStyle = "#fff"; g.fillText(String(n), x + 44, y + 38);
-        g.textAlign = "center"; g.font = "700 9px sans-serif"; g.fillStyle = "#c9c2b0"; g.fillText(KEYS.label("q" + (i + 1)), x + 23, y + 51); });
+      /* 작게 · 아래 체력 · 마력 막대는 뺌(왼쪽 위에 있으니) — 2026-10-28 부장님 "아래 hp mp 안 보이게, 포션 창 너무 크다" */
+      const x0 = 150, y0 = VH - 42, W8 = POTS.length * 38 - 4, cxm = x0 + W8 / 2;
+      g.fillStyle = "rgba(10,8,8,.5)"; if (g.roundRect) { g.beginPath(); g.roundRect(x0 - 5, y0 - 4, W8 + 10, 44, 8); g.fill(); } else g.fillRect(x0 - 5, y0 - 4, W8 + 10, 44);
+      POTS.forEach((k, i) => { const x = x0 + i * 38, y = y0, r = FR.items && FR.items[k], n = S.potions[k] || 0;
+        g.fillStyle = "rgba(30,26,30,.85)"; g.fillRect(x, y, 34, 28); g.strokeStyle = n ? (k.startsWith("mp") ? "#4a7ac8" : "#8a7a5a") : "#3a3434"; g.lineWidth = 1; g.strokeRect(x, y, 34, 28);
+        if (r && IMG.items.complete) { const kk = 22 / Math.max(r[2], r[3]); g.globalAlpha = n ? 1 : 0.3; g.drawImage(IMG.items, r[0], r[1], r[2], r[3], x + 17 - r[2] * kk / 2, y + 14 - r[3] * kk / 2, r[2] * kk, r[3] * kk); g.globalAlpha = 1; }
+        if (S.potCd > 0 && n) { g.fillStyle = "rgba(0,0,0,.5)"; g.fillRect(x, y + 28 * (1 - S.potCd), 34, 28 * S.potCd); }
+        g.textAlign = "right"; g.font = "800 10px 'Noto Sans KR', sans-serif"; g.lineWidth = 3; g.strokeStyle = "#000"; g.strokeText(String(n), x + 33, y + 27); g.fillStyle = "#fff"; g.fillText(String(n), x + 33, y + 27);
+        g.textAlign = "center"; g.font = "700 8px sans-serif"; g.fillStyle = "#c9c2b0"; g.fillText(KEYS.label("q" + (i + 1)), x + 17, y + 37); });
     }
     { /* 대시 칸 — 스킬 칸 왼쪽(휴대폰은 위 오른쪽). 점 = 남은 횟수, 차는 중이면 아래에서 차오름 */
       const n = S.dashN == null ? DASH_MAX : S.dashN, x = touch ? VW - 70 : VW - 300 - 62, y = touch ? 60 : VH - 66, cx2 = x + 28, cy2 = y + 28;
