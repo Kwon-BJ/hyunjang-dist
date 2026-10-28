@@ -11,7 +11,8 @@
 <meta property="og:description" content="공지사항 · 문파 일정 · 규정 · 문파원 · 자유게시판 · 비매너 게시판">
 <meta property="og:image" content="https://kwon-bj.github.io/hyunjang-dist/byeongmu/img/share.jpg">
 <meta property="og:url" content="https://kwon-bj.github.io/hyunjang-dist/byeongmu/">
-<meta name="theme-color" content="#0a0806">
+<meta name="theme-color" content="#0a0806" id="themeColor">
+<meta name="color-scheme" content="dark light"><!-- 휴대폰 브라우저 「웹페이지 다크 모드」가 그림까지 어둡게 덮지 않게(2026-10-28 수달단 로비가 폰에서 절반 밝기) -->
 <link rel="icon" href="img/emblem.webp">
 <!-- 앱으로 설치 (2026-10-26) -->
 <link rel="manifest" href="manifest.webmanifest">
@@ -44,7 +45,7 @@ img { max-width: 100%; }
   --focus: #f6e2a4;
   --font-display: "Nanum Myeongjo", "Batang", serif;
   --font-body: "Noto Sans KR", "Malgun Gothic", sans-serif;
-  color-scheme: dark;
+  color-scheme: dark light;
 }
 
 body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.6; }
@@ -639,6 +640,7 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
 .game-box.full canvas { height: 100vh; height: 100dvh; min-height: 0; }
 body.game-full { overflow: hidden; }
 /* 수달단 로비 (2026-10-28) — 부장님 로비 그림(img/lobby.webp, 941×1672) 위에 숫자 · 단추를 얹음. 자리는 그림 기준 %, 글씨는 그림 폭 기준(cqw) */
+.globby, .globby *, .game-box.full, .game-box.full * { forced-color-adjust: none; -webkit-forced-color-adjust: none; color-scheme: only light; } /* 폰 강제 다크 모드 제외 */
 .globby { position: fixed; inset: 0; z-index: 61; display: grid; place-items: center; background: #1d3312; color: #3a2a12; overflow: hidden; font-family: "Jua", "Noto Sans KR", sans-serif; }
 .globby[hidden] { display: none; }
 .globby::before { content: ""; position: absolute; inset: -40px; background: url(img/lobby.webp) center / cover no-repeat; filter: blur(18px) brightness(.55); }
@@ -1308,7 +1310,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610280205";
+  const BUILD = "202610280221";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -5144,7 +5146,7 @@ body.game-full { overflow: hidden; }
     }
     function lobby() {
       running = false; stick = null; $("gameOver").hidden = true; $("gameHud").hidden = true; coverFull(false);
-      $("gLobby").hidden = false; document.body.classList.add("game-full"); lobErr = "";
+      $("gLobby").hidden = false; document.body.classList.add("game-full"); lobErr = ""; const tc = $("themeColor"); if (tc) tc.content = "#5c8f3a"; // 폰 위 띠 색도 로비에 맞게
       lobLoading(() => { lobLoad(); lobDraw(); });
       clearInterval(lobT); lobT = setInterval(() => { if ($("gLobby").hidden) return clearInterval(lobT); const e = $("lbEn"); if (e && LP) { const n = lobEn(); n.style.cssText = e.style.cssText; e.replaceWith(n); lobFit(n.parentElement); } }, 1000); // 1초마다 새로 — 글씨 맞추기도(107/30 이 잘렸다)
     }
@@ -5362,7 +5364,7 @@ body.game-full { overflow: hidden; }
     return {
       /* 다른 메뉴로 가면 멈춘다. 처음 들어오면(또는 다른 사람이 들어오면) 시작 안내 */
       render() {
-        if (view !== "game") { if (watchOn) watchStop(true); pause(); if (isFull()) toggleFull(); $("gLobby").hidden = true; document.body.classList.remove("game-full"); return; }
+        if (view !== "game") { if (watchOn) watchStop(true); pause(); if (isFull()) toggleFull(); $("gLobby").hidden = true; document.body.classList.remove("game-full"); const tc = $("themeColor"); if (tc) tc.content = "#0a0806"; return; }
         if (shown !== nick()) { shown = nick(); if (!(s && running)) { s = null; running = false; stick = null; if (!restoreGame()) lobby(); } drawRanks(); } // 이어하기로 이미 도는 판은 두기(닉이 손님→회원으로 바뀔 때 로비가 덮었다, 2026-10-28)
         if (!running && $("gLobby").hidden && (!s || (s.over && $("gameOver").hidden))) lobby(); // 로비 — 멈춘 판 · 결과 화면은 그대로 // 다른 메뉴로 가면 전체화면도 끈다
         drawResetTools();
