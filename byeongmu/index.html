@@ -1310,7 +1310,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610280231";
+  const BUILD = "202610280245";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -5250,13 +5250,13 @@ body.game-full { overflow: hidden; }
       const have = (k) => k === "exp" ? (P.boost || 0) + "판 남음" : k === "gboost" ? (P.gboost || 0) + "판 남음" : (P.luck || 0) + "번 남음";
       Object.keys(ITEMS).forEach((k) => grid.appendChild(lobCard(ITEMS[k].pic, ITEMS[k].n, "💰 " + (pr[k] || 0), sel === k, false, () => { lobSel = k; lobDraw(); })));
       Object.entries(P.boxes || {}).forEach(([k, B]) => { const c = lobCard("box-" + k, B.n, "💰 " + B.gold.toLocaleString(), sel === k, false, () => { lobSel = k; lobDraw(); }); grid.appendChild(c); });
-      const en = el("button", "lb-card en" + (sel === "en" ? " on" : "")); en.type = "button"; en.append(el("i", null, "⚡"), el("b", null, "에너지 충전 ⚡" + E.n), el("small", null, "💰 " + E.gold)); en.onclick = () => { lobSel = "en"; lobDraw(); }; grid.appendChild(en);
+      const en = el("button", "lb-card en" + (sel === "en" ? " on" : "")); en.type = "button"; { const ei = el("img"); ei.src = LBI("i-en"); ei.alt = ""; en.appendChild(ei); } en.append(el("b", null, "에너지 충전 ⚡" + E.n), el("small", null, "💰 " + E.gold)); en.onclick = () => { lobSel = "en"; lobDraw(); }; grid.appendChild(en);
       const BX = (P.boxes || {})[sel];
       if (BX) { const det = el("div", "lb-det"), i = el("img"); i.src = LBI("box-" + sel); i.alt = ""; det.append(i, el("b", null, BX.n), el("p", null, sel === "wbox" ? "아직 없는 무기 하나(다 가졌으면 💰1,000 돌려줌)" : "일반 60% · 희귀 28% · 영웅 10% · 전설 2%"), el("small", null, lobGot ? "방금 — " + lobGot : "장비 가방 " + (P.gear || []).length + "/60"));
         const b = el("button", "lb-buy", "열기 💰 " + BX.gold.toLocaleString()); b.type = "button"; b.disabled = P.free || P.gold < BX.gold; b.onclick = () => { if (lobBusy) return; lobBusy = true; call("gameBox", token, sel).then((r) => { lobBusy = false; LP = r; LP.got = Date.now(); const g = r.got || {}; lobGot = g.wpn ? "무기 「" + (WPN[g.wpn] || {}).n + "」!" : g.gear ? (r.gdef[g.gear.k] || {}).n + " (" + GRADE_N[g.gear.g] + ")" : "💰 +" + (g.gold || 0); lobDraw(); }).catch((e) => { lobBusy = false; lobErr = errMsg(e); lobDraw(); }); }; det.appendChild(b);
         const m = el("div", "lb-mascot shop"), mi = el("img"); mi.src = LBI("m-shop"); mi.alt = ""; m.append(mi, el("span", "lb-bub", "상자를 열어 볼까요?")); return [lobHead("sign-shop", "필요한 아이템을 구매하세요!"), m, det, grid]; }
       const det = el("div", "lb-det"), isEn = sel === "en", I = ITEMS[sel];
-      if (isEn) det.append(el("i", "lb-big", "⚡"), el("b", null, "에너지 충전"), el("p", null, "피로도 ⚡" + E.n + " — 30을 넘어도 받아요"), el("small", null, "오늘 " + (P.shop.enLeft || 0) + "번 남음"));
+      if (isEn) { const ei = el("img"); ei.src = LBI("i-en"); ei.alt = ""; det.appendChild(ei); } if (isEn) det.append( el("b", null, "에너지 충전"), el("p", null, "피로도 ⚡" + E.n + " — 30을 넘어도 받아요"), el("small", null, "오늘 " + (P.shop.enLeft || 0) + "번 남음"));
       else { const di = el("img"); di.src = LBI(I.pic); di.alt = ""; det.append(di, el("b", null, I.n), el("p", null, I.d), el("small", null, "보유 : " + have(sel))); }
       const b = el("button", "lb-buy", "구매하기 💰 " + (isEn ? E.gold : pr[sel] || 0)); b.type = "button"; b.disabled = P.free || P.gold < (isEn ? E.gold : pr[sel] || 0) || (isEn && !P.shop.enLeft); b.onclick = () => lobAct("gameBuy", sel); det.appendChild(b);
       const m = el("div", "lb-mascot shop"), mi = el("img"); mi.src = LBI("m-shop"); mi.alt = ""; m.append(mi, el("span", "lb-bub", P.free ? "로그인하면 살 수 있어요!" : "필요한 게 있나요?"));
