@@ -652,7 +652,12 @@ body.game-full { overflow: hidden; }
 .game-box.full .game-hud .gauto[aria-pressed="true"] { background: linear-gradient(180deg, #ffe36b, #f2a91c); color: #4a2a06; text-shadow: none; border-color: #b97a0a; }
 .game-box.full .game-hud .boss { top: calc(88px + env(safe-area-inset-top, 0px)); color: #fff; font-size: 15px; }
 .game-box.full .game-hud .boss .bar { height: 12px; border: 2px solid #3a0a06; background: #2a0a06; } .game-box.full .game-hud .boss .bar i { background: linear-gradient(180deg, #ff9a5a, #e8382c); }
-.game-box.full .game-hud .msg { top: 19%; font-size: clamp(17px, 5vw, 24px); line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; pointer-events: none; } /* 가운데 큰 글이 싸움을 가린다(ChatGPT 검토) — 위로 · 작게 · 두 줄까지 */
+.gsklist { position: absolute; right: 8px; top: calc(118px + env(safe-area-inset-top, 0px)); display: grid; gap: 4px; justify-items: end; pointer-events: none; }
+.gsk { position: relative; width: 34px; height: 34px; border-radius: 9px; border: 2px solid #6ab4ff; background: rgba(255,250,240,.88); box-shadow: 0 2px 0 rgba(0,0,0,.35); }
+.gsk.sup { width: 28px; height: 28px; border-color: #7fd36a; } .gsk.evo { border-color: #ffd23a; box-shadow: 0 0 8px #ffd23a; }
+.gsk img { width: 100%; height: 100%; object-fit: contain; display: block; } .gsk i { position: absolute; right: -4px; bottom: -4px; min-width: 14px; height: 14px; padding: 0 2px; border-radius: 7px; background: #2c5418; color: #fff; font: 400 10px/14px "Jua", sans-serif; font-style: normal; text-align: center; }
+.gsk.evo i { background: #e0402c; }
+.game-box.full .game-hud .msg { top: 19%; left: 44px; right: 44px; font-size: clamp(17px, 5vw, 24px); line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; pointer-events: none; } /* 가운데 큰 글이 싸움을 가린다(ChatGPT 검토) — 위로 · 작게 · 두 줄까지 */
 .game-box.full .game-hud .msg { font-family: "Jua", "Noto Sans KR", sans-serif; font-weight: 400; color: #fff; -webkit-text-stroke: 5px #2f5a1c; paint-order: stroke fill; text-shadow: 0 4px 0 #13240a; letter-spacing: 1px; }
 .game-box.full .game-hud .grest { border: 2px solid #b97a0a; background: linear-gradient(180deg, #ffe36b, #f2a91c); color: #4a2a06; font-family: "Jua", "Noto Sans KR", sans-serif; box-shadow: 0 3px 0 #8a5a08; }
 .game-box.full .game-hud .skills, .game-box.full .game-hud .gauto { display: none !important; } /* 무기는 모두 저절로(탕탕특공대처럼, 2026-10-28) */
@@ -791,6 +796,19 @@ body.game-full { overflow: hidden; }
 .lb-rwc img { width: 100%; aspect-ratio: 1; object-fit: contain; } .lb-rwc small { font-size: 2.4cqw; color: #4a3210; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @keyframes lbFade { from { opacity: 0; } } @keyframes lbPop { from { opacity: 0; transform: scale(.4) rotateY(90deg); } to { opacity: 1; transform: none; } }
 @keyframes lbShake { 0%, 100% { transform: none; } 15% { transform: rotate(-8deg) scale(1.05); } 30% { transform: rotate(8deg) scale(1.08); } 45% { transform: rotate(-6deg) scale(1.1); } 60% { transform: rotate(5deg) scale(1.12); } 80% { transform: scale(1.25); } }
+/* 장비 팔기 · 분해 · 부품(2026-10-28) */
+.lb-gequip { padding: 1.6cqw 1cqw; border: 0; border-radius: 2.4cqw; font-size: 3.6cqw !important; white-space: nowrap; color: #fff; background: linear-gradient(#7fd36a, #2f8f1c); box-shadow: 0 .6cqw 0 #1d5a10; text-shadow: 0 .2cqw 0 #1a4a0e; }
+.lb-gequip.off { background: linear-gradient(#a8a8a8, #6a6a6a); box-shadow: 0 .6cqw 0 #3a3a3a; text-shadow: 0 .2cqw 0 #333; } .lb-gequip:active, .lb-gsell:active, .lb-gdis:active { transform: translateY(.5cqw); box-shadow: none; }
+.lb-det > small.lb-ghint { grid-area: auto; grid-column: 1 / -1; text-align: center; font-size: 2.6cqw; color: #8a6a3a; }
+.lb-gact { grid-column: 1 / -1; display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 1.6cqw; margin-top: 1.2cqw; }
+.lb-gsell, .lb-gdis { padding: 1.6cqw 1cqw; border: 0; border-radius: 2.4cqw; font-size: 3.2cqw !important; white-space: nowrap; color: #fff; }
+.lb-gsell { background: linear-gradient(#ffb36b, #ef6a1c); box-shadow: 0 .6cqw 0 #a8420a; } .lb-gdis { background: linear-gradient(#8fb4ff, #3d6fe0); box-shadow: 0 .6cqw 0 #22449a; }
+.lb-gsell[data-sure="1"], .lb-gdis[data-sure="1"] { background: #b3261e; box-shadow: 0 .6cqw 0 #6a1410; }
+.lb-mats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.2cqw; }
+.lb-mats span { display: grid; justify-items: center; padding: 1cqw .4cqw; border-radius: 2cqw; border: .5cqw solid #9aa3ad; background: #fffaf0; color: #4a3210; min-width: 0; }
+.lb-mats i { font-style: normal; font-size: 4cqw; } .lb-mats b { font-size: 2.4cqw; white-space: nowrap; } .lb-mats em { font-style: normal; font-size: 3.6cqw; color: #2f5a1c; }
+.lb-bulk { display: grid; gap: 1.4cqw; } .lb-bulk > div { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 1.4cqw; padding: 1.4cqw 2cqw; border-radius: 2.4cqw; border: .5cqw solid #9aa3ad; background: #fffaf0; }
+.lb-bulk b { font-size: 3.4cqw; color: #3a2a10; white-space: nowrap; }
 .lb-badge { display: grid; place-items: center; min-width: 4.4cqw; height: 4.4cqw; padding: 0 1cqw; border-radius: 999px; background: #e8382c; color: #fff; font-size: 2.8cqw; }
 .lb-opbtn { padding: 3px 8px; font-size: 11px !important; border-radius: 999px; border: 2px solid #e8c46a; background: rgba(20,36,12,.9); color: #fff; font-weight: 800; white-space: nowrap; } .lb-opbtn.on { background: #b3261e; }
 .lb-live { position: absolute; z-index: 2; right: 8px; top: 18%; width: 170px; max-height: 60%; overflow: auto; padding: 10px; border-radius: 12px; background: rgba(12,20,8,.9); border: 2px solid #e8c46a; color: #fff; display: grid; gap: 6px; font-size: 13px; font-family: "Noto Sans KR", sans-serif; }
@@ -1382,7 +1400,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610280358";
+  const BUILD = "202610280404";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -4521,7 +4539,8 @@ body.game-full { overflow: hidden; }
       if (s.hp <= 0) { s.hp = 0; return end(); }
       /* 대장 보상 — 대장을 잡으면 강화 · 스킬 하나 고르기 (2026-10-26) */
       if (s.bossPick) { s.bossPick = false; if (!canPick()) { s.hp = Math.min(s.max, s.hp + s.max * 0.3); msg("대장 보상 — 체력 +30%"); } else { running = false; stick = null; hud(); showPicks("대장 보상 — 하나 고르세요"); return; } }
-      if (s.xp >= s.need) { s.fx.push({ x: s.x, y: s.y, r: 30, c: "#ffe08a", life: 0.3 }, { spr: "levelup", x: s.x, y: s.y + 22, size: 120, base: true, add: true, life: 0.8, dur: 0.8 }); s.xp -= s.need; s.lv++; s.need = Math.round(s.need * 1.22 + 2); if (!canPick()) { s.hp = Math.min(s.max, s.hp + s.max * 0.1); msg("Lv " + s.lv + " — 스킬 모두 최대! 체력 +10%"); } else { running = false; stick = null; hud(); showPicks(); } } // 다 배웠으면 멈추지 않고 계속
+      if (s.chap && s.lv >= lvCap() && s.xp >= s.need) { s.xp = s.need; if (!s.capSaid) { s.capSaid = true; msg("최고 레벨 Lv " + lvCap() + "!"); } } // 장마다 최고 레벨(2026-10-28 "무작정 막 올리게 하지 말고")
+      else if (s.xp >= s.need) { s.fx.push({ x: s.x, y: s.y, r: 30, c: "#ffe08a", life: 0.3 }, { spr: "levelup", x: s.x, y: s.y + 22, size: 120, base: true, add: true, life: 0.8, dur: 0.8 }); s.xp -= s.need; s.lv++; s.need = Math.round(s.need * 1.22 + 2); if (!canPick()) { s.hp = Math.min(s.max, s.hp + s.max * 0.1); msg("Lv " + s.lv + " — 스킬 모두 최대! 체력 +10%"); } else { running = false; stick = null; hud(); showPicks(); } } // 다 배웠으면 멈추지 않고 계속
     }
 
     /* ── 그리기 — 모두 도형 ── */
@@ -4622,7 +4641,7 @@ body.game-full { overflow: hidden; }
       else if (s && s.dashT > 0 && I3) nm = at("dash", 1 - s.dashT / 0.2);
       else if (s && s.castT > 0) nm = at("cast", 1 - s.castT / 0.3);
       else if (s && s.shotT > 0.14) nm = at(["atk1", "atk2", "atk3"][(s.shotC || 0) % 3], (0.5 - s.shotT) / 0.36);
-      else if (s && s.moving && running) nm = "walk" + (Math.floor(s.walk * 1.5) % C.walk);
+      else if (s && s.moving && (running || s.watchView)) nm = "walk" + (Math.floor(s.walk * 1.5) % C.walk);
       else nm = "idle" + (Math.floor((s ? s.t : performance.now() / 1000) * 6) % C.idle);
       let img = I, r = F[nm], ax = M.ax2 ? M.ax2[nm] : 0.5;
       if (I3 && R[nm]) { img = I3; r = R[nm]; ax = RM.ax2[nm]; }
@@ -5110,7 +5129,8 @@ body.game-full { overflow: hidden; }
         : s.bossNow ? s.stage + "단계 · 대장" : s.stageT < len ? s.stage + "단계 · " + mmss(len - s.stageT) : s.stage + "단계 · 남은 잡귀 " + s.foes.length;
       $("gRest").hidden = !(s.rest > 0);
       if (s.rest > 0) $("gRest").textContent = "휴식 " + mmss(s.rest) + " — 바로 시작 ▶";
-      $("gLv").textContent = "Lv " + s.lv;
+      $("gLv").textContent = "Lv " + s.lv + (s.chap && s.lv >= lvCap() ? " MAX" : "");
+      { const key = Object.keys(s.up).filter((k) => s.up[k]).map((k) => k + s.up[k] + (s.evo[UPS.find((u) => u.k === k) && UPS.find((u) => u.k === k).evo] ? "e" : "")).join(); if (key !== s.skKey) { s.skKey = key; skList(); } }
       $("gKill").textContent = "잡은 수 " + s.kills; $("gKill").hidden = !!s.raid; // 레이드는 위 판을 덜 붐비게
       $("gXp").style.width = Math.min(100, 100 * s.xp / s.need) + "%";
       const B = s.bossNow;
@@ -5334,12 +5354,12 @@ body.game-full { overflow: hidden; }
     const GRADE_N = ["일반", "희귀", "영웅", "전설"], GRADE_C = ["#9aa3ad", "#3d8bff", "#a64dff", "#ffb300"];
     let lobGsel = "", lobGot = "";
     function lobGear(P) {
-      const D = P.gdef || {}, eq = P.eq || {}, gear = P.gear || [], st = P.stats || {}, find = (u) => gear.find((x) => x.u === u);
+      const D = P.gdef || {}, eq = P.eq || {}, gear = P.gear || [], st = P.stats || {}, find = (u) => gear.find((x) => x.u === u), SELL = P.sellP || [100, 300, 800, 2000], MATN = P.matN || ["낡은 부품", "튼튼한 부품", "빛나는 부품", "전설 부품"];
       const head = el("div", "lb-ghead"); head.append(el("b", null, "🐾 장비 착용"), el("span", "lb-power", "전투력 " + (st.power || 0).toLocaleString()));
       const stage = el("div", "lb-gstage"), mid = el("div", "lb-gotter"); stage.appendChild(mid);
       const slot = (key, label, side) => { const it = key === "weapon" ? null : find(eq[key]), b = el("button", "lb-gslot p-" + key); b.type = "button";
         if (key === "weapon") { const w = WPN[P.wpn] || WPN.bow, i = el("img"); i.src = LBI(w.pic); i.alt = ""; b.append(i, el("small", null, "무기")); b.onclick = () => { lobTab = "wpn"; lobSel = null; lobDraw(); }; b.style.borderColor = GRADE_C[3]; }
-        else if (it) { const i = el("img"); i.src = LBI("g-" + it.k); i.alt = ""; b.append(i, el("small", null, GRADE_N[it.g])); b.style.borderColor = GRADE_C[it.g]; b.onclick = () => { lobGsel = it.u; lobDraw(); }; }
+        else if (it) { const i = el("img"); i.src = LBI("g-" + it.k); i.alt = ""; b.append(i, el("small", null, GRADE_N[it.g])); b.style.borderColor = GRADE_C[it.g]; b.onclick = () => gTap(it.u); }
         else { b.append(el("i", null, "+"), el("small", null, label)); b.classList.add("empty"); b.onclick = () => { lobGsel = "slot:" + key; lobDraw(); }; }
         return b; };
       stage.append(slot("helm", "투구", "l"), slot("armor", "갑옷", "l"), slot("gloves", "장갑", "l"), slot("weapon", "무기", "r"), slot("belt", "허리띠", "r"), slot("boots", "신발", "r"), slot("acc", "장신구", "c"));
@@ -5348,12 +5368,23 @@ body.game-full { overflow: hidden; }
       const out = [head, stage, stats, set];
       const sel = lobGsel && !lobGsel.startsWith("slot:") ? find(lobGsel) : null, want = lobGsel.startsWith("slot:") ? lobGsel.slice(5) : "";
       if (sel) { const G = D[sel.k] || {}, on = Object.values(eq).includes(sel.u), det = el("div", "lb-det"), i = el("img"); i.src = LBI("g-" + sel.k); i.alt = "";
-        det.append(i, el("b", null, G.n + " · " + GRADE_N[sel.g]), el("p", null, ["hp", "atk", "def", "spd"].filter((k) => G[k]).map((k) => ({ hp: "체력 +", atk: "공격력 +", def: "방어력 +", spd: "이동속도 +" })[k] + G[k] * (1 + sel.g) + (k === "atk" || k === "spd" ? "%" : "")).join(" · ")), el("small", null, "팔면 💰 " + 100 * (sel.g + 1)));
-        const b1 = el("button", "lb-buy", on ? "빼기" : "장착하기"); b1.type = "button"; b1.onclick = () => lobAct("gameEquip", sel.u); const b2 = el("button", "lb-btn", "팔기"); b2.type = "button"; b2.onclick = () => { lobGsel = ""; lobAct2("gameEquip", sel.u, "sell"); }; det.append(b1, b2); out.push(det); }
-      const bag = el("div", "lb-grid g5"); gear.filter((x) => !want || (D[x.k] || {}).slot === want).sort((a, b) => b.g - a.g).forEach((x) => { const c = el("button", "lb-gitem" + (Object.values(eq).includes(x.u) ? " eq" : "") + (lobGsel === x.u ? " on" : "")); c.type = "button"; c.style.borderColor = GRADE_C[x.g]; const i = el("img"); i.src = LBI("g-" + x.k); i.alt = ""; c.append(i, el("small", null, GRADE_N[x.g])); c.onclick = () => { lobGsel = x.u; lobDraw(); }; bag.appendChild(c); });
+        det.append(i, el("b", null, G.n + " · " + GRADE_N[sel.g]), el("p", null, ["hp", "atk", "def", "spd"].filter((k) => G[k]).map((k) => ({ hp: "체력 +", atk: "공격력 +", def: "방어력 +", spd: "이동속도 +" })[k] + G[k] * (1 + sel.g) + (k === "atk" || k === "spd" ? "%" : "")).join(" · ")), el("small", null, "팔면 💰 " + SELL[sel.g].toLocaleString() + " · 분해하면 " + MATN[sel.g] + " 1"));
+        /* 장착 단추 다시(2026-10-28 "장착 버튼 마음에 안 든다, 더블클릭하면 장착 해제") — 장착 · 팔기 · 분해 한 줄, 장비를 두 번 누르면 장착 / 해제 */
+        const row = el("div", "lb-gact"), b1 = el("button", "lb-gequip" + (on ? " off" : ""), on ? "✖ 해제" : "✔ 장착"), b2 = el("button", "lb-gsell", "💰 " + SELL[sel.g].toLocaleString()), b3 = el("button", "lb-gdis", "🔧 분해"); b1.type = b2.type = b3.type = "button";
+        b1.onclick = () => lobAct("gameEquip", sel.u); b2.onclick = () => { lobGsel = ""; lobAct2("gameEquip", sel.u, "sell"); }; b3.onclick = () => { lobGsel = ""; lobAct2("gameEquip", sel.u, "dis"); }; b2.title = "팔기"; row.append(b1, b2, b3); det.append(row, el("small", "lb-ghint", "💡 장비를 두 번 누르면 바로 " + (on ? "해제" : "장착"))); out.push(det); }
+      /* 부품(분해해서 모음 — 나중에 강화 재료) · 등급별 한꺼번에 팔기 · 분해(끼고 있는 것은 빼고, 두 번 눌러 확인) (2026-10-28) */
+      const mats = el("div", "lb-mats"); MATN.forEach((n2, g) => { const c = el("span"); c.style.borderColor = GRADE_C[g]; c.append(el("i", null, "🔩"), el("b", null, n2), el("em", null, String((P.mats || [])[g] || 0))); mats.appendChild(c); }); out.push(mats);
+      const onU = Object.values(eq), bulk = el("div", "lb-bulk"); [0, 1, 2, 3].forEach((g) => { const n2 = gear.filter((x) => x.g === g && !onU.includes(x.u)).length; if (!n2) return; const r = el("div"); r.style.borderColor = GRADE_C[g];
+        const sure = (b, txt, act) => { b.type = "button"; b.onclick = () => { if (b.dataset.sure !== "1") { b.dataset.sure = "1"; b.textContent = "정말?"; setTimeout(() => { b.dataset.sure = ""; b.textContent = txt; }, 3000); return; } lobGsel = ""; lobAct2("gameGearBulk", act, g); }; return b; };
+        const t1 = "모두 팔기 💰" + (SELL[g] * n2).toLocaleString(), t2 = "모두 분해";
+        r.append(el("b", null, GRADE_N[g] + " " + n2 + "개"), sure(el("button", "lb-gsell", t1), t1, "sell"), sure(el("button", "lb-gdis", t2), t2, "dis")); bulk.appendChild(r); });
+      if (bulk.childNodes.length) out.push(bulk);
+      const bag = el("div", "lb-grid g5"); gear.filter((x) => !want || (D[x.k] || {}).slot === want).sort((a, b) => b.g - a.g).forEach((x) => { const c = el("button", "lb-gitem" + (Object.values(eq).includes(x.u) ? " eq" : "") + (lobGsel === x.u ? " on" : "")); c.type = "button"; c.style.borderColor = GRADE_C[x.g]; const i = el("img"); i.src = LBI("g-" + x.k); i.alt = ""; c.append(i, el("small", null, GRADE_N[x.g])); c.onclick = () => gTap(x.u); bag.appendChild(c); });
       out.push(el("p", "lb-note", want ? "그 칸에 낄 장비 — 상점 상자에서 얻어요" : "장비 가방 " + gear.length + "/60 · 상점에서 방어구 · 장신구 상자로 얻어요"), bag);
       return out;
     }
+    let gTapAt = { u: "", t: 0 };
+    function gTap(u) { const now = Date.now(); if (gTapAt.u === u && now - gTapAt.t < 400) { gTapAt = { u: "", t: 0 }; lobGsel = u; lobAct("gameEquip", u); return; } gTapAt = { u, t: now }; lobGsel = u; lobDraw(); } // 한 번 = 고르기 · 두 번 = 장착 / 해제
     function lobAct2(fn, a, b) { if (lobFree() || lobBusy) return; lobBusy = true; lobErr = ""; call(fn, token, a, b).then((r) => { lobBusy = false; LP = r; LP.got = Date.now(); lobDraw(); }).catch((e) => { lobBusy = false; lobErr = errMsg(e); lobDraw(); }); }
     /* 던전 탭 — 1~10장 · 무한의 탑 한눈에. 누르면 출전 화면 그 장으로 */
     function lobDun(P) {
@@ -5532,6 +5563,15 @@ body.game-full { overflow: hidden; }
       if (lobFree() || !s.run) { rw.textContent = "로그인하면 순위에 올라가요"; return; }
       call("gameEnd", token, { run: s.run, raid: 1, dmg }).then((r) => { LP = r; LP.got = Date.now(); if (run !== s) return; const R = r.reward || {}; rw.textContent = "이번 주 " + (R.rank || "-") + "위 · 💰 +" + (R.gold || 0).toLocaleString() + " · EXP +" + (R.exp || 0); })
         .catch((e) => { if (run === s) rw.textContent = "기록을 못 했어요 — " + errMsg(e); });
+    }
+    /* 장 최고 레벨 — 1장 Lv 22 … 10장 Lv 40 (무한의 탑 · 레이드는 끝없음) */
+    function lvCap() { return 20 + 2 * (s.chap || 0); }
+    /* 배운 스킬 — 오른쪽에 그림 · 별(2026-10-28 "스킬 배우면 오른쪽에 어떤 걸 배웠는지 볼 수 있게"). 무기 위 · 보조 아래, 진화는 금테 */
+    function skList() {
+      let box = $("gSkList"); if (!box) { box = el("div", "gsklist"); box.id = "gSkList"; $("gameHud").appendChild(box); }
+      const evoOf = {}; UPS.forEach((u) => { if (u.evo && s.up[u.k]) evoOf[u.evo] = u.n; });
+      const row = (u) => { const d = el("div", "gsk" + (UP_ATK(u) ? " atk" : " sup") + (evoOf[u.k] ? " evo" : "")); d.title = evoOf[u.k] || u.n; d.append(icon(u.k), el("i", null, evoOf[u.k] ? "★" : String(s.up[u.k]))); return d; };
+      box.replaceChildren(...UPS.filter((u) => !u.evo && s.up[u.k] && UP_ATK(u)).map(row), ...UPS.filter((u) => !u.evo && s.up[u.k] && !UP_ATK(u)).map(row));
     }
     function chapterClear() { running = false; s.over = true; stick = null; ping(true); draw(); lobEnd(true); }
     /* 체력 회복약 — 판 중 ❤ 단추(가진 만큼) */
