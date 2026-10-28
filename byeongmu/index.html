@@ -818,6 +818,7 @@ body.game-full { overflow: hidden; }
 .lb-opbtn { padding: 3px 8px; font-size: 11px !important; border-radius: 999px; border: 2px solid #e8c46a; background: rgba(20,36,12,.9); color: #fff; font-weight: 800; white-space: nowrap; } .lb-opbtn.on { background: #b3261e; }
 .lb-live { position: absolute; z-index: 2; right: 8px; top: 18%; width: 170px; max-height: 60%; overflow: auto; padding: 10px; border-radius: 12px; background: rgba(12,20,8,.9); border: 2px solid #e8c46a; color: #fff; display: grid; gap: 6px; font-size: 13px; font-family: "Noto Sans KR", sans-serif; }
 .gwatch { position: absolute; left: 50%; top: 10px; transform: translateX(-50%); z-index: 5; display: flex; gap: 8px; align-items: center; padding: 6px 12px; border-radius: 999px; background: rgba(20,10,30,.85); border: 1px solid #b58aff; color: #e9dcff; font-size: 13px; font-weight: 700; max-width: 92%; }
+.gwatch button { white-space: nowrap; flex-shrink: 0; } .gwatch span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } /* 폰에서 「나가기」 가 세로로 꺾이던 것 */
 .lb-lrow .tiny { justify-self: start; margin-top: 2px; }
 .lb-optitle { font-size: 13px; text-align: center; padding-bottom: 4px; border-bottom: 1px solid rgba(232,196,106,.4); } .lb-oprow { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 12px; } .lb-opsub { font-size: 12px; color: #fff; } .lb-opbtn.red { background: #8a1f1a; } .lb-ophd { font-size: 11px; }
 .lb-live b { color: #ffe08a; } .lb-live.min > :not(.lb-ophd) { display: none; } .lb-live.min .lb-ophd { font-size: 11px; white-space: nowrap; cursor: pointer; } .lb-live.min { width: auto; } .lb-lrow { display: grid; } .lb-lrow small, .lb-live > small { color: #cfe8b8; font-size: 11px; }
@@ -1406,7 +1407,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610280420";
+  const BUILD = "202610280427";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -5499,18 +5500,32 @@ body.game-full { overflow: hidden; }
        하는 사람: gamePing 답에 「보는 중」 이면 0.5초마다 gameSnap(자기 · 몬스터 자리) — 보는 동안만 올림 */
     let watchOn = null;
     function snapOf() { return { x: Math.round(s.x), y: Math.round(s.y), hp: Math.round(s.hp), max: s.max, stage: s.stage, t: Math.round(s.t), lv: s.lv, kills: s.kills, map: mapIdx, aim: +(s.aim || 0).toFixed(2), mv: s.moving ? 1 : 0, walk: +(s.walk || 0).toFixed(1), shotT: +(s.shotT || 0).toFixed(2), hurt: s.hurt > 0 ? 1 : 0, wpn: heroKey, ch: s.chap || 0,
-      f: s.foes.slice(0, 150).map((f) => [Math.round(f.x), Math.round(f.y), f.skin, f.k === "boss" ? 1 : 0, f.r, +(f.hp / (f.full || 1)).toFixed(2), f.hit > 0 ? 1 : 0, f.near ? 1 : 0]) }; }
-    function snapSend(ts) { if (!s || !s.watched || !running || !me || !token || ts - (s.snapAt || 0) < 500) return; s.snapAt = ts; call("gameSnap", token, snapOf()).then((r) => { if (s && r) s.watched = !!r.watched; }).catch(() => {}); }
+      /* 관전이 부드럽게(2026-10-28 "관전 모드 공격 모션도 안 보이고 자꾸 끊긴다") — 정확한 시각 · 몬스터 번호 · 총알 · 공격 동작 · 구슬 · 고리 · 불바다 */
+      tt: Math.round(s.t * 1000), shotC: s.shotC || 0, orbs: s.orbs || 0, orbA: +(s.orbA || 0).toFixed(2), aura: s.aura || 0, range: s.range,
+      sh: s.shots.slice(0, 60).map((b) => [Math.round(b.x), Math.round(b.y), Math.round(b.vx), Math.round(b.vy), +b.a.toFixed(2), b.c || 0]),
+      fl: s.fields.slice(0, 12).map((z) => [Math.round(z.x), Math.round(z.y), Math.round(z.r), +z.life.toFixed(1), z.full]),
+      f: s.foes.slice(0, 150).map((f) => [Math.round(f.x), Math.round(f.y), f.skin, f.k === "boss" ? 1 : 0, f.r, +(f.hp / (f.full || 1)).toFixed(2), f.hit > 0 ? 1 : 0, f.near ? 1 : 0, f.sid || (f.sid = s.sidN = (s.sidN || 0) + 1)]) }; }
+    function snapSend(ts) { if (!s || !s.watched || !running || !me || !token || ts - (s.snapAt || 0) < 300) return; s.snapAt = ts; call("gameSnap", token, snapOf()).then((r) => { if (s && r) s.watched = !!r.watched; }).catch(() => {}); }
     function watchStart(id, nick) {
       if (watchOn) watchStop(true);
       $("gLobby").hidden = true; begin({}); running = false; if (raf) { cancelAnimationFrame(raf); raf = 0; } $("gameHud").hidden = true; s.god = true; s.watchView = true;
       const bar = el("div", "gwatch"), tx = el("span", null, "👁 " + nick + " 님 보는 중 — 상대에게는 안 보여요 · 기다리는 중…"), out = el("button", "tiny", "나가기"); out.type = "button"; out.onclick = () => watchStop();
       bar.append(tx, out); $("gameBox").appendChild(bar);
-      watchOn = { id, nick, bar, tx, cur: null, prev: null, poll: 0, raf: 0, last: performance.now() };
-      const poll = () => { if (!watchOn) return; call("gameWatch", token, id).then((sn) => { if (!watchOn) return; if (sn && sn.s && (!watchOn.cur || sn.at !== watchOn.cur.at)) { watchOn.prev = watchOn.cur; watchOn.cur = { at: sn.at, t: performance.now(), S: sn.s }; tx.textContent = "👁 " + nick + " 님 보는 중 — " + sn.s.stage + "단계 · Lv " + sn.s.lv + " · 잡은 수 " + sn.s.kills; } else if (!sn) tx.textContent = "👁 " + nick + " 님 — 상태를 기다리는 중… (게임이 끝났으면 안 와요)"; }).catch(() => {}); };
-      poll(); watchOn.poll = setInterval(poll, 500);
+      watchOn = { id, nick, bar, tx, cur: null, prev: null, poll: 0, raf: 0, last: performance.now(), buf: [], clock: null };
+      const poll = () => { if (!watchOn) return; call("gameWatch", token, id).then((sn) => { if (!watchOn) return; if (sn && sn.s && (!watchOn.cur || sn.at !== watchOn.cur.at)) { watchOn.prev = watchOn.cur; watchOn.cur = { at: sn.at, t: performance.now(), S: sn.s }; const B0 = watchOn.buf, tt = sn.s.tt != null ? sn.s.tt : sn.at; if (!B0.length || tt > B0[B0.length - 1].tt) { if (B0.length && tt < B0[B0.length - 1].tt - 5000) B0.length = 0; B0.push({ tt, S: sn.s }); if (B0.length > 30) B0.shift(); } tx.textContent = "👁 " + nick + " 님 보는 중 — " + sn.s.stage + "단계 · Lv " + sn.s.lv + " · 잡은 수 " + sn.s.kills; } else if (!sn) tx.textContent = "👁 " + nick + " 님 — 상태를 기다리는 중… (게임이 끝났으면 안 와요)"; }).catch(() => {}); };
+      poll(); watchOn.poll = setInterval(poll, 300);
       const tick = (ts) => { if (!watchOn) return; const W2 = watchOn, dt = Math.min(0.05, (ts - W2.last) / 1000); W2.last = ts; s.t += dt;
-        if (W2.cur) { const C2 = W2.cur.S, P2 = W2.prev ? W2.prev.S : C2, k = Math.min(1, (ts - W2.cur.t) / 500), L = (a, b) => a + (b - a) * k;
+        /* 받은 상태를 모아 0.8초 늦게 재생 — 그 사이를 이어 그려서 안 끊김(늦게 오면 천천히 · 많이 밀리면 따라잡음) */
+        const BF = W2.buf; if (BF.length && BF[BF.length - 1].S.tt != null) { const late = BF[BF.length - 1].tt - 800;
+          if (W2.clock == null || Math.abs(late - W2.clock) > 4000) W2.clock = late; else W2.clock += dt * 1000 * Math.max(0.6, Math.min(1.5, 1 + (late - W2.clock) / 1500));
+          let i = BF.findIndex((x) => x.tt > W2.clock); if (i < 0) i = BF.length - 1; const A = BF[Math.max(0, i - 1)], Bn = BF[i], P2 = A.S, C2 = Bn.S, k = Bn.tt > A.tt ? Math.max(0, Math.min(1, (W2.clock - A.tt) / (Bn.tt - A.tt))) : 1, L = (a, b) => a + (b - a) * k, el2 = Math.max(0, (W2.clock - A.tt) / 1000);
+          s.x = L(P2.x, C2.x); s.y = L(P2.y, C2.y); s.hp = C2.hp; s.max = C2.max; s.stage = C2.stage; s.lv = C2.lv; s.kills = C2.kills; s.aim = P2.aim; s.moving = !!(P2.mv || C2.mv); s.walk = (s.walk || 0) + (s.moving ? dt * 9 : 0);
+          s.shotT = Math.max(0, P2.shotT - el2); s.shotC = P2.shotC; s.hurt = P2.hurt ? 0.1 : 0; heroKey = C2.wpn || heroKey; setMap(C2.map || 1); s.orbs = C2.orbs || 0; s.orbA = (s.orbA || 0) + dt * 3; s.aura = C2.aura || 0; s.range = C2.range || AIM_R;
+          const pm = {}; (P2.f || []).forEach((a) => { pm[a[8]] = a; });
+          s.foes = (C2.f || []).map((a, j) => { const p = pm[a[8]]; return { k: a[3] ? "boss" : "imp", skin: a[2], x: p ? L(p[0], a[0]) : a[0], y: p ? L(p[1], a[1]) : a[1], r: a[4], hp: a[5], full: 1, hit: a[6] ? 0.05 : 0, near: !!a[7], ph: j * 0.37, age: 1 }; });
+          s.shots = (P2.sh || []).map((b) => ({ x: b[0] + b[2] * el2, y: b[1] + b[3] * el2, a: b[4], c: b[5], vx: 0, vy: 0, life: 1, hit: [] }));
+          s.fields = (P2.fl || []).map((z) => ({ x: z[0], y: z[1], r: z[2], life: Math.max(0.1, z[3] - el2), full: z[4], dps: 0 }));
+        } else if (W2.cur) { const C2 = W2.cur.S, P2 = W2.prev ? W2.prev.S : C2, k = Math.min(1, (ts - W2.cur.t) / 500), L = (a, b) => a + (b - a) * k;
           s.x = L(P2.x, C2.x); s.y = L(P2.y, C2.y); s.hp = C2.hp; s.max = C2.max; s.stage = C2.stage; s.lv = C2.lv; s.kills = C2.kills; s.aim = C2.aim; s.moving = !!C2.mv; s.walk = (s.walk || 0) + (C2.mv ? dt * 9 : 0); s.shotT = Math.max(0, C2.shotT - (ts - W2.cur.t) / 1000); s.hurt = C2.hurt ? 0.1 : 0; heroKey = C2.wpn || heroKey; setMap(C2.map || 1);
           s.foes = C2.f.map((a, i) => { const p = P2.f && P2.f[i]; return { k: a[3] ? "boss" : "imp", skin: a[2], x: p ? L(p[0], a[0]) : a[0], y: p ? L(p[1], a[1]) : a[1], r: a[4], hp: a[5], full: 1, hit: a[6] ? 0.05 : 0, near: !!a[7], ph: i * 0.37, age: 1 }; }); }
         draw(); W2.raf = requestAnimationFrame(tick); };
@@ -5622,7 +5637,7 @@ body.game-full { overflow: hidden; }
     function autoLabel() { const b = $("gAuto"); if (!b) return; b.textContent = autoSk ? "🤖 자동 켬" : "🤖 자동"; b.setAttribute("aria-pressed", String(autoSk)); }
     function autoCast() { if (!autoSk || !s || !s.skills) return; const near = s.foes.some((f) => (f.x - s.x) ** 2 + (f.y - s.y) ** 2 < 330 * 330); if (!near) return; s.skills.forEach((k) => { if (!(s.cd[k] > 0)) cast(k); }); }
     autoLabel();
-    if (/[?&]bmctest=1/.test(location.search)) window.__bmcGame = { get s() { return s; }, get LP() { return LP; }, lobby: lobby, mapIdx: () => mapIdx, running: () => running, size: () => size(), draw: draw, setHero: (k) => { heroKey = k; }, lobStart: lobStart, setTab: (k) => { lobTab = k; lobDraw(); }, setCh: (c) => { lobTab = "go"; lobCh = c; lobDraw(); }, chapterClear: chapterClear, begin: begin, step: step, spawnBoss: spawnBoss, take: take, cast: cast, startStage: startStage, stageLen: stageLen, W: () => W, H: () => H, UPS: UPS, SK: SK, TEST_MUL: TEST_MUL, openBox: openBox, useItem: useItem, dash: dash, spawn: spawn, bullet: bullet, hazard: hazard, showPicks: showPicks };
+    if (/[?&]bmctest=1/.test(location.search)) window.__bmcGame = { get s() { return s; }, get LP() { return LP; }, lobby: lobby, mapIdx: () => mapIdx, running: () => running, size: () => size(), draw: draw, setHero: (k) => { heroKey = k; }, lobStart: lobStart, setTab: (k) => { lobTab = k; lobDraw(); }, setCh: (c) => { lobTab = "go"; lobCh = c; lobDraw(); }, chapterClear: chapterClear, begin: begin, step: step, spawnBoss: spawnBoss, take: take, cast: cast, startStage: startStage, stageLen: stageLen, W: () => W, H: () => H, UPS: UPS, SK: SK, TEST_MUL: TEST_MUL, openBox: openBox, useItem: useItem, dash: dash, spawn: spawn, bullet: bullet, hazard: hazard, showPicks: showPicks, watchStart: (id, n) => watchStart(id, n) };
     return {
       /* 다른 메뉴로 가면 멈춘다. 처음 들어오면(또는 다른 사람이 들어오면) 시작 안내 */
       render() {
