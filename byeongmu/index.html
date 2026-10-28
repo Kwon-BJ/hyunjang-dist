@@ -1496,7 +1496,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610282252";
+  const BUILD = "202610282313";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -4809,6 +4809,54 @@ body.game-full { overflow: hidden; }
     /* 주인공 — 겨누는 쪽(왼 · 오)을 보고, 쏘면 평타 동작 · 스킬은 기술 동작 · 대시 · 맞기 · 쓰러짐 */
     function otLook() { if (!s) return ""; const has = (n) => BGF["m_ot2_" + n] && bgImg("m_ot2_" + n); const k = s.skin && s.skin !== "basic" ? s.skin : "";
       if (k && has(k)) return "_" + k; if (k && k.includes("-") && has(k.split("-")[0])) return "_" + k.split("-")[0]; return s.gearOn && has("gear") ? "_gear" : ""; }
+    /* 수달 부위 움직임(2026-10-29 부장님 "그림으로만 하면 캐릭이 부자연스럽다" → 2번 「부위 나눠 움직이기」).
+       서 있는 그림(idle0) 한 장을 머리 · 스카프 · 꼬리 · 뒷다리 · 앞다리 · 몸(총 포함)으로 잘라(비율 자리라 스킨에도 같이 맞음) 관절처럼 돌린다.
+       장면을 바꿔 끼우지 않으니 걷기 · 쏘기 · 대기가 끊기지 않고 이어진다. 몸은 머리 · 다리와 겹치는 띠를 남겨 틈이 안 보이게 */
+    const RIG_P = {
+      head: [[0, 0], [1, 0], [1, .5], [.6, .54], [.3, .54], [.24, .42], [.12, .33], [0, .32]], // 큰 모자 챙(밀짚모자 등)도 머리에
+      headN: [[0, 0], [1, 0], [1, .5], [.6, .54], [.3, .54], [.25, .48], [0, .47]], // 스카프 없는 모습 — 깃털 · 모자 끝까지
+      scarf: [[0, .33], [.26, .34], [.33, .46], [.34, .55], [.27, .56], [0, .56]],
+      tail: [[0, .57], [.12, .56], [.21, .62], [.22, .78], [.2, .93], [.08, .93], [0, .84]],
+      legB: [[.17, .8], [.41, .79], [.44, 1], [.14, 1]],
+      legF: [[.5, .855], [.77, .845], [.8, 1], [.48, 1]], // 총 손잡이(아래 끝 .85)는 몸에 남게
+    };
+    const RIG_SCARF = ["", "_ninja", "_gear", "_hoodie", "_jacket", "_sneakers", "_boots", "_hoodie-sneakers", "_hoodie-boots", "_jacket-sneakers", "_jacket-boots"]; // 왼쪽으로 스카프 자락이 날리는 모습만
+    const rigUp = (P) => P.map(([u, v]) => [u, v ? v - 0.035 : 0]); // 몸에서 지울 때는 조금 위까지만 — 겹치는 띠
+    const RIG_CUT = [RIG_P.tail, [[.14, .87], [.42, .87], [.44, 1], [.14, 1]], [[.48, .89], [.79, .88], [.8, 1], [.48, 1]]];
+    const RIGC = new Map(); let RIG_HD = 0;
+    function noShade(x, W, H) { const y0 = Math.floor(H * 0.88), D = x.getImageData(0, y0, W, H - y0), d = D.data; for (let i = 0; i < d.length; i += 4) { const lo = Math.min(d[i], d[i + 1], d[i + 2]), hi = Math.max(d[i], d[i + 1], d[i + 2]); if (lo > 130 && hi - lo < 34) d[i + 3] = 0; } x.putImageData(D, 0, y0); }
+    function otRig(I, r, sc) {
+      const key = I.src + r.join() + (sc ? 1 : 0); let R = RIGC.get(key); if (R) return R;
+      const W = r[2], H = r[3], mk = (fn) => { const c = document.createElement("canvas"); c.width = W; c.height = H; fn(c.getContext("2d")); return c; };
+      const poly = (x, P) => { x.beginPath(); P.forEach(([u, v], i) => x[i ? "lineTo" : "moveTo"](u * W, v * H)); x.closePath(); };
+      R = { W, H, sc }; Object.keys(RIG_P).forEach((n) => { if (n === "headN" || (n === "scarf" && !sc)) return; R[n] = mk((x) => { poly(x, RIG_P[n]); x.clip(); x.drawImage(I, r[0], r[1], W, H, 0, 0, W, H);
+        if (n[0] === "l") noShade(x, W, H); }); }); if (!sc) R.head = mk((x) => { poly(x, RIG_P.headN); x.clip(); x.drawImage(I, r[0], r[1], W, H, 0, 0, W, H); }); // 발밑에 그려진 회색 그림자는 지움(발과 같이 돌면 흰 줄처럼 보임)
+      R.body = mk((x) => { x.drawImage(I, r[0], r[1], W, H, 0, 0, W, H); x.globalCompositeOperation = "destination-out"; RIG_CUT.concat([rigUp(sc ? RIG_P.head : RIG_P.headN)], sc ? [RIG_P.scarf] : []).forEach((P) => { poly(x, P); x.fill(); }); x.globalCompositeOperation = "source-over"; noShade(x, W, H); });
+      RIGC.set(key, R); return R;
+    }
+    /** 부위 그림을 지금 상태(걷기 · 쏘기 · 대시 · 대기)대로 — bgPut 처럼 (0,0) 이 발 밑, ax 가 가로 기준 */
+    function otRigPut(I, r, k, flip, ax, sc) {
+      const R = otRig(I, r, sc), W = R.W, H = R.H, t = s ? s.t : performance.now() / 1000;
+      const dash = !!(s && s.dashT > 0), m = dash || (s && s.moving && (running || s.watchView)) ? 1 : 0, p = dash ? t * 26 : (s ? s.walk : 0) * 0.707;
+      const sw = Math.sin(p) * m, cw = Math.cos(p), bob = -Math.abs(cw) * 9 * m + Math.sin(t * 3) * 1.6 * (1 - m);
+      const kick = s && s.shotT > 0 ? Math.max(0, s.shotT - 0.36) / 0.14 : 0, cast = s && s.castT > 0 ? s.castT / 0.3 : 0, hurt = s && s.hurt > 0.02 ? 1 : 0;
+      const lean = 0.05 * m + (dash ? 0.1 : 0) - 0.06 * kick - 0.08 * cast + (hurt ? -0.06 : 0);
+      const part = (c, px, py, rot, dx, dy) => { g.save(); g.translate(px * W + (dx || 0), py * H + (dy || 0)); if (rot) g.rotate(rot); g.translate(-px * W, -py * H); g.drawImage(c, 0, 0); g.restore(); };
+      g.save(); if (flip) g.scale(-1, 1); g.scale(k, k); g.translate(-W * ax, -H);
+      // 다리 — 엉덩이를 축으로 번갈아 앞뒤, 앞으로 갈 때 발을 듦
+      part(R.legB, 0.3, 0.84, sw * 0.5, 0, bob * 0.25 - Math.max(0, cw) * 10 * m);
+      part(R.legF, 0.62, 0.84, -sw * 0.5, 0, bob * 0.25 - Math.max(0, -cw) * 10 * m);
+      // 윗몸 — 엉덩이 둘레로 기울고(걸음 · 대시 앞으로, 반동 뒤로) 위아래로 통통
+      g.save(); g.translate(0.45 * W - 7 * kick, 0.86 * H + bob); g.rotate(lean); g.translate(-0.45 * W, -0.86 * H);
+      part(R.tail, 0.21, 0.79, Math.sin(p + 1) * 0.28 * m + Math.sin(t * 2.2) * 0.1, 0, 0);
+      if (R.scarf) part(R.scarf, 0.31, 0.5, Math.sin(t * (m ? 15 : 5)) * (m ? 0.2 : 0.08) + (dash ? -0.25 : 0), 0, 0);
+      g.drawImage(R.body, 0, 0);
+      if (kick > 0) { const mx = 0.99 * W, my = 0.6 * H, z = 26 + 10 * kick, gr = g.createRadialGradient(mx + z * 0.4, my, 0, mx + z * 0.4, my, z); gr.addColorStop(0, "rgba(255,255,230," + kick + ")"); gr.addColorStop(0.35, "rgba(255,210,70," + 0.9 * kick + ")"); gr.addColorStop(1, "rgba(255,120,20,0)"); g.save(); g.globalCompositeOperation = "lighter"; g.fillStyle = gr; g.beginPath(); for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2, rr = i % 2 ? z * 0.45 : z; g.lineTo(mx + z * 0.4 + Math.cos(a) * rr * 1.3, my + Math.sin(a) * rr * 0.8); } g.fill(); g.restore(); } // 총구 불빛(예전 쏘기 그림에 있던 것)
+      const hd = bob * 0.25 + Math.sin(t * 3 - 0.6) * 1.2 * (1 - m) - cast * 6;
+      part(R.head, 0.5, 0.52, sw * 0.04 + Math.sin(t * 1.7) * 0.015 - 0.03 * kick, 0, hd);
+      g.restore(); g.restore();
+      RIG_HD = (bob + hd) * k;
+    }
     function bgHero(cx, cy, flip, dead) {
       const skA = otLook(), /* 스킨이면 스킨 동작 · 아니면 장비 입은 동작(2026-10-28 "스킨 안 입었으면 입고 있는 장비를") */ b = "m_ot2" + skA, rx = "m_ot3" + skA, // 스킨 한 벌 입은 동작 그림이 있으면 그것(2026-10-28 "게임에서도 착용한 상태로") // 캐릭터는 하나(수달, 부장님 설정 그림 · 시험/수달-자르기.cjs) — 무기만 바뀜 (2026-10-28)
         F = BGF[b], M = BGF[b + "_meta"]; if (!F || !M) return false;
@@ -4826,15 +4874,16 @@ body.game-full { overflow: hidden; }
       if (I3 && R[nm]) { img = I3; r = R[nm]; ax = RM.ax2[nm]; }
       if (/^step/.test(nm)) { const k4 = "m_ot4" + skA; img = bgImg(k4); r = BGF[k4][nm]; ax = BGF[k4 + "_meta"].ax2[nm]; }
       if (!r) { r = F.idle0; ax = M.ax2 ? M.ax2.idle0 : 0.5; }
+      const rig = !dead && !!F.idle0 && !window.__noRig; if (rig) { img = I; r = F.idle0; ax = M.ax2 ? M.ax2.idle0 : 0.5; } RIG_HD = 0; // 부위 움직임(쓰러짐만 그림)
       if (ax == null) ax = 0.5;
       const k = 76 / M.tall, idle = /^idle/.test(nm) && !dead;
-      g.save(); g.translate(cx, cy + 19); if (dead) g.rotate(-Math.PI / 2 * (flip < 0 ? -1 : 1)); else if (idle) g.scale(1, 1 + Math.sin((s ? s.t : 0) * 3) * 0.012); // 대기는 숨 쉬듯 · 쓰러지면 눕기
+      g.save(); g.translate(cx, cy + 19); if (dead) g.rotate(-Math.PI / 2 * (flip < 0 ? -1 : 1)); else if (idle && !rig) g.scale(1, 1 + Math.sin((s ? s.t : 0) * 3) * 0.012); // 대기는 숨 쉬듯 · 쓰러지면 눕기
       const SK = s && s.skin && s.skin !== "basic" && !skA ? s.skin : ""; if (SK === "ice") g.filter = "hue-rotate(185deg) saturate(.7) brightness(1.15)"; else if (SK === "ninja") g.filter = "brightness(.8) contrast(1.1)"; else if (SK === "king") { g.shadowColor = "rgba(255,210,60,.9)"; g.shadowBlur = 14; }
-      bgPut(img, r, 0, 0, k, flip < 0, ax); g.filter = "none"; g.shadowBlur = 0;
-      if (SK && !dead) { const hi = lbImg("hat-" + SK); if (hi) { const H0 = r[3] * k, W0 = r[2] * k, hx = (0.5 - ax) * W0 * (flip < 0 ? -1 : 1) + (flip < 0 ? -3 : 3), hw = { astro: 44, wizard: 42, chef: 32, king: 32, ice: 32 }[SK] || 36, hh = hw * hi.height / hi.width, top = -H0 + ({ astro: 0.30, wizard: -0.06, chef: 0.06 }[SK] != null ? { astro: 0.30, wizard: -0.06, chef: 0.06 }[SK] : 0.11) * H0; // 머리 위에 모자(2026-10-28 스킨)
+      if (rig) otRigPut(img, r, k, flip < 0, ax, RIG_SCARF.includes(skA)); else bgPut(img, r, 0, 0, k, flip < 0, ax); g.filter = "none"; g.shadowBlur = 0;
+      if (SK && !dead) { const hi = lbImg("hat-" + SK); if (hi) { const H0 = r[3] * k, W0 = r[2] * k, hx = (0.5 - ax) * W0 * (flip < 0 ? -1 : 1) + (flip < 0 ? -3 : 3), hw = { astro: 44, wizard: 42, chef: 32, king: 32, ice: 32 }[SK] || 36, hh = hw * hi.height / hi.width, top = RIG_HD - H0 + ({ astro: 0.30, wizard: -0.06, chef: 0.06 }[SK] != null ? { astro: 0.30, wizard: -0.06, chef: 0.06 }[SK] : 0.11) * H0; // 머리 위에 모자(2026-10-28 스킨)
         g.save(); if (flip < 0) { g.translate(hx, top); g.scale(-1, 1); g.drawImage(hi, -hw / 2, -hh / 2, hw, hh); } else g.drawImage(hi, hx - hw / 2, top - hh / 2, hw, hh); g.restore(); } }
       g.restore();
-      if (s && s.hurt > 0.02 && !dead) { g.save(); g.globalCompositeOperation = "lighter"; bgPut(img, r, cx, cy + 19, k, flip < 0, ax, 0.35); g.restore(); }
+      if (s && s.hurt > 0.02 && !dead) { g.save(); g.globalCompositeOperation = "lighter"; if (rig) { g.translate(cx, cy + 19); g.globalAlpha = 0.35; otRigPut(img, r, k, flip < 0, ax, RIG_SCARF.includes(skA)); } else bgPut(img, r, cx, cy + 19, k, flip < 0, ax, 0.35); g.restore(); }
       return true;
     }
     /* 몬스터 — 봉인검록 영상 몬스터로(박쥐 · 식충 식물은 예전 그림). BGFACE = 영상 속에서 보는 쪽 */
@@ -6026,7 +6075,7 @@ body.game-full { overflow: hidden; }
     function autoLabel() { const b = $("gAuto"); if (!b) return; b.textContent = autoSk ? "🤖 자동 켬" : "🤖 자동"; b.setAttribute("aria-pressed", String(autoSk)); }
     function autoCast() { if (!autoSk || !s || !s.skills) return; const near = s.foes.some((f) => (f.x - s.x) ** 2 + (f.y - s.y) ** 2 < 330 * 330); if (!near) return; s.skills.forEach((k) => { if (!(s.cd[k] > 0)) cast(k); }); }
     autoLabel();
-    if (/[?&]bmctest=1/.test(location.search)) window.__bmcGame = { get s() { return s; }, get LP() { return LP; }, mapc: () => [MAPC.cy, Object.keys(TINTC).length], lobby: lobby, mapIdx: () => mapIdx, running: () => running, size: () => size(), draw: draw, setHero: (k) => { heroKey = k; }, lobStart: lobStart, setTab: (k) => { lobTab = k; lobDraw(); }, setCh: (c) => { lobTab = "go"; lobCh = c; lobDraw(); }, chapterClear: chapterClear, begin: begin, step: step, spawnBoss: spawnBoss, take: take, cast: cast, startStage: startStage, stageLen: stageLen, W: () => W, H: () => H, UPS: UPS, SK: SK, TEST_MUL: TEST_MUL, openBox: openBox, useItem: useItem, dash: dash, spawn: spawn, bullet: bullet, hazard: hazard, showPicks: showPicks, watchStart: (id, n) => watchStart(id, n) };
+    if (/[?&]bmctest=1/.test(location.search)) window.__bmcGame = { get s() { return s; }, otRig: (n, sc) => otRig(bgImg(n), BGF[n].idle0, sc), get LP() { return LP; }, mapc: () => [MAPC.cy, Object.keys(TINTC).length], lobby: lobby, mapIdx: () => mapIdx, running: () => running, size: () => size(), draw: draw, setHero: (k) => { heroKey = k; }, lobStart: lobStart, setTab: (k) => { lobTab = k; lobDraw(); }, setCh: (c) => { lobTab = "go"; lobCh = c; lobDraw(); }, chapterClear: chapterClear, begin: begin, step: step, spawnBoss: spawnBoss, take: take, cast: cast, startStage: startStage, stageLen: stageLen, W: () => W, H: () => H, UPS: UPS, SK: SK, TEST_MUL: TEST_MUL, openBox: openBox, useItem: useItem, dash: dash, spawn: spawn, bullet: bullet, hazard: hazard, showPicks: showPicks, watchStart: (id, n) => watchStart(id, n) };
     return {
       /* 다른 메뉴로 가면 멈춘다. 처음 들어오면(또는 다른 사람이 들어오면) 시작 안내 */
       render() {
