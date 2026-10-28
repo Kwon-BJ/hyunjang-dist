@@ -645,6 +645,7 @@ body.game-full { overflow: hidden; }
 .lb-art { position: relative; z-index: 1; width: min(100vw, calc(100dvh * 941 / 1672)); aspect-ratio: 941 / 1672; background: url(img/lobby.webp) center / 100% 100% no-repeat; container-type: inline-size; overflow: hidden; }
 .lb-art button { font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .lb-art > * { position: absolute; }
+.lb-nick, .lb-gold, #lbEn, .lb-chn, .lb-chname, .lb-chsub, .lb-inf, .lb-wtag, .lb-rw, .lb-msg, .lb-done, .lb-card b, .lb-card small { white-space: nowrap; overflow: hidden; } /* 한 줄로 — 넘치면 lobFit 이 글씨를 줄임 */
 .lb-nick { display: flex; align-items: center; font-size: 4.2cqw; font-weight: 900; color: #fff; text-shadow: 0 1px 2px #000; white-space: nowrap; overflow: hidden; }
 .lb-lv { display: flex; align-items: center; gap: 1.2cqw; }
 .lb-lv b { padding: .2cqw 1.6cqw; border-radius: 999px; background: linear-gradient(#9bd25b, #4f8f2a); border: .3cqw solid #2f5a17; color: #fff; font-size: 2.8cqw; text-shadow: 0 1px 1px #224010; }
@@ -661,7 +662,8 @@ body.game-full { overflow: hidden; }
 .lb-done { display: flex; align-items: center; justify-content: center; border-radius: 999px; background: rgba(32,60,18,.9); color: #c9f5a8; font-size: 2.8cqw; }
 .lb-wtag { display: flex; align-items: center; gap: 1cqw; padding: 0 1.6cqw; border-radius: 999px; background: rgba(20,36,12,.82); border: .3cqw solid #e8c46a; color: #fff; font-size: 3cqw; }
 .lb-wtag img { height: 80%; }
-.lb-arr { border: .4cqw solid #e8c46a; border-radius: 3cqw; background: rgba(32,60,18,.85); color: #fff; font-size: 7cqw !important; line-height: 1; }
+.lb-arr { display: grid; place-items: center; padding: 0; border: .4cqw solid #e8c46a; border-radius: 50%; background: rgba(32,60,18,.85); font-size: 0 !important; }
+.lb-arr::before { content: ""; width: 2.4cqw; height: 2.4cqw; border: solid #fff; border-width: 0 0 .8cqw .8cqw; transform: translateX(.5cqw) rotate(45deg); } .lb-arr.r::before { transform: translateX(-.5cqw) rotate(-135deg); } /* 화살표는 그림으로 — 동그라미 한가운데(2026-10-28) */
 .lb-rw { display: flex; align-items: center; justify-content: center; font-size: 4.2cqw; color: #2e4a1e; }
 .lb-go { border: 0; border-radius: 9cqw; background: transparent; } .lb-go:active { background: rgba(255,255,255,.18); } .lb-go:disabled { background: rgba(0,0,0,.45); cursor: default; }
 .lb-inf { border-radius: 999px; border: .4cqw solid #e8c46a; background: linear-gradient(#3b6b22, #224312); color: #fff; font-size: 3.2cqw !important; text-shadow: 0 1px 1px #000; } .lb-inf:disabled { opacity: .5; }
@@ -694,12 +696,13 @@ body.game-full { overflow: hidden; }
 .lb-tr .no { text-align: center; } .lb-tr .no img { width: 7cqw; } .lb-tr .nm { display: flex; align-items: center; gap: 1.4cqw; min-width: 0; } .lb-tr .nm img { width: 6cqw; border-radius: 50%; } .lb-tr .nm b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .lb-tr > span:nth-child(3), .lb-tr > span:nth-child(4) { text-align: right; } .lb-tr.me { background: #ffe9a0; }
 .lb-tr .lb-del { border: 0; background: none; font-size: 3.6cqw; cursor: pointer; } .lb-table.op .lb-tr { grid-template-columns: 12cqw 1fr 12cqw 20cqw 8cqw; }
-.lb-reset { display: flex; flex-wrap: wrap; gap: 1.4cqw; align-items: center; padding: 2cqw; border-radius: 2.6cqw; background: #2a1e0c; color: #ffe08a; } .lb-reset b { width: 100%; font-size: 3cqw; }
-.lb-opbtn { padding: 0; border-radius: 999px; border: .4cqw solid #e8c46a; background: rgba(20,36,12,.9); color: #fff; font-size: 3cqw !important; } .lb-opbtn.on { background: #b3261e; }
+.lb-reset { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4cqw; align-items: center; padding: 2.4cqw; border-radius: 3cqw; border: .5cqw solid #e2c58a; background: linear-gradient(#3b6b22, #224312); color: #fff; } .lb-reset b { grid-column: 1 / -1; font-size: 3.4cqw; text-align: center; color: #ffe08a; text-shadow: 0 1px 1px #000; }
+.lb-reset .lb-btn { padding: 1.8cqw .6cqw; border: 0; border-radius: 2.4cqw; background: linear-gradient(#ffe36b, #f2a91c); color: #4a2a06; font-size: 3cqw !important; box-shadow: 0 .8cqw 0 #b97a0a; white-space: normal; }
+.lb-opbtn { padding: 6px 10px; border-radius: 999px; border: .4cqw solid #e8c46a; background: rgba(20,36,12,.9); color: #fff; font-size: 3cqw !important; } .lb-opbtn.on { background: #b3261e; }
 .lb-live { position: absolute; z-index: 2; right: 8px; top: 18%; width: 210px; max-height: 60%; overflow: auto; padding: 10px; border-radius: 12px; background: rgba(12,20,8,.9); border: 2px solid #e8c46a; color: #fff; display: grid; gap: 6px; font-size: 13px; font-family: "Noto Sans KR", sans-serif; }
 .gwatch { position: absolute; left: 50%; top: 10px; transform: translateX(-50%); z-index: 5; display: flex; gap: 8px; align-items: center; padding: 6px 12px; border-radius: 999px; background: rgba(20,10,30,.85); border: 1px solid #b58aff; color: #e9dcff; font-size: 13px; font-weight: 700; max-width: 92%; }
 .lb-lrow .tiny { justify-self: start; margin-top: 2px; }
-.lb-live b { color: #ffe08a; } .lb-live.min > :not(b) { display: none; } .lb-live.min { width: auto; } .lb-lrow { display: grid; } .lb-lrow small, .lb-live > small { color: #cfe8b8; font-size: 11px; }
+.lb-live b { color: #ffe08a; } .lb-live.min > :not(b):not(.lb-opbtn) { display: none; } .lb-live.min { width: auto; } .lb-lrow { display: grid; } .lb-lrow small, .lb-live > small { color: #cfe8b8; font-size: 11px; }
 @media (max-width: 760px) { .lb-live { width: 150px; top: 24%; opacity: .92; font-size: 12px; } }
 .lb-sel { padding: 2cqw; border-radius: 2cqw; border: .4cqw solid #c79a4a; font-size: 3.6cqw; }
 .lb-give { display: grid; grid-template-columns: 1fr 1fr; gap: 1.6cqw; } .lb-give label { display: grid; gap: .6cqw; font-size: 3cqw; color: #5a3a1a; } .lb-give input, .lb-sel { background: #fffaf0; color: #3a2a10; } .lb-give input { padding: 1.6cqw; border-radius: 1.6cqw; border: .3cqw solid #c79a4a; font-size: 3.6cqw; width: 100%; box-sizing: border-box; }
@@ -1283,7 +1286,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610280047";
+  const BUILD = "202610280106";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -5080,6 +5083,8 @@ body.game-full { overflow: hidden; }
     let LP = null, lobTab = "go", lobCh = 1, lobErr = "", lobBusy = false, lobT = 0, lobSel = null, lobRankTab = "all";
     const lobFree = () => !(me && token); // 손님 · 관리자 암호 — 저장 없이
     const px = (x, y, w, h) => "left:" + (x / 9.41) + "%;top:" + (y / 16.72) + "%;width:" + (w / 9.41) + "%;height:" + (h / 16.72) + "%"; // 로비 그림 941×1672 자리 → %
+    /* 글자가 칸을 넘치면 글씨를 줄여 한 줄에(2026-10-28 "10장 · 큰 골드 · 무한의 탑 · 최고 1층 이 넘친다") */
+    function lobFit(root) { requestAnimationFrame(() => root.querySelectorAll(".lb-nick, .lb-gold, #lbEn b, .lb-chn, .lb-chname, .lb-chsub, .lb-inf, .lb-wtag b, .lb-rw, .lb-msg, .lb-card b, .lb-card small, .lb-lv b, .lb-tr b, .lb-done").forEach((e) => { const box = e.parentElement && e.tagName === "B" && /lbEn/.test(e.parentElement.id || "") ? e.parentElement : e; let f = parseFloat(getComputedStyle(e).fontSize), n = 0; while (n++ < 30 && f > 6 && (box.scrollWidth > box.clientWidth + 1 || e.scrollWidth > e.clientWidth + 1)) { f *= 0.92; e.style.setProperty("font-size", f + "px", "important"); } })); }
     function lobLoad() {
       if (lobFree()) { LP = { free: true, en: 0, max: 30, gold: 0, ch: 10, chMax: 10, wpn: (LP && LP.wpn) || "bow", own: Object.keys(WPN), exp: 0, lv: { lv: 1, cur: 0, need: 100 }, items: {}, boost: 0, shop: { weapons: {}, items: {}, en: { n: 10, gold: 300 }, enLeft: 0 }, clears: {} }; lobDraw(); return; }
       call("gameProfile", token).then((r) => { if (!r) throw new Error("내 정보를 못 불러왔어요"); LP = r; LP.got = Date.now(); if (!lobCh || lobCh > LP.ch) lobCh = LP.ch; lobDraw(); }).catch((e) => { lobErr = errMsg(e); lobDraw(); });
@@ -5119,8 +5124,7 @@ body.game-full { overflow: hidden; }
       else if (lobTab === "go") art.append(...lobGo(P));
       else { const pg = el("div", "lb-page lb-" + lobTab); pg.append(...(lobTab === "wpn" ? lobWpn(P) : lobTab === "shop" ? lobShop(P) : lobTab === "op" ? lobOp() : lobRank())); if (lobErr) pg.appendChild(el("p", "lb-err", lobErr)); art.appendChild(pg); }
       const nav = el("nav", "lb-nav"); [["shop", "상점"], ["wpn", "무기"], ["go", "출전"], ["rank", "순위"]].forEach(([k, n]) => { const b = el("button", k === lobTab ? "on" : ""); b.type = "button"; b.setAttribute("aria-label", n); b.appendChild(el("span", null, n)); b.onclick = () => { lobTab = k; lobErr = ""; lobSel = null; lobDraw(); if (k === "rank") loadRanks(); }; nav.appendChild(b); });
-      if (P && P.op) { const ob = lobBtn("lb-opbtn" + (lobTab === "op" ? " on" : ""), px(24, 150, 150, 40), () => { lobTab = lobTab === "op" ? "go" : "op"; lobErr = ""; lobDraw(); }, "운영"); ob.textContent = "🛠 운영"; art.appendChild(ob); }
-      art.appendChild(nav); L.replaceChildren(art); if (P && P.op) { L.appendChild(lobLive()); if (Date.now() - liveAt > 5000) loadLive(); } // 운영자만 오른쪽에 지금 하는 사람
+      art.appendChild(nav); L.replaceChildren(art); lobFit(art); if (P && P.op) { L.appendChild(lobLive()); if (Date.now() - liveAt > 5000) loadLive(); } // 운영자만 오른쪽에 지금 하는 사람
     }
     function lobGo(P) {
       const c = Math.max(1, Math.min(10, lobCh)), open = c <= P.ch, need = !P.free && P.en < (P.cost || 5), first = !(P.clears || {})[c], out = [];
@@ -5130,8 +5134,8 @@ body.game-full { overflow: hidden; }
       if (!open) t("lb-lock", "🔒 " + (c - 1) + "장을 깨면 열려요", px(62, 470, 820, 120));
       else if (!first) t("lb-done", "✔ 깼음 × " + P.clears[c], px(727, 268, 148, 34));
       const w = WPN[P.wpn] || WPN.bow, wt = el("span", "lb-wtag"); wt.style.cssText = px(80, 210, 190, 40); const wi = el("img"); wi.src = LBI(w.pic); wi.alt = ""; wt.append(wi, el("b", null, w.n)); out.push(wt);
-      if (c > 1) { const a = lobBtn("lb-arr", px(66, 540, 64, 80), () => { lobCh = c - 1; lobDraw(); }, "앞 장"); a.textContent = "‹"; out.push(a); }
-      if (c < 10) { const a = lobBtn("lb-arr r", px(812, 540, 64, 80), () => { lobCh = c + 1; lobDraw(); }, "다음 장"); a.textContent = "›"; out.push(a); }
+      if (c > 1) { const a = lobBtn("lb-arr", px(62, 548, 68, 68 * 941 / 1672 * 1672 / 941), () => { lobCh = c - 1; lobDraw(); }, "앞 장"); a.textContent = "‹"; out.push(a); }
+      if (c < 10) { const a = lobBtn("lb-arr r", px(812, 548, 68, 68 * 941 / 1672 * 1672 / 941), () => { lobCh = c + 1; lobDraw(); }, "다음 장"); a.textContent = "›"; out.push(a); }
       t("lb-rw", "x" + (120 * c * (first ? 2 : 1)), px(282, 1168, 90, 40)); t("lb-rw", "x" + 50 * c, px(430, 1168, 82, 40)); t("lb-rw", first ? "x1" : "—", px(582, 1168, 66, 40));
       const go = lobBtn("lb-go", px(210, 1262, 525, 178), () => lobStart(c), "출전 — 피로도 5"); go.disabled = !open || lobBusy || need; out.push(go);
       const inf = lobBtn("lb-inf", px(80, 914, 250, 50), () => lobStart(0), "무한의 탑"); inf.textContent = "🗼 무한의 탑" + (P.tower ? " · 최고 " + P.tower + "층" : ""); inf.disabled = lobBusy || need; out.push(inf);
@@ -5186,7 +5190,7 @@ body.game-full { overflow: hidden; }
       if (!list.length) tb.appendChild(el("p", "lb-note", ranks ? "아직 기록이 없어요" : "불러오는 중…"));
       const m = el("div", "lb-mascot rank"), mi = el("img"); mi.src = LBI("m-rank"); mi.alt = ""; const my = el("div", "lb-my"); my.append(el("small", null, "나의 순위"), el("b", null, mine >= 0 ? mine + 1 + "위" : "—"), el("small", null, mine >= 0 ? (list[mine].stage || 0) + "단계 · " + (list[mine].score || 0).toLocaleString() + "점" : "무한의 탑에 도전해 보세요")); m.append(mi, my);
       const out = [lobHead("sign-rank", "최고의 수달이 되어보세요! (무한의 탑 기록)"), m, tabs, tb];
-      if (op) { const rs = el("div", "lb-reset"); rs.appendChild(el("b", null, "운영 — 순위표 지우기")); [["all", "전체(주 · 달 포함)"], ["month", "이번 달"], ["week", "이번 주"]].forEach(([k, n]) => { const b = el("button", "lb-btn", n + " 지우기"); b.type = "button"; sure(b, n + " 지우기", () => call("resetGameBoard", adminPw || token, k).then((r) => { takeRanks(r); lobDraw(); }).catch((e) => { lobErr = errMsg(e); lobDraw(); })); rs.appendChild(b); }); out.push(rs); }
+      if (op) { const rs = el("div", "lb-reset"); rs.appendChild(el("b", null, "🗑 순위표 지우기 (두 번 누르기)")); [["all", "전체(주 · 달 포함)"], ["month", "이번 달"], ["week", "이번 주"]].forEach(([k, n]) => { const b = el("button", "lb-btn", n + " 지우기"); b.type = "button"; sure(b, n + " 지우기", () => call("resetGameBoard", adminPw || token, k).then((r) => { takeRanks(r); lobDraw(); }).catch((e) => { lobErr = errMsg(e); lobDraw(); })); rs.appendChild(b); }); out.push(rs); }
       return out;
     }
     /* ── 운영자 몰래 보기 (2026-10-28 "다른 사람 게임하는 거 운영자는 몰래 들어가서 볼 수 있게, 내 캐릭터는 투명화해서 따라다니면서") ──
@@ -5215,7 +5219,7 @@ body.game-full { overflow: hidden; }
     /* 운영자만 — 오른쪽에 지금 게임하는 사람(2026-10-28 "게임 진행 중인 사람들은 나만 우측 화면에 볼 수 있게") */
     let lobLiveMin = matchMedia("(max-width: 760px)").matches; // 휴대폰은 접어 둠(누르면 펼침)
     function lobLive() {
-      const box = el("aside", "lb-live"), on = (live || []).filter((p) => !p.end);
+      const box = el("aside", "lb-live"), on = (live || []).filter((p) => !p.end), ob = el("button", "lb-opbtn" + (lobTab === "op" ? " on" : ""), lobTab === "op" ? "🛠 운영 닫기" : "🛠 운영 — 주기"); ob.type = "button"; ob.onclick = () => { lobTab = lobTab === "op" ? "go" : "op"; lobErr = ""; lobDraw(); }; box.appendChild(ob); // 운영 단추도 오른쪽(나만 보임)
       const hd = el("b", null, "🎮 지금 하는 사람 " + on.length + "명 ▾"); hd.style.cursor = "pointer"; hd.onclick = () => { lobLiveMin = !lobLiveMin; box.classList.toggle("min", lobLiveMin); }; box.appendChild(hd); if (lobLiveMin) box.classList.add("min");
       on.forEach((p) => { const r = el("div", "lb-lrow"); r.append(el("span", "nm", p.nick), el("small", null, p.stage + "단계 · " + mmss(p.sec || 0))); if (p.id && !(me && p.nick === me.gameId)) { const w = el("button", "tiny", "👁 몰래 보기"); w.type = "button"; w.onclick = () => watchStart(p.id, p.nick); r.appendChild(w); } box.appendChild(r); });
       if (!on.length) box.appendChild(el("small", null, "지금은 아무도 없어요"));
