@@ -814,7 +814,7 @@ body.game-full { overflow: hidden; }
 .lb-ghat.h-astro { top: -4%; width: 74%; } .lb-ghat.h-wizard { top: -24%; width: 62%; } .lb-ghat.h-chef { top: -17%; width: 52%; } .lb-ghat.h-king, .lb-ghat.h-ice { top: -14%; width: 54%; } .lb-ghat.h-santa { top: -12%; }
 .lb-gotter.sk-ice { filter: hue-rotate(185deg) saturate(.7) brightness(1.15); } .lb-gotter.sk-ice .lb-ghat { filter: hue-rotate(-185deg) saturate(1.4) brightness(.87); } .lb-gotter.sk-king { filter: drop-shadow(0 0 2cqw rgba(255,210,60,.9)); } .lb-gotter.sk-ninja { filter: brightness(.8) contrast(1.1); }
 .lb-skinpv { position: relative; height: 52cqw; border-radius: 3cqw; background: radial-gradient(circle at 50% 70%, #fff6d8, #e8d3a0); border: .5cqw solid #e2c58a; } .lb-skinpv .lb-gotter { bottom: 3cqw; width: 34cqw; height: 42cqw; }
-.lb-skininfo { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 1.4cqw; padding: 2cqw; border-radius: 3cqw; border: .6cqw solid #9aa3ad; background: #fffaf0; } .lb-skininfo b { font-size: 4.6cqw; color: #3a2a10; } .lb-skininfo em { font-style: normal; padding: .4cqw 2cqw; border-radius: 999px; color: #fff; font-size: 3cqw; } .lb-skininfo .lb-buy { grid-column: 1 / -1; } .lb-skininfo .lb-skst { grid-column: 1 / -1; font-size: 3cqw; color: #2f5a1c; }
+.lb-skininfo { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 1.4cqw; padding: 2cqw; border-radius: 3cqw; border: .6cqw solid #9aa3ad; background: #fffaf0; } .lb-skininfo b { font-size: 4.6cqw; color: #3a2a10; } .lb-skininfo em { font-style: normal; padding: .4cqw 2cqw; border-radius: 999px; color: #fff; font-size: 3cqw; } .lb-skininfo .lb-buy { grid-column: 1 / -1; } .lb-skhide { grid-column: 1 / -1; padding: 1.6cqw; border: .4cqw solid #8a6a3a; border-radius: 2.4cqw; background: #fffaf0; color: #4a3210; font-size: 3.2cqw !important; } .lb-skhide.on { background: #4a3210; color: #fff; } .lb-skininfo .lb-skst { grid-column: 1 / -1; font-size: 3cqw; color: #2f5a1c; }
 .lb-card.skin img { object-fit: contain; background: radial-gradient(#fff, #f2e2bc); }
 .lb-awk { grid-column: 1 / -1; display: grid; grid-template-columns: auto auto 1fr auto; align-items: center; gap: 1.6cqw; margin-top: 1.4cqw; padding: 1.4cqw 2cqw; border-radius: 2.4cqw; background: #f6e2b0; } .lb-awk b { font-size: 3.6cqw; color: #4a2a06; white-space: nowrap; } .lb-awk small { font-size: 2.6cqw; color: #6a4a1e; } .lb-awk .lb-gmerge { padding: 1.2cqw 2.4cqw; font-size: 3.2cqw !important; white-space: nowrap; }
 .lb-awk-st i { font-style: normal; font-size: 3.6cqw; color: #c9b48a; } .lb-awk-st i.on { color: #ffb300; text-shadow: 0 0 .8cqw #ffd23a; }
@@ -1425,7 +1425,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610280616";
+  const BUILD = "202610280628";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -3974,7 +3974,7 @@ body.game-full { overflow: hidden; }
       s.chap = o.ch || 0; s.run = o.run || ""; s.raid = !!o.raid; s.mode = s.chap ? o.mode || 0 : 0; { const CT = CH_TBL[s.chap] || CH_TBL[0]; s.chHp = CT[0] * MODE_HP[s.mode]; s.chDmg = CT[1] * MODE_DMG[s.mode]; s.chSp = CT[2]; s.chCap = CT[3]; } setMap(s.chap ? chMap(s.chap) : mapFor(1)); // 장마다 맵(무한의 탑은 1장 맵부터) — 빠져 있어 늘 옛 어두운 맵이었다(2026-10-28)
       { const P0 = WPROF[heroKey] || WPROF.je; s.rate = P0.rate; s.range = Math.round(AIM_R * (P0.range || 1)); } // 무기마다 쏘는 빠르기 · 사거리
       const GS = o.gs || {}; if (GS.hp) { s.max += GS.hp; s.hp = s.max; } if (GS.atk) s.dmg *= 1 + GS.atk / 100; if (GS.spd) s.spd *= 1 + GS.spd / 100; s.defR = (GS.def || 0) / ((GS.def || 0) + 100); // 장비(2026-10-28)
-      if (GS.wawk) s.dmg *= 1 + 0.25 * GS.wawk; s.skin = GS.skin || "basic"; /* 무기 각성 · 스킨(2026-10-28) */ { const sg = GS.skinG || 0; if (sg) { s.max = Math.round(s.max * (1 + SKIN_HP[sg])); s.hp = s.max; s.dmg *= 1 + SKIN_ATK[sg]; } }
+      if (GS.wawk) s.dmg *= 1 + 0.25 * GS.wawk; s.skin = GS.skin || "basic"; /* 무기 각성 · 스킨(2026-10-28) · 숨기기면 창구가 basic 으로 줌 */ { const sg = GS.skinG || 0; if (sg) { s.max = Math.round(s.max * (1 + SKIN_HP[sg])); s.hp = s.max; s.dmg *= 1 + SKIN_ATK[sg]; } }
       if (GS.set >= 2) s.dmg *= 1.15; if (GS.set >= 4) { s.max = Math.round(s.max * 1.2); s.hp = s.max; } if (GS.set >= 6) s.cool *= 0.9; // 세트 효과
       const U = o.used || {}, K = o.carry || {}; if (U.atk) s.dmg *= 1.2; if (U.spd) s.spd *= 1.15; s.heal = K.heal || 0; s.rev = K.rev || 0; s.healUsed = 0; s.revUsed = 0; healLabel(); // 상점 물건 setMap(s.chap || 1); // 장마다 맵 · 몬스터 세기
       renderSkills(); resume(); if (s.raid) { raidStart(); return; } msg(s.chap ? (s.mode ? "[" + MODE_N[s.mode] + "] " : "") + s.chap + "장 " + CHAPS[s.chap - 1] + " ㆍ 1단계!" : "1단계 ㆍ 죽을 때까지 버텨라!");
@@ -4475,7 +4475,7 @@ body.game-full { overflow: hidden; }
         for (const f of s.foes) {
           if (b.life <= 0) break;
           // 맞는 범위 = 그림 크기에 맞춰(그림은 몸의 2.8배) — 예전엔 몸 동그라미만이라 그림 가장자리를 지나가도 안 맞았다
-          if (f.hp <= 0 || b.hit.includes(f) || (f.x - b.x) ** 2 + (f.y - b.y) ** 2 > (f.r * 1.25 + 5) ** 2) continue;
+          if (f.hp <= 0 || b.hit.includes(f) || (f.x - b.x) ** 2 + (f.y - b.y) ** 2 > (f.k === "boss" ? f.r * 1.25 + 5 : MON_H * 0.36) ** 2) continue;
           const crit = Math.random() < s.crit, dmg = s.dmg * (b.dm || 1) * (crit ? 2.5 : 1);
           hurt(f, dmg, true, crit, true); b.hit.push(f);
           if (s.fx.length < 160) s.fx.push({ spark: true, x: b.x, y: b.y, c: b.c, life: 0.15 });
@@ -4868,12 +4868,13 @@ body.game-full { overflow: hidden; }
     }
     /* 수달단 몬스터 — 맵(장)마다 그 맵 몬스터 하나(2026-10-28 "기존 몬스터는 다 없애고 맵별로 어울리는 몬스터"). 그림은 한 장이라 motion() 으로 흔듦 */
     const OCM = {}; function ocImg(n) { let i = OCM[n]; if (!i) { i = OCM[n] = new Image(); i.src = "img/lb/" + n + ".webp?v=" + BUILD; } return i.complete && i.naturalWidth ? i : null; } // mon-N · boss-N(맵마다 대장, 2026-10-28)
+    const MON_H = 76; /* 잡몹 그림 크기 = 수달 키(76)와 같게(2026-10-28 "몬스터 크기랑 주인공 수달 크기 똑같이, 보스는 그대로") */
     function ocMon(f, x, y, m, dead) {
       const boss = f.k === "boss", n = f.cm || (f.cm = Math.max(1, Math.min(10, mapIdx || 1))), I0 = ocImg((boss ? "boss-" : "mon-") + n), A = ocImg((boss ? "mb-" : "ma-") + n); if (!I0 && !A) return false;
       /* 동작 그림(ChatGPT 6칸: 걷기 4 · 공격 준비 · 공격, 오른쪽 봄) — 있으면 걸을 땐 1~4, 붙으면 5 · 6 번갈아(2026-10-28 "탕탕특공대처럼 자연스럽게"). 없으면 그림 한 장 */
       let I = I0, sx0 = 0, sw0 = I0 ? I0.naturalWidth : 0, ih = I0 ? I0.naturalHeight : 0;
       if (A) { const cw = A.naturalWidth / 6, t = s.t + f.ph, fr = dead != null ? 0 : boss && f.wind > 0 ? 4 : boss && f.atkT > 0 ? 5 : !boss && f.near ? 4 + (Math.floor(t * 4) % 2) : Math.floor(t * (boss ? 5 : 8)) % 4; I = A; sx0 = fr * cw; sw0 = cw; ih = A.naturalHeight; }
-      const hh = f.r * (boss ? 5 : 3.8), k = hh / Math.max(sw0, ih), w = sw0 * k, h = ih * k, flip = s.x > f.x;
+      const hh = boss ? f.r * 5 : MON_H, k = hh / Math.max(sw0, ih), w = sw0 * k, h = ih * k, flip = s.x > f.x;
       g.fillStyle = "rgba(0,0,0,.3)"; g.beginPath(); g.ellipse(x, y + hh * 0.42, w * 0.34, hh * 0.08, 0, 0, Math.PI * 2); g.fill();
       g.save(); g.translate(x + (m && m.dx ? m.dx : 0), y + hh * 0.42 + (m ? m.y : 0)); if (dead != null) { g.rotate((flip ? -1 : 1) * Math.min(1.4, dead * 2.4)); g.globalAlpha = Math.max(0, 1 - dead * 1.2); } else { g.rotate((m ? m.rot : 0) + (m && m.lean ? m.lean * (flip ? 1 : -1) * 0.5 : 0)); g.scale(m ? m.sx : 1, m ? m.sy : 1); g.globalAlpha = m ? m.a : 1; }
       if (A ? (m && m.face != null ? m.face < 0 : !flip) : (m && m.face != null ? m.face > 0 : flip)) g.scale(-1, 1); // 동작 그림은 오른쪽을, 한 장 그림은 왼쪽을 봄
@@ -4886,7 +4887,7 @@ body.game-full { overflow: hidden; }
       return true;
     }
     function monster(f, x, y) {
-      if (ocMon(f, x, y, walkMotion(f, f.r * (f.k === "boss" ? 5 : 3.8)))) return;
+      if (ocMon(f, x, y, walkMotion(f, f.k === "boss" ? f.r * 5 : MON_H))) return;
       if (bgMon(f, x, y, motion(f))) { if (f.k === "boss") { const hh = f.r * 3.2 * 0.45; g.fillStyle = "rgba(0,0,0,.6)"; g.fillRect(x - 30, y + hh + 4, 60, 5); g.fillStyle = "#ff6a4a"; g.fillRect(x - 30, y + hh + 4, 60 * Math.max(0, f.hp) / f.full, 5); } return; }
       const f2 = frame2(f), IMG = f2 ? MON2 : MON, fr = f2 || MF[f.skin], base = f2 ? MF2[SKIN2[f.skin]].move[0] : fr;
       const k = f.r * 2.8 / Math.max(base[2], base[3]), w = fr[2] * k, h = fr[3] * k, m = motion(f), dir = s.x < f.x ? -1 : 1, face = f2 ? FACE2[SKIN2[f.skin]] : FACE_R[f.skin];
@@ -5501,7 +5502,7 @@ body.game-full { overflow: hidden; }
     function lobGear(P) {
       const D = P.gdef || {}, eq = P.eq || {}, gear = P.gear || [], st = P.stats || {}, find = (u) => gear.find((x) => x.u === u), SELL = P.sellP || [100, 300, 800, 2000], MAXLV = P.maxLv || [10, 20, 30, 40], MATN = P.matN || ["낡은 부품", "튼튼한 부품", "빛나는 부품", "전설 부품"];
       const head = el("div", "lb-ghead"), skb = el("button", "lb-skinbtn", "👕 스킨"); skb.type = "button"; skb.onclick = () => { lobTab = "skin"; lobErr = ""; lobDraw(); }; head.append(el("b", null, "🐾 장비 착용"), skb, el("span", "lb-power", "전투력 " + (st.power || 0).toLocaleString()));
-      const stage = el("div", "lb-gstage"); stage.appendChild(otter360(P, P.skin));
+      const stage = el("div", "lb-gstage"); stage.appendChild(otter360(P, P.skin, false));
       const slot = (key, label, side) => { const it = key === "weapon" ? null : find(eq[key]), b = el("button", "lb-gslot p-" + key); b.type = "button";
         if (key === "weapon") { const w = WPN[P.wpn] || WPN.bow, i = el("img"); i.src = LBI(w.pic); i.alt = ""; b.append(i, el("small", null, "무기")); b.onclick = () => { lobTab = "wpn"; lobSel = null; lobDraw(); }; b.style.borderColor = GRADE_C[3]; }
         else if (it) { const i = el("img"); i.src = LBI("g-" + it.k); i.alt = ""; b.append(i, el("small", null, GRADE_N[it.g])); b.style.borderColor = GRADE_C[it.g]; b.onclick = () => gTap(it.u); }
@@ -5542,9 +5543,10 @@ body.game-full { overflow: hidden; }
     function lobSkin(P) {
       const D = P.skinDef || {}, own = P.skins || ["basic"], cur = P.skin || "basic", sel = lobSel && D[lobSel] ? lobSel : cur;
       const head = el("div", "lb-ghead"), back = el("button", "lb-skinbtn", "← 장비"); back.type = "button"; back.onclick = () => { lobTab = "gear"; lobSel = null; lobDraw(); }; head.append(el("b", null, "👕 스킨"), back);
-      const pv = el("div", "lb-skinpv"), ot = el("div", "lb-gotter" + (sel !== "basic" ? " sk-" + sel : "")); if (sel !== "basic") { const h = el("img", "lb-ghat h-" + sel); h.src = LBI("hat-" + sel); h.alt = ""; ot.appendChild(h); } pv.appendChild(ot);
+      const pv = el("div", "lb-skinpv"); pv.appendChild(otter360(P, sel, true));
       const S = D[sel] || {}, info = el("div", "lb-skininfo"); info.append(el("b", null, S.n || ""), el("em", null, GRADE_N[S.g || 0]), el("small", "lb-skst", skinStat(S.g || 0))); info.style.borderColor = GRADE_C[S.g || 0]; info.querySelector("em").style.background = GRADE_C[S.g || 0];
       const has = own.includes(sel), bb = el("button", "lb-buy", cur === sel ? "착용 중" : has ? "착용하기" : "사서 착용 💰 " + (S.gold || 0).toLocaleString()); bb.type = "button"; bb.disabled = cur === sel || P.free || (!has && P.gold < (S.gold || 0)); bb.onclick = () => lobAct("gameSkin", sel); info.appendChild(bb);
+      if (cur !== "basic") { const hb = el("button", "lb-skhide" + (P.skinHide ? " on" : ""), P.skinHide ? "🙈 스킨 숨김 중 ㆍ 보이기" : "👁 스킨 보이는 중 ㆍ 숨기기"); hb.type = "button"; hb.onclick = () => lobAct("gameSkin", "hide"); info.appendChild(hb); } /* 입고는 있되 겉모습만 장비로(능력치 그대로) */
       const grid = el("div", "lb-grid g4"); Object.keys(D).sort((a, b) => D[a].g - D[b].g).forEach((k) => { const c = lobCard(k === "basic" ? "otter-front" : "hat-" + k, D[k].n, cur === k ? "✔ 착용" : own.includes(k) ? "보유" : "💰 " + D[k].gold.toLocaleString(), sel === k, false, () => { lobSel = k; lobDraw(); }); c.style.borderColor = GRADE_C[D[k].g]; c.classList.add("skin"); grid.appendChild(c); });
       return [head, pv, info, grid, el("p", "lb-note", "등급 능력치 ㆍ 희귀 체력 +3% · 영웅 체력 +5% 공격 +5% · 전설 체력 +8% 공격 +8%")];
     }
@@ -5561,13 +5563,12 @@ body.game-full { overflow: hidden; }
       const H = ch - top, band = (a, b) => { let L = c.width, R = 0; for (let y = Math.round(top + H * a); y < top + H * b; y++) for (let x = 0; x < c.width; x++) if (d[(y * c.width + x) * 4 + 3] > 40) { if (x < L) L = x; if (x > R) R = x; } return [L, Math.max(L, R)]; };
       const [hl, hr] = band(0.05, 0.3), [bl, br] = band(0.45, 0.62); return (O360M[key] = { top, h: H, hx: (hl + hr) / 2, hw: hr - hl, bx: (bl + br) / 2, bw: br - bl }); }
     function o360Img(n) { let i = O360[n]; if (!i) { i = O360[n] = new Image(); i.onload = () => { if (!$("gLobby").hidden && lobTab === "gear") lobDraw(); }; i.src = LBI(n); } return i.complete && i.naturalWidth ? i : null; }
-    function otter360(P, skin) {
-      const sk = skin && skin !== "basic" ? skin : "", box = el("div", "lb-o360" + (sk ? " sk-" + sk : "")), cv = document.createElement("canvas"); box.appendChild(cv);
-      const name = Object.keys(P.eq || {}).length ? "otter-360g" : "otter-360"; /* 장비를 끼면 장비를 입혀 그린 수달(ChatGPT 8방향) ㆍ 겹쳐 붙이던 그림은 뺌(2026-10-28 "엄청 부자연스럽다") */
+    function otter360(P, skin, preview) {
+      const sk = skin && skin !== "basic" && (preview || !P.skinHide) ? skin : "", box = el("div", "lb-o360"), cv = document.createElement("canvas"); box.appendChild(cv);
+      const gear = Object.keys(P.eq || {}).length ? "otter-360g" : "otter-360", name = sk ? "otter-360-" + sk : gear; /* 스킨은 장비 위에 덮어 입은 그림(ChatGPT), 아직 없으면 장비 모습 */ /* 장비를 끼면 장비를 입혀 그린 수달(ChatGPT 8방향) ㆍ 겹쳐 붙이던 그림은 뺌(2026-10-28 "엄청 부자연스럽다") */
       const worn = [], eqs = P.eq || {}; Object.keys(eqs).forEach((sl) => { const it = (P.gear || []).find((x) => x.u === eqs[sl]); if (it && GE_POS[it.k]) worn.push(it.k); }); worn.sort((a, b) => GE_POS[a].z - GE_POS[b].z);
       const wpic = "wp-" + (P.wpn || "bow"); /* 배경 없는 옆모습 무기(ChatGPT) */
-      if (sk) { const h = el("img", "lb-ghat h-" + sk); h.src = LBI("hat-" + sk); h.alt = ""; box.appendChild(h); }
-      const draw = () => { const I = o360Img(name) || o360Img("otter-360"); if (!I || !cv.isConnected) return; const r = box.getBoundingClientRect(), d = Math.min(2, devicePixelRatio || 1), W2 = Math.max(1, Math.round(r.width * d)), H2 = Math.max(1, Math.round(r.height * d)); if (cv.width !== W2 || cv.height !== H2) { cv.width = W2; cv.height = H2; }
+      const draw = () => { const I = o360Img(name) || o360Img(gear) || o360Img("otter-360"); if (!I || !cv.isConnected) return; const r = box.getBoundingClientRect(), d = Math.min(2, devicePixelRatio || 1), W2 = Math.max(1, Math.round(r.width * d)), H2 = Math.max(1, Math.round(r.height * d)); if (cv.width !== W2 || cv.height !== H2) { cv.width = W2; cv.height = H2; }
         const n = 8, cw = I.naturalWidth / n, ch = I.naturalHeight, i = ((Math.round(o360Ang / 45) % n) + n) % n, k = Math.min(W2 / cw, H2 / ch), gx = cv.getContext("2d"); gx.clearRect(0, 0, W2, H2); gx.imageSmoothingQuality = "high"; const ox = (W2 - cw * k) / 2, oy = H2 - ch * k, M = o360Met(I, i, cw, ch), front = i <= 2 || i >= 6;
         const put = (key) => { if (key === "weapon") { const WI = wpic && o360Img(wpic); if (!WI || i === 4) return; const ww = M.bw * 0.95 * k, wh = ww * WI.naturalHeight / WI.naturalWidth, side = i >= 5 ? -1 : 1, hx = ox + (M.bx + side * M.bw * (i === 0 ? 0.42 : 0.18)) * k, hy = oy + M.top * k + M.h * 0.6 * k; gx.save(); gx.translate(hx, hy); if (side < 0) gx.scale(-1, 1); gx.drawImage(WI, -ww * 0.3, -wh / 2, ww, wh); gx.restore(); return; }
           const G = GE_POS[key], GI = o360Img("ge-" + key); if (!GI) return; const gw0 = GI.naturalWidth / 8, gh0 = GI.naturalHeight, h = M.h * G.h * k, w = h * gw0 / gh0, cx = ox + (G.r === "head" ? M.hx : M.bx) * k, y = oy + (M.top + M.h * G.y) * k - h * G.ay;
