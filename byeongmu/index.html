@@ -897,6 +897,7 @@ body.game-full { overflow: hidden; }
 .game-picks button.pk-atk, .game-picks button.pk-sup, .game-picks button.pk-evo { grid-template-columns: 62px 1fr; border: 3px solid #e2c58a; border-radius: 16px; background: linear-gradient(#fffaf0, #f3e2b8); color: #3a2a10; box-shadow: 0 4px 0 #c9a45e; font-family: "Jua", "Noto Sans KR", sans-serif; }
 .game-picks button.pk-atk { border-color: #6ab4ff; } .game-picks button.pk-evo, .game-picks button.pk-evo b, .game-picks button.pk-evo span { color: #5a3008; } .game-picks button.pk-evo { border-color: #f5b419; background: linear-gradient(#fff6cc, #ffd86a); box-shadow: 0 4px 0 #b97a0a, 0 0 18px rgba(245,180,25,.8); } .pk-new.evo { background: linear-gradient(#ff9a3a, #e0402c); } .game-picks button.pk-evo .gico { filter: drop-shadow(0 0 6px #ffd23a) saturate(1.3); } .game-picks button.pk-sup { border-color: #7fd36a; }
 .game-picks button.pk-atk b, .game-picks button.pk-sup b, .game-picks button.pk-evo b { font-size: 19px; color: #3a2a10; } .game-picks button.pk-atk span, .game-picks button.pk-sup span, .game-picks button.pk-evo span { color: #5a3a12; font-size: 14px; } /* ChatGPT 검토(2026-10-28) — 이름 18~20 · 설명 13~14 */
+.pk-type { margin-left: 8px; padding: 1px 7px; border-radius: 999px; font-style: normal; font-size: 11px; letter-spacing: 0; color: #fff; vertical-align: 2px; background: #3d82e6; } .pk-type.t-basic { background: #e07a1c; } .pk-type.t-all { background: #c0392b; } .pk-type.t-atk2 { background: #6a5acd; } .pk-type.t-hp { background: #d6336c; } .pk-type.t-body { background: #2f8f1c; } .pk-type.t-evo { background: #b97a0a; }
 .pk-st { font-style: normal; color: #f5b419; letter-spacing: 1px; font-size: 14px; } .pk-new { margin-left: 6px; padding: 0 6px; border-radius: 999px; background: #ff5a4a; color: #fff; font-style: normal; font-size: 11px; vertical-align: 2px; }
 .gskill img.sk-pic { width: 34px; height: 34px; border-radius: 8px; margin: 0 auto 1px; }
 .game-picks button { display: grid; grid-template-columns: 46px 1fr; column-gap: 12px; row-gap: 2px; align-items: center; text-align: left; padding: 12px 14px; border: 1px solid var(--gold-lo); border-radius: 6px; background: var(--panel-hi); color: var(--ink); cursor: pointer; font: inherit; }
@@ -1405,7 +1406,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610280412";
+  const BUILD = "202610280417";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -3730,20 +3731,20 @@ body.game-full { overflow: hidden; }
     const UPS = [
       /* 수달단 레벨업 — 탕탕특공대처럼 다시(2026-10-28 "스킬도 탕탕특공대 비슷하게, 지금 스킬 다 없애고"). 공격 무기는 모두 저절로 나감(단추 없음) · 공격 6가지 · 보조 6가지까지 · 다 Lv 5.
          이름 · 진화 짝은 우리 것으로(2026-10-28 "조사해서 저작권 위반 안 되게") — 장르 공통 틀(자동 무기 + 보조, 무기 Lv 5 + 짝 보조 → 진화)만 따름 */
-      { k: "kunai", n: "쿠나이", max: 5, skill: true, d: "가까운 몬스터에게 쿠나이를 여러 개 던져요", up: "쿠나이 +1 · 더 세게 · 더 자주" },
-      { k: "orbs", n: "물방울 구슬", max: 5, atk: true, d: "몸 둘레를 도는 물방울 구슬 +1 — 닿는 몬스터가 다쳐요", f: () => { s.orbs++; } },
-      { k: "homing", n: "드론", max: 5, skill: true, d: "드론이 몬스터를 따라가는 미사일을 쏴요", up: "미사일 더 많이 · 더 세게 · 더 자주" },
-      { k: "fire", n: "화염병", max: 5, skill: true, d: "몬스터 무리에 화염병 — 땅이 4초 동안 불타요", up: "더 넓게 · 더 뜨겁게 · 더 자주" },
-      { k: "thunder", n: "번개 구름", max: 5, skill: true, d: "화면 안 몬스터 여럿에게 번개가 떨어져요", up: "번개 더 많이 · 더 세게 · 더 자주" },
-      { k: "aura", n: "물결 고리", max: 5, atk: true, d: "몸 둘레 물결 고리 — 가까이 온 몬스터가 계속 다쳐요", f: () => { s.aura++; } },
-      { k: "mj_star", n: "부메랑", max: 5, skill: true, d: "던지면 꿰뚫고 다시 돌아오는 조개 부메랑", up: "더 크게 · 더 세게 · 더 자주" },
-      { k: "je_storm", n: "회전 드릴", max: 5, skill: true, d: "몬스터를 꿰뚫고 끌고 가는 드릴 로켓", up: "더 크게 · 더 세게 · 더 자주" },
-      { k: "rate", n: "빠른 장전", max: 5, d: "평타 쏘는 간격 −12%", f: () => { s.rate *= 0.88; } },
-      { k: "dmg", n: "단단한 탄환", max: 5, d: "모든 피해 +15%", f: () => { s.dmg *= 1.15; } },
-      { k: "max", n: "하트 물병", max: 5, d: "최대 체력 +20%, 그만큼 회복", f: () => { const m = Math.round(s.max * 0.2); s.max += m; s.hp += m; } },
-      { k: "spd", n: "날쌘 신발", max: 5, d: "이동 속도 +10%", f: () => { s.spd *= 1.1; } },
-      { k: "magnet", n: "조개 자석", max: 5, d: "경험치 구슬을 더 멀리서 끌어와요(+40%)", f: () => { s.magnet *= 1.4; } },
-      { k: "cool", n: "모래시계", max: 5, d: "무기 재사용 시간 −8%", f: () => { s.cool *= 0.92; }, ok: () => s.skills.length > 0 },
+      { k: "kunai", n: "쿠나이", max: 5, skill: true, d: "1.5초마다 가까운 몬스터에게 쿠나이 2개를 던져요", up: "쿠나이 +1개 · 피해 +14 · 조금 더 자주" },
+      { k: "orbs", n: "물방울 구슬", max: 5, atk: true, d: "내 몸 둘레를 계속 도는 물방울 1개 — 닿는 몬스터가 다쳐요", up: "도는 물방울 +1개", f: () => { s.orbs++; } },
+      { k: "homing", n: "드론", max: 5, skill: true, d: "7초마다 드론이 몬스터를 따라가는 미사일 4발", up: "미사일 +1발 · 피해 +15 · 더 자주" },
+      { k: "fire", n: "화염병", max: 5, skill: true, d: "11초마다 몬스터 쪽에 화염병 — 땅이 4초 동안 불타요", up: "불 범위 넓게 · 피해 +12 · 더 자주" },
+      { k: "thunder", n: "번개 구름", max: 5, skill: true, d: "8초마다 가까운 몬스터 4마리에게 번개", up: "번개 +1마리 · 피해 +25 · 더 자주" },
+      { k: "aura", n: "물결 고리", max: 5, atk: true, d: "내 몸 둘레 물결 고리 — 안에 들어온 몬스터가 계속 다쳐요", up: "고리 넓게 · 초당 피해 +6", f: () => { s.aura++; } },
+      { k: "mj_star", n: "부메랑", max: 5, skill: true, d: "7초마다 몬스터를 꿰뚫고 다시 돌아오는 부메랑", up: "더 크게 · 피해 +25 · 더 자주" },
+      { k: "je_storm", n: "회전 드릴", max: 5, skill: true, d: "11초마다 몬스터를 꿰뚫고 끌고 가는 드릴", up: "더 크게 · 피해 +20 · 더 자주" },
+      { k: "rate", n: "빠른 장전", max: 5, d: "평타(총) 쏘는 속도 +12% — 자동 무기에는 안 들어가요", f: () => { s.rate *= 0.88; } },
+      { k: "dmg", n: "단단한 탄환", max: 5, d: "평타 · 자동 무기 피해 모두 +15%", f: () => { s.dmg *= 1.15; s.allMul = (s.allMul || 1) * 1.15; } },
+      { k: "max", n: "하트 물병", max: 5, d: "최대 체력(피통) +20% — 늘어난 만큼 바로 채워 줘요", f: () => { const m = Math.round(s.max * 0.2); s.max += m; s.hp += m; } },
+      { k: "spd", n: "날쌘 신발", max: 5, d: "내 이동 속도 +10%", f: () => { s.spd *= 1.1; } },
+      { k: "magnet", n: "조개 자석", max: 5, d: "경험치 구슬 끌어오는 거리 +40%", f: () => { s.magnet *= 1.4; } },
+      { k: "cool", n: "모래시계", max: 5, d: "자동 무기가 8% 더 자주 나가요 — 평타에는 안 들어가요", f: () => { s.cool *= 0.92; }, ok: () => s.skills.length > 0 },
     ];
     /* 진화 — 무기 Lv 5 + 짝 보조를 가지면 레벨업 카드에 「진화」 가 나옴(한 번). 무기는 레벨 +3 만큼 세지고, 구슬 · 고리는 +3 */
     const EVO = [["kunai", "spd", "그림자 쿠나이"], ["orbs", "max", "물방울 결계"], ["homing", "cool", "쌍둥이 드론"], ["fire", "dmg", "용암 웅덩이"], ["thunder", "rate", "천둥 폭풍"], ["aura", "magnet", "소용돌이 고리"], ["mj_star", "spd", "회오리 부메랑"], ["je_storm", "dmg", "거대 드릴"]];
@@ -3877,14 +3878,15 @@ body.game-full { overflow: hidden; }
       picks.forEach((u) => {
         const have = s.up[u.k] || 0, b = el("button"); b.type = "button";
         const tt = el("b", null, u.n), st = el("i", "pk-st", "★".repeat(have + 1) + "☆".repeat(Math.max(0, u.max - have - 1))); if (u.evo) { tt.appendChild(el("em", "pk-new evo", "진화")); st.textContent = "★"; } else if (!have) tt.appendChild(el("em", "pk-new", "NEW"));
-        b.classList.add(u.evo ? "pk-evo" : UP_ATK(u) ? "pk-atk" : "pk-sup"); b.append(icon(u.evo || u.k), tt, st, el("span", null, have && u.up ? u.up : u.d)); // 탕탕특공대처럼 — 별로 레벨 · 새 것은 NEW
+        b.classList.add(u.evo ? "pk-evo" : UP_ATK(u) ? "pk-atk" : "pk-sup"); const ty = u.evo ? ["진화", "evo"] : UP_ATK(u) ? ["자동 무기", "atk"] : u.k === "rate" ? ["평타 강화", "basic"] : u.k === "dmg" ? ["모든 공격", "all"] : u.k === "cool" ? ["무기 보조", "atk2"] : u.k === "max" ? ["체력", "hp"] : ["몸 강화", "body"]; st.appendChild(el("em", "pk-type t-" + ty[1], ty[0])); // 2026-10-28 "스킬인지 평타 기반인지 알 수가 없어"
+        b.append(icon(u.evo || u.k), tt, st, el("span", null, have && u.up ? u.up : u.d)); // 탕탕특공대처럼 — 별로 레벨 · 새 것은 NEW
         b.onclick = () => take(u); box.appendChild(b);
       });
       /* "렙업하고 스킬 고를 때 몬스터가 때려서 자꾸 죽는다 — 일시정지로" (2026-10-26). 고르는 동안은 원래 멈춰 있었다 —
          죽는 것은 고른 직후 둘러싸여서 · 끌던 손가락을 떼며 잘못 눌려서. 그래서 「일시정지」 라고 보이고, 0.5초는 못 누르게, 고른 뒤 1.5초 보호막 */
       const bs = box.querySelectorAll("button"); bs.forEach((b) => { b.disabled = true; });
       setTimeout(() => bs.forEach((b) => { b.disabled = false; }), 500);
-      panel([el("h3", null, title || "Lv " + s.lv + " — 하나 고르세요"), el("p", "best", "⏸ 일시정지 중 — 고르면 1.5초 보호막과 함께 다시 시작해요"), box]);
+      panel([el("h3", null, title || "Lv " + s.lv + " — 하나 고르세요"), el("p", "best", "⏸ 멈춤 — 고르면 1.5초 보호막과 함께 다시 시작"), box]);
     }
     function take(u) {
       s.up[u.k] = (s.up[u.k] || 0) + 1;
@@ -4315,8 +4317,9 @@ body.game-full { overflow: hidden; }
       lab.append(cb, el("span", null, "🧪 테스트 모드 — 공격력 " + TEST_MUL + "배, 순위표에 안 올라가요"));
       return lab;
     }
-    function hurt(f, n, flash, crit) {
+    function hurt(f, n, flash, crit, basic) {
       if (s.test) n *= TEST_MUL;
+      if (!basic) n *= s.allMul || 1; // 단단한 탄환 — 자동 무기에도(평타는 s.dmg 에 이미 들어 있음)
       n *= 1 + (s.lv - 1) * 0.01; // 레벨마다 모든 공격 +1% 쌓임 — "레벨이 높아질수록 1% 쌓이면서 세지는" (2026-10-26)
       f.hp -= n;
       if (!flash) return;
@@ -4410,11 +4413,11 @@ body.game-full { overflow: hidden; }
           // 맞는 범위 = 그림 크기에 맞춰(그림은 몸의 2.8배) — 예전엔 몸 동그라미만이라 그림 가장자리를 지나가도 안 맞았다
           if (f.hp <= 0 || b.hit.includes(f) || (f.x - b.x) ** 2 + (f.y - b.y) ** 2 > (f.r * 1.25 + 5) ** 2) continue;
           const crit = Math.random() < s.crit, dmg = s.dmg * (crit ? 2.5 : 1);
-          hurt(f, dmg, true, crit); b.hit.push(f);
+          hurt(f, dmg, true, crit, true); b.hit.push(f);
           if (s.fx.length < 160) s.fx.push({ spark: true, x: b.x, y: b.y, c: b.c, life: 0.15 });
           if (s.boom) { // 폭발 — 둘레 절반 피해
             const R = 36 + 12 * s.boom;
-            s.foes.forEach((o) => { if (o !== f && o.hp > 0 && (o.x - b.x) ** 2 + (o.y - b.y) ** 2 < (R + o.r) ** 2) hurt(o, dmg * 0.5); });
+            s.foes.forEach((o) => { if (o !== f && o.hp > 0 && (o.x - b.x) ** 2 + (o.y - b.y) ** 2 < (R + o.r) ** 2) hurt(o, dmg * 0.5, false, false, true); });
             if (s.fx.length < 160) s.fx.push({ x: b.x, y: b.y, r: R / 2.2, c: "#ff9a3c", life: 0.2 });
           }
           if (b.bn > 0) { // 튕김 — 가까운 다른 몬스터로 (꿰뚫기는 안 씀)
