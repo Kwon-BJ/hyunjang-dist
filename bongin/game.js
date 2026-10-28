@@ -335,7 +335,7 @@ const Dungeon = (() => {
     S.flash = Math.max(fl, S.flash * 0.4); shake = Math.max(sh, shake * 0.4); // 남의 궁극기는 화면을 덜 흔듦
   }
   function cast(sk, sub) {
-    if (!sub && !S.ghost && C.party) C.send({ k: "cast", i: ALL_SKILLS.indexOf(sk) });
+    if (!sub && !S.ghost && (C.party || S.spec)) C.send({ k: "cast", i: ALL_SKILLS.indexOf(sk) }); // 운영자가 보는 중(혼자 판)에도 — 2026-10-28 "관전하면 스킬이 안 보인다"
     if (sk.kind === "ult" && !S.ghost && !sub && !S.cut) { S.cut = { t: 0, sk, hero: C.op && !(C.look && C.look.gm === 0) ? "chief" : heroOf(C.look) }; S.hero.inv = Math.max(S.hero.inv, 2.5); return; } // 각성 컷인(아래 cutStep)
     if (sk.kind === "ult") { S.flash = 0.5; shake = 0.7; if (S.ghost) banner("궁극기 — " + sk.name + "!"); S.hero.inv = Math.max(S.hero.inv, 1); sk.multi.forEach((m) => cast(m, true)); if (!S.ghost) { ultAll(sk, 1); S.ultWave = { t: 0.9, sk }; } return; } // 궁극기 — 여러 재주를 한 번에 + 방 안 모든 몬스터 두 번(2026-10-28)
     const H = S.hero, near = (r) => S.foes.filter((f) => f.st !== "dead" && Math.abs(f.x - H.x) < r).concat(pvpFoes().filter((p) => Math.abs(p.x - H.x) < r)).sort((a, b) => Math.abs(a.x - H.x) - Math.abs(b.x - H.x));
@@ -405,7 +405,7 @@ const Dungeon = (() => {
       const A = H.st === "airatk" ? AIR : MYATK[H.step] || MYATK[0], last = MYATK.length - 1;
       if (H.st === "atk" && H.t < A.act[0] + 0.05) H.x += H.face * A.lunge * dt * 4 * (1 - H.t / (A.act[0] + 0.05));
       if (H.t >= A.act[0] && H.t <= A.act[1]) {
-        if (A.shot && H.st === "atk") { if (!H.hit.includes("shot")) { H.hit.push("shot"); const sh = A.shot; for (let k = 0; k < sh.n; k++) S.shots.push({ x: H.x + H.face * 40, z: clamp(H.z + (k - (sh.n - 1) / 2) * 30, Z0, Z1), vx: H.face * sh.spd, t: sh.life, hit: [], face: H.face, sk: { fr: sh.fr, size: sh.size, dmg: A.dmg, type: A.type } }); } } // 부적 · 화살
+        if (A.shot && H.st === "atk") { if (!H.hit.includes("shot")) { H.hit.push("shot"); const sh = A.shot; for (let k = 0; k < sh.n; k++) S.shots.push({ x: H.x + H.face * 40, z: clamp(H.z + (k - (sh.n - 1) / 2) * 30, Z0, Z1), vx: H.face * sh.spd, t: sh.life, hit: [], face: H.face, sk: { fr: sh.fr, size: sh.size, dmg: A.dmg, type: A.type } }); if ((C.party || S.spec) && !C.watch) C.send({ k: "shot", x: Math.round(H.x), z: Math.round(H.z), face: H.face, n: sh.n, spd: sh.spd, life: sh.life, fr: sh.fr, size: sh.size }); } } // 평타 탄도 다른 사람 · 관전자에게(그림만) // 부적 · 화살
         else S.foes.concat(pvpFoes()).forEach((f) => { if (f.remoteHero !== undefined || S.remote[f.id] === f) { if (!H.hit.includes(f) && inFront(H, f, A.range, 32)) { H.hit.push(f); hitPlayer(f, A.dmg, A.type, H.face); } return; } if (!H.hit.includes(f) && inFront(H, f, A.range, 32)) { H.hit.push(f); hitFoe(f, A.dmg, A.type, H.face); if (A.quake && !H.hit.includes("q")) { H.hit.push("q"); shake = 0.25; addFx({ k: "quake", x: H.x + H.face * 110, y: H.z, t: 0.45, d: 0.45, s: 260 }); } } });
       }
       if (KEYS.take("back") && H.st === "atk") { H.st = "backstep"; H.t = 0; H.vh = 260; H.inv = 0.28; H.queued = false; return; }
@@ -427,7 +427,7 @@ const Dungeon = (() => {
       if (KEYS.take("atk")) { H.st = "atk"; H.step = 0; H.t = 0; H.hit = []; H.queued = false; }
       else if (KEYS.take("jump")) { H.st = "jump"; H.vh = 760; H.t = 0; S.skBuf = null; }
       else if (KEYS.take("back")) { H.st = "backstep"; H.t = 0; H.vh = 260; H.inv = 0.28; }
-      else if (KEYS.take("roll")) { H.st = "roll"; H.t = 0; H.inv = 0.34; if (ax) H.face = Math.sign(ax); }
+      /* 회피(구르기)는 없앰 — 2026-10-28 부장님 "대쉬가 있는데 굳이 필요없다" */
     }
     /* 공중에 뜬 채 멈추던 것 (2026-10-27 "가끔 캐릭터가 공중에 뜬다, 점프 눌러줘야 스킬 나간다") — 중력은 점프 · 공중 공격 · 쓰러짐 · 백스텝에서만 돌아,
        공중에서 맞거나(hit) 공중에서 돌진 · 시전 등 다른 동작이 되면 높이가 그대로 남았다(서 있는 동작인데 떠 있고, 땅이 아니라 스킬도 막힘). 어떤 동작이든 떠 있으면 떨어지게 */
@@ -554,8 +554,9 @@ const Dungeon = (() => {
     g.restore();
   }
   function net(from, d) {
-    if (!S || !C.party || !d) return;
-    if (d.k === "cast") { ghostCast(S.remote[from], ALL_SKILLS[d.i]); return; }
+    if (!S || !(C.party || C.watch) || !d) return;
+    if (d.k === "cast") { if (S.remote[from]) ghostCast(S.remote[from], ALL_SKILLS[d.i]); return; }
+    if (d.k === "shot") { for (let k = 0; k < (d.n | 0) && k < 8; k++) S.shots.push({ x: d.x + d.face * 40, z: clamp(d.z + (k - (d.n - 1) / 2) * 30, Z0, Z1), vx: d.face * d.spd, t: d.life, hit: [], face: d.face, ghost: true, sk: { fr: d.fr, size: d.size, dmg: 0 } }); return; } // 남의 평타 탄 — 그림만
     if (d.k === "door") { if (host() && S.door) goRoom(S.room + 1); return; }
     if (d.k === "me") { const r = S.remote[from]; if (!r) return; Object.assign(r, { tx: d.x, tz: d.z, th: d.h, face: d.face, step: d.step, hp: d.hp, max: d.max, alive: d.hp > 0 }); if (r.st !== d.st) { r.st = d.st; r.t = 0; } return; }
     if (d.k === "hit" && host()) { const f = S.foes.find((x) => x.id === d.i); if (f) hitFoe(f, Math.min(600, +d.dmg || 0), d.type, d.dir || 1, true); return; }
