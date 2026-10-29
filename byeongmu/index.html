@@ -23,7 +23,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Nanum+Myeongjo:wght@700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Nanum+Myeongjo:wght@700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" media="print" onload="this.media='all'"><!-- 2026-10-29 글꼴이 첫 화면 그리기를 막지 않게 -->
 <style>
 html, body { margin: 0; padding: 0; }
 img { max-width: 100%; }
@@ -748,9 +748,9 @@ body.game-full { overflow: hidden; }
 .globby, .globby *, .game-box.full, .game-box.full * { forced-color-adjust: none; -webkit-forced-color-adjust: none; color-scheme: only light; } /* 폰 강제 다크 모드 제외 */
 .globby { position: fixed; inset: 0; z-index: 61; display: grid; place-items: center; background: #1d3312; color: #3a2a12; overflow: hidden; font-family: "Jua", "Noto Sans KR", sans-serif; }
 .globby[hidden] { display: none; }
-.globby::before { content: ""; position: absolute; inset: -40px; background: url(img/lb/bg-ch1.webp) center / cover no-repeat; filter: blur(18px) brightness(.55); }
+.globby::before { content: ""; position: absolute; inset: -40px; background: var(--lbbg, #1a2410) center / cover no-repeat; /* 그림 주소는 코드가 같은 것으로(2026-10-29 두 번 받던 것) */ filter: blur(18px) brightness(.55); }
 .lb-art { overflow: clip !important; } .globby { overflow: clip; } /* 2026-10-28 실제 시험 — 단추가 눌리면 그림 틀이 위로 밀려 프로필이 잘리던 것 */
-.lb-art { position: relative; z-index: 1; width: min(100vw, calc(100dvh * 941 / 1672)); aspect-ratio: 941 / 1672; background: url(img/lb/bg-ch1.webp) center / 100% 100% no-repeat; container-type: inline-size; overflow: hidden; }
+.lb-art { position: relative; z-index: 1; width: min(100vw, calc(100dvh * 941 / 1672)); aspect-ratio: 941 / 1672; background: center / 100% 100% no-repeat #1a2410; container-type: inline-size; overflow: hidden; }
 .lb-art button { font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .lb-art > * { position: absolute; }
 .lb-chn, .lb-chname { overflow: visible !important; line-height: 1.15; white-space: nowrap; } /* 글자 위아래가 잘리지 않게(2026-10-28) */
@@ -2023,7 +2023,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610291201";
+  const BUILD = "202610291238";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -2049,8 +2049,8 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
   async function checkBuild() {
     if (BUILD === "dev") return;
     try {
-      const t = await (await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" })).text();
-      const m = t.match(/const BUILD = "([^"]+)"/);
+      const t = await (await fetch(location.pathname.replace(/[^/]*$/, "") + "build.txt?v=" + Date.now(), { cache: "no-store" })).text(); /* 2026-10-29 화면 파일 전체(약 0.8MB)를 1분마다 받던 것 → 올리기.mjs 가 쓰는 build.txt 한 줄만 */
+      const m = t.match(/^\s*(\d{12})\s*$/);
       if (!m || m[1] === BUILD) return;
       newBuild = m[1];
       tryGo();
@@ -4401,15 +4401,17 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     };
     /* 레벨업 · 스킬 아이콘 그림 — 강화 16 · 스킬 6 (제미나이 그림, img/icons.png · 시험/몬스터효과-아이콘-자르기.cjs, 2026-10-26).
        "레벨업하면 뜨는 스킬창도 이미지 넣자". 그림을 아직 못 읽었으면 예전 선 그림(스킬만) */
+    /* 판에서만 쓰는 그림(2026-10-29 첫 로딩 줄이기 — 로비 전에 12MB 를 받던 것) — 로비가 뜨고 조금 뒤 또는 판 시작 때 한 번 받음 */
+    const GAME_IMG = []; let gameImgOn = false; function gameImgs() { if (gameImgOn) return; gameImgOn = true; GAME_IMG.forEach((fn) => { try { fn(); } catch (e) {} }); }
     const ICO = new Image(), ICOF = {"dmg":[0,0,100,112],"rate":[102,0,112,108],"multi":[216,0,111,112],"pierce":[329,0,110,112],"fan":[441,0,112,108],"crit":[555,0,112,111],"boom":[669,0,112,111],"bounce":[783,0,108,112],"dashx":[893,0,112,99],"orbs":[0,114,108,112],"aura":[110,114,112,112],"spd":[224,114,112,112],"max":[338,114,111,112],"magnet":[451,114,109,112],"regen":[562,114,112,111],"cool":[676,114,107,112],"thunder":[785,114,111,112],"whirl":[898,114,112,108],"ward":[0,228,112,94],"fire":[114,228,112,110],"homing":[228,228,112,96],"frost":[342,228,112,109]};
     let icoOk = false;
     ICO.onload = () => { icoOk = true; };
-    ICO.src = "img/icons.png?v=" + BUILD;
+    GAME_IMG.push(() => { ICO.src = "img/icons.png?v=" + BUILD; }); // 판에서만 씀 — gameImgs() 때 받음(2026-10-29 첫 로딩 줄이기)
     /* 캐릭터 스킬 그림 — 15가지 한 장씩(img/hsk.png · 시험/캐릭터스킬-자르기.cjs, 2026-10-27). 스킬 효과 · 레벨업 카드 · 스킬 단추에 같이 쓴다 */
     const HSK = new Image(), HSKF = {"kh_wave":[0,0,155,160],"kh_ring":[157,0,160,97],"kh_dash":[319,0,160,76],"hr_tali":[481,0,158,160],"hr_bolt":[641,0,160,111],"hr_bagua":[803,0,160,115],"ds_bell":[0,162,160,125],"ds_slam":[162,162,160,93],"ds_aura":[324,162,160,90],"je_wind":[486,162,160,70],"je_rain":[648,162,160,102],"je_storm":[810,162,160,78],"mj_shadow":[0,289,160,84],"mj_poison":[162,289,160,80],"mj_star":[324,289,160,75]};
     let hskOk = false;
     HSK.onload = () => { hskOk = true; };
-    HSK.src = "img/hsk.png?v=" + BUILD;
+    GAME_IMG.push(() => { HSK.src = "img/hsk.png?v=" + BUILD; }); // 판에서만 씀 — gameImgs() 때 받음(2026-10-29 첫 로딩 줄이기)
     function icon(k) {
       if (k === "wpn") { const i = document.createElement("img"); i.className = "ic gico sk-pic"; i.alt = ""; const wk = Object.keys(WCODE).find((x) => WCODE[x] === wcode()) || "bow"; i.src = "img/lb/" + ((WPN[wk] || WPN.bow).pic) + ".webp?v=" + BUILD; return i; } // 장착 무기 카드
       if (UPS.some((u) => u.k === k)) { const i = document.createElement("img"); i.className = "ic gico sk-pic"; i.alt = ""; i.setAttribute("aria-hidden", "true"); i.src = "img/lb/s-" + k + ".webp?v=" + BUILD; return i; } // 수달단 레벨업 스킬 — 제미나이 아이콘(시험/스킬아이콘-자르기.cjs)
@@ -4591,7 +4593,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
       };
     })();
     /* ── 한 판 ── */
-    function begin(o) { for (const k in HC) delete HC[k]; // 윗줄 기억 비우기
+    function begin(o) { gameImgs(); for (const k in HC) delete HC[k]; // 윗줄 기억 비우기
       o = o || {}; runDrop(); speed = 1; speedLabel(); SND.start(); ["it-crate", "it-crate2", "it-magnet", "it-bomb", "it-heal", "it-gold", "fx-fire", "fx-thunder", "fx-boom", "fx-splash", "fx-rang", "fx-drill", "fx-kunai"].forEach((n) => lbImg(n)); /* 맵 물건 그림 미리 */ ["it-crate", "it-crate2", "it-magnet", "it-bomb", "it-heal", "it-gold"].forEach((n) => lbImg(n)); /* 맵 물건 그림 미리 */ { const sb = $("gSnd"); if (sb) sb.textContent = SND.on ? "🔊" : "🔇"; } coverFull(true); /* 새 판 — 예전 이어하기는 지움 */ $("gLobby").hidden = true; // 로비에서 출전 — 게임판이 화면을 덮음(휴대폰 세로도)
       s = { t: 0, hp: 100, max: 100, x: 0, y: 0, spd: 150, lv: 1, xp: 0, need: 6, kills: 0, foes: [], shots: [], ebs: [], gems: [], fx: [],
         spawn: 0, fire: 0, rate: 0.7, dmg: 10, multi: 1, pierce: 0, fan: 0, crit: 0, boom: 0, bounce: 0, bossPick: false, orbs: 0, orbA: 0, aura: 0, magnet: 60, regen: 0, hurt: 0,
@@ -4763,7 +4765,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     /* "좀더 어두운 용암맵으로 바꿔라 몹이 잘안보인다" (2026-10-26) — 숲 맵 색만 바꾼 용암 맵(무료, 시험/용암맵-만들기.cjs). 숲 맵(map.jpg)은 남겨 둠 */
     /* 맵 바꿈 — 부장님이 주신 어두운 돌바닥 법진 맵 (2026-10-26, img/map2.jpg · 시험/맵2-만들기.cjs). 크기 · 시작 자리는 MAP.onload 에서 그림에 맞춘다 */
     /* 게임 그림 주소에 판 번호(BUILD)를 붙인다 — 깃허브가 그림을 10분 동안 브라우저에 남겨 두어, 새 판 홈페이지에 예전 그림이 섞여 캐릭터가 안 보였다 (2026-10-26) */
-    MAP.src = "img/map2.jpg?v=" + BUILD;
+    GAME_IMG.push(() => { MAP.src = "img/map2.jpg?v=" + BUILD; }); // 판에서만 씀 — gameImgs() 때 받음(2026-10-29 첫 로딩 줄이기)
     function bounds() { return [-MAP_O[0] * MAP_K + MAP_PAD, (MAP.width - MAP_O[0]) * MAP_K - MAP_PAD, -MAP_O[1] * MAP_K + MAP_PAD, (MAP.height - MAP_O[1]) * MAP_K - MAP_PAD]; }
     function inside(x, y) { const b = bounds(); return x >= b[0] && x <= b[1] && y >= b[2] && y <= b[3]; }
     function inMap(p) { if (!mapOk) return p; const b = bounds(); p.x = Math.min(b[1], Math.max(b[0], p.x)); p.y = Math.min(b[3], Math.max(b[2], p.y)); return p; }
@@ -5342,14 +5344,14 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     const FXI = new Image(), FXF = {"thunder":[[0,0,108,128],[110,0,107,128],[219,0,116,128],[337,0,121,128]],"whirl":[[0,130,121,128],[123,130,120,128],[245,130,124,128],[371,130,123,128]],"ward":[[0,274,128,114],[130,265,128,123],[260,269,128,119],[390,269,128,119]],"fire":[[0,441,128,77],[130,432,128,86],[260,416,128,102],[390,398,128,120]],"homing":[[0,590,128,58],[130,557,128,91],[260,544,128,104],[390,577,128,71]],"frost":[[0,650,95,128],[97,650,121,128],[220,650,127,128],[349,655,128,123]],"levelup":[[0,780,113,128],[115,780,113,128],[230,780,113,128],[345,780,113,128]],"smoke":[[0,935,128,103],[130,942,128,96],[260,945,128,93],[390,914,128,124]]};
     let fxOk = false;
     FXI.onload = () => { fxOk = true; };
-    FXI.src = "img/fx.png?v=" + BUILD;
+    GAME_IMG.push(() => { FXI.src = "img/fx.png?v=" + BUILD; }); // 판에서만 씀 — gameImgs() 때 받음(2026-10-29 첫 로딩 줄이기)
     /* 몬스터 공격 효과 그림 — 부장님이 주신 제미나이 그림 2장(img/mfx.png · 시험/몬스터효과-아이콘-자르기.cjs, 2026-10-26).
        탄(분홍 구슬 · 보라 불덩이 · 독 가시 · 바위 · 마왕 불덩이)은 날아가는 그림 + 맞으면 터짐, 땅 울림 · 메테오 · 독 웅덩이 · 울부짖음, 붙어서 때릴 때 칼자국 · 손톱 · 불꽃.
        피하라는 땅 표시(차오르는 원)는 그대로 두고 그 위에 얹는다. 그림을 못 읽으면 예전 도형 */
     const MFX = new Image(), MFXF = {"orb_fly":[[0,0,54,53],[56,0,128,47]],"orb_hit":[[186,0,128,98],[316,0,114,91]],"dfire_fly":[[432,0,63,73],[497,0,128,53]],"dfire_hit":[[627,0,128,79],[757,0,100,75]],"spike_fly":[[859,0,72,71],[0,100,128,41]],"spike_hit":[[130,100,128,93],[260,100,120,109]],"slash":[[382,100,79,52],[463,100,128,72]],"claw":[[593,100,81,87],[676,100,128,111],[806,100,104,95],[912,100,98,90]],"spark":[[0,213,52,63],[54,213,128,121],[184,213,127,111]],"quake":[[313,213,93,48],[408,213,126,54],[536,213,128,75],[666,213,126,61]],"rock_fly":[[794,213,103,57],[0,336,128,59]],"rock_hit":[[130,336,128,74],[260,336,120,68]],"howl":[[382,336,74,30],[458,336,128,50],[588,336,128,42],[718,336,127,37]],"bfire_fly":[[847,336,88,49],[0,412,128,52]],"bfire_hit":[[130,412,127,66],[259,412,128,58]],"meteor_fly":[[389,412,102,101],[493,412,128,110]],"meteor_hit":[[623,412,128,68]],"pool":[[753,412,99,60],[854,412,126,75],[0,524,128,69],[130,524,128,81]]};
     let mfxOk = false;
     MFX.onload = () => { mfxOk = true; };
-    MFX.src = "img/mfx.png?v=" + BUILD;
+    GAME_IMG.push(() => { MFX.src = "img/mfx.png?v=" + BUILD; }); // 판에서만 씀 — gameImgs() 때 받음(2026-10-29 첫 로딩 줄이기)
     const MELEE = { wolf: "claw", bat: "claw", red_demon: "claw", skeleton_warrior: "slash", goblin: "slash", demon_mage: "slash" }; // 나머지는 타격 불꽃
     function sprOf(name) { return HSKF[name] ? (hskOk ? [HSK, [HSKF[name]]] : null) : FXF[name] ? (fxOk ? [FXI, FXF[name]] : null) : MFXF[name] && mfxOk ? [MFX, MFXF[name]] : null; }
     function fxDraw(name, fi, x, y, size, o) {
@@ -5413,7 +5415,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     const HEROES = {};
     Object.keys(ROSTER).forEach((k) => { HEROES[k] = Object.assign({}, ROSTER[k], { img: H5, F: H5F[k], K: ROSTER[k].F }); }); // F = 그림 칸 자리, K = 동작 → 칸 이름
     H5.onload = () => { Object.keys(HEROES).forEach((k) => { HEROES[k].ok = true; }); draw(); drawPick(); };
-    H5.src = "img/heroes5.png?v=" + BUILD;
+    GAME_IMG.push(() => { H5.src = "img/heroes5.png?v=" + BUILD; }); // 판에서만 씀 — gameImgs() 때 받음(2026-10-29 첫 로딩 줄이기)
     /* ── 봉인검록 영상 그림 (2026-10-28 부장님 "연병장도 봉인검록처럼 몬스터 · 캐릭터가 자연스럽게 움직이고 총 쏘고 스킬 쏘게") ──
        img/bg/ = 봉인검록에서 가져온 것(시험/봉인그림-가져오기.cjs): m_<사람>2(서기 · 걷기 · 평타 · 스킬) · m_<사람>3(대시 · 맞기 · 쓰러짐) ·
        mm_<몬스터>(걷기 · 힘 모으기 · 공격 · 맞기 · 쓰러짐) · sfx/sk_*(스킬 영상, 검은 바탕이라 더해 그림). 못 읽으면 예전 그림 그대로 */
@@ -5421,7 +5423,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     /* 스킬 효과 영상 한 칸 그리기(2026-10-29 부장님 "스킬도 영상으로") — p 0~1 = 재생 위치, 검은 바탕은 lighter 로 더해 안 보임. 그림이 없으면 false */
     function fxvDraw(n, p, x, y, w, rot, al) { const V = FXV[n], I = V && lbImg(n); if (!I) return false; const fr = Math.min(V.n - 1, Math.max(0, Math.floor(p * V.n))), hh = w * V.h / V.w;
       g.save(); if (!V.al) g.globalCompositeOperation = "lighter"; g.globalAlpha = al == null ? 1 : al; g.translate(x, y); if (rot) g.rotate(rot); g.drawImage(I, (fr % V.cols) * V.w, Math.floor(fr / V.cols) * V.h, V.w, V.h, -w / 2, -hh / 2, w, hh); g.restore(); return true; }
-    fetch("img/lb/fxv.json?v=" + BUILD).then((r) => r.json()).then((j) => { Object.assign(FXV, j); Object.keys(j).forEach((n) => lbImg(n)); }).catch(() => {});
+    GAME_IMG.push(() => fetch("img/lb/fxv.json?v=" + BUILD).then((r) => r.json()).then((j) => { Object.assign(FXV, j); Object.keys(j).forEach((n) => lbImg(n)); }).catch(() => {})); // 스킬 영상도 판 때
     fetch("img/bg/frames.json?v=" + BUILD).then((r) => r.json()).then((j) => { Object.assign(BGF, j); }).catch(() => {});
     /* 빛 그림(2026-10-29 「폰에서 shadowBlur 는 매우 느림」) — 색마다 128px 둥근 빛을 한 번만 그려 두고 drawImage 로 */
     const GLOW = {}; function glowSpr(col) { let c = GLOW[col]; if (!c) { c = GLOW[col] = document.createElement("canvas"); c.width = c.height = 128; const x = c.getContext("2d"), gr = x.createRadialGradient(64, 64, 6, 64, 64, 64); gr.addColorStop(0, col); gr.addColorStop(1, "rgba(0,0,0,0)"); x.fillStyle = gr; x.fillRect(0, 0, 128, 128); } return c; }
@@ -5595,7 +5597,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     const FACE_R = { wolf: 1, skeleton_archer: 1, skeleton_warrior: 1, goblin: -1 }; // 그림이 보는 쪽 (1 오른쪽 · -1 왼쪽 · 없으면 앞)
     let monOk = false;
     MON.onload = () => { monOk = true; draw(); };
-    MON.src = "img/mon.png?v=" + BUILD;
+    GAME_IMG.push(() => { MON.src = "img/mon.png?v=" + BUILD; }); // 판에서만 씀 — gameImgs() 때 받음(2026-10-29 첫 로딩 줄이기)
     /* 몬스터 움직임 — "몬스터도 좀 임팩트 있게, 현실감있게" (2026-10-26). 그림은 한 장이라 코드로 흔든다:
        슬라임 통통 튀며 찌그러짐 · 박쥐 날갯짓 · 늑대 기울이며 달려듦 · 골렘 무겁게 쿵쿵 · 나머지 뒤뚱 걸음 · 식충 식물 제자리 흔들림.
        나올 때 땅에서 솟듯 커지고, 맞으면 찌그러지며 밀리고, 가까우면 앞으로 숙여 달려든다 */
@@ -5607,7 +5609,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     const FACE2 = { wolf: 1, plant: 1, goblin: 1, demon: 1, skel2: 1, dmage: 1 };
     let mon2Ok = false;
     MON2.onload = () => { mon2Ok = true; };
-    MON2.src = "img/mon2.png?v=" + BUILD;
+    GAME_IMG.push(() => { MON2.src = "img/mon2.png?v=" + BUILD; }); // 판에서만 씀 — gameImgs() 때 받음(2026-10-29 첫 로딩 줄이기)
     function frame2(f) {
       const A = MF2[SKIN2[f.skin]];
       if (!mon2Ok || !A) return null;
@@ -6236,8 +6238,8 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     function lobLoading(done) {
       if (lobLoaded) return done();
       const L = $("gLobby"), box = el("div", "lb-load"), bar = el("i"), pct = el("b", null, "0%"), wrap = el("div", "lb-lbar"); wrap.append(bar, pct); { const lg = el("div", "ld-logo"); lg.append(el("b", null, STR.loading.logo), el("small", null, STR.loading.sub)); box.append(lg, el("p", "ld-tip", STR.loading.tip)); } box.appendChild(wrap); /* 2026-10-29 로딩 글자는 그림 대신 DOM */ L.replaceChildren(box); L.hidden = false;
-      const list = ["img/bg/m_ot2.webp?v=" + BUILD, "img/maps/m1.jpg?v=" + BUILD].concat(["bg-ch1", "ui-face", "ui-name", "ui-pill", "ui-go", "navbar", "w-basic", "i-heal"].map(LBI)); /* 2026-10-29 작업지시서 v2 — 글자 박힌 lobby · sign-* 빼고 첫 화면 조각으로 */
-      let n = 0; const t0 = Date.now(), tick = () => { n++; const p = Math.round(n / list.length * 100); bar.style.width = p + "%"; pct.textContent = p + "%"; if (n >= list.length) setTimeout(() => { lobLoaded = true; done(); }, Math.max(300, 900 - (Date.now() - t0))); };
+      const list = ["img/bg/m_ot2.webp?v=" + BUILD].concat(["bg-ch1", "ui-face", "ui-name", "ui-pill", "ui-go", "navbar", "w-basic", "i-heal"].map(LBI)); /* 2026-10-29 작업지시서 v2 — 글자 박힌 lobby · sign-* 빼고 첫 화면 조각으로 */
+      let n = 0; const t0 = Date.now(), tick = () => { n++; const p = Math.round(n / list.length * 100); bar.style.width = p + "%"; pct.textContent = p + "%"; if (n >= list.length) setTimeout(() => { lobLoaded = true; done(); setTimeout(gameImgs, 1500); /* 로비가 뜬 뒤 판 그림을 뒤에서 */ }, Math.max(300, 900 - (Date.now() - t0))); };
       list.forEach((u) => { const i = new Image(); i.onload = i.onerror = tick; i.src = u; });
     }
     /* 정식 출시 로그인 화면 — 숨김(2026-10-28 부장님 "로그인 화면은 숨겨 둬라, 구글 스토어 올리기 전에 열어서 쓰면 된다").
@@ -6299,7 +6301,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
       if (P && !P.free && !["go", "shop", "gear", "dun", "rank", "op", "wpn", "skin", "mail"].includes(lobTab)) art.appendChild(chatBar()); // 상점 · 장비 · 던전 · 순위에선 채팅 안 보임(2026-10-29)
       if (P && P.op && lobTab === "go") { const ob = lobBtn("lb-mailbtn v2i op" + (lobTab === "op" ? " on" : ""), px(866, 176, 60, 60), () => { lobTab = lobTab === "op" ? "go" : "op"; lobErr = ""; lobDraw(); }, "운영자 권한"); { const i = el("img"); i.src = LBI("ii-tool"); i.alt = ""; ob.appendChild(i); } art.appendChild(ob); } /* 운영자 단추 — 휴대폰에서도(2026-10-29) */
       if (gpNotice && lobTab === "go") { const nb = el("div", "lb-notice"); nb.style.cssText = px(30, 1232, 881, 46); nb.append(el("i", null, "📢"), el("span", null, gpNotice)); art.appendChild(nb); } /* 운영자 전체 공지(2026-10-29) */
-      art.style.backgroundImage = "url(" + LBI("bg-ch" + (LOB_BG[lobBgN] ? lobBgN : 1)) + ")"; art.appendChild(nav); if (shopRw && (lobTab === "shop" || lobTab === "go")) art.appendChild(lobRewardBox()); else shopRw = null; { const o = L.querySelector(".lb-page"), st = o && lobDraw.tab === lobTab ? o.scrollTop : 0; L.replaceChildren(art); lobDraw.tab = lobTab; const nw = st && art.querySelector(".lb-page"); if (nw) nw.scrollTop = st; } /* 같은 칸에서 다시 그릴 때 내려 둔 자리 그대로(2026-10-28 실제 시험 — 스킨 눈을 누르면 맨 위로 튐) */ lobFit(art); if (P && P.op && Date.now() - liveAt > 5000) loadLive(); /* 옛 오른쪽 「운영자 권한」 판은 지움(2026-10-29 부장님) — 운영은 출전 화면 운영자 단추 · 운영자 권한 탭으로 */
+      art.style.backgroundImage = "url(" + LBI("bg-ch" + (LOB_BG[lobBgN] ? lobBgN : 1)) + ")"; L.style.setProperty("--lbbg", art.style.backgroundImage); art.appendChild(nav); if (shopRw && (lobTab === "shop" || lobTab === "go")) art.appendChild(lobRewardBox()); else shopRw = null; { const o = L.querySelector(".lb-page"), st = o && lobDraw.tab === lobTab ? o.scrollTop : 0; L.replaceChildren(art); lobDraw.tab = lobTab; const nw = st && art.querySelector(".lb-page"); if (nw) nw.scrollTop = st; } /* 같은 칸에서 다시 그릴 때 내려 둔 자리 그대로(2026-10-28 실제 시험 — 스킨 눈을 누르면 맨 위로 튐) */ lobFit(art); if (P && P.op && Date.now() - liveAt > 5000) loadLive(); /* 옛 오른쪽 「운영자 권한」 판은 지움(2026-10-29 부장님) — 운영은 출전 화면 운영자 단추 · 운영자 권한 탭으로 */
     }
     let lobChSel = false; const CH_ISL = Object.fromEntries(Array.from({ length: 30 }, (_, i) => [i + 1, 1])); /* 장 그림이 있는 장 */
     /* 장 선택 창(2026-10-29) — 101장을 칸으로: 깬 장 ★ · 도전할 장 빛 · 안 열린 장 자물쇠, 난이도 색 띠. 누르면 그 장으로 */
