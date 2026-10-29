@@ -1397,6 +1397,71 @@ body.game-full { overflow: hidden; }
 .sp-pack > .sp-wait { grid-area: x; } .sp-wait span { font-size: 2.4cqw; font-weight: 800; } .sp-wait b { font: 900 4.4cqw/1 "Jua", "Noto Sans KR", sans-serif; color: #ffe36b; -webkit-text-stroke: .7cqw #2a1406; paint-order: stroke fill; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .lb-art.pg .lb-scard .sp-wait { width: 100%; } .lb-art.pg .lb-scard .sp-wait b { font-size: 3.4cqw; }
 .sp-clock { display: none; }
+
+/* 2026-10-29 칸 넘침 · 아이콘 · 줄 손질 */
+img.ii { display: inline-block; width: 1.15em; height: 1.15em; object-fit: contain; vertical-align: -.2em; margin: 0 .08em; filter: drop-shadow(0 .06em 0 rgba(0,0,0,.35)); }
+.lb-art.v2 .op img { width: 76%; height: 76%; object-fit: contain; } .lb-art.v2 .lb-mailbtn.op { font-size: 0; }
+.lb-art.v2 .lb-facebtn::after { content: ""; background: url(img/lb/ii-pencil.webp) center / 80% no-repeat, #3fae2c; }
+.lb-art.v2 .lb-go.v2 b { font-size: 10cqw; }
+/* 탭 화면 배경 한 장(원인: 판 · 바탕을 따로 칠해 스크롤하면 경계 줄이 보임) — 위 · 가운데 · 아래 모두 같은 색, 판은 투명 */
+.lb-art.v2.pg::before { inset: 0; filter: none; background: var(--pgc0, #1a1208); }
+.lb-art.v2.pg::after { background: none; }
+.lb-art.v2.pg .lb-page { background: transparent !important; }
+.lb-art.v2.pg-shop, .lb-art.v2.pg-gear { --pgc0: #24170b; } .lb-art.v2.pg-dun { --pgc0: #16123a; } .lb-art.v2.pg-rank { --pgc0: #121c46; } .lb-art.v2.pg-mail, .lb-art.v2.pg-op { --pgc0: #1a1208; }
+.lb-scene { -webkit-mask-image: linear-gradient(#000 80%, transparent); mask-image: linear-gradient(#000 80%, transparent); }
+/* 프로필 창 — 얼굴이 양피지 안쪽에, 고른 테는 얼굴 안에서 */
+.lb-facewin .fw-gr { padding: 0 1.4cqw 1.4cqw; gap: 2.2cqw; } .fw-ring { left: -5%; top: -5%; width: 110% !important; }
+/* 사기 전 한 번 더 */
+.lb-sbuy.sure { background: linear-gradient(#ffb36b, #ef6a1c) !important; color: #fff !important; } .lb-sbuy.sure span { font-size: .8em; white-space: nowrap; }
+
+.lb-lock { white-space: nowrap; font-size: 4.4cqw; } .sk-eq { height: auto; min-height: 6cqw; padding: .3cqw 0; line-height: 1.25; }
+.lb-art.v2 .lb-stamp { font-size: 4.6cqw; } .lb-art.v2 .lb-go.v2 b { font-size: 9.4cqw; line-height: 1.12; }
+
+/* 새 창은 언제나 맨 위(2026-10-29 "채팅창 여니 상자 · 보상 · CLEAR 가 위에 나온다") — 원인: .lb-art.v2 > * { z-index: 1 } 이 창의 z-index 를 덮어씀 */
+.lb-art.v2 > .chat-win { z-index: 40; box-shadow: 0 0 0 200vmax rgba(0,0,0,.6); } .lb-art.v2 > .lb-reward, .lb-art.v2 > .lb-facewin, .lb-art.v2 > .lb-patwin, .lb-art.v2 > .lb-chsel { z-index: 45; }
+
+.lb-scard.wide > b, .lb-scard.wide > p { justify-self: stretch; min-width: 0; } .lb-scard.wide > b { font-size: 4.2cqw; }
+
+/* 글자 사이 아이콘은 늘 글자 크기(원인: .lb-scard img · .lb-card img 처럼 칸 안 그림 규칙이 아이콘까지 크게 만들어 값이 밀려 안 보임) */
+img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !important; aspect-ratio: auto !important; position: static !important; border: 0 !important; border-radius: 0 !important; background: none !important; padding: 0 !important; flex: none; transform: none !important; }
+
+.lb-art.v2 #lbEn b, .lb-art.v2 .lb-gold { line-height: 1.05; } .lb-art.v2 #lbEn { font-size: 4.1cqw; } .rk-myno b { font-size: 4.4cqw; line-height: 1.05; }
+
+.lb-art .lb-notice { box-sizing: border-box; } .lb-art.v2 > * { box-sizing: border-box; }
+
+.lb-art.v2 .lb-rw.v2 { font-size: 3.3cqw; line-height: 1; }
+
+.lb-art.pg .lb-scat button { padding: .6cqw .4cqw 2.6cqw; } .lb-art.pg .lb-scat button img { width: 7cqw; height: 7cqw; } .lb-art.v2 #lbEn { font-size: 3.8cqw; }
+
+/* 무기 화면(2026-10-29 ChatGPT 시안 13) */
+.wp2-g { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2cqw 1.6cqw; }
+.wp2 { display: grid; gap: .8cqw; min-width: 0; }
+.wp2-pick { position: relative; display: block; width: 100%; aspect-ratio: 240 / 203; padding: 0; border: 0; background: url(img/lb/wc-off.webp) center / 100% 100% no-repeat; cursor: pointer; }
+.wp2.sel .wp2-pick { background-image: url(img/lb/wc-on.webp); filter: drop-shadow(0 0 1.4cqw rgba(255,190,40,.8)); } .wp2.soon .wp2-pick { background-image: url(img/lb/wc-lock.webp); cursor: default; }
+.wp2-art { position: absolute; left: 18%; top: 20%; width: 64%; height: 46%; object-fit: contain; border-radius: 1cqw; } .wp2.soon .wp2-art { opacity: .35; filter: grayscale(1); top: 22%; } .wp2.off:not(.soon) .wp2-art { filter: saturate(.7) brightness(.85); }
+.wp2-st { position: absolute; left: 10%; top: 6%; display: flex; gap: .2cqw; padding: .3cqw .6cqw; border-radius: 999px; background: #1a1715; } .wp2.soon .wp2-st { display: none; }
+.wp2-st img, .wd-st img { width: 2.8cqw; height: 2.8cqw; object-fit: contain; filter: grayscale(1) brightness(.45); } .wp2-st img.on, .wd-st img.on { filter: drop-shadow(0 .1cqw 0 rgba(0,0,0,.5)); }
+.wp2-dup { position: absolute; right: 7.5%; top: 4.5%; width: 17%; aspect-ratio: 1; display: grid; place-items: center; background: url(img/lb/wc-badge.webp) center / 100% 100% no-repeat; color: #fff; font: 900 2.3cqw/1 "Jua", sans-serif; font-style: normal; -webkit-text-stroke: .4cqw #0a1f50; paint-order: stroke fill; }
+.wp2-n { position: absolute; left: 22%; right: 22%; top: 75%; height: 14%; display: grid; place-items: center; color: #ffe9a8; font-size: 2.6cqw; font-weight: 900; white-space: nowrap; overflow: hidden; text-shadow: 0 .2cqw 0 #000; }
+.wp2-btn { display: grid; place-items: center; height: 6.4cqw; padding: 0 .6cqw; border: 0; background: center / 100% 100% no-repeat; color: #fff; cursor: pointer; }
+.wp2-btn b { font: 900 2.8cqw/1 "Jua", "Noto Sans KR", sans-serif; -webkit-text-stroke: .5cqw rgba(0,0,0,.55); paint-order: stroke fill; white-space: nowrap; }
+.wp2-btn.green { background-image: url(img/lb/wb-green.webp); } .wp2-btn.gold { background-image: url(img/lb/wb-gold.webp); padding-left: 6cqw; } .wp2-btn.gray { background-image: url(img/lb/wb-gray.webp); cursor: default; }
+.wp2-btn.now b::before { content: "✔ "; } .wp2-btn:disabled:not(.now):not(.gray) { filter: grayscale(.6) brightness(.85); } .wp2-btn.sure { filter: hue-rotate(-25deg) saturate(1.4); }
+.wd { position: relative; aspect-ratio: 760 / 325; background: url(img/lb/wd-panel.webp) center / 100% 100% no-repeat; }
+.wd-art { position: absolute; left: 7%; top: 10%; width: 34%; height: 60%; object-fit: contain; filter: drop-shadow(0 1cqw 1cqw rgba(0,0,0,.5)); }
+.wd-n { position: absolute; left: 50%; top: 8%; width: 33%; height: 9%; display: grid; place-items: center; color: #ffe9a8; font: 900 3.6cqw/1 "Jua", sans-serif; -webkit-text-stroke: .5cqw #3a1e08; paint-order: stroke fill; white-space: nowrap; overflow: hidden; }
+.wd-st { position: absolute; left: 44.6%; top: 18.5%; height: 12%; width: 13%; display: flex; align-items: center; gap: .3cqw; padding-left: .8cqw; background: #6c472d; border-radius: .8cqw; } .wd-st img { width: 3.6cqw; height: 3.6cqw; }
+.wd-d { position: absolute; left: 46%; top: 33%; width: 42%; height: 9%; margin: 0; display: flex; align-items: center; color: #fff4dc; font-size: 2.3cqw; white-space: nowrap; overflow: hidden; }
+.wd-slot { position: absolute; top: 48%; width: 9.4%; height: 19%; display: grid; place-items: center; align-content: center; gap: .2cqw; } .wd-slot.s0 { left: 49%; } .wd-slot.s1 { left: 62.4%; } .wd-slot.s2 { left: 76%; }
+.wd-slot img { width: 4.4cqw; height: 4.4cqw; object-fit: contain; } .wd-slot small { font-size: 1.9cqw; font-weight: 900; color: #fff; text-shadow: 0 .2cqw 0 #000; white-space: nowrap; } .wd-slot.no small { color: #ff8a7a; } .wd-slot.none img { opacity: .35; }
+.wd-btn { position: absolute; left: 53%; top: 72.5%; width: 28%; height: 16%; border: 0; background: none; color: #fff; cursor: pointer; } .wd-btn b { font: 900 3.4cqw/1 "Jua", sans-serif; -webkit-text-stroke: .5cqw rgba(0,0,0,.6); paint-order: stroke fill; white-space: nowrap; }
+.wd-btn.ready { background: url(img/lb/wb-green.webp) center / 100% 100% no-repeat; } .wd-btn:disabled { cursor: default; color: #e8e8e8; }
+.wd-info { display: grid; gap: .8cqw; padding: 2cqw 2.4cqw; border-radius: 2.4cqw; border: .4cqw solid #8a6a3a; background: rgba(30,22,12,.85); color: #e6d8b8; }
+.wd-info p { margin: 0; display: flex; align-items: center; gap: 1cqw; font-size: 2.7cqw; } .wd-info p.on { color: #ffe36b; } .wd-info p img { width: 3.2cqw; height: 3.2cqw; object-fit: contain; } .wd-info small { font-size: 2.4cqw; opacity: .8; }
+
+.wp2-art { left: 15%; top: 17%; width: 70%; height: 54%; border-radius: 1.4cqw; } .wp2-n { font-size: 2.4cqw; overflow: visible; -webkit-text-stroke: 0; }
+.wd-st { top: 17%; height: 15%; width: 14.5%; } .wd-art { border-radius: 2cqw; }
+.wd-slot { align-content: start; padding-top: .6cqw; } .wd-slot img { width: 3.6cqw; height: 3.6cqw; } .wd-slot small { font-size: 1.7cqw; }
 </style>
 </head>
 <body>
@@ -1851,7 +1916,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610290512";
+  const BUILD = "202610290548";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -5976,7 +6041,14 @@ body.game-full { overflow: hidden; }
     const lobFree = () => !(me && token); // 손님 · 관리자 암호 — 저장 없이
     const px = (x, y, w, h) => "left:" + (x / 9.41) + "%;top:" + (y / 16.72) + "%;width:" + (w / 9.41) + "%;height:" + (h / 16.72) + "%"; // 로비 그림 941×1672 자리 → %
     /* 글자가 칸을 넘치면 글씨를 줄여 한 줄에(2026-10-28 "10장 · 큰 골드 · 무한의 탑 · 최고 1층 이 넘친다") */
-    function lobFit(root) { requestAnimationFrame(() => root.querySelectorAll(".lb-nick, .lb-gold, .lb-gem b, #lbEn b, .lb-chn, .lb-chname, .lb-chsub, .lb-inf, .lb-wtag b, .lb-rw, .lb-msg, .lb-card b, .lb-card small, .lb-lv b, .lb-tr b, .lb-done").forEach((e) => { const box = e.parentElement && e.tagName === "B" && /lbEn/.test(e.parentElement.id || "") ? e.parentElement : e; let f = parseFloat(getComputedStyle(e).fontSize), n = 0; while (n++ < 30 && f > 6 && (box.scrollWidth > box.clientWidth + 1 || e.scrollWidth > e.clientWidth + 1)) { f *= 0.92; e.style.setProperty("font-size", f + "px", "important"); } })); }
+    /* 이모지 → 그림 아이콘(img/lb/ii-*.webp · ChatGPT 2026-10-29). 로비 안 글자를 훑어 바꿈 — 새 화면을 만들어도 저절로 */
+    const EMO = { "💰": "ii-coin", "💎": "ii-gem1", "⚡": "ii-bolt", "⭐": "ii-star", "🔩": "ii-nut", "🛠": "ii-tool", "⏱": "ii-clock", "🔒": "ii-lock", "🏆": "ii-trophy", "❤": "ii-heart", "❤️": "ii-heart", "✎": "ii-pencil", "💬": "ii-chat", "📜": "ii-map" }, EMO_RE = /(❤️|💰|💎|⚡|⭐|🔩|🛠️?|⏱️?|🔒|🏆|❤|✎|💬|📜)/u;
+    function iconize(root) { const tw = document.createTreeWalker(root, NodeFilter.SHOW_TEXT), list = []; let n; while ((n = tw.nextNode())) if (EMO_RE.test(n.nodeValue)) list.push(n);
+      list.forEach((t) => { const parts = t.nodeValue.split(EMO_RE), frag = document.createDocumentFragment(); parts.forEach((s) => { if (!s) return; const k = EMO[s.replace(/\uFE0F/g, "")] || EMO[s]; if (k) { const i = el("img", "ii"); i.src = LBI(k); i.alt = s; frag.appendChild(i); } else frag.appendChild(document.createTextNode(s)); }); t.replaceWith(frag); }); }
+    /* 칸보다 긴 한 줄 글자는 글자를 줄여 맞춤(잘리거나 … 대신) — 모든 글자에, 글꼴을 받은 뒤 다시 */
+    function fitAll(root) { root.querySelectorAll("*").forEach((e) => { if (!e.firstChild || e.children.length > 3) return; const s = getComputedStyle(e); if (s.whiteSpace !== "nowrap" && s.textOverflow !== "ellipsis") return; if (/auto|scroll/.test(s.overflowX) || !e.clientWidth) return; if (e.dataset.f0) e.style.removeProperty("font-size"); const f0 = parseFloat(getComputedStyle(e).fontSize); if (e.scrollWidth <= e.clientWidth + 1) return; const cw0 = e.clientWidth; e.dataset.f0 = f0; let f = f0, k = 0; while (k++ < 12 && f > f0 * 0.6 && e.scrollWidth > e.clientWidth + 1) { f *= 0.94; e.style.setProperty("font-size", f + "px", "important"); if (e.clientWidth < cw0 - 1) { e.style.removeProperty("font-size"); break; } } /* 칸이 글자 따라 줄어드는 것(내용 크기)이면 줄일 필요 없음 */ /* 매번 처음 크기에서(예전엔 다시 그릴 때마다 또 줄어 1px 까지) */ }); }
+    function lobFit(root) { iconize(root); const go = () => { lobFit0(root); fitAll(root); }; if (root.isConnected) go(); requestAnimationFrame(go); if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => requestAnimationFrame(go)); }
+    function lobFit0(root) { (() => root.querySelectorAll(".lb-nick, .lb-gold, .lb-gem b, #lbEn b, .lb-chn, .lb-chname, .lb-chsub, .lb-inf, .lb-wtag b, .lb-rw, .lb-msg, .lb-card b, .lb-card small, .lb-lv b, .lb-tr b, .lb-done").forEach((e) => { const box = e.parentElement && e.tagName === "B" && /lbEn/.test(e.parentElement.id || "") ? e.parentElement : e; let f = parseFloat(getComputedStyle(e).fontSize), n = 0; while (n++ < 30 && f > 6 && (box.scrollWidth > box.clientWidth + 1 || e.scrollWidth > e.clientWidth + 1)) { f *= 0.92; e.style.setProperty("font-size", f + "px", "important"); } }))(); }
     function lobLoad() {
       if (lobFree()) { LP = { free: true, en: 0, max: 30, gold: 0, ch: 10, chMax: 10, wpn: (LP && LP.wpn) || "bow", own: Object.keys(WPN), exp: 0, lv: { lv: 1, cur: 0, need: 100 }, items: {}, boost: 0, shop: { weapons: {}, items: {}, en: { n: 10, gem: 15 }, enLeft: 0 }, clears: {} }; lobDraw(); return; }
       call("gameProfile", token).then((r) => { if (!r) throw new Error("내 정보를 못 불러왔어요"); LP = r; LP.got = Date.now(); if (lobCh > LP.ch) lobCh = LP.ch; lobDraw(); }).catch((e) => { lobErr = errMsg(e); lobDraw(); });
@@ -6014,7 +6086,7 @@ body.game-full { overflow: hidden; }
       clearInterval(lobT); lobT = setInterval(() => { if ($("gLobby").hidden) return clearInterval(lobT); const e = $("lbEn"); if (e && LP) { const n = lobEn(); n.style.cssText = e.style.cssText; e.replaceWith(n); lobFit(n.parentElement); } }, 1000); // 1초마다 새로 — 글씨 맞추기도(107/30 이 잘렸다)
     }
     function lobEn() { // 25/30 · 다음 1 까지 남은 시간
-      const P = LP, w = el("span", "lb-en"); w.id = "lbEn"; w.style.cssText = px(492, 34, 136, 42); if (!P || P.free) { w.textContent = "무제한"; return w; }
+      const P = LP, w = el("span", "lb-en"); w.id = "lbEn"; w.style.cssText = px(496, 34, 124, 42); if (!P || P.free) { w.textContent = "무제한"; return w; }
       let en = P.en, nx = P.next; if (nx) { const gone = Math.floor((Date.now() - (P.got || Date.now())) / 1000); if (gone >= nx) { en = Math.min(P.max, en + 1 + Math.floor((gone - nx) / 360)); nx = en >= P.max ? 0 : 360 - ((gone - nx) % 360); } else nx -= gone; }
       w.append(el("b", null, en + "/" + P.max)); if (nx && en < P.max) w.appendChild(el("small", null, mmss(nx))); return w;
     }
@@ -6027,9 +6099,9 @@ body.game-full { overflow: hidden; }
       art.classList.add("v2"); if (lobTab !== "go") art.classList.add("pg", "pg-" + (lobTab === "skin" || lobTab === "wpn" ? "gear" : lobTab)); /* 탭 화면 새 디자인(2026-10-29 시안 2~4) */ art.style.backgroundImage = "url(" + LBI("bg-ch" + (LOB_BG[lobBgN] ? lobBgN : 1)) + ")";
       ui("ui-face", px(14, 14, 152, 148)); ui(me ? faceOf(me.id) : "pf-1", px(37, 35, 106, 106), "face"); ui("ui-name", px(150, 22, 272, 140)); ui("ui-pill", px(444, 24, 236, 62)); ui("ui-pill", px(694, 24, 236, 62)); ui("ui-pill", px(444, 98, 236, 62)); ui("ic-en", px(420, 14, 70, 80), "ic");
       { const c = el("span", "lb-coin", ""); c.style.cssText = px(670, 18, 74, 74); art.appendChild(c); }
-      const nk = el("span", "lb-nick", nick()); nk.style.cssText = px(176, 44, 226, 46); /* 이름판 가운데(2026-10-29 "운영자 글자가 벗어났다") */
+      const nk = el("span", "lb-nick", nick()); nk.style.cssText = px(184, 52, 206, 50); /* 이름판 가운데(2026-10-29 "운영자 글자가 벗어났다") */
       const lvb = el("div", "lb-lv"); lvb.style.cssText = px(190, 115, 192, 30); /* 이름판 아래 칸 안에(2026-10-29 "좌측 상단 게이지 바가 이상하다" — 그림에 그려진 노란 막대는 지우고 진짜 막대만) */ const bar = el("i"); bar.style.width = Math.round(lv.cur / lv.need * 100) + "%"; lvb.append(el("b", null, "Lv." + lv.lv), el("span", null, "")); lvb.lastChild.appendChild(bar);
-      const gold = el("span", "lb-gold", P && !P.free ? (P.gold >= 1e8 ? (Math.floor(P.gold / 1e7) / 10) + "억" : P.gold >= 1e5 ? Math.floor(P.gold / 1e4).toLocaleString() + "만" : P.gold.toLocaleString()) : "—"); gold.style.cssText = px(744, 34, 136, 42); // 큰 수는 줄여서(ChatGPT 검토)
+      const gold = el("span", "lb-gold", P && !P.free ? (P.gold >= 1e8 ? (Math.floor(P.gold / 1e7) / 10) + "억" : P.gold >= 1e5 ? Math.floor(P.gold / 1e4).toLocaleString() + "만" : P.gold.toLocaleString()) : "—"); gold.style.cssText = px(748, 34, 124, 42); // 큰 수는 줄여서(ChatGPT 검토)
       const toShop = () => { lobTab = "shop"; lobSel = "en"; lobErr = ""; lobDraw(); };
       /* 보석(2026-10-29) — 레벨 막대 오른쪽에 알약 칸, 누르면 상점 재화(보석 바꾸기) */
       const gemB = lobBtn("lb-gem", px(444, 98, 236, 62), toShop, "보석 사기"); gemB.append(el("i", null, "💎"), el("b", null, P && !P.free ? (P.gem >= 1e5 ? Math.floor(P.gem / 1e4).toLocaleString() + "만" : (P.gem || 0).toLocaleString()) : "—"), el("em", null, "+"));
@@ -6039,15 +6111,15 @@ body.game-full { overflow: hidden; }
       if (P && !P.free) { const gb = lobBtn("lb-mailbtn v2i", px(786, 100, 72, 72), () => { lobTab = "shop"; lobShopCat = "special"; lobErr = ""; lobDraw(); }, "오늘의 선물"); const i = el("img"); i.src = LBI("ic-gift"); i.alt = ""; gb.appendChild(i); if (P.gift && P.gift.gold) gb.appendChild(el("b", "lb-badge", "!")); art.appendChild(gb); } /* 글자 없이 집 그림 ㆍ 로비 화풍(초록 동그라미 · 금테 · 크림)으로(2026-10-28) */
       /* 화면 크게 — 폰 위 · 아래 막대(주소창 · 알림줄)를 숨겨 로비 · 게임을 더 크게(2026-10-28 갤럭시 폴드 "화면 크게 할 수 있으면") */
       { const de = document.documentElement, rq = de.requestFullscreen || de.webkitRequestFullscreen, fs = () => document.fullscreenElement || document.webkitFullscreenElement;
-        if (rq) { const fb = lobBtn("lb-home lb-big", "", () => { if (fs()) (document.exitFullscreen || document.webkitExitFullscreen).call(document); else try { Promise.resolve(rq.call(de, { navigationUI: "hide" })).catch(() => {}); } catch (e) {} }, "화면 크게"); fb.textContent = fs() ? "⤡ 작게" : "⛶ 크게"; art.appendChild(fb); } }
+        if (false && rq) { const fb = lobBtn("lb-home lb-big", "", () => { if (fs()) (document.exitFullscreen || document.webkitExitFullscreen).call(document); else try { Promise.resolve(rq.call(de, { navigationUI: "hide" })).catch(() => {}); } catch (e) {} }, "화면 크게"); fb.textContent = fs() ? "⤡ 작게" : "⛶ 크게"; art.appendChild(fb); } }
       if (!P && lobTab !== "rank") art.appendChild(el("div", "lb-page", lobErr || "불러오는 중…")); // 순위는 내 정보 없이도
       else if (lobTab === "go") art.append(...lobGo(P));
       else { const pg = el("div", "lb-page lb-" + lobTab); pg.append(...(lobTab === "wpn" ? lobWpn(P) : lobTab === "shop" ? lobShop(P) : lobTab === "op" ? lobOp() : lobTab === "mail" ? lobMail(P) : lobTab === "skin" ? lobSkin(P) : lobTab === "gear" ? lobGear(P) : lobTab === "dun" ? lobDun(P) : lobRank())); if (lobErr) pg.appendChild(el("p", "lb-err", lobErr)); art.appendChild(pg); const gp = pg.querySelector(".lb-gpop"); if (gp) art.appendChild(gp); } /* 장비 창은 그림 틀 위에 */
       const nav = el("nav", "lb-nav lb-nav5"); [["shop", "상점"], ["gear", "장비"], ["go", "출전"], ["dun", "던전"], ["rank", "순위"]].forEach(([k, n]) => { const b = el("button", k === lobTab || (k === "gear" && lobTab === "skin") ? "on" : ""); b.type = "button"; b.setAttribute("aria-label", n); { const i = el("img", "nic"); i.src = LBI({ shop: "ic-shop", gear: "ic-gear", go: "ic-go", dun: "ic-dun", rank: "ic-rank" }[k]); i.alt = ""; b.appendChild(i); } b.appendChild(el("span", null, n)); if (k === "gear" && lobTab === "wpn") b.className = "on"; b.onclick = () => { lobTab = k; lobErr = ""; lobSel = null; lobDraw(); if (k === "rank") loadRanks(); }; nav.appendChild(b); });
       if (P && !P.free) { const mb = lobBtn("lb-mailbtn v2i" + (lobTab === "mail" ? " on" : ""), px(706, 100, 72, 72), () => { lobTab = lobTab === "mail" ? "go" : "mail"; lobErr = ""; lobDraw(); }, "우편함"); { const i = el("img"); i.src = LBI("ic-mail"); i.alt = ""; mb.appendChild(i); } /* 홈 왼쪽 · 글자 없이(2026-10-28) */ const n = (P.mail || []).length; if (n) mb.appendChild(el("b", "lb-badge", String(n))); art.appendChild(mb);
         }
-      if (P && !P.free && !["go", "shop", "gear", "dun", "rank", "op"].includes(lobTab)) art.appendChild(chatBar()); // 상점 · 장비 · 던전 · 순위에선 채팅 안 보임(2026-10-29)
-      if (P && P.op && lobTab === "go") { const ob = lobBtn("lb-mailbtn v2i op" + (lobTab === "op" ? " on" : ""), px(866, 176, 60, 60), () => { lobTab = lobTab === "op" ? "go" : "op"; lobErr = ""; lobDraw(); }, "운영자 권한"); ob.textContent = "🛠"; art.appendChild(ob); } /* 운영자 단추 — 휴대폰에서도(2026-10-29) */
+      if (P && !P.free && !["go", "shop", "gear", "dun", "rank", "op", "wpn", "skin", "mail"].includes(lobTab)) art.appendChild(chatBar()); // 상점 · 장비 · 던전 · 순위에선 채팅 안 보임(2026-10-29)
+      if (P && P.op && lobTab === "go") { const ob = lobBtn("lb-mailbtn v2i op" + (lobTab === "op" ? " on" : ""), px(866, 176, 60, 60), () => { lobTab = lobTab === "op" ? "go" : "op"; lobErr = ""; lobDraw(); }, "운영자 권한"); { const i = el("img"); i.src = LBI("ii-tool"); i.alt = ""; ob.appendChild(i); } art.appendChild(ob); } /* 운영자 단추 — 휴대폰에서도(2026-10-29) */
       if (gpNotice && lobTab === "go") { const nb = el("div", "lb-notice"); nb.style.cssText = px(30, 1232, 881, 46); nb.append(el("i", null, "📢"), el("span", null, gpNotice)); art.appendChild(nb); } /* 운영자 전체 공지(2026-10-29) */
       art.style.backgroundImage = "url(" + LBI("bg-ch" + (LOB_BG[lobBgN] ? lobBgN : 1)) + ")"; art.appendChild(nav); if (shopRw && (lobTab === "shop" || lobTab === "go")) art.appendChild(lobRewardBox()); else shopRw = null; { const o = L.querySelector(".lb-page"), st = o && lobDraw.tab === lobTab ? o.scrollTop : 0; L.replaceChildren(art); lobDraw.tab = lobTab; const nw = st && art.querySelector(".lb-page"); if (nw) nw.scrollTop = st; } /* 같은 칸에서 다시 그릴 때 내려 둔 자리 그대로(2026-10-28 실제 시험 — 스킨 눈을 누르면 맨 위로 튐) */ lobFit(art); if (P && P.op) { (matchMedia("(max-width: 760px)").matches ? art : L).appendChild(lobLive()); /* 휴대폰은 그림 안 「← 홈」 옆 */ if (Date.now() - liveAt > 5000) loadLive(); } // 운영자만 오른쪽에 지금 하는 사람
     }
@@ -6072,9 +6144,9 @@ body.game-full { overflow: hidden; }
       const c = Math.max(1, Math.min(CH_N, lobCh)), open = c <= chM, need = !P.free && P.en < (P.cost || 5), first = !clr(c), out = [];
       const t = (cls, txt, css) => { const e = el("span", cls, txt); e.style.cssText = css; out.push(e); return e; };
       lobBgN = LOB_BG["g" + (Math.floor(((c - 1) % 30) / 10) + 1)] ? "g" + (Math.floor(((c - 1) % 30) / 10) + 1) : LOB_BG[c] ? c : 1; /* 10장 묶음마다 하늘 배경(g1 숲 · g2 사막 · g3 설산), 31장부터 되풀이 */ /* 장마다 배경(받은 것부터) — 없으면 그 10장 묶음 첫 장 그림 */ { const sg = el("img", "lb-ui"); sg.src = LBI("ui-sign"); sg.alt = ""; sg.style.cssText = px(170, 178, 600, 342); out.push(sg); }
-      t("lb-chn", c + "장", px(380, 204, 180, 56)); t("lb-chname" + (CHAPS[c - 1].length > 5 ? " long" : ""), CHAPS[c - 1], px(232, 270, 476, 104)); t("lb-chsub", CHSUB[c - 1], px(262, 428, 416, 50)); { const md = lobBtn("lb-diff", px(40, 1352, 160, 130), () => { lobChSel = true; lobDraw(); }, "장 선택"); const ci = el("img"); ci.src = LBI("ic-chap"); ci.alt = ""; md.append(ci, el("b", null, "장 선택")); out.push(md); } /* 난이도는 장에서 정해짐(2026-10-29) — 왼쪽 단추는 장 고르기 */
+      t("lb-chn", c + "장", px(384, 212, 172, 52)); t("lb-chname" + (CHAPS[c - 1].length > 5 ? " long" : ""), CHAPS[c - 1], px(232, 270, 476, 104)); t("lb-chsub", CHSUB[c - 1], px(262, 428, 416, 50)); { const md = lobBtn("lb-diff", px(40, 1352, 160, 130), () => { lobChSel = true; lobDraw(); }, "장 선택"); const ci = el("img"); ci.src = LBI("ic-chap"); ci.alt = ""; md.append(ci, el("b", null, "장 선택")); out.push(md); } /* 난이도는 장에서 정해짐(2026-10-29) — 왼쪽 단추는 장 고르기 */
       { const db = el("span", "lb-dbadge", MODE_N[M]); db.style.cssText = px(626, 196, 150, 46); db.style.background = DIFF_C[M]; out.push(db); }
-      if (!P.free && clr(c)) { const st = el("span", "lb-stamp", "CLEAR"); st.style.cssText = px(640, 410, 170, 70); out.push(st); } /* 깬 장 — 간판에 도장(ChatGPT 기획안) */
+      if (!P.free && clr(c)) { const st = el("span", "lb-stamp", "CLEAR"); st.style.cssText = px(700, 780, 170, 64); out.push(st); } /* 깬 장 — 간판에 도장(ChatGPT 기획안) */
       if (lobChSel) out.push(chGrid(P, chM, clr));
       if (c > 1) { const m = el("div", "lb-map"); m.style.cssText = px(612, 812, 250, 150); m.style.backgroundImage = "url(img/maps/m" + chMap(c) + ".jpg?v=" + BUILD + ")"; if (c > 10) m.classList.add(c > 20 ? "cyc2" : "cyc1"); m.appendChild(el("small", null, c > 20 ? "전장 · 밤" : c > 10 ? "전장 · 해 질 녘" : "전장")); out.push(m); }
       if (!open) t("lb-lock", "🔒 " + (c - 1) + "장 클리어 시 열림", px(170, 760, 600, 100)); /* 잠긴 장 — 어두운 섬 위에(2026-10-29) */
@@ -6130,27 +6202,31 @@ body.game-full { overflow: hidden; }
     function lobHead(sign, sub) { const h = el("div", "lb-head"), i = el("img"); i.src = LBI(sign); i.alt = ""; h.append(i, el("p", null, sub)); return h; }
     function lobCard(pic, name, small, on, lock, fn) { const b = el("button", "lb-card" + (on ? " on" : "") + (lock ? " lock" : "")); b.type = "button"; const i = el("img"); i.src = LBI(pic); i.alt = ""; b.append(i, el("b", null, name), el("small", null, small)); if (fn) b.onclick = fn; else b.disabled = true; return b; }
     function lobWpn(P) {
-      const keys = Object.keys(WPN), sel = lobSel && WPN[lobSel] ? lobSel : P.wpn, grid = el("div", "lb-grid g4");
-      const lvNow = (P.lv || {}).lv || 1, need = (k) => ((P.shop.wlv || {})[k] || 0);
-      const AW = P.wawk || {}, DUP = P.wdup || {};
-      /* 무기 카드도 스킨처럼 글자 단추 없이(2026-10-28 "4번은 아이콘으로") — 카드를 누르면 보기, 아래 칸: 낀 것 ✔ · 가진 것은 눌러서 끼기 · 없는 것은 💰 값(눌러서 사기) · 🔒 Lv. 각성 별은 카드 위 */
-      keys.forEach((k) => { const w = WPN[k], own = P.own.includes(k), on = P.wpn === k, lock = !own && lvNow < need(k), pr = (P.shop.weapons || {})[k] || 0, c = el("div", "lb-card skin sk2 wp" + (sel === k ? " on" : "") + (own ? "" : " off"));
-        const im = el("img"); im.src = LBI(own ? w.pic : w.lock || w.pic); im.alt = ""; const pick = el("button", "sk-pick"); pick.type = "button"; pick.setAttribute("aria-label", w.n); pick.append(im, el("b", null, w.n)); pick.onclick = () => { lobSel = k; lobDraw(); };
-        const eq = el("button", "sk-eq" + (on ? " on" : own ? "" : " buy")); eq.type = "button"; eq.setAttribute("aria-label", on ? "끼고 있음" : own ? "끼기" : "사기"); eq.textContent = on ? "✔" : own ? "" : lock ? "🔒 Lv " + need(k) : "💰 " + pr.toLocaleString();
-        eq.disabled = on || P.free || lock || (!own && P.gold < pr); eq.onclick = () => own ? lobAct("gameWeapon", k, () => { LP.wpn = k; }) : lobAct("gameBuy", k);
-        c.append(pick, eq); if (own) { const a = AW[k] || 0, sv = el("span", "wp-st"); for (let i = 0; i < 3; i++) sv.appendChild(el("i", i < a ? "on" : "", "★")); c.appendChild(sv); if (DUP[k]) c.appendChild(el("em", "wp-dup", "+" + DUP[k])); c.style.borderColor = GRADE_C[a]; } grid.appendChild(c); });
-      WPN_SOON.forEach(([n, pic]) => grid.appendChild(lobCard(pic, n, "준비 중", false, true, null)));
-      const w = WPN[sel], own = P.own.includes(sel), det = el("div", "lb-det"), di = el("img"); di.src = LBI(own ? w.pic : w.lock || w.pic); di.alt = "";
-      det.append(di, el("b", null, w.n), el("p", null, w.d), el("small", null, "평타 " + w.shot + " · 스킬은 판 안에서 레벨업으로 골라요"));
-      /* 각성(2026-10-28 "같은 무기끼리 각성 ㆍ 일반 0 · 희귀 1 · 영웅 2 · 전설 3회") — 같은 무기 사본 (각성 횟수+1)개 → 한 등급 위 · 평타 피해 +25%씩 */
-      if (own) { const a = AW[sel] || 0, nd = a + 1, have = DUP[sel] || 0, aw = el("div", "lb-awk"), st = el("div", "lb-awk-st"); for (let i = 0; i < 3; i++) st.appendChild(el("i", i < a ? "on" : "", "★"));
-        aw.append(el("b", null, "각성 · " + GRADE_N[a]), st, el("small", null, "평타 피해 +" + a * 25 + "%" + (a < 3 ? " → +" + nd * 25 + "%" : " · 최고")));
-        const AC = AWK_COST[a]; if (AC) { const cost = el("div", "lb-awk-cost"), mt = (P.mats || [])[AC.tier] || 0; /* 각성 비용 — 아이콘 + 가진 것/필요 */
-          [["⚔", have, AC.dup], ["💰", P.gold || 0, AC.gold], ["🔩", mt, AC.n]].forEach(([ic, h0, n0], ci) => { const sp = el("span", h0 >= n0 ? "ok" : "no"); if (ci === 2) sp.style.borderColor = GRADE_C[AC.tier]; sp.append(el("i", null, ic), el("b", null, ci === 1 ? n0.toLocaleString() : h0 + "/" + n0)); cost.appendChild(sp); }); aw.appendChild(cost); }
-        { const GL = el("div", "lb-awk-tr"); (WGRADE[(WPN[sel] || {}).hero] || []).forEach((g0, gi) => GL.appendChild(el("small", gi < a ? "on" : "", (gi < a ? "✔ " : "🔒 ") + GRADE_N[gi + 1] + " ㆍ " + g0.t))); aw.appendChild(GL); } /* 등급마다 바뀌는 평타 */
-        const ab = el("button", "lb-awkbtn" + (a >= 3 ? " max" : "")); ab.type = "button"; ab.setAttribute("aria-label", a >= 3 ? "전설 완성" : "각성"); ab.innerHTML = a >= 3 ? "<b>★</b>" : "<b>★</b><i>▲</i>"; /* 각성 — 별 + 위 화살표 아이콘 */ ab.disabled = a >= 3 || P.free || !AC || have < AC.dup || (P.gold || 0) < AC.gold || ((P.mats || [])[AC.tier] || 0) < AC.n; ab.onclick = () => lobAct("gameAwaken", sel); aw.appendChild(ab); det.appendChild(aw); }
-      det.appendChild(el("small", "lb-ghint", "같은 무기는 무기 상자 · 10장마다 깨기 보상으로 얻어요"));
-      return [lobPlate("⚔", "무기"), el("p", "lb-psub", "다양한 무기를 장착하고 더 강력하게!"), grid, det];
+      /* 무기(2026-10-29 ChatGPT 시안 13) — 나무 · 금테 카드(고른 것 금빛 · 준비 중 잠김), 별 = 각성, 오른쪽 위 +사본, 아래 단추: 장착 중 · 장착 · 금화 값 · Lv 잠김.
+         아래 상세 판: 큰 그림 · 이름 · 각성 별 · 설명 · 각성 재료 3칸 · 각성 단추 */
+      const keys = Object.keys(WPN), sel = lobSel && WPN[lobSel] ? lobSel : P.wpn, grid = el("div", "wp2-g");
+      const lvNow = (P.lv || {}).lv || 1, need = (k) => ((P.shop.wlv || {})[k] || 0), AW = P.wawk || {}, DUP = P.wdup || {};
+      const stars = (a, cls) => { const s = el("span", cls); for (let i = 0; i < 3; i++) { const im = el("img", i < a ? "on" : ""); im.src = LBI("ii-star"); im.alt = i < a ? "★" : "☆"; s.appendChild(im); } return s; };
+      const sure = (b, label, fn) => { b.onclick = () => { if (b.dataset.sure !== "1") { b.dataset.sure = "1"; b.classList.add("sure"); b.querySelector("b").textContent = "한 번 더"; setTimeout(() => { if (!b.isConnected) return; b.dataset.sure = ""; b.classList.remove("sure"); b.querySelector("b").textContent = label; }, 3000); return; } fn(); }; }; /* 돈 드는 건 두 번 눌러야 */
+      keys.forEach((k) => { const w = WPN[k], own = P.own.includes(k), on = P.wpn === k, lock = !own && lvNow < need(k), pr = (P.shop.weapons || {})[k] || 0;
+        const c = el("div", "wp2" + (sel === k ? " sel" : "") + (own ? " own" : " off")), pick = el("button", "wp2-pick"); pick.type = "button"; pick.setAttribute("aria-label", w.n);
+        const im = el("img", "wp2-art"); im.src = LBI(own ? w.pic : w.lock || w.pic); im.alt = ""; pick.append(im, stars(own ? AW[k] || 0 : 0, "wp2-st"), el("b", "wp2-n", w.n)); if (DUP[k]) pick.appendChild(el("em", "wp2-dup", "+" + DUP[k])); pick.onclick = () => { lobSel = k; lobDraw(); };
+        const bt = el("button", "wp2-btn " + (on ? "green" : own ? "green" : lock ? "gray" : "gold")); bt.type = "button";
+        if (on) { bt.append(el("b", null, "장착 중")); bt.disabled = true; bt.classList.add("now"); }
+        else if (own) { bt.append(el("b", null, "장착")); bt.disabled = P.free; bt.onclick = () => lobAct("gameWeapon", k, () => { LP.wpn = k; }); }
+        else if (lock) { bt.append(el("b", null, "Lv " + need(k))); bt.disabled = true; }
+        else { const t = pr.toLocaleString(); bt.append(el("b", null, t)); bt.disabled = P.free || P.gold < pr; sure(bt, t, () => lobAct("gameBuy", k)); }
+        c.append(pick, bt); grid.appendChild(c); });
+      WPN_SOON.forEach(([n, pic]) => { const c = el("div", "wp2 soon"), pick = el("div", "wp2-pick"), im = el("img", "wp2-art"); im.src = LBI(pic); im.alt = ""; pick.append(im, el("b", "wp2-n", n)); const bt = el("div", "wp2-btn gray"); bt.append(el("b", null, "준비 중")); c.append(pick, bt); grid.appendChild(c); });
+      const w = WPN[sel], own = P.own.includes(sel), a = own ? AW[sel] || 0 : 0, AC = own ? AWK_COST[a] : null, have = DUP[sel] || 0, mt = AC ? (P.mats || [])[AC.tier] || 0 : 0;
+      const det = el("div", "wd"), di = el("img", "wd-art"); di.src = LBI(own ? w.pic : w.lock || w.pic); di.alt = "";
+      det.append(di, el("b", "wd-n", w.n), stars(a, "wd-st"), el("p", "wd-d", w.d));
+      [["ii-trophy", have, AC ? AC.dup : 0, "같은 무기"], ["ii-coin", P.gold || 0, AC ? AC.gold : 0, "골드"], ["ii-nut", mt, AC ? AC.n : 0, "부품"]].forEach(([ic, h0, n0, lab], ci) => { const s = el("div", "wd-slot s" + ci + (AC ? (h0 >= n0 ? " ok" : " no") : " none")), im = el("img"); im.src = LBI(ic); im.alt = lab; s.appendChild(im); if (AC) s.appendChild(el("small", null, ci === 1 ? n0.toLocaleString() : h0 + "/" + n0)); det.appendChild(s); });
+      const ab = el("button", "wd-btn"); ab.type = "button"; const can = own && AC && have >= AC.dup && (P.gold || 0) >= AC.gold && mt >= AC.n && !P.free; ab.append(el("b", null, !own ? "보유하면 각성" : a >= 3 ? "각성 완료" : "각성")); ab.disabled = !can; if (can) ab.classList.add("ready"); ab.onclick = () => lobAct("gameAwaken", sel); det.appendChild(ab);
+      const info = el("div", "wd-info"); info.append(el("p", null, "평타 " + w.shot + " ㆍ 각성 " + GRADE_N[a] + " ㆍ 평타 피해 +" + a * 25 + "%" + (own && a < 3 ? " → 다음 +" + (a + 1) * 25 + "%" : "")));
+      (WGRADE[(WPN[sel] || {}).hero] || []).forEach((g0, gi) => { const r = el("p", gi < a ? "on" : ""), im = el("img"); im.src = LBI(gi < a ? "ii-star" : "ii-lock"); im.alt = ""; r.append(im, document.createTextNode(GRADE_N[gi + 1] + " ㆍ " + g0.t)); info.appendChild(r); });
+      info.appendChild(el("small", null, "같은 무기는 무기 상자 · 10장마다 깨기 보상으로 얻어요"));
+      return [lobPlate("⚔", "무기"), el("p", "lb-psub", "다양한 무기를 장착하고 더 강력하게!"), grid, det, info];
     }
     /* 장비 탭(2026-10-28 부장님 참고 그림 「장비 착용」) — 가운데 수달 · 왼쪽 투구 · 갑옷 · 장갑 · 오른쪽 무기 · 허리띠 · 신발 · 아래 장신구 · 능력치 · 세트 · 장비 가방 */
     const GRADE_N = ["일반", "희귀", "영웅", "전설"], GRADE_C = ["#9aa3ad", "#3d8bff", "#a64dff", "#ffb300"];
@@ -6343,7 +6419,8 @@ body.game-full { overflow: hidden; }
       if (lobSel === "en") { lobShopCat = "en"; lobSel = null; }
       const pr = (P.shop.items || {}), E = P.shop.en || { n: 10, gem: 15 }, out = [lobScene("bg-shop", "상점")];
       const cats = el("div", "lb-scat"); [["special", 1, "특별 상품"], ["daily", 2, "오늘 상점"], ["box", 3, "상자"], ["item", 4, "아이템"], ["en", 5, "재화"]].forEach(([k, ic, n]) => { const b = el("button", k === lobShopCat ? "on" : ""); b.type = "button"; { const i = el("img"); i.src = LBI("sc-" + ic); i.alt = ""; b.append(i, el("span", null, n)); } /* 2026-10-29 ChatGPT 분류 단추 */ b.onclick = () => { lobShopCat = k; lobErr = ""; lobDraw(); }; cats.appendChild(b); }); out.push(cats);
-      const buyBtn = (txt, price, dis, fn, cls) => { const b = el("button", "lb-sbuy" + (cls ? " " + cls : "")); b.type = "button"; b.append(el("span", null, txt)); const gm = price != null && typeof price === "object", pv = gm ? price.gem : price; if (price != null) b.appendChild(el("b", null, (gm ? "💎 " : "💰 ") + pv.toLocaleString())); b.disabled = P.free || dis || (price != null && (gm ? P.gem || 0 : P.gold) < pv); b.onclick = fn; return b; };
+      const buyBtn = (txt, price, dis, fn, cls) => { const b = el("button", "lb-sbuy" + (cls ? " " + cls : "")); b.type = "button"; b.append(el("span", null, txt)); const gm = price != null && typeof price === "object", pv = gm ? price.gem : price; if (price != null) b.appendChild(el("b", null, (gm ? "💎 " : "💰 ") + pv.toLocaleString())); b.disabled = P.free || dis || (price != null && (gm ? P.gem || 0 : P.gold) < pv);
+        if (price != null && pv > 0) b.onclick = () => { if (b.dataset.sure !== "1") { b.dataset.sure = "1"; b.classList.add("sure"); const sp = b.querySelector("span"), o = sp ? sp.textContent : ""; if (sp) sp.textContent = "한 번 더 누르면 구매"; else b.prepend(el("span", null, "한 번 더 누르면 구매")); setTimeout(() => { if (!b.isConnected) return; b.dataset.sure = ""; b.classList.remove("sure"); if (sp) sp.textContent = o; else b.firstChild.remove(); }, 3000); return; } fn(); }; else b.onclick = fn; return b; }; /* 2026-10-29 "클릭했을 때 그냥 사지는지" — 값이 있으면 두 번 */
       const pic = (n) => { const i = el("img"); i.src = LBI(n); i.alt = ""; return i; };
       const shopCall = (fn, a, b2, show) => { if (lobFree() || lobBusy) return; lobBusy = true; lobErr = ""; call(fn, token, a, b2).then((r) => { lobBusy = false; LP = r; LP.got = Date.now(); shopRw = show(r); lobDraw(); }).catch((e) => { lobBusy = false; lobErr = errMsg(e); lobDraw(); }); };
       const boxOpen = (k, n) => shopCall("gameBox", k, n, (r) => ({ chest: "box-" + k, list: (r.gots || [r.got]).map((g) => g.wpn ? { pic: (WPN[g.wpn] || WPN.bow).pic, n: (WPN[g.wpn] || {}).n || "무기", g: 3 } : g.gear ? { pic: "g-" + g.gear.k, n: (r.gdef[g.gear.k] || {}).n || "장비", g: g.gear.g, gg: 1 } : { pic: "i-gboost", n: "💰 " + (g.gold || 0), g: 0 }) }));
@@ -6461,7 +6538,7 @@ body.game-full { overflow: hidden; }
         if ((!PB || Date.now() - PB.got > 60000) && !powerLoading && !lobFree()) { powerLoading = true; call("gamePowerBoard", token).then((r) => { powerLoading = false; powerBoard = r; r.got = Date.now(); if (lobTab === "rank") lobDraw(); }).catch((e) => { powerLoading = false; lobErr = errMsg(e); lobDraw(); }); }
         const M = PB && PB.mine; return rankView(head, tabs, L.map((x) => ({ id: x.id, nick: x.nick, v: (x.power || 0).toLocaleString(), lv: x.lv })), "전투력", M ? { rank: M.rank, v: M.power.toLocaleString() } : null, PB ? "아직 기록이 없어요" : "불러오는 중…", "장비를 맞춰 전투력을 올려 보세요", "⚔"); }
       const list = (R.all || []).slice(0, 30), mine = list.findIndex((x) => me && x.id === me.id);
-      const del = op ? (x) => { const d = el("button", "lb-del", "🗑"); d.type = "button"; d.setAttribute("aria-label", x.nick + " 기록 지우기"); d.onclick = () => { if (d.dataset.sure !== "1") { d.dataset.sure = "1"; d.textContent = "정말?"; setTimeout(() => { d.dataset.sure = ""; d.textContent = "🗑"; }, 3000); return; } d.disabled = true; call("deleteGameScore", adminPw || token, "all", x.id).then((r) => { takeRanks(r); lobDraw(); }).catch((e) => { lobErr = errMsg(e); lobDraw(); }); }; return d; } : null; /* 운영자 — 줄마다 🗑(두 번 눌러 지움) */
+      const del = false && op ? (x) => { const d = el("button", "lb-del", "🗑"); d.type = "button"; d.setAttribute("aria-label", x.nick + " 기록 지우기"); d.onclick = () => { if (d.dataset.sure !== "1") { d.dataset.sure = "1"; d.textContent = "정말?"; setTimeout(() => { d.dataset.sure = ""; d.textContent = "🗑"; }, 3000); return; } d.disabled = true; call("deleteGameScore", adminPw || token, "all", x.id).then((r) => { takeRanks(r); lobDraw(); }).catch((e) => { lobErr = errMsg(e); lobDraw(); }); }; return d; } : null; /* 운영자 — 줄마다 🗑(두 번 눌러 지움) */
       return rankView(head, tabs, list.map((x) => ({ id: x.id, nick: x.nick, v: (x.stage || 0) + "층", sub: (x.kills || 0).toLocaleString() + "마리", raw: x })), "층", mine >= 0 ? { rank: mine + 1, v: (list[mine].stage || 0) + "층" } : null, ranks ? "아직 기록이 없어요" : "불러오는 중…", "무한의 탑에 도전해 보세요", "🗼", del);
     }
     function rankView(head, tabs, L, unit, M, empty, hint, ic, del) {
