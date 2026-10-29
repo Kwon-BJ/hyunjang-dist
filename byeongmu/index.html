@@ -1305,12 +1305,12 @@ body.game-full { overflow: hidden; }
 .dn-card.tower { border-color: #9a8aff; background: linear-gradient(#2c2c86, #14144a); box-shadow: inset 0 0 0 .4cqw #4aa8ff, 0 0 2.4cqw rgba(120,110,255,.6), 0 .8cqw 0 #08082a; }
 .lb-mti { width: 1.25em; height: 1.25em; object-fit: contain; vertical-align: -.25em; flex: none; } .lb-mats .lb-mti { width: 10cqw; height: 10cqw; }
 /* 결과 창(시안 15) */
-.game-over.rsm { background: rgba(6,10,20,.66) !important; } .game-over.rsm #gameOverIn { background: none !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; width: min(94vw, 440px, calc((100dvh - 24px) * .53)); max-width: none; }
-.rs { container-type: inline-size; width: 100%; box-sizing: border-box; position: relative; display: grid; gap: 2.2cqw; padding: 13cqw 5cqw 5cqw; border: solid transparent; border-width: 8cqw; border-image: url(img/lb/rs-frame.webp) 115 fill / 8cqw; font-family: "Jua", "Noto Sans KR", sans-serif; color: #fff; text-align: center; }
+.game-over.rsm { background: rgba(6,10,20,.66) !important; } .game-over.rsm #gameOverIn { container-type: inline-size; /* 결과 창 크기는 이 칸 너비로 — PC 에선 게임 화면이 넓어 틀이 커지던 것(2026-10-29) */ background: none !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; width: min(94vw, 440px, calc((100dvh - 24px) * .53)); max-width: none; }
+.rs { width: 100%; box-sizing: border-box; position: relative; display: grid; gap: 2.2cqw; padding: 13cqw 5cqw 5cqw; border: solid transparent; border-width: 8cqw; border-image: url(img/lb/rs-frame.webp) 115 fill / 8cqw; font-family: "Jua", "Noto Sans KR", sans-serif; color: #fff; text-align: center; }
 .rs-sign { position: absolute; left: 50%; top: -9cqw; transform: translateX(-50%); width: 92cqw; aspect-ratio: 600 / 232; display: grid; align-content: center; justify-items: center; gap: 0; padding: 2cqw 0 9cqw; box-sizing: border-box; background: url(img/lb/rs-sign.webp) center / 100% 100% no-repeat; z-index: 2; }
 .rs-mode { position: absolute; top: 0; left: 50%; transform: translateX(-50%); padding: .5cqw 4cqw; border-radius: 1cqw; background: linear-gradient(#e4405a, #a8142c); font-size: 3.4cqw; white-space: nowrap; box-shadow: 0 .4cqw 0 #5a0814; }
 .rs-top { font-size: 4.2cqw; line-height: 1.1; color: #ffe9b0; -webkit-text-stroke: .7cqw #4a2a0a; paint-order: stroke fill; } .rs-name { font-size: 6.2cqw; line-height: 1.05; color: #fff; -webkit-text-stroke: 1cqw #4a2a0a; paint-order: stroke fill; white-space: nowrap; }
-.rs-hero { position: relative; aspect-ratio: 4 / 3; margin-top: 8cqw; border-radius: 2cqw; background: center / cover no-repeat #1a1206; box-shadow: inset 0 0 0 .5cqw rgba(0,0,0,.35); overflow: visible; }
+.rs-hero { position: relative; aspect-ratio: 4 / 3; margin-top: 14cqw; border-radius: 2cqw; background: center / cover no-repeat #1a1206; box-shadow: inset 0 0 0 .5cqw rgba(0,0,0,.35); overflow: visible; }
 .rs-ttl { position: absolute; left: 0; right: 0; top: -7cqw; display: grid; justify-items: center; }
 .rs-laurel { position: absolute; top: -6cqw; width: 64cqw; pointer-events: none; }
 .rs-big { position: relative; font-size: 13cqw; line-height: 1.05; white-space: nowrap; color: #fff7c8; -webkit-text-stroke: 1.6cqw #b2440a; paint-order: stroke fill; text-shadow: 0 1cqw 0 #6a2004, 0 0 3cqw rgba(255,200,40,.7); animation: rsPop .5s cubic-bezier(.2,1.6,.4,1) both; }
@@ -2065,7 +2065,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610291320";
+  const BUILD = "202610291358";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -6942,7 +6942,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
       out.push(sel);
       if (lobGiveRes) out.push(el("p", "lb-note", "지금 ㆍ ⚡ " + lobGiveRes.en + " · 💰 " + lobGiveRes.gold.toLocaleString() + " · 💎 " + (lobGiveRes.gem || 0).toLocaleString() + " · Lv " + lobGiveRes.lv.lv + " · " + lobGiveRes.ch + "장까지 · 무기 " + lobGiveRes.own.map((k) => (WPN[k] || {}).n || k).join(", ")));
       const f = el("div", "lb-give"), inp = {}, num = (k, n) => { const l = el("label", null, n), i = document.createElement("input"); i.type = "number"; i.inputMode = "numeric"; i.value = ""; i.placeholder = "0"; inp[k] = i; l.appendChild(i); f.appendChild(l); };
-      num("en", "⚡ 피로도"); num("gold", "💰 골드"); num("gem", "💎 보석"); num("exp", "EXP 경험치"); num("ch", "열 장(1~30)"); Object.keys(ITEMS).forEach((k) => num("i_" + k, ITEMS[k].n));
+      num("en", "⚡ 피로도"); num("gold", "💰 골드"); num("gem", "💎 보석"); num("exp", "EXP 경험치"); num("ch", "열 장(1~" + CH_N + ")"); Object.keys(ITEMS).forEach((k) => num("i_" + k, ITEMS[k].n));
       const wb = el("div", "lb-wchk"); Object.keys(WPN).filter((k) => k !== "bow").forEach((k) => { const l = el("label"), c = document.createElement("input"); c.type = "checkbox"; c.value = k; l.append(c, WPN[k].n); wb.appendChild(l); });
       out.push(f, el("small", "lb-note", "무기 주기"), wb);
       const go = el("button", "lb-buy", "주기"); go.type = "button"; go.disabled = !lobGiveTo || lobBusy; // 우편은 받는 사람 없이도
