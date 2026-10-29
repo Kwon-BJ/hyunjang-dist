@@ -1471,6 +1471,43 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
 
 .lb-load .ld-tip { -webkit-text-stroke: .9cqw #1a2a0a; paint-order: stroke fill; text-shadow: 0 .5cqw .8cqw rgba(0,0,0,.7); }
 .lb-load .lb-lbar b { color: #fff; text-shadow: 1px 0 0 #000, -1px 0 0 #000, 0 1px 0 #000, 0 -1px 0 #000; font-family: "Jua", sans-serif; }
+
+/* 경험치 띠와 윗줄 판이 안 겹치게(2026-10-29 전투 HUD 겹침 검사) — 세로 화면만, 가로 화면은 아래 @media 가 덮음 */
+@media (max-aspect-ratio: 1/1) { .game-box.full .game-hud .row { top: calc(40px + env(safe-area-inset-top, 0px)); } }
+
+/* 3단계(2026-10-29 작업지시서 v2) — 숫자 칸은 최대 자릿수(9,999만)가 줄이지 않고 들어가게 · 긴 글은 줄바꿈 */
+.lb-art.v2 .lb-gem { padding: 0 2.6cqw 0 1.6cqw !important; gap: .6cqw; }
+.lb-art.v2 .lb-gem i { font-size: 3.6cqw; flex: none; } .lb-art.v2 .lb-gem b { flex: 1 1 auto; min-width: 11cqw; font-size: 3.8cqw; text-align: center; }
+.lb-art.v2 .lb-gem em { flex: none; }
+.lb-mtx b { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.25; }
+.rk-my .v { white-space: normal; max-width: 34cqw; font-size: 2.8cqw; line-height: 1.25; text-align: right; overflow: visible; }
+.wp2-n { line-height: 1.1; }
+
+/* 노치 대응(2026-10-29 작업지시서 v2 3단계) — 로비 · 로딩 판은 노치 띠를 뺀 높이 안에. 시험은 --sat · --sab 를 덮어 노치를 흉내 냄 */
+.globby { --sat: env(safe-area-inset-top, 0px); --sab: env(safe-area-inset-bottom, 0px); box-sizing: border-box; padding-top: var(--sat); padding-bottom: var(--sab); }
+.lb-art { width: min(100vw, calc((100dvh - var(--sat, 0px) - var(--sab, 0px)) * 941 / 1672)); }
+.lb-load { width: min(100vw, calc((100dvh - var(--sat, 0px) - var(--sab, 0px)) * 760 / 1024)); }
+.lb-login { width: min(100vw, calc((100dvh - var(--sat, 0px) - var(--sab, 0px)) * 768 / 1024)); }
+
+/* 글꼴은 Jua 하나로(2026-10-29 작업지시서 v2 3단계) — 로비 · 게임 화면 · 게임 창 전부. 홈페이지(게시판 등)는 그대로 */
+.globby, .globby *, .game-box.full, .game-box.full *, .game-over, .game-over * { font-family: "Jua", "Noto Sans KR", sans-serif !important; }
+/* 그림 위에 바로 얹은 글자는 4방향 그림자 기본(:where 라 따로 정한 그림자 · 테두리가 있으면 그쪽이 이김) */
+:where(.lb-art.v2 > span, .lb-art.v2 > b, .lb-art.v2 > p, .lb-art.v2 > button, .lb-art.v2 > button *, .lb-art.v2 .lb-scene .sg, .rk-plate, .game-box.full .game-hud) { text-shadow: 1px 0 0 rgba(0,0,0,.85), -1px 0 0 rgba(0,0,0,.85), 0 1px 0 rgba(0,0,0,.85), 0 -1px 0 rgba(0,0,0,.85); }
+/* 장 선택 · 채팅 글자가 틀 아랫줄에 걸리던 것 */
+.lb-art.v2 .lb-diff, .lb-art.v2 .lb-sidebtn { padding-bottom: 2.2cqw !important; }
+
+.lb-art.v2 .lb-chsub { text-shadow: 1px 0 0 #fff6dc, -1px 0 0 #fff6dc, 0 1px 0 #fff6dc, 0 -1px 0 #fff6dc; } /* 밝은 두루마리 위 진한 글자는 밝은 4방향 */
+
+/* px() 로 얹은 글자 칸 — 안쪽 여백 · 최소 크기(2026-10-29 작업지시서 v2 3단계). 칸 크기는 px() 그대로, 글자가 테두리에 붙지 않게 */
+.lb-art.v2 > :is(.lb-nick, .lb-gold, #lbEn, .lb-chn, .lb-chname, .lb-chsub, .lb-wtag, .lb-rw, .lb-msg, .lb-notice, .lb-lock) { box-sizing: border-box; padding-inline: 1.2cqw; min-width: 8cqw; min-height: 3.6cqw; }
+
+/* 제목 판 9-slice(2026-10-29 작업지시서 v2 · ChatGPT 9s-plate 1024×300) — 네 귀퉁이 쇠장식 · 잎은 그대로, 가운데 나뭇결만 늘어남. 글자 길이가 바뀌어도 판이 따라 늘어남 */
+.lb-plate { border: solid transparent !important; border-width: 5.6cqw 9.8cqw !important; border-image: url(img/lb/9s-plate.webp) 120 210 120 210 fill / 5.6cqw 9.8cqw !important; border-radius: 0 !important; background: none !important; box-shadow: none !important; padding: 0 1cqw !important; min-height: 0; }
+.lb-plate b { text-shadow: 1px 0 0 #3a1e08, -1px 0 0 #3a1e08, 0 1px 0 #3a1e08, 0 -1px 0 #3a1e08; line-height: 1; }
+
+/* 초록 단추 9-slice(2026-10-29 · ChatGPT wb-green 340×80) — 양끝 잎 · 금테는 그대로, 가운데만 늘어남 */
+.lb-sbuy.sp-green, .dn-go { border: solid transparent !important; border-width: 2.4cqw 5cqw !important; border-image: url(img/lb/wb-green.webp) 24 52 24 52 fill / 2.4cqw 5cqw !important; background: none !important; box-shadow: none !important; border-radius: 0 !important; padding: .2cqw 0 !important; }
+.lb-sbuy.sp-green:disabled, .dn-go:disabled { border-image-source: url(img/lb/wb-gray.webp) !important; filter: none; opacity: .85; }
 </style>
 </head>
 <body>
@@ -1918,6 +1955,17 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
   <button class="admin-link" id="adminBtn" type="button">관리자</button>
 </footer>
 <script>
+  /* UI 문자열 한 곳(2026-10-29 작업지시서 v2 3단계) — 다국어는 안 하지만 바꿀 글은 여기서. 서버 오류 문구는 워커에 그대로 */
+  const STR = {
+    chaps: ["이끼 숲", "속삭임 숲길", "버섯의 언덕", "반딧불 계곡", "고목의 쉼터", "푸른빛 폭포", "정령의 숲길", "가시덤불 숲", "안개낀 수풀", "숲의 심장부", "사막 유적", "황금빛 모래", "잊혀진 오아시스", "모래폭풍 지대", "고대의 석문", "태양의 신전", "전갈의 둥지", "유령의 사막", "왕가의 무덤", "황금의 피라미드", "서리꽃 설원", "눈보라 고개", "얼어붙은 호수", "수정의 동굴", "빙벽의 협곡", "눈사람 마을", "서리의 성채", "만년설 봉우리", "얼음의 왕좌", "겨울의 심장", "독안개 습지", "썩은뿌리 숲", "늪지의 오솔길", "독버섯 군락", "침묵의 연못", "거머리 소굴", "검은물 수로", "식인꽃 정원", "망각의 늪지", "독왕의 제단", "붉은재 평원", "용암의 강줄기", "불타는 협곡", "잿빛의 광산", "화염석 동굴", "용의 발자국", "분화구 절벽", "불꽃의 성문", "마그마 심연", "화산왕의 왕좌", "황혼의 묘지", "유령의 마을", "까마귀 숲길", "저주받은 정원", "망자의 지하실", "달빛의 폐성", "피묻은 예배당", "영혼의 회랑", "망령의 왕궁", "저주의 왕좌", "끝없는 균열", "검은빛 동굴", "심연의 광맥", "그림자 지대", "잊힌 지하도시", "어둠의 수로", "공허의 협곡", "흑요석 성벽", "심연의 제단", "지하왕의 궁전", "붉은달 황야", "악마의 숲길", "마계의 관문", "핏빛의 강가", "마족의 병영", "타락한 성당", "검붉은 성벽", "악몽의 회랑", "마왕의 대전당", "마왕의 옥좌", "별빛의 균열", "유성의 벌판", "무중력 정거장", "성운의 미궁", "차원의 관문", "붕괴된 위성", "시간의 균열", "공허의 우주", "은하의 무덤", "우주의 심장", "검은태양 지대", "멸망의 대지", "재앙의 폭풍", "붕괴된 차원", "절망의 성채", "파멸의 심연", "종말의 회랑", "검은별 제단", "최후의 관문", "세계의 끝자락", "영겁의 지옥문"], // 1~101장 이름
+    chsub: ["숲속의 첫 번째 생존 전투", "나뭇잎 사이로 들리는 수상한 소리", "거대한 버섯 아래 숨겨진 비밀", "밤을 밝히는 작은 정령의 빛", "오래된 나무가 지키는 숲의 중심", "폭포 뒤에 숨겨진 위험한 통로", "숲의 정령들이 시험을 시작한다", "끝없이 자라나는 가시의 미로", "짙은 안개 속에서 적이 다가온다", "잠든 숲의 수호자가 깨어난다", "모래바람 속 옛 유적", "뜨거운 모래 아래 감춰진 보물", "메마른 땅에 남은 마지막 샘", "시야를 삼키는 거대한 모래바람", "봉인된 신전의 입구가 열린다", "태양의 힘이 잠든 황금 제단", "모래 밑에서 독침이 솟아난다", "사라진 여행자들의 그림자가 맴돈다", "고대 왕의 저주가 되살아난다", "사막의 군주가 잠에서 깨어난다", "하얀 눈 위에 첫 발자국을 남기다", "거센 바람이 길을 막아선다", "얇은 얼음 아래 위험이 숨어 있다", "푸른 수정이 어둠 속에서 빛난다", "가파른 얼음 절벽을 돌파하라", "귀여운 눈사람들의 무서운 반란", "차가운 성벽 너머의 비밀", "끝없는 눈길의 정상에 도전하라", "얼음 왕의 그림자가 드리운다", "영원한 겨울을 끝낼 마지막 전투", "초록빛 안개가 생명을 잠식한다", "오염된 뿌리가 땅을 뒤덮는다", "발밑에서 수상한 움직임이 느껴진다", "화려한 버섯일수록 위험하다", "고요한 물속에 괴물이 잠들었다", "끝없이 달라붙는 늪의 포식자", "오염된 물길을 따라 추적하라", "아름다운 꽃잎 뒤의 날카로운 이빨", "안개 속에서 방향 감각을 잃는다", "늪의 지배자가 모습을 드러낸다", "뜨거운 재가 하늘에서 내려온다", "끓어오르는 용암을 피해 살아남아라", "불길에 둘러싸인 좁은 통로", "버려진 광산에서 불꽃이 피어난다", "붉은 광석이 뜨겁게 타오른다", "거대한 발자국이 재 속에 남았다", "발밑에서 화산이 깨어난다", "화염 군단이 성문을 지킨다", "깊은 곳에서 용암이 솟구친다", "불의 군주가 최후의 시험을 내린다", "해가 지면 무덤이 움직이기 시작한다", "사라진 주민들의 목소리가 들린다", "검은 날개가 하늘을 가린다", "시든 꽃 사이로 망령이 나타난다", "잠든 망자들이 눈을 뜬다", "푸른 달 아래 성벽이 흔들린다", "오래된 의식이 다시 시작된다", "떠도는 영혼들이 길을 가로막는다", "왕궁을 지키는 유령 군단", "저주를 내린 왕과 마주하라", "대지 아래 새로운 세계가 열린다", "빛을 삼키는 수정이 자라난다", "땅속 깊은 곳에서 힘이 맥동한다", "어둠 속에서 또 다른 내가 나타난다", "멸망한 문명의 흔적을 찾아라", "검은 물결이 길을 집어삼킨다", "끝없는 낭떠러지에서 버텨라", "검은 성벽이 앞길을 막는다", "금지된 힘이 제단에 모여든다", "깊은 어둠의 지배자가 기다린다", "붉게 물든 달이 하늘에 떠오른다", "뒤틀린 나무 사이로 악마가 몰려온다", "금지된 세계로 향하는 문", "붉은 강을 따라 군단이 진격한다", "악마 군단의 전초기지를 무너뜨려라", "빛을 잃은 성소에서 전투가 시작된다", "거대한 마계 요새가 모습을 드러낸다", "끝없는 환영이 정신을 흔든다", "마왕의 친위대가 길을 막는다", "마계의 군주와 정면으로 맞서라", "하늘에 거대한 차원의 틈이 열린다", "불타는 별 조각이 쏟아진다", "중력이 사라진 공간에서 살아남아라", "빛나는 구름 속에서 길을 찾아라", "다른 세계의 적들이 몰려온다", "무너진 기계 도시가 떠다닌다", "뒤틀린 시간이 전장을 바꾼다", "별빛조차 닿지 않는 공간", "사라진 별들이 잠든 곳", "우주의 균형을 되찾을 결전", "빛을 잃은 태양이 떠오른다", "무너진 세계 위에서 마지막 진격", "하늘과 땅이 함께 무너진다", "모든 세계의 경계가 허물어진다", "마지막 수호자가 길을 지킨다", "끝을 알 수 없는 어둠이 밀려온다", "수많은 전투의 기억이 되살아난다", "사라진 별의 힘이 모여든다", "마지막 봉인이 눈앞에 다가온다", "모든 세계의 운명이 결정된다", "모든 악의 근원과 최후의 결전"], // 장 부제
+    boss: ["나무 정령 왕", "황금 전갈 여왕", "얼음 왕관 예티", "불꽃 날개 용", "독 두꺼비 왕", "해골 리치", "수정 얼음 용", "황금 파라오 골렘", "고블린 왕 기사", "천둥 폭풍 정령 왕"], // 최종 보스(맵마다)
+    bossMid: ["가시 덩굴 수호자", "모래 전갈 기사", "눈보라 늑대 대장", "용암 도마뱀", "늪 두꺼비 기사", "해골 기사단장", "얼음 골렘", "미라 전사장", "고블린 창병 대장", "번개 독수리"], // 중간 보스(맵마다, 2026-10-29 최종 보스와 이름 겹치지 않게)
+    modes: ["쉬움", "보통", "어려움", "매우 어려움", "지옥"], // 난이도
+    tabs: [["shop", "상점"], ["gear", "장비"], ["go", "출전"], ["dun", "던전"], ["rank", "순위"]], // 아래 탭
+    shopCats: [["special", 1, "특별 상품"], ["daily", 2, "오늘 상점"], ["box", 3, "상자"], ["item", 4, "아이템"], ["en", 5, "재화"]], // 상점 분류
+    loading: { logo: "수달단", sub: "OTTER CLAN", tip: "재미있는 모험을 준비하고 있어요" },
+  };
 (function () {
   /* 화면은 깃허브 페이지, 자료는 깃허브 비공개 창고(vkdnj5700-tech/-), 그 사이 창구는 시트 없는 Apps Script (2026-10-19 옮김 — "구글시트는 없애라").
      구글 Apps Script 창구(API)에 {fn, args} 를 보내 서버 함수를 부른다.
@@ -1925,7 +1973,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610290625";
+  const BUILD = "202610290738";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -4732,7 +4780,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     }
     function startStage() { s.rest = 0; s.stage++; setMap(s.chap ? chMap(s.chap) : mapFor(s.stage)); s.stageT = 0; s.cleanT = 0; s.bossDone = false; horde(); msg(!s.chap && !s.raid && (s.stage - 1) % 10 === 0 ? s.stage + "층 ㆍ " + CHAPS[Math.min(CH_N, Math.ceil(s.stage / 10)) - 1] + "!" : s.stage + "단계 (" + stageLen(s.stage) + "초) ㆍ 잡귀가 몰려온다!"); }
     function arenaClamp(p) { const A = s.arena; if (!A) return; p.x = Math.min(A.x + A.h, Math.max(A.x - A.h, p.x)); p.y = Math.min(A.y + A.h, Math.max(A.y - A.h, p.y)); }
-    const OCB = ["나무 정령 왕", "황금 전갈 여왕", "얼음 왕관 예티", "불꽃 날개 용", "독 두꺼비 왕", "해골 리치", "수정 얼음 용", "황금 파라오 골렘", "고블린 왕 기사", "천둥 폭풍 정령 왕"]; // 맵마다 대장 이름(그림 img/lb/boss-N)
+    const OCB = STR.boss; // 맵마다 대장 이름(그림 img/lb/boss-N)
     function spawnBoss(i) {
       SND.siren();
       const B = BOSSES[i % BOSSES.length], lap = Math.floor(i / BOSSES.length), k = 1 + lap * 1.0, name = ["", "성난 ", "어둠의 "][cycOf()] + (OCB[(mapIdx || 1) - 1] || B.name) + (lap ? " " + (lap + 1) : "");
@@ -4743,7 +4791,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
       s.fx.push({ boom: true, spr: "smoke", x: 0, y: 0, r: B.r * 2, c: B.c, size: B.r * 6, life: 0.8, dur: 0.8 }, { spr: "quake", x: 0, y: 0, size: B.r * 7, life: 0.8, dur: 0.8 });
       /* 대장전 — 10 · 20 · 30 …단계 대장은 잡귀를 다 처치하고 맵 가운데 13m × 13m(1040) 결투장에서. 잡을 때까지 잡귀 안 나옴 (2026-10-26, 10m → 13m 2026-10-27 — 맵 세로에 들어가는 가장 큰 네모) */
       const fin = s.chap && s.stage >= chStages(s.chap), mid = s.chap && !fin;
-      if (mid) { f.hp *= 0.6; f.full *= 0.6; f.name = "중간 보스 ㆍ " + f.name; } else if (fin) f.name = "최종 보스 ㆍ " + f.name; // 중간 보스는 체력 60%
+      if (mid) { f.hp *= 0.6; f.full *= 0.6; f.name = "중간 보스 ㆍ " + (STR.bossMid[(mapIdx || 1) - 1] || f.name); } else if (fin) f.name = "최종 보스 ㆍ " + f.name; // 중간 보스는 체력 60%
       /* 보스방(2026-10-29 "탕탕특공대처럼 보스 생기면 잔몹은 다 죽고 경험치를 떨어뜨리게") — 장의 보스는 둘 다, 탑은 10층마다 */
       if (s.chap || s.stage % 10 === 0) {
         s.foes.forEach((o) => { s.kills++; s.gems.push({ x: o.x, y: o.y, v: o.xp, pull: true }); if (s.fx.length < 150) s.fx.push({ boom: true, spr: "smoke", x: o.x, y: o.y, r: o.r, c: o.c, size: o.r * 3.4, life: 0.4, dur: 0.4 }); });
@@ -5916,7 +5964,12 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
         b.style.setProperty("--cd", left > 0 ? left / (SK[k].cd(s.up[k]) * s.cool) : 0);
         b.classList.toggle("ready", left <= 0);
       });
+      hudStack();
     }
+    /* 윗줄 판 → 대장 띠 → 알림 글을 위에서부터 차례로 쌓음(2026-10-29 전투 HUD 겹침 검사) — 글자 길이 · 줄 수 · 화면 폭이 바뀌어도 안 겹치게. 0.5초마다 또는 대장이 나타나고 사라질 때 */
+    function hudStack() { const B = $("gBoss"), M = $("gMsg"), key = B.hidden ? 0 : 1; if (hudStack.k === key && hudStack.at != null && Math.abs(s.t - hudStack.at) < 0.5) return; hudStack.k = key; hudStack.at = s.t;
+      const Hb = $("gameHud").getBoundingClientRect(), R = document.querySelector("#gameHud .row").getBoundingClientRect(); if (R.height <= 4) { B.style.removeProperty("top"); M.style.removeProperty("top"); return; } /* 가로 화면은 따로 배치 */
+      let y = R.bottom - Hb.top + 6; if (!B.hidden) { B.style.setProperty("top", Math.round(y) + "px", "important"); y += B.getBoundingClientRect().height + 8; } M.style.setProperty("top", Math.max(Math.round(y), Math.round(Hb.height * 0.19)) + "px", "important"); }
     /* 스킬 단추 — 끄는 손가락과 따로 누를 수 있게 pointerdown 으로 */
     function renderSkills() {
       $("gSkills").replaceChildren(...s.skills.map((k, i) => {
@@ -6028,12 +6081,12 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
        자리는 로비 그림 941×1672 기준 % 로 얹는다. 아래 칸 = 상점 · 무기 · 출전 · 순위. 피로도 · 골드 · 경험치 · 장 · 무기 · 물건은 창구(gameProfile …)에. 손님 · 관리자 암호는 저장 없이 */
     /* 30장(2026-10-28 "시나리오를 30장까지") — 맵 · 대장은 10장마다 다시(11장 = 1장 맵), 이름은 장마다 */
     /* 1~101장 이름 · 부제(2026-10-29 ChatGPT 기획안 — 보관/시안/장101-기획.txt, 영어는 배경 그림 설명) */
-    const CHAPS = ["이끼 숲", "속삭임 숲길", "버섯의 언덕", "반딧불 계곡", "고목의 쉼터", "푸른빛 폭포", "정령의 숲길", "가시덤불 숲", "안개낀 수풀", "숲의 심장부", "사막 유적", "황금빛 모래", "잊혀진 오아시스", "모래폭풍 지대", "고대의 석문", "태양의 신전", "전갈의 둥지", "유령의 사막", "왕가의 무덤", "황금의 피라미드", "서리꽃 설원", "눈보라 고개", "얼어붙은 호수", "수정의 동굴", "빙벽의 협곡", "눈사람 마을", "서리의 성채", "만년설 봉우리", "얼음의 왕좌", "겨울의 심장", "독안개 습지", "썩은뿌리 숲", "늪지의 오솔길", "독버섯 군락", "침묵의 연못", "거머리 소굴", "검은물 수로", "식인꽃 정원", "망각의 늪지", "독왕의 제단", "붉은재 평원", "용암의 강줄기", "불타는 협곡", "잿빛의 광산", "화염석 동굴", "용의 발자국", "분화구 절벽", "불꽃의 성문", "마그마 심연", "화산왕의 왕좌", "황혼의 묘지", "유령의 마을", "까마귀 숲길", "저주받은 정원", "망자의 지하실", "달빛의 폐성", "피묻은 예배당", "영혼의 회랑", "망령의 왕궁", "저주의 왕좌", "끝없는 균열", "검은빛 동굴", "심연의 광맥", "그림자 지대", "잊힌 지하도시", "어둠의 수로", "공허의 협곡", "흑요석 성벽", "심연의 제단", "지하왕의 궁전", "붉은달 황야", "악마의 숲길", "마계의 관문", "핏빛의 강가", "마족의 병영", "타락한 성당", "검붉은 성벽", "악몽의 회랑", "마왕의 대전당", "마왕의 옥좌", "별빛의 균열", "유성의 벌판", "무중력 정거장", "성운의 미궁", "차원의 관문", "붕괴된 위성", "시간의 균열", "공허의 우주", "은하의 무덤", "우주의 심장", "검은태양 지대", "멸망의 대지", "재앙의 폭풍", "붕괴된 차원", "절망의 성채", "파멸의 심연", "종말의 회랑", "검은별 제단", "최후의 관문", "세계의 끝자락", "영겁의 지옥문"];
-    const CHSUB = ["숲속의 첫 번째 생존 전투", "나뭇잎 사이로 들리는 수상한 소리", "거대한 버섯 아래 숨겨진 비밀", "밤을 밝히는 작은 정령의 빛", "오래된 나무가 지키는 숲의 중심", "폭포 뒤에 숨겨진 위험한 통로", "숲의 정령들이 시험을 시작한다", "끝없이 자라나는 가시의 미로", "짙은 안개 속에서 적이 다가온다", "잠든 숲의 수호자가 깨어난다", "모래바람 속 옛 유적", "뜨거운 모래 아래 감춰진 보물", "메마른 땅에 남은 마지막 샘", "시야를 삼키는 거대한 모래바람", "봉인된 신전의 입구가 열린다", "태양의 힘이 잠든 황금 제단", "모래 밑에서 독침이 솟아난다", "사라진 여행자들의 그림자가 맴돈다", "고대 왕의 저주가 되살아난다", "사막의 군주가 잠에서 깨어난다", "하얀 눈 위에 첫 발자국을 남기다", "거센 바람이 길을 막아선다", "얇은 얼음 아래 위험이 숨어 있다", "푸른 수정이 어둠 속에서 빛난다", "가파른 얼음 절벽을 돌파하라", "귀여운 눈사람들의 무서운 반란", "차가운 성벽 너머의 비밀", "끝없는 눈길의 정상에 도전하라", "얼음 왕의 그림자가 드리운다", "영원한 겨울을 끝낼 마지막 전투", "초록빛 안개가 생명을 잠식한다", "오염된 뿌리가 땅을 뒤덮는다", "발밑에서 수상한 움직임이 느껴진다", "화려한 버섯일수록 위험하다", "고요한 물속에 괴물이 잠들었다", "끝없이 달라붙는 늪의 포식자", "오염된 물길을 따라 추적하라", "아름다운 꽃잎 뒤의 날카로운 이빨", "안개 속에서 방향 감각을 잃는다", "늪의 지배자가 모습을 드러낸다", "뜨거운 재가 하늘에서 내려온다", "끓어오르는 용암을 피해 살아남아라", "불길에 둘러싸인 좁은 통로", "버려진 광산에서 불꽃이 피어난다", "붉은 광석이 뜨겁게 타오른다", "거대한 발자국이 재 속에 남았다", "발밑에서 화산이 깨어난다", "화염 군단이 성문을 지킨다", "깊은 곳에서 용암이 솟구친다", "불의 군주가 최후의 시험을 내린다", "해가 지면 무덤이 움직이기 시작한다", "사라진 주민들의 목소리가 들린다", "검은 날개가 하늘을 가린다", "시든 꽃 사이로 망령이 나타난다", "잠든 망자들이 눈을 뜬다", "푸른 달 아래 성벽이 흔들린다", "오래된 의식이 다시 시작된다", "떠도는 영혼들이 길을 가로막는다", "왕궁을 지키는 유령 군단", "저주를 내린 왕과 마주하라", "대지 아래 새로운 세계가 열린다", "빛을 삼키는 수정이 자라난다", "땅속 깊은 곳에서 힘이 맥동한다", "어둠 속에서 또 다른 내가 나타난다", "멸망한 문명의 흔적을 찾아라", "검은 물결이 길을 집어삼킨다", "끝없는 낭떠러지에서 버텨라", "검은 성벽이 앞길을 막는다", "금지된 힘이 제단에 모여든다", "깊은 어둠의 지배자가 기다린다", "붉게 물든 달이 하늘에 떠오른다", "뒤틀린 나무 사이로 악마가 몰려온다", "금지된 세계로 향하는 문", "붉은 강을 따라 군단이 진격한다", "악마 군단의 전초기지를 무너뜨려라", "빛을 잃은 성소에서 전투가 시작된다", "거대한 마계 요새가 모습을 드러낸다", "끝없는 환영이 정신을 흔든다", "마왕의 친위대가 길을 막는다", "마계의 군주와 정면으로 맞서라", "하늘에 거대한 차원의 틈이 열린다", "불타는 별 조각이 쏟아진다", "중력이 사라진 공간에서 살아남아라", "빛나는 구름 속에서 길을 찾아라", "다른 세계의 적들이 몰려온다", "무너진 기계 도시가 떠다닌다", "뒤틀린 시간이 전장을 바꾼다", "별빛조차 닿지 않는 공간", "사라진 별들이 잠든 곳", "우주의 균형을 되찾을 결전", "빛을 잃은 태양이 떠오른다", "무너진 세계 위에서 마지막 진격", "하늘과 땅이 함께 무너진다", "모든 세계의 경계가 허물어진다", "마지막 수호자가 길을 지킨다", "끝을 알 수 없는 어둠이 밀려온다", "수많은 전투의 기억이 되살아난다", "사라진 별의 힘이 모여든다", "마지막 봉인이 눈앞에 다가온다", "모든 세계의 운명이 결정된다", "모든 악의 근원과 최후의 결전"];
+    const CHAPS = STR.chaps;
+    const CHSUB = STR.chsub;
     const CH_N = 101, CH_MAPG = [1, 2, 3, 5, 4, 6, 7, 4, 10, 8, 4], chMap = (c) => CH_MAPG[Math.min(10, Math.floor((c - 1) / 10))]; // 10장 묶음 테마마다 전투 맵(숲 · 사막 · 설산 · 늪 · 화산 · 왕국 · 심연 · 마계 · 우주 · 종말 · 지옥)
     /* 난이도 모드 — 30장을 깨면 어려움, 어려움 30장을 깨면 매우 어려움(창구 GP_MODES). 몬스터 체력 · 공격 × */
     /* 난이도는 장에서 정해짐(2026-10-29 부장님 "1~30 쉬움 · 31~60 보통 · 61~90 어려움 · 91~100 매우 어려움 · 101 지옥", 배율은 ChatGPT 기획안) — 구간 안에서도 장마다 조금씩 세짐(DIFF_K) */
-    const MODE_N = ["쉬움", "보통", "어려움", "매우 어려움", "지옥"], MODE_HP = [1, 5, 15, 50, 120], MODE_DMG = [1, 3, 7.5, 20, 45], MODE_MUL = [1, 1.5, 2, 3, 5], MODE_SP = [1, 1.15, 1.32, 1.55, 1.75], MODE_CAP = [1, 1.25, 1.5, 1.8, 2], MODE_MV = [1, 1.06, 1.13, 1.22, 1.3], MODE_PAIN = [[0.25, 0.4], [0.28, 0.48], [0.32, 0.6], [0.4, 0.8], [0.5, 1]], MODE_BCD = [1, 0.9, 0.8, 0.7, 0.6], DIFF_LO = [1, 31, 61, 91, 101], DIFF_TO = [[4, 2.5, 1.2], [13, 6.5, 1.45], [45, 18, 1.75], [110, 40, 2.1], [120, 45, 2.1]]; /* 2026-10-29 "매우 어려움이 너무 쉽다" — 어려움 · 매우 어려움 · 지옥 크게 올림, 쉬움은 그대로 */
+    const MODE_N = STR.modes, MODE_HP = [1, 5, 15, 50, 120], MODE_DMG = [1, 3, 7.5, 20, 45], MODE_MUL = [1, 1.5, 2, 3, 5], MODE_SP = [1, 1.15, 1.32, 1.55, 1.75], MODE_CAP = [1, 1.25, 1.5, 1.8, 2], MODE_MV = [1, 1.06, 1.13, 1.22, 1.3], MODE_PAIN = [[0.25, 0.4], [0.28, 0.48], [0.32, 0.6], [0.4, 0.8], [0.5, 1]], MODE_BCD = [1, 0.9, 0.8, 0.7, 0.6], DIFF_LO = [1, 31, 61, 91, 101], DIFF_TO = [[4, 2.5, 1.2], [13, 6.5, 1.45], [45, 18, 1.75], [110, 40, 2.1], [120, 45, 2.1]]; /* 2026-10-29 "매우 어려움이 너무 쉽다" — 어려움 · 매우 어려움 · 지옥 크게 올림, 쉬움은 그대로 */
     const diffOf = (c) => c <= 30 ? 0 : c <= 60 ? 1 : c <= 90 ? 2 : c <= 100 ? 3 : 4, DIFF_C = ["#5ad16a", "#4aa8ff", "#ff9a2a", "#e2483a", "#a020f0"];
     function chScale(c) { const d = diffOf(c), lo = DIFF_LO[d], hi = [30, 60, 90, 100, 101][d], t = hi > lo ? (c - lo) / (hi - lo) : 0, T = DIFF_TO[d], L = (a, b) => a * Math.pow(b / a, t); return { hp: L(MODE_HP[d], T[0]), dmg: L(MODE_DMG[d], T[1]), cap: L(MODE_CAP[d], T[2]), sp: MODE_SP[d], mv: MODE_MV[d] * (1 + t * 0.06), d: d }; } // 구간 처음 → 끝 배율로 고르게(ChatGPT 표: 쉬움 ×1~4 · 보통 ×4.5~12 · 어려움 ×13~35 · 매우 어려움 ×38~60 · 지옥 ×75)
     let lobMode = 0, lobModeHand = false; // 난이도를 손으로 고르면 저절로 안 바꿈
@@ -6055,9 +6108,9 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     function iconize(root) { const tw = document.createTreeWalker(root, NodeFilter.SHOW_TEXT), list = []; let n; while ((n = tw.nextNode())) if (EMO_RE.test(n.nodeValue)) list.push(n);
       list.forEach((t) => { const parts = t.nodeValue.split(EMO_RE), frag = document.createDocumentFragment(); parts.forEach((s) => { if (!s) return; const k = EMO[s.replace(/\uFE0F/g, "")] || EMO[s]; if (k) { const i = el("img", "ii"); i.src = LBI(k); i.alt = s; frag.appendChild(i); } else frag.appendChild(document.createTextNode(s)); }); t.replaceWith(frag); }); }
     /* 칸보다 긴 한 줄 글자는 글자를 줄여 맞춤(잘리거나 … 대신) — 모든 글자에, 글꼴을 받은 뒤 다시 */
-    function fitAll(root) { root.querySelectorAll("*").forEach((e) => { if (!e.firstChild || e.children.length > 3) return; const s = getComputedStyle(e); if (s.whiteSpace !== "nowrap" && s.textOverflow !== "ellipsis") return; if (/auto|scroll/.test(s.overflowX) || !e.clientWidth) return; if (e.dataset.f0) e.style.removeProperty("font-size"); const f0 = parseFloat(getComputedStyle(e).fontSize); if (e.scrollWidth <= e.clientWidth + 1) return; const cw0 = e.clientWidth; e.dataset.f0 = f0; let f = f0, k = 0; while (k++ < 12 && f > f0 * 0.6 && e.scrollWidth > e.clientWidth + 1) { f *= 0.94; e.style.setProperty("font-size", f + "px", "important"); if (e.clientWidth < cw0 - 1) { e.style.removeProperty("font-size"); break; } } /* 칸이 글자 따라 줄어드는 것(내용 크기)이면 줄일 필요 없음 */ /* 매번 처음 크기에서(예전엔 다시 그릴 때마다 또 줄어 1px 까지) */ }); }
+    function fitAll(root) { root.querySelectorAll("*").forEach((e) => { if (!e.firstChild || e.children.length > 3) return; const s = getComputedStyle(e); if (s.whiteSpace !== "nowrap" && s.textOverflow !== "ellipsis") return; if (/auto|scroll/.test(s.overflowX) || !e.clientWidth || e.dataset.fit === "0") return; if (e.dataset.f0) e.style.removeProperty("font-size"); const f0 = parseFloat(getComputedStyle(e).fontSize); if (e.scrollWidth <= e.clientWidth + 1) return; const cw0 = e.clientWidth; e.dataset.f0 = f0; let f = f0, k = 0; while (k++ < 12 && f > f0 * 0.6 && e.scrollWidth > e.clientWidth + 1) { f *= 0.94; e.style.setProperty("font-size", f + "px", "important"); if (e.clientWidth < cw0 - 1) { e.style.removeProperty("font-size"); break; } } /* 칸이 글자 따라 줄어드는 것(내용 크기)이면 줄일 필요 없음 */ /* 매번 처음 크기에서(예전엔 다시 그릴 때마다 또 줄어 1px 까지) */ }); }
     function lobFit(root) { iconize(root); const go = () => { lobFit0(root); fitAll(root); }; if (root.isConnected) go(); requestAnimationFrame(go); if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => requestAnimationFrame(go)); }
-    function lobFit0(root) { (() => root.querySelectorAll(".lb-nick, .lb-gold, .lb-gem b, #lbEn b, .lb-chn, .lb-chname, .lb-chsub, .lb-inf, .lb-wtag b, .lb-rw, .lb-msg, .lb-card b, .lb-card small, .lb-lv b, .lb-tr b, .lb-done").forEach((e) => { const box = e.parentElement && e.tagName === "B" && /lbEn/.test(e.parentElement.id || "") ? e.parentElement : e; let f = parseFloat(getComputedStyle(e).fontSize), n = 0; while (n++ < 30 && f > 6 && (box.scrollWidth > box.clientWidth + 1 || e.scrollWidth > e.clientWidth + 1)) { f *= 0.92; e.style.setProperty("font-size", f + "px", "important"); } }))(); }
+    function lobFit0(root) { (() => root.querySelectorAll(".lb-nick, .lb-gold, .lb-gem b, #lbEn b, .lb-chn, .lb-chname, .lb-chsub, .lb-inf, .lb-wtag b, .lb-rw, .lb-msg, .lb-card b, .lb-card small, .lb-lv b, .lb-tr b, .lb-done").forEach((e) => { const box = e.parentElement && e.tagName === "B" && /lbEn/.test(e.parentElement.id || "") ? e.parentElement : e; if (e.dataset.f0) e.style.removeProperty("font-size"); let f = parseFloat(getComputedStyle(e).fontSize), n = 0; e.dataset.f0 = f; e.dataset.fit = "0"; /* 2026-10-29 줄인 비율을 시험이 읽게(처음 크기) */ while (n++ < 30 && f > 6 && (box.scrollWidth > box.clientWidth + 1 || e.scrollWidth > e.clientWidth + 1)) { f *= 0.92; e.style.setProperty("font-size", f + "px", "important"); } }))(); }
     function lobLoad() {
       if (lobFree()) { LP = { free: true, en: 0, max: 30, gold: 0, ch: 10, chMax: 10, wpn: (LP && LP.wpn) || "bow", own: Object.keys(WPN), exp: 0, lv: { lv: 1, cur: 0, need: 100 }, items: {}, boost: 0, shop: { weapons: {}, items: {}, en: { n: 10, gem: 15 }, enLeft: 0 }, clears: {} }; lobDraw(); return; }
       call("gameProfile", token).then((r) => { if (!r) throw new Error("내 정보를 못 불러왔어요"); LP = r; LP.got = Date.now(); if (lobCh > LP.ch) lobCh = LP.ch; lobDraw(); }).catch((e) => { lobErr = errMsg(e); lobDraw(); });
@@ -6066,7 +6119,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     let lobLoaded = false;
     function lobLoading(done) {
       if (lobLoaded) return done();
-      const L = $("gLobby"), box = el("div", "lb-load"), bar = el("i"), pct = el("b", null, "0%"), wrap = el("div", "lb-lbar"); wrap.append(bar, pct); { const lg = el("div", "ld-logo"); lg.append(el("b", null, "수달단"), el("small", null, "OTTER CLAN")); box.append(lg, el("p", "ld-tip", "재미있는 모험을 준비하고 있어요")); } box.appendChild(wrap); /* 2026-10-29 로딩 글자는 그림 대신 DOM */ L.replaceChildren(box); L.hidden = false;
+      const L = $("gLobby"), box = el("div", "lb-load"), bar = el("i"), pct = el("b", null, "0%"), wrap = el("div", "lb-lbar"); wrap.append(bar, pct); { const lg = el("div", "ld-logo"); lg.append(el("b", null, STR.loading.logo), el("small", null, STR.loading.sub)); box.append(lg, el("p", "ld-tip", STR.loading.tip)); } box.appendChild(wrap); /* 2026-10-29 로딩 글자는 그림 대신 DOM */ L.replaceChildren(box); L.hidden = false;
       const list = ["img/bg/m_ot2.webp?v=" + BUILD, "img/maps/m1.jpg?v=" + BUILD].concat(["bg-ch1", "ui-face", "ui-name", "ui-pill", "ui-go", "navbar", "w-basic", "i-heal"].map(LBI)); /* 2026-10-29 작업지시서 v2 — 글자 박힌 lobby · sign-* 빼고 첫 화면 조각으로 */
       let n = 0; const t0 = Date.now(), tick = () => { n++; const p = Math.round(n / list.length * 100); bar.style.width = p + "%"; pct.textContent = p + "%"; if (n >= list.length) setTimeout(() => { lobLoaded = true; done(); }, Math.max(300, 900 - (Date.now() - t0))); };
       list.forEach((u) => { const i = new Image(); i.onload = i.onerror = tick; i.src = u; });
@@ -6124,7 +6177,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
       if (!P && lobTab !== "rank") art.appendChild(el("div", "lb-page", lobErr || "불러오는 중…")); // 순위는 내 정보 없이도
       else if (lobTab === "go") art.append(...lobGo(P));
       else { const pg = el("div", "lb-page lb-" + lobTab); pg.append(...(lobTab === "wpn" ? lobWpn(P) : lobTab === "shop" ? lobShop(P) : lobTab === "op" ? lobOp() : lobTab === "mail" ? lobMail(P) : lobTab === "skin" ? lobSkin(P) : lobTab === "gear" ? lobGear(P) : lobTab === "dun" ? lobDun(P) : lobRank())); if (lobErr) pg.appendChild(el("p", "lb-err", lobErr)); art.appendChild(pg); const gp = pg.querySelector(".lb-gpop"); if (gp) art.appendChild(gp); } /* 장비 창은 그림 틀 위에 */
-      const nav = el("nav", "lb-nav lb-nav5"); [["shop", "상점"], ["gear", "장비"], ["go", "출전"], ["dun", "던전"], ["rank", "순위"]].forEach(([k, n]) => { const b = el("button", k === lobTab || (k === "gear" && lobTab === "skin") ? "on" : ""); b.type = "button"; b.setAttribute("aria-label", n); { const i = el("img", "nic"); i.src = LBI({ shop: "ic-shop", gear: "ic-gear", go: "ic-go", dun: "ic-dun", rank: "ic-rank" }[k]); i.alt = ""; b.appendChild(i); } b.appendChild(el("span", null, n)); if (k === "gear" && lobTab === "wpn") b.className = "on"; b.onclick = () => { lobTab = k; lobErr = ""; lobSel = null; lobDraw(); if (k === "rank") loadRanks(); }; nav.appendChild(b); });
+      const nav = el("nav", "lb-nav lb-nav5"); STR.tabs.forEach(([k, n]) => { const b = el("button", k === lobTab || (k === "gear" && lobTab === "skin") ? "on" : ""); b.type = "button"; b.setAttribute("aria-label", n); { const i = el("img", "nic"); i.src = LBI({ shop: "ic-shop", gear: "ic-gear", go: "ic-go", dun: "ic-dun", rank: "ic-rank" }[k]); i.alt = ""; b.appendChild(i); } b.appendChild(el("span", null, n)); if (k === "gear" && lobTab === "wpn") b.className = "on"; b.onclick = () => { lobTab = k; lobErr = ""; lobSel = null; lobDraw(); if (k === "rank") loadRanks(); }; nav.appendChild(b); });
       if (P && !P.free) { const mb = lobBtn("lb-mailbtn v2i" + (lobTab === "mail" ? " on" : ""), px(706, 100, 72, 72), () => { lobTab = lobTab === "mail" ? "go" : "mail"; lobErr = ""; lobDraw(); }, "우편함"); { const i = el("img"); i.src = LBI("ic-mail"); i.alt = ""; mb.appendChild(i); } /* 홈 왼쪽 · 글자 없이(2026-10-28) */ const n = (P.mail || []).length; if (n) mb.appendChild(el("b", "lb-badge", String(n))); art.appendChild(mb);
         }
       if (P && !P.free && !["go", "shop", "gear", "dun", "rank", "op", "wpn", "skin", "mail"].includes(lobTab)) art.appendChild(chatBar()); // 상점 · 장비 · 던전 · 순위에선 채팅 안 보임(2026-10-29)
@@ -6427,7 +6480,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     function lobShop(P) {
       if (lobSel === "en") { lobShopCat = "en"; lobSel = null; }
       const pr = (P.shop.items || {}), E = P.shop.en || { n: 10, gem: 15 }, out = [lobScene("bg-shop", "상점")];
-      const cats = el("div", "lb-scat"); [["special", 1, "특별 상품"], ["daily", 2, "오늘 상점"], ["box", 3, "상자"], ["item", 4, "아이템"], ["en", 5, "재화"]].forEach(([k, ic, n]) => { const b = el("button", k === lobShopCat ? "on" : ""); b.type = "button"; { const i = el("img"); i.src = LBI("sc-" + ic); i.alt = ""; b.append(i, el("span", null, n)); } /* 2026-10-29 ChatGPT 분류 단추 */ b.onclick = () => { lobShopCat = k; lobErr = ""; lobDraw(); }; cats.appendChild(b); }); out.push(cats);
+      const cats = el("div", "lb-scat"); STR.shopCats.forEach(([k, ic, n]) => { const b = el("button", k === lobShopCat ? "on" : ""); b.type = "button"; { const i = el("img"); i.src = LBI("sc-" + ic); i.alt = ""; b.append(i, el("span", null, n)); } /* 2026-10-29 ChatGPT 분류 단추 */ b.onclick = () => { lobShopCat = k; lobErr = ""; lobDraw(); }; cats.appendChild(b); }); out.push(cats);
       const buyBtn = (txt, price, dis, fn, cls) => { const b = el("button", "lb-sbuy" + (cls ? " " + cls : "")); b.type = "button"; b.append(el("span", null, txt)); const gm = price != null && typeof price === "object", pv = gm ? price.gem : price; if (price != null) b.appendChild(el("b", null, (gm ? "💎 " : "💰 ") + pv.toLocaleString())); b.disabled = P.free || dis || (price != null && (gm ? P.gem || 0 : P.gold) < pv);
         if (price != null && pv > 0) b.onclick = () => { if (b.dataset.sure !== "1") { b.dataset.sure = "1"; b.classList.add("sure"); const sp = b.querySelector("span"), o = sp ? sp.textContent : ""; if (sp) sp.textContent = "한 번 더 누르면 구매"; else b.prepend(el("span", null, "한 번 더 누르면 구매")); setTimeout(() => { if (!b.isConnected) return; b.dataset.sure = ""; b.classList.remove("sure"); if (sp) sp.textContent = o; else b.firstChild.remove(); }, 3000); return; } fn(); }; else b.onclick = fn; return b; }; /* 2026-10-29 "클릭했을 때 그냥 사지는지" — 값이 있으면 두 번 */
       const pic = (n) => { const i = el("img"); i.src = LBI(n); i.alt = ""; return i; };
@@ -6739,7 +6792,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     function autoLabel() { const b = $("gAuto"); if (!b) return; b.textContent = autoSk ? "🤖 자동 켬" : "🤖 자동"; b.setAttribute("aria-pressed", String(autoSk)); }
     function autoCast() { if (!autoSk || !s || !s.skills) return; const near = s.foes.some((f) => (f.x - s.x) ** 2 + (f.y - s.y) ** 2 < 330 * 330); if (!near) return; s.skills.forEach((k) => { if (!(s.cd[k] > 0)) cast(k); }); }
     autoLabel();
-    if (/[?&]bmctest=1/.test(location.search)) window.__bmcGame = { get s() { return s; }, otRig: (n, sc) => otRig(bgImg(n), BGF[n].idle0, sc), get LP() { return LP; }, mapc: () => [MAPC.cy, Object.keys(TINTC).length], lobby: lobby, mapIdx: () => mapIdx, running: () => running, size: () => size(), draw: draw, setHero: (k) => { heroKey = k; }, lobStart: lobStart, setTab: (k) => { lobTab = k; lobDraw(); }, setCh: (c) => { lobTab = "go"; lobCh = c; lobDraw(); }, chapterClear: chapterClear, begin: begin, step: step, spawnBoss: spawnBoss, take: take, cast: cast, startStage: startStage, stageLen: stageLen, W: () => W, H: () => H, UPS: UPS, SK: SK, TEST_MUL: TEST_MUL, openBox: openBox, useItem: useItem, dash: dash, spawn: spawn, bullet: bullet, hazard: hazard, showPicks: showPicks, watchStart: (id, n) => watchStart(id, n) };
+    if (/[?&]bmctest=1/.test(location.search)) window.__bmcGame = { get s() { return s; }, hud: () => hud(), /* 2026-10-29 전투 HUD 넘침 시험 */ otRig: (n, sc) => otRig(bgImg(n), BGF[n].idle0, sc), get LP() { return LP; }, mapc: () => [MAPC.cy, Object.keys(TINTC).length], lobby: lobby, mapIdx: () => mapIdx, running: () => running, size: () => size(), draw: draw, setHero: (k) => { heroKey = k; }, lobStart: lobStart, setTab: (k) => { lobTab = k; lobDraw(); }, setCh: (c) => { lobTab = "go"; lobCh = c; lobDraw(); }, chapterClear: chapterClear, begin: begin, step: step, spawnBoss: spawnBoss, take: take, cast: cast, startStage: startStage, stageLen: stageLen, W: () => W, H: () => H, UPS: UPS, SK: SK, TEST_MUL: TEST_MUL, openBox: openBox, useItem: useItem, dash: dash, spawn: spawn, bullet: bullet, hazard: hazard, showPicks: showPicks, watchStart: (id, n) => watchStart(id, n) };
     return {
       /* 다른 메뉴로 가면 멈춘다. 처음 들어오면(또는 다른 사람이 들어오면) 시작 안내 */
       render() {
