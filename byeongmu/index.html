@@ -696,7 +696,7 @@ body.game-full { overflow: hidden; }
 #lbEn small { position: absolute; top: 108%; left: 0; right: 0; text-align: center; font-size: 2.6cqw; color: #ffe27a; text-shadow: 0 1px 2px #000; }
 .lb-plus { border: 0; border-radius: 50%; background: transparent; }
 /* 순찰 — 로비 작은 상자 · 순찰 보상 창(2026-10-29 ChatGPT 시안 6) */
-.lb-art.v2 .lb-patic { display: flex !important; flex-direction: column; align-items: center; justify-content: center; gap: .4cqw; padding: .8cqw !important; border: .5cqw solid #e8c46a !important; border-radius: 3cqw !important; background: radial-gradient(circle at 50% 30%, rgba(74,127,44,.92), rgba(16,34,8,.92) 75%) !important; box-shadow: 0 .7cqw 0 #13240a, 0 1cqw 2cqw rgba(0,0,0,.4); color: #fff; }
+.lb-art.v2 .lb-patic { z-index: 4; display: flex !important; flex-direction: column; align-items: center; justify-content: center; gap: .4cqw; padding: .8cqw !important; border: .5cqw solid #e8c46a !important; border-radius: 3cqw !important; background: radial-gradient(circle at 50% 30%, rgba(74,127,44,.92), rgba(16,34,8,.92) 75%) !important; box-shadow: 0 .7cqw 0 #13240a, 0 1cqw 2cqw rgba(0,0,0,.4); color: #fff; }
 .lb-art.v2 .lb-patic img { width: 62%; height: 52%; object-fit: contain; filter: drop-shadow(0 .4cqw 0 rgba(0,0,0,.35)); } .lb-art.v2 .lb-patic.hot img { animation: lbBob 1.2s ease-in-out infinite; }
 .lb-art.v2 .lb-patic .pbar { display: block; width: 84%; height: 1.4cqw; flex: none; border-radius: 999px; background: rgba(0,0,0,.55); overflow: hidden; } .lb-art.v2 .lb-patic .pbar em { display: block; height: 100%; background: linear-gradient(90deg, #ffd23a, #ff9a1a); }
 .lb-art.v2 .lb-patic small { font-size: 2.4cqw; font-weight: 900; color: #ffe36b; white-space: nowrap; } .lb-art.v2 .lb-patic.full { border-color: #ffd23a !important; box-shadow: 0 0 2.4cqw #ffd23a, 0 .7cqw 0 #13240a; }
@@ -717,7 +717,7 @@ body.game-full { overflow: hidden; }
 .lb-patwin .pw-go { margin-top: .6cqw; padding: 2.6cqw; border-radius: 999px; border: .6cqw solid #1d4a0a; background: linear-gradient(#c4f56a 0%, #7fd636 46%, #52b51e 54%, #3f9a16 100%); color: #fff; font-size: 6cqw; font-weight: 900; -webkit-text-stroke: .9cqw #1d4a0a; paint-order: stroke fill; box-shadow: inset 0 .6cqw 0 rgba(255,255,255,.5), 0 .9cqw 0 #1d4a0a; }
 .lb-patwin .pw-go:disabled { filter: grayscale(.8); } .lb-patwin .pw-go:not(:disabled):active { transform: translateY(.7cqw); box-shadow: 0 .2cqw 0 #1d4a0a; }
 /* 장 · 난이도 표시(2026-10-29 101장) */
-.lb-art.v2 .lb-chname.long { font-size: 8cqw; }
+.lb-art.v2 .lb-chname.long { font-size: 8cqw; } .lb-art.v2 .lb-lock { z-index: 3; }
 .lb-art.v2 .lb-isl { display: grid; place-items: center; pointer-events: none; } .lb-art.v2 .lb-isl img { max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 2.4cqw 2cqw rgba(0,0,0,.45)); animation: lbIsl 4s ease-in-out infinite; } .lb-art.v2 .lb-isl.lock img { filter: grayscale(.85) brightness(.55) drop-shadow(0 2.4cqw 2cqw rgba(0,0,0,.45)); }
 @keyframes lbIsl { 50% { transform: translateY(-1.6cqw); } }
 .lb-art.v2 .lb-dbadge { display: flex; align-items: center; justify-content: center; border-radius: 999px; border: .45cqw solid #fff; color: #fff; font-size: 3.2cqw; font-weight: 900; text-shadow: 0 .25cqw 0 rgba(0,0,0,.5); box-shadow: 0 .5cqw 0 rgba(0,0,0,.35), inset 0 .5cqw 0 rgba(255,255,255,.35); z-index: 3; white-space: nowrap; }
@@ -1618,7 +1618,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610290223";
+  const BUILD = "202610290240";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -5775,7 +5775,7 @@ body.game-full { overflow: hidden; }
         b.append(el("b", null, String(c)), el("small", null, clr(c) ? "★" : op ? CHAPS[c - 1] : "🔒")); b.onclick = () => { if (!op) return; lobCh = c; lobChSel = false; lobDraw(); }; gr.appendChild(b); }
       pn.append(hd, gr); ov.appendChild(pn); ov.onclick = (ev) => { if (ev.target === ov) x.onclick(); }; setTimeout(() => { const n = gr.querySelector(".sel") || gr.querySelector(".now"); if (n) n.scrollIntoView({ block: "center" }); }, 0); return ov;
     }
-    const LOB_BG = { 1: 1, 11: 1 }; // 장마다 로비 배경(ChatGPT, img/lb/bg-chN.webp) — 없으면 1장 그림
+    const LOB_BG = { 1: 1, 11: 1, g1: 1, g2: 1, g3: 1 }; // 장마다 로비 배경(ChatGPT, img/lb/bg-chN.webp) — 없으면 1장 그림
     function lobGo(P) {
       const MO = P.modeOpen || [1, 0, 0]; if (!MO[lobMode]) lobMode = 0;
       /* 난이도도 저절로(2026-10-28 "쉬움 30장 다 깨면 보통 1장으로 자동") — 30장까지 다 깬 난이도는 건너뛰고 다음 열린 난이도로 */
@@ -5785,21 +5785,21 @@ body.game-full { overflow: hidden; }
       if (!lobCh || (lobFront && lobCh === lobFront && chM > lobFront)) lobCh = chM; lobFront = chM;
       const c = Math.max(1, Math.min(CH_N, lobCh)), open = c <= chM, need = !P.free && P.en < (P.cost || 5), first = !clr(c), out = [];
       const t = (cls, txt, css) => { const e = el("span", cls, txt); e.style.cssText = css; out.push(e); return e; };
-      lobBgN = LOB_BG[c] ? c : LOB_BG[Math.floor((c - 1) / 10) * 10 + 1] ? Math.floor((c - 1) / 10) * 10 + 1 : 1; /* 장마다 배경(받은 것부터) — 없으면 그 10장 묶음 첫 장 그림 */ { const sg = el("img", "lb-ui"); sg.src = LBI("ui-sign"); sg.alt = ""; sg.style.cssText = px(170, 178, 600, 342); out.push(sg); }
+      lobBgN = LOB_BG["g" + (Math.floor(((c - 1) % 30) / 10) + 1)] ? "g" + (Math.floor(((c - 1) % 30) / 10) + 1) : LOB_BG[c] ? c : 1; /* 10장 묶음마다 하늘 배경(g1 숲 · g2 사막 · g3 설산), 31장부터 되풀이 */ /* 장마다 배경(받은 것부터) — 없으면 그 10장 묶음 첫 장 그림 */ { const sg = el("img", "lb-ui"); sg.src = LBI("ui-sign"); sg.alt = ""; sg.style.cssText = px(170, 178, 600, 342); out.push(sg); }
       t("lb-chn", c + "장", px(380, 204, 180, 56)); t("lb-chname" + (CHAPS[c - 1].length > 5 ? " long" : ""), CHAPS[c - 1], px(232, 270, 476, 104)); t("lb-chsub", CHSUB[c - 1], px(262, 428, 416, 50)); { const md = lobBtn("lb-diff", px(40, 1352, 160, 130), () => { lobChSel = true; lobDraw(); }, "장 선택"); const ci = el("img"); ci.src = LBI("ic-chap"); ci.alt = ""; md.append(ci, el("b", null, "장 선택")); out.push(md); } /* 난이도는 장에서 정해짐(2026-10-29) — 왼쪽 단추는 장 고르기 */
       { const db = el("span", "lb-dbadge", MODE_N[M]); db.style.cssText = px(626, 196, 150, 46); db.style.background = DIFF_C[M]; out.push(db); }
       if (!P.free && clr(c)) { const st = el("span", "lb-stamp", "CLEAR"); st.style.cssText = px(640, 410, 170, 70); out.push(st); } /* 깬 장 — 간판에 도장(ChatGPT 기획안) */
       if (lobChSel) out.push(chGrid(P, chM, clr));
       if (c > 1) { const m = el("div", "lb-map"); m.style.cssText = px(612, 812, 250, 150); m.style.backgroundImage = "url(img/maps/m" + chMap(c) + ".jpg?v=" + BUILD + ")"; if (c > 10) m.classList.add(c > 20 ? "cyc2" : "cyc1"); m.appendChild(el("small", null, c > 20 ? "전장 · 밤" : c > 10 ? "전장 · 해 질 녘" : "전장")); out.push(m); }
-      if (!open) t("lb-lock", "🔒 " + (c - 1) + "장 클리어 시 열림", px(62, 470, 820, 120));
+      if (!open) t("lb-lock", "🔒 " + (c - 1) + "장 클리어 시 열림", px(170, 760, 600, 100)); /* 잠긴 장 — 어두운 섬 위에(2026-10-29) */
       
       const w = WPN[P.wpn] || WPN.bow, wt = el("span", "lb-wtag v2"); wt.style.cssText = px(230, 530, 480, 50); const wi = el("img"); wi.src = LBI(w.pic); wi.alt = ""; wt.append(wi, el("b", null, "장착 · " + w.n), el("em", null, P.free ? "" : "클리어 " + clr(c) + "회")); out.push(wt); /* 무기 이름 · 깬 횟수는 한 줄로(2026-10-29 "전기 건, 깼음 x1 이거는 먼데" → ChatGPT 기획안) */
       if (c > 1) { const a = lobBtn("lb-arr v2", px(40, 268, 108, 152), () => { lobCh = c - 1; lobDraw(); }, "앞 장"); { const i = el("img"); i.src = LBI("ui-arrl"); i.alt = ""; a.appendChild(i); } out.push(a); }
       if (c < CH_N) { const a = lobBtn("lb-arr v2", px(793, 268, 108, 152), () => { lobCh = c + 1; lobDraw(); }, "다음 장"); { const i = el("img"); i.src = LBI("ui-arrr"); i.alt = ""; a.appendChild(i); } out.push(a); }
       if (!P.free) { out.push(patWidget(P)); if (patOpen) out.push(patWin(P)); } // 순찰 보상은 메인 화면에(2026-10-29 "탕탕특공대처럼")
-      t("lb-rw v2", "💰 " + (120 * c * (first ? 2 : 1) * mul).toLocaleString() + "   ⭐ " + (50 * c * mul).toLocaleString() + (first ? "   📜 1" : ""), px(250, 1034, 440, 44)); /* 깨면 받는 것 — 발판 아래 한 줄 */
+      t("lb-rw v2", "💰 " + (120 * c * (first ? 2 : 1) * mul).toLocaleString() + "   ⭐ " + (50 * c * mul).toLocaleString() + (first ? "   📜 1" : ""), px(250, 1002, 440, 44)); /* 깨면 받는 것 — 발판 아래 한 줄 */
       /* 가운데는 수달 대신 장 그림(2026-10-29 부장님 "중간에 캐릭을 빼고 1~30장 맵을 넣자" — ChatGPT 떠 있는 섬, img/lb/isl-N.webp). 아직 없는 장은 수달 그대로 */
-      if (CH_ISL[c]) { const il = el("div", "lb-isl" + (open ? "" : " lock")); il.style.cssText = px(150, 600, 640, 430); const ii = el("img"); ii.src = LBI("isl-" + c); ii.alt = ""; il.appendChild(ii); out.push(il); }
+      const ic = (c - 1) % 30 + 1; /* 31장부터는 1~30장 그림을 차례로 다시(2026-10-29 "난이도만 올라가니 재탕") */ if (CH_ISL[ic]) { const il = el("div", "lb-isl" + (open ? "" : " lock")); il.style.cssText = px(170, 596, 600, 400); const ii = el("img"); ii.src = LBI("isl-" + ic); ii.alt = ""; il.appendChild(ii); out.push(il); }
       else { const ot = otter360(P, P.skin, false); ot.style.cssText = px(290, 600, 360, 420); ot.classList.add("lb-lobot"); out.push(ot); }
       /* 아래 칸(2026-10-28 "출전 크기를 줄이고 채팅창을 더 키워라") ㆍ 왼쪽 큰 채팅(최근 글 여러 줄) · 오른쪽 작은 출전 */
       if (!P.free) { const cb = lobBtn("lb-sidebtn", px(741, 1352, 160, 130), () => chatOpen(false), "전체 채팅"); cb.append(el("i", null, "💬"), el("b", null, "채팅")); out.push(cb); chatPull(false); } /* 채팅은 오른쪽 단추로(2026-10-29 새 로비) */
@@ -6084,7 +6084,7 @@ body.game-full { overflow: hidden; }
     function patSec(P) { const T = P.pat || { sec: 0, max: 12 }; return Math.min(T.max * 3600, T.sec + Math.floor((Date.now() - (P.got || Date.now())) / 1000)); }
     function patWidget(P) {
       const T = P.pat || { sec: 0, max: 12 }, sec = patSec(P), full = sec >= T.max * 3600;
-      const b = lobBtn("lb-patic" + (sec >= 3600 ? " hot" : "") + (full ? " full" : ""), px(30, 880, 150, 150), () => { patOpen = true; lobDraw(); }, "순찰 보상");
+      const b = lobBtn("lb-patic" + (sec >= 3600 ? " hot" : "") + (full ? " full" : ""), px(370, 1060, 200, 160), () => { patOpen = true; lobDraw(); }, "순찰 보상");
       const im = el("img"); im.src = LBI("ic-pat"); im.alt = ""; const bar = el("span", "pbar"), f = el("em"); f.style.width = Math.round(sec / (T.max * 3600) * 100) + "%"; bar.appendChild(f);
       b.append(im, bar, el("small", null, full ? "가득!" : Math.floor(sec / 3600) + "시간 " + pad(Math.floor(sec % 3600 / 60)) + "분")); if (sec >= 3600) b.appendChild(el("b", "lb-badge", "!")); return b;
     }
