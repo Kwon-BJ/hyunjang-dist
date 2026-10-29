@@ -1618,7 +1618,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610290301";
+  const BUILD = "202610290307";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -3922,7 +3922,7 @@ body.game-full { overflow: hidden; }
       ward: { n: "결계", cd: (l) => 22 - l * 2 },
       // "스킬 추가좀 더하고, 이미지도 추가하고, 조금더 퀄리티 있게" (2026-10-26)
       fire: { n: "화염병", cd: (l) => 4.6 - l * 0.3 },
-      homing: { n: "드론", cd: (l) => 2.4 - l * 0.15 },
+      homing: { n: "드론", cd: (l) => 2.2 - l * 0.25 },
       frost: { n: "얼음 폭탄", cd: (l) => 13 - l },
       /* 캐릭터마다 스킬 3가지 — "각 캐릭마다 스킬이 틀리게 이미지 만들었는데, 왜 다 똑같이 스킬을 배우고 있는지, 각각 배우는 스킬이 틀리게" (2026-10-27).
          그림은 부장님의 「캐릭터 스킬 효과」(img/hsk.png · 시험/캐릭터스킬-자르기.cjs). 위 6가지(낙뢰 …얼음 폭발)는 이제 안 나오고, 그 전 판을 이어 하는 사람만 쓴다 */
@@ -3962,7 +3962,7 @@ body.game-full { overflow: hidden; }
     ];
     /* 진화 — 무기 Lv 5 + 짝 보조를 가지면 레벨업 카드에 「진화」 가 나옴(한 번). 무기는 레벨 +3 만큼 세지고, 구슬 · 고리는 +3 */
     const EVO = [["kunai", "spd", "그림자 쿠나이"], ["orbs", "max", "물방울 결계"], ["homing", "cool", "쌍둥이 드론"], ["fire", "dmg", "용암 웅덩이"], ["thunder", "rate", "천둥 폭풍"], ["aura", "magnet", "소용돌이 고리"], ["mj_star", "spd", "회오리 부메랑"], ["je_storm", "dmg", "거대 드릴"]];
-    EVO.forEach(([w, p, n]) => UPS.push({ k: "evo_" + w, evo: w, n, max: 1, pair: p, d: UPS.find((u) => u.k === w).n + " 별 5개 + " + UPS.find((u) => u.k === p).n + " → 진화 ㆍ 훨씬 세져요", ok: () => (s.up[w] || 0) >= 5 && (s.up[p] || 0) > 0, /* 탕탕특공대처럼 무기 별 5개 + 짝 보조를 가지면 카드로(2026-10-28) */
+    EVO.forEach(([w, p, n]) => UPS.push({ k: "evo_" + w, evo: w, n, max: 1, pair: p, d: UPS.find((u) => u.k === w).n + " Lv 5 → 진화 ㆍ 모습이 바뀌고 판 끝까지 훨씬 세져요", ok: () => (s.up[w] || 0) >= 5, /* 2026-10-29 부장님 "스킬 Lv 5 찍으면 탕탕특공대처럼 계속 유지되는 업그레이드" — 짝 보조 없이 Lv 5 만 */ /* 탕탕특공대처럼 무기 별 5개 + 짝 보조를 가지면 카드로(2026-10-28) */
       f: () => { s.evo[w] = 1; if (w === "orbs") s.orbs += 3; if (w === "aura") s.aura += 3; } }));
     const UP_ATK = (u) => u.skill || u.atk, UP_MAX_ATK = 6; // 공격 스킬은 한 판에 6가지까지
     let speed = 1;
@@ -4533,7 +4533,7 @@ body.game-full { overflow: hidden; }
         const T = s.foes.filter((f) => f.hp > 0 && (f.x - s.x) ** 2 + (f.y - s.y) ** 2 < 330 * 330).sort(() => Math.random() - 0.5), n = 1 + Math.floor(l / 2);
         for (let i = 0; i < n; i++) { const f = T[i], P = f ? { x: f.x, y: f.y } : (() => { const a = Math.random() * Math.PI * 2, d = 90 + Math.random() * 120; return { x: s.x + Math.cos(a) * d, y: s.y + Math.sin(a) * d }; })(); s.fields.push({ x: P.x, y: P.y, r: 46 + 6 * l, dps: 20 + 10 * l, life: 2.5, full: 2.5 }); }
       } else if (k === "homing") {
-        { const n = 2 + Math.floor(l / 2); for (let i = 0; i < n; i++) { const a = -Math.PI / 2 + (i - (n - 1) / 2) * 0.5; s.homs.push({ x: s.x, y: s.y - 8, a: a, life: 3, dmg: 24 + 12 * l, tg: null, px: s.x, py: s.y }); } }
+        { const D = droneAt(), n = 2 + Math.floor(l / 2); D.kick = 0.25; for (let i = 0; i < n; i++) { const a = -Math.PI / 2 + (i - (n - 1) / 2) * 0.5; s.homs.push({ x: D.x, y: D.y, a: a, life: 1.2 + 0.15 * l, dmg: 24 + 16 * l, tg: null, px: D.x, py: D.y, R: droneR(l) }); } } /* 드론 자리에서 쏨(2026-10-29) · 레벨마다 범위 · 피해 늘어남 */
       } else if (k === "frost") {
         const R = 110 + 15 * l, P = aimAt(160);
         s.foes.forEach((f) => { if ((f.x - P.x) ** 2 + (f.y - P.y) ** 2 < (R + f.r) ** 2) { hurt(f, 15 + 10 * l, true); f.slow = (2 + 0.3 * l) * (f.k === "boss" ? 0.5 : 1); } });
@@ -4541,6 +4541,10 @@ body.game-full { overflow: hidden; }
       } else { s.ward = 1.5 + 0.5 * l; s.wardR = 80 + 40 * (l - 1); s.wardSpr = ""; } // 결계 — "보호막 크기가 너무 작다, 레벨별로 1M씩" (2026-10-27): 지름 2m → Lv 5 6m
     }
     /* 캐릭터 스킬 15가지 (2026-10-27). 날아가는 것은 s.tors(회오리와 같이 — 닿은 몬스터를 한 번씩), 땅은 s.fields, 몸 둘레는 s.ring · s.gaura */
+    /* 드론(2026-10-29 부장님 "탕탕특공대처럼 캐릭터 우측 상단에 돌아다니게, 레벨업마다 모습 바뀌고 범위 · 공격력 · 공격속도 늘게") — 보는 쪽 반대편 위에서 둥실, 쏠 땐 살짝 튐 */
+    function auraRad() { return 70 + s.aura * 24; } // 물결 고리 — 레벨마다 넓게(Lv 5 약 3m)
+    function droneR(l) { return 240 + 50 * l; }
+    function droneAt() { const face = Math.cos(s.aim || 0) < 0 ? -1 : 1, t = s.t || 0; s.drone = s.drone || { x: s.x, y: s.y, kick: 0 }; const D = s.drone, tx = s.x - face * 46 + Math.cos(t * 1.7) * 10, ty = s.y - 58 + Math.sin(t * 2.3) * 7; D.tx = tx; D.ty = ty; return D; }
     function fly(k, P, o) { s.tors.push(Object.assign({ x: s.x + Math.cos(P.a) * 20, y: s.y + Math.sin(P.a) * 20, a: P.a, spr: k, hit: [] }, o, { full: o.life })); }
     function blast(x, y, R, dmg, slow) { s.foes.forEach((f) => { if ((f.x - x) ** 2 + (f.y - y) ** 2 < (R + f.r) ** 2) { hurt(f, dmg, true); if (slow) f.slow = Math.max(f.slow || 0, slow * (f.k === "boss" ? 0.5 : 1)); } }); }
     function rush(P, len, dmg) { // 돌진 — 0.3초 동안 앞으로(그동안 안 맞음), 지나갈 길의 몬스터를 벤다
@@ -4603,7 +4607,7 @@ body.game-full { overflow: hidden; }
        바라보는 쪽 = 마지막으로 움직인 쪽(s.mvA). 그 쪽 부채꼴(좌우 60°) 3m(= 240px) 안 잡귀를 가까운 순으로 겨누고,
        없으면 바라보는 쪽으로 곧게 쏜다(여러 장이면 부채처럼 벌려서).
        "공격방향이 1쪽이라 힘드네, 4방향 다 동그라미로 표시해서 자동으로" (2026-10-26) — 부채꼴 대신 둘레 동그라미 3m 안은 어느 쪽이든 */
-    const AIM_R = 240, AIM_HALF = Math.PI;
+    const AIM_R = 285, AIM_HALF = Math.PI;
     function targets() {
       return s.foes.map((f) => {
         const dx = f.x - s.x, dy = f.y - s.y;
@@ -4740,7 +4744,7 @@ body.game-full { overflow: hidden; }
       });
       s.hz = s.hz.filter((z) => !z.done);
       s.orbA += dt * 3;
-      const auraR = 55 + s.aura * 12;
+      const auraR = auraRad();
       s.foes.forEach((f) => {
         const dx = s.x - f.x, dy = s.y - f.y, L = Math.hypot(dx, dy) || 1;
         if (f.wake > 0) { f.wake -= dt; f.age = (f.age || 0) + dt; f.hit = Math.max(0, f.hit - dt); return; } // 대장 나오는 중
@@ -4767,7 +4771,7 @@ body.game-full { overflow: hidden; }
         if (L < f.r + 15 && (f.k === "boss" ? ouch(Math.min(f.dps * (1 + enr / 30), s.max * 0.35) * dt) : ouch(f.dps * dt))) {
           if ((f.sw = (f.sw || 0) - dt) <= 0) { f.sw = 0.7; const k = MELEE[f.skin] || "spark"; s.fx.push({ spr: k, x: s.x - dx / L * 10, y: s.y - dy / L * 10, rot: Math.atan2(dy, dx), size: k === "spark" ? 40 : 54, life: 0.3, dur: 0.3 }); }
         }
-        if (s.aura && L < auraR + f.r) hurt(f, (6 + s.aura * 6) * dt);
+        if (s.aura && L < auraR + f.r) hurt(f, (8 + s.aura * 8) * dt);
         for (let i = 0; i < s.orbs && f.oc <= 0; i++) {
           const a = s.orbA + i * Math.PI * 2 / s.orbs, ox = s.x + Math.cos(a) * 70, oy = s.y + Math.sin(a) * 70;
           if ((f.x - ox) ** 2 + (f.y - oy) ** 2 < (f.r + 9) ** 2) { hurt(f, 14 + s.dmg * 0.6, true); f.oc = 0.35; if (s.fx.length < 150) s.fx.push({ nfx: "fx-splash", x: f.x, y: f.y, size: 56, life: 0.3, dur: 0.3 }); }
@@ -4811,12 +4815,13 @@ body.game-full { overflow: hidden; }
       s.fields.forEach((z) => { z.life -= dt; s.foes.forEach((f) => { if ((f.x - z.x) ** 2 + (f.y - z.y) ** 2 < (z.r + f.r) ** 2) { hurt(f, z.dps * dt); if (z.slow) f.slow = Math.max(f.slow || 0, 0.3); } }); }); // slow = 태극진
       s.fields = s.fields.filter((z) => z.life > 0);
       s.homs.forEach((m) => {
-        if (!m.tg || m.tg.hp <= 0 || !s.foes.includes(m.tg)) { let best = 1e12; m.tg = null; s.foes.forEach((f) => { const d = (f.x - m.x) ** 2 + (f.y - m.y) ** 2; if (d < best) { best = d; m.tg = f; } }); }
+        if (!m.tg || m.tg.hp <= 0 || !s.foes.includes(m.tg)) { let best = m.R ? m.R * m.R : 1e12; m.tg = null; s.foes.forEach((f) => { const d = (f.x - m.x) ** 2 + (f.y - m.y) ** 2; if (d < best) { best = d; m.tg = f; } }); }
         if (m.tg) { let d = Math.atan2(m.tg.y - m.y, m.tg.x - m.x) - m.a; d = Math.atan2(Math.sin(d), Math.cos(d)); m.a += Math.max(-7 * dt, Math.min(7 * dt, d)); }
         m.px = m.x; m.py = m.y; m.x += Math.cos(m.a) * 380 * dt; m.y += Math.sin(m.a) * 380 * dt; m.life -= dt;
         if (m.tg && (m.tg.x - m.x) ** 2 + (m.tg.y - m.y) ** 2 < (m.tg.r + 6) ** 2) { hurt(m.tg, m.dmg, true); if (s.fx.length < 150) s.fx.push({ nfx: "fx-boom", x: m.x, y: m.y, size: 70, life: 0.35, dur: 0.35 }); s.fx.push({ spark: true, x: m.x, y: m.y, c: 2, life: 0.15 }); m.life = 0; }
       });
       s.homs = s.homs.filter((m) => m.life > 0);
+      if (s.up && s.up.homing) { const D = droneAt(), k2 = Math.min(1, dt * 6); D.x += (D.tx - D.x) * k2; D.y += (D.ty - D.y) * k2; D.kick = Math.max(0, (D.kick || 0) - dt); }
       /* 날아가는 스킬 — 회오리(초당 300 · 잡귀를 함께 쓸어 감 · 불덩이 지움)와 캐릭터 스킬(검기 · 화살 · 표창 · 부적).
          닿은 몬스터는 한 번씩. back = 반쯤 가면 돌아옴(돌아올 때 다시 한 번씩), boom = 처음 닿거나 끝에서 터짐, still = 몬스터를 안 벰(부적) */
       s.tors.forEach((t) => {
@@ -4993,7 +4998,7 @@ body.game-full { overflow: hidden; }
       const I = bgImg(b); if (!I) return false; const R = BGF[rx], RM = BGF[rx + "_meta"], I3 = R && bgImg(rx);
       /* 기본 수달 걷기 · 쏘기는 Google Flow 영상 장면으로(2026-10-29 "영상이 좋다", 시험/영상동작-자르기.cjs) — 대기 · 대시 · 맞음 · 다른 모습은 부위 움직임 그대로 */
       if (!dead && skA === "" && s && !(s.hurt > 0.02) && !(s.dashT > 0)) { const mv = s.moving && (running || s.watchView), key = mv ? "vm-ot-walk" : s.shotT > 0.05 ? "vm-ot-shoot" : "", V = key && VM[key], VI = V && ocImg(key);
-        if (VI) { const n = mv ? V.n.walk : V.n.shoot, fr = mv ? Math.floor(s.walk / 12 * 10) % n : Math.min(n - 1, 1 + Math.floor((0.5 - s.shotT) / 0.45 * (n - 1))), k = 78 / V.h, w = V.w * k, ax = mv ? 0.47 : 0.42;
+        if (VI) { const n = mv ? V.n.walk : V.n.shoot, fr = mv ? Math.floor(s.walk / 12 * 10) % n : Math.min(n - 1, 1 + Math.floor((0.5 - s.shotT) / 0.45 * (n - 1))), k = 66 / V.h, w = V.w * k, ax = mv ? 0.47 : 0.42;
           g.save(); g.translate(cx, cy + 19); if (flip < 0) g.scale(-1, 1); g.drawImage(VI, fr * V.w, 0, V.w, V.h, -w * ax, -V.h * k, w, V.h * k); g.restore(); return true; } }
       const C = Object.assign({}, M.counts, I3 ? RM.counts : {}), at = (k, q) => k + Math.min(C[k] - 1, Math.max(0, Math.floor(q * C[k])));
       let nm;
@@ -5010,7 +5015,7 @@ body.game-full { overflow: hidden; }
       if (!r) { r = F.idle0; ax = M.ax2 ? M.ax2.idle0 : 0.5; }
       const rig = !dead && !!F.idle0 && !window.__noRig; if (rig) { img = I; r = F.idle0; ax = M.ax2 ? M.ax2.idle0 : 0.5; } RIG_HD = 0; // 부위 움직임(쓰러짐만 그림)
       if (ax == null) ax = 0.5;
-      const k = 76 / M.tall, idle = /^idle/.test(nm) && !dead;
+      const k = 64 / M.tall, idle = /^idle/.test(nm) && !dead; /* 76 → 64(2026-10-29 탕탕특공대처럼 조금 작게) */
       g.save(); g.translate(cx, cy + 19); if (dead) g.rotate(-Math.PI / 2 * (flip < 0 ? -1 : 1)); else if (idle && !rig) g.scale(1, 1 + Math.sin((s ? s.t : 0) * 3) * 0.012); // 대기는 숨 쉬듯 · 쓰러지면 눕기
       const SK = s && s.skin && s.skin !== "basic" && !skA ? s.skin : ""; if (SK === "ice") g.filter = "hue-rotate(185deg) saturate(.7) brightness(1.15)"; else if (SK === "ninja") g.filter = "brightness(.8) contrast(1.1)"; else if (SK === "king") { g.shadowColor = "rgba(255,210,60,.9)"; g.shadowBlur = 14; }
       if (rig) otRigPut(img, r, k, flip < 0, ax, RIG_SCARF.includes(skA)); else bgPut(img, r, 0, 0, k, flip < 0, ax); g.filter = "none"; g.shadowBlur = 0;
@@ -5210,12 +5215,22 @@ body.game-full { overflow: hidden; }
         g.fillStyle = "rgba(0,0,0,.6)"; g.fillRect(x - 30, y + h / 2 + 4, 60, 5); g.fillStyle = "#ff6a4a"; g.fillRect(x - 30, y + h / 2 + 4, 60 * Math.max(0, f.hp) / f.full, 5);
       }
     }
+    /* 드론 그림 — 레벨마다 모습이 바뀜(1 작은 회색 · 2 날개 둘 · 3 파랑 · 4 금색 날개 넷 · 5 보라 빛 · 진화 쌍둥이 금빛). 그림(img/lb/drone-N.webp)이 있으면 그것 */
+    function drawDrone(x, y, lv) { const I = lbImg("drone-" + Math.min(6, lv)), t = s.t, kick = (s.drone && s.drone.kick) || 0, face = Math.cos(s.aim || 0) < 0 ? -1 : 1, sz = 34 + lv * 4;
+      g.save(); g.translate(x, y - kick * 10); g.fillStyle = "rgba(0,0,0,.18)"; g.beginPath(); g.ellipse(0, 58, sz * 0.45, 6, 0, 0, 7); g.fill(); g.rotate(Math.sin(t * 3) * 0.08);
+      if (I) { const w = sz * 1.6, h = w * I.height / I.width; if (face < 0) g.scale(-1, 1); g.drawImage(I, -w / 2, -h / 2, w, h); g.restore(); return; }
+      const C = [["#9aa3ad", "#5c646d"], ["#9aa3ad", "#5c646d"], ["#5ab4ff", "#1d5fa8"], ["#ffd23a", "#b07a0a"], ["#c084fc", "#6b2bb5"], ["#ffe36b", "#ff8a1a"]][Math.min(5, lv - 1)], arms = lv >= 4 ? 4 : 2;
+      if (lv >= 5) { g.globalCompositeOperation = "lighter"; const gr = g.createRadialGradient(0, 0, 0, 0, 0, sz); gr.addColorStop(0, C[0] + "88"); gr.addColorStop(1, C[0] + "00"); g.fillStyle = gr; g.beginPath(); g.arc(0, 0, sz, 0, 7); g.fill(); g.globalCompositeOperation = "source-over"; }
+      g.strokeStyle = "#222"; g.lineWidth = 3; for (let i = 0; i < arms; i++) { const a = (arms === 2 ? [0, Math.PI] : [0.6, Math.PI - 0.6, Math.PI + 0.6, -0.6])[i], ax = Math.cos(a) * sz * 0.55, ay = Math.sin(a) * sz * 0.22; g.beginPath(); g.moveTo(0, 0); g.lineTo(ax, ay - 4); g.stroke(); g.fillStyle = "rgba(255,255,255,.55)"; g.beginPath(); g.ellipse(ax, ay - 8, sz * 0.3 * Math.abs(Math.cos(t * 40 + i)), 2.5, 0, 0, 7); g.fill(); }
+      g.fillStyle = C[0]; g.strokeStyle = "#1a1a1a"; g.lineWidth = 2.5; g.beginPath(); g.ellipse(0, 0, sz * 0.36, sz * 0.24, 0, 0, 7); g.fill(); g.stroke(); g.fillStyle = C[1]; g.beginPath(); g.ellipse(0, sz * 0.08, sz * 0.36, sz * 0.12, 0, 0, Math.PI); g.fill();
+      g.fillStyle = "#222"; g.beginPath(); g.arc(face * sz * 0.14, 0, sz * 0.1, 0, 7); g.fill(); g.fillStyle = lv >= 3 ? "#ff3b3b" : "#7cf"; g.beginPath(); g.arc(face * sz * 0.14, 0, sz * 0.05, 0, 7); g.fill();
+      if (lv >= 2) { g.fillStyle = C[1]; g.fillRect(-sz * 0.12, sz * 0.2, sz * 0.24, sz * 0.12); } g.restore(); }
     function hero(cx, cy) {
       const dead = !!(s && s.over && s.hp <= 0), mv = !!(s && s.moving && !dead && running);
       const a = !s ? Math.PI / 2 : s.shotT > 0 || !mv ? s.aim : s.mvA, c = Math.cos(a), sn = Math.sin(a);
       const side = Math.abs(c) > 0.55, view = side ? "side" : sn > 0 ? "front" : "back", flip = side && c < 0 ? -1 : 1;
       const stepL = mv ? Math.sin(s.walk) * 2.2 : 0, bob = mv ? -Math.abs(Math.cos(s.walk)) : 0;
-      g.save(); g.translate(cx, cy); g.scale(1.35, 1.35); // 보는 크기만 (맞는 범위는 그대로)
+      g.save(); g.translate(cx, cy); g.scale(1.12, 1.12); // 보는 크기만(2026-10-29 "캐릭터 너무 크다" 1.35 → 1.12) (맞는 범위는 그대로)
       g.beginPath(); g.ellipse(0, 15, 19, 7, 0, 0, Math.PI * 2);
       g.fillStyle = "rgba(47,123,255,.16)"; g.fill(); g.lineWidth = 2; g.strokeStyle = s && s.ward ? "#9fbcff" : BLUE; g.stroke(); g.lineWidth = 1;
       if (HEROES[heroKey].ok) {
@@ -5321,7 +5336,9 @@ body.game-full { overflow: hidden; }
           { const FI = lbImg("fx-fire"), age = z.full - z.life; if (FI) { const n = 4, fw = FI.width / n, fr = age < 0.3 ? 0 : age < 0.6 ? 1 : 2 + (Math.floor(age * 7) % 2), w = z.r * 1.9, h = w * FI.height / fw; g.globalAlpha = Math.min(1, z.life / 0.5); g.drawImage(FI, fr * fw, 0, fw, FI.height, x - w / 2, y + z.r * 0.45 - h, w, h); g.globalAlpha = 1; } } /* 새 불바다(ChatGPT 4장면, 2026-10-28 "불꽃 스킬 옛날 것 지우고 최신으로") */
         });
         if (!s.watchView) { g.save(); g.setLineDash([7, 9]); g.lineDashOffset = -s.t * 12; g.strokeStyle = "rgba(255,255,255,.32)"; g.lineWidth = 2; g.beginPath(); g.arc(hx, hy, s.range, 0, Math.PI * 2); g.stroke(); g.restore(); } // 평타 사거리 원(2026-10-28 "평타 사거리 원형도")
-        if (s.aura) { g.beginPath(); g.arc(hx, hy, 55 + s.aura * 12, 0, Math.PI * 2); g.fillStyle = "rgba(214,176,98,.07)"; g.fill(); g.strokeStyle = "rgba(214,176,98,.35)"; g.stroke(); }
+        if (s.aura) { const AR = auraRad(), ev = s.evo && s.evo.aura; g.save(); const gr = g.createRadialGradient(hx, hy, AR * 0.55, hx, hy, AR); gr.addColorStop(0, ev ? "rgba(160,90,255,0)" : "rgba(80,190,255,0)"); gr.addColorStop(1, ev ? "rgba(160,90,255,.32)" : "rgba(80,190,255,.28)"); g.fillStyle = gr; g.beginPath(); g.arc(hx, hy, AR, 0, 7); g.fill(); /* 물결 고리가 잘 보이게(2026-10-29 "캐릭터 주변에 안 보인다") — 파란 물결 띠 · 바깥으로 퍼지는 물결 3줄 */
+          g.lineWidth = 4; g.strokeStyle = ev ? "rgba(200,150,255,.85)" : "rgba(150,225,255,.85)"; g.setLineDash([16, 10]); g.lineDashOffset = -s.t * 40; g.beginPath(); g.arc(hx, hy, AR, 0, 7); g.stroke(); g.setLineDash([]);
+          for (let i = 0; i < 3; i++) { const p = (s.t * 0.8 + i / 3) % 1; g.lineWidth = 2.5; g.strokeStyle = "rgba(190,240,255," + (0.55 * (1 - p)).toFixed(2) + ")"; g.beginPath(); g.arc(hx, hy, AR * (0.35 + 0.65 * p), 0, 7); g.stroke(); } g.restore(); }
         /* 경험치 구슬 3가지 — "경험치 색깔 소량 중량 대량" (2026-10-27): 1 하늘 · 2 ~ 4 초록 · 5 이상(대장 등) 금, 클수록 크게 */
         GEM.forEach((G, ti) => {
           g.fillStyle = G[0]; g.beginPath();
@@ -5474,6 +5491,7 @@ body.game-full { overflow: hidden; }
           g.fillStyle = "rgba(" + c[0] + ",.35)"; g.beginPath(); g.arc(x, y, 5, 0, Math.PI * 2); g.fill();
           g.fillStyle = c[1]; g.beginPath(); g.arc(x, y, 2.2, 0, Math.PI * 2); g.fill();
         });
+        if (s.up && s.up.homing && s.drone) drawDrone(s.drone.x + ox, s.drone.y + oy, Math.min(5, s.up.homing) + (s.evo && s.evo.homing ? 1 : 0));
         s.homs.forEach((m) => {
           const x = m.x + ox, y = m.y + oy;
           g.strokeStyle = "rgba(192,132,252,.7)"; g.lineWidth = 3; g.beginPath(); g.moveTo(m.px + ox - Math.cos(m.a) * 14, m.py + oy - Math.sin(m.a) * 14); g.lineTo(x, y); g.stroke();
