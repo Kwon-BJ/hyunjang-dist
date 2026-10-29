@@ -748,9 +748,9 @@ body.game-full { overflow: hidden; }
 .globby, .globby *, .game-box.full, .game-box.full * { forced-color-adjust: none; -webkit-forced-color-adjust: none; color-scheme: only light; } /* 폰 강제 다크 모드 제외 */
 .globby { position: fixed; inset: 0; z-index: 61; display: grid; place-items: center; background: #1d3312; color: #3a2a12; overflow: hidden; font-family: "Jua", "Noto Sans KR", sans-serif; }
 .globby[hidden] { display: none; }
-.globby::before { content: ""; position: absolute; inset: -40px; background: url(img/lobby.webp) center / cover no-repeat; filter: blur(18px) brightness(.55); }
+.globby::before { content: ""; position: absolute; inset: -40px; background: url(img/lb/bg-ch1.webp) center / cover no-repeat; filter: blur(18px) brightness(.55); }
 .lb-art { overflow: clip !important; } .globby { overflow: clip; } /* 2026-10-28 실제 시험 — 단추가 눌리면 그림 틀이 위로 밀려 프로필이 잘리던 것 */
-.lb-art { position: relative; z-index: 1; width: min(100vw, calc(100dvh * 941 / 1672)); aspect-ratio: 941 / 1672; background: url(img/lobby.webp) center / 100% 100% no-repeat; container-type: inline-size; overflow: hidden; }
+.lb-art { position: relative; z-index: 1; width: min(100vw, calc(100dvh * 941 / 1672)); aspect-ratio: 941 / 1672; background: url(img/lb/bg-ch1.webp) center / 100% 100% no-repeat; container-type: inline-size; overflow: hidden; }
 .lb-art button { font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .lb-art > * { position: absolute; }
 .lb-chn, .lb-chname { overflow: visible !important; line-height: 1.15; white-space: nowrap; } /* 글자 위아래가 잘리지 않게(2026-10-28) */
@@ -1119,7 +1119,7 @@ body.game-full { overflow: hidden; }
 .lb-admin { font-size: 13px; font-family: "Noto Sans KR", sans-serif; color: var(--ink); background: #1b1408; border-radius: 3cqw; padding: 2cqw; } .lb-admin summary { cursor: pointer; color: #ffe08a; } .lb-admin .game-rank, .lb-admin .game-live { margin: 8px 0 0; }
 .lb-note { margin: 0; padding: 3cqw; text-align: center; color: #7a5a2a; font-size: 3cqw; } .lb-err { margin: 0; text-align: center; color: #b3261e; font-size: 3.2cqw; }
 /* 로딩 — 부장님 로딩 그림(img/loading.webp), 막대는 진짜 받은 만큼 */
-.lb-login { position: relative; z-index: 1; width: min(100vw, calc(100dvh * 768 / 1024)); aspect-ratio: 768 / 1024; background: url(img/login.webp) center / 100% 100% no-repeat; } .lb-login button { position: absolute; border: 0; background: transparent; border-radius: 999px; cursor: pointer; } .lb-login .lg-btn:active { background: rgba(255,255,255,.2); } .lb-login .lg-agree { border-radius: 4px; } .lb-login .lg-agree:not(.on) { background: #fff; box-shadow: inset 0 0 0 2px #2f8a2f; } /* 숨김 로그인(정식 출시 때) */
+.lb-login { position: relative; z-index: 1; width: min(100vw, calc(100dvh * 768 / 1024)); aspect-ratio: 768 / 1024; background: url(img/loading.webp) center / cover no-repeat; } /* 2026-10-29 login.webp(글자 박힘) 삭제 — 정식 로그인 화면은 출시 때 요소별 그림 + DOM 글자로 다시 */ .lb-login button { position: absolute; border: 0; background: transparent; border-radius: 999px; cursor: pointer; } .lb-login .lg-btn:active { background: rgba(255,255,255,.2); } .lb-login .lg-agree { border-radius: 4px; } .lb-login .lg-agree:not(.on) { background: #fff; box-shadow: inset 0 0 0 2px #2f8a2f; } /* 숨김 로그인(정식 출시 때) */
 .lb-load { position: relative; z-index: 1; width: min(100vw, calc(100dvh * 760 / 1024)); aspect-ratio: 760 / 1024; background: url(img/loading.webp) center / 100% 100% no-repeat; container-type: inline-size; }
 .lb-lbar { position: absolute; left: 16.6%; width: 66.4%; top: 87.4%; height: 2.6%; border-radius: 999px; background: #10151c; border: .4cqw solid #000; overflow: hidden; }
 .lb-lbar i { display: block; height: 100%; width: 0; background: linear-gradient(#ffe36b, #f2b51c); transition: width .2s; } .lb-lbar b { position: absolute; inset: 0; display: grid; place-content: center; font-size: 2.8cqw; color: #4a2a06; }
@@ -1462,6 +1462,15 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
 .wp2-art { left: 15%; top: 17%; width: 70%; height: 54%; border-radius: 1.4cqw; } .wp2-n { font-size: 2.4cqw; overflow: visible; -webkit-text-stroke: 0; }
 .wd-st { top: 17%; height: 15%; width: 14.5%; } .wd-art { border-radius: 2cqw; }
 .wd-slot { align-content: start; padding-top: .6cqw; } .wd-slot img { width: 3.6cqw; height: 3.6cqw; } .wd-slot small { font-size: 1.7cqw; }
+
+/* 로딩 글자(2026-10-29) — 그림 위 글자는 Jua + 4방향 그림자 */
+.lb-load .ld-logo { position: absolute; left: 0; right: 0; top: 6%; display: grid; justify-items: center; font-family: "Jua", sans-serif; }
+.lb-load .ld-logo b { font-size: 17cqw; line-height: 1; color: #ffe36b; -webkit-text-stroke: 2cqw #4a2408; paint-order: stroke fill; text-shadow: 0 1.2cqw 0 #2a1204; }
+.lb-load .ld-logo small { margin-top: 1cqw; padding: .4cqw 3cqw; border-radius: 999px; background: #2e6a1c; color: #fff; font-size: 4cqw; letter-spacing: .4cqw; }
+.lb-load .ld-tip { position: absolute; left: 0; right: 0; top: 82%; margin: 0; text-align: center; font: 4cqw "Jua", sans-serif; color: #fff; text-shadow: 1px 0 0 #000, -1px 0 0 #000, 0 1px 0 #000, 0 -1px 0 #000, 0 .4cqw .8cqw rgba(0,0,0,.6); }
+
+.lb-load .ld-tip { -webkit-text-stroke: .9cqw #1a2a0a; paint-order: stroke fill; text-shadow: 0 .5cqw .8cqw rgba(0,0,0,.7); }
+.lb-load .lb-lbar b { color: #fff; text-shadow: 1px 0 0 #000, -1px 0 0 #000, 0 1px 0 #000, 0 -1px 0 #000; font-family: "Jua", sans-serif; }
 </style>
 </head>
 <body>
@@ -1916,7 +1925,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610290548";
+  const BUILD = "202610290625";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -6057,8 +6066,8 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     let lobLoaded = false;
     function lobLoading(done) {
       if (lobLoaded) return done();
-      const L = $("gLobby"), box = el("div", "lb-load"), bar = el("i"), pct = el("b", null, "0%"), wrap = el("div", "lb-lbar"); wrap.append(bar, pct); box.appendChild(wrap); L.replaceChildren(box); L.hidden = false;
-      const list = ["img/lobby.webp?v=" + BUILD, "img/bg/m_ot2.webp?v=" + BUILD, "img/maps/m1.jpg?v=" + BUILD].concat(["sign-wpn", "sign-shop", "sign-rank", "m-shop", "m-rank", "w-basic", "i-heal"].map(LBI));
+      const L = $("gLobby"), box = el("div", "lb-load"), bar = el("i"), pct = el("b", null, "0%"), wrap = el("div", "lb-lbar"); wrap.append(bar, pct); { const lg = el("div", "ld-logo"); lg.append(el("b", null, "수달단"), el("small", null, "OTTER CLAN")); box.append(lg, el("p", "ld-tip", "재미있는 모험을 준비하고 있어요")); } box.appendChild(wrap); /* 2026-10-29 로딩 글자는 그림 대신 DOM */ L.replaceChildren(box); L.hidden = false;
+      const list = ["img/bg/m_ot2.webp?v=" + BUILD, "img/maps/m1.jpg?v=" + BUILD].concat(["bg-ch1", "ui-face", "ui-name", "ui-pill", "ui-go", "navbar", "w-basic", "i-heal"].map(LBI)); /* 2026-10-29 작업지시서 v2 — 글자 박힌 lobby · sign-* 빼고 첫 화면 조각으로 */
       let n = 0; const t0 = Date.now(), tick = () => { n++; const p = Math.round(n / list.length * 100); bar.style.width = p + "%"; pct.textContent = p + "%"; if (n >= list.length) setTimeout(() => { lobLoaded = true; done(); }, Math.max(300, 900 - (Date.now() - t0))); };
       list.forEach((u) => { const i = new Image(); i.onload = i.onerror = tick; i.src = u; });
     }
@@ -6144,7 +6153,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
       const c = Math.max(1, Math.min(CH_N, lobCh)), open = c <= chM, need = !P.free && P.en < (P.cost || 5), first = !clr(c), out = [];
       const t = (cls, txt, css) => { const e = el("span", cls, txt); e.style.cssText = css; out.push(e); return e; };
       lobBgN = LOB_BG["g" + (Math.floor(((c - 1) % 30) / 10) + 1)] ? "g" + (Math.floor(((c - 1) % 30) / 10) + 1) : LOB_BG[c] ? c : 1; /* 10장 묶음마다 하늘 배경(g1 숲 · g2 사막 · g3 설산), 31장부터 되풀이 */ /* 장마다 배경(받은 것부터) — 없으면 그 10장 묶음 첫 장 그림 */ { const sg = el("img", "lb-ui"); sg.src = LBI("ui-sign"); sg.alt = ""; sg.style.cssText = px(170, 178, 600, 342); out.push(sg); }
-      t("lb-chn", c + "장", px(384, 212, 172, 52)); t("lb-chname" + (CHAPS[c - 1].length > 5 ? " long" : ""), CHAPS[c - 1], px(232, 270, 476, 104)); t("lb-chsub", CHSUB[c - 1], px(262, 428, 416, 50)); { const md = lobBtn("lb-diff", px(40, 1352, 160, 130), () => { lobChSel = true; lobDraw(); }, "장 선택"); const ci = el("img"); ci.src = LBI("ic-chap"); ci.alt = ""; md.append(ci, el("b", null, "장 선택")); out.push(md); } /* 난이도는 장에서 정해짐(2026-10-29) — 왼쪽 단추는 장 고르기 */
+      t("lb-chn", c + "장", px(384, 240, 172, 52)); t("lb-chname" + (CHAPS[c - 1].length > 5 ? " long" : ""), CHAPS[c - 1], px(240, 322, 460, 100)); t("lb-chsub", CHSUB[c - 1], px(262, 446, 416, 48)); /* 2026-10-29 간판 그림(654×373)을 재서 판 가운데로 — 초록 판 y48~144 · 나무 150~270 · 두루마리 282~354 */ { const md = lobBtn("lb-diff", px(40, 1352, 160, 130), () => { lobChSel = true; lobDraw(); }, "장 선택"); const ci = el("img"); ci.src = LBI("ic-chap"); ci.alt = ""; md.append(ci, el("b", null, "장 선택")); out.push(md); } /* 난이도는 장에서 정해짐(2026-10-29) — 왼쪽 단추는 장 고르기 */
       { const db = el("span", "lb-dbadge", MODE_N[M]); db.style.cssText = px(626, 196, 150, 46); db.style.background = DIFF_C[M]; out.push(db); }
       if (!P.free && clr(c)) { const st = el("span", "lb-stamp", "CLEAR"); st.style.cssText = px(700, 780, 170, 64); out.push(st); } /* 깬 장 — 간판에 도장(ChatGPT 기획안) */
       if (lobChSel) out.push(chGrid(P, chM, clr));
