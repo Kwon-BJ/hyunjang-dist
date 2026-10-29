@@ -695,6 +695,21 @@ body.game-full { overflow: hidden; }
 #lbEn, .lb-gold { display: flex; align-items: center; justify-content: safe center; font-size: 3.9cqw; letter-spacing: -.1cqw; font-weight: 900; color: #fff; text-shadow: 0 1px 2px #000; font-variant-numeric: tabular-nums; }
 #lbEn small { position: absolute; top: 108%; left: 0; right: 0; text-align: center; font-size: 2.6cqw; color: #ffe27a; text-shadow: 0 1px 2px #000; }
 .lb-plus { border: 0; border-radius: 50%; background: transparent; }
+/* 장 · 난이도 표시(2026-10-29 101장) */
+.lb-art.v2 .lb-chname.long { font-size: 8cqw; }
+.lb-art.v2 .lb-dbadge { display: flex; align-items: center; justify-content: center; border-radius: 999px; border: .45cqw solid #fff; color: #fff; font-size: 3.2cqw; font-weight: 900; text-shadow: 0 .25cqw 0 rgba(0,0,0,.5); box-shadow: 0 .5cqw 0 rgba(0,0,0,.35), inset 0 .5cqw 0 rgba(255,255,255,.35); z-index: 3; white-space: nowrap; }
+.lb-art.v2 .lb-stamp { display: flex; align-items: center; justify-content: center; border: .7cqw solid #d8261a; border-radius: 2cqw; color: #d8261a; font-size: 6cqw; font-weight: 900; letter-spacing: .4cqw; transform: rotate(-14deg); background: rgba(255,244,220,.75); box-shadow: inset 0 0 0 .4cqw rgba(216,38,26,.4); z-index: 3; pointer-events: none; }
+.lb-art.v2 .lb-wtag.v2 { justify-content: center; gap: 1.6cqw; border: .4cqw solid #e8c46a; background: rgba(14,30,8,.78); font-size: 3.2cqw; }
+.lb-art.v2 .lb-wtag.v2 b { color: #fff; } .lb-art.v2 .lb-wtag.v2 em { font-style: normal; color: #ffe36b; font-weight: 900; padding-left: 1.6cqw; border-left: .3cqw solid rgba(232,196,106,.6); }
+.lb-art.v2 > .lb-chsel, .lb-chsel { position: absolute; inset: 0; z-index: 30; display: grid; place-items: center; background: rgba(0,0,0,.6); }
+.lb-chsel .cs-pn { width: 92%; height: 78%; display: flex; flex-direction: column; border-radius: 3.4cqw; border: .7cqw solid #c9963c; background: linear-gradient(#fbf1d6, #efdcab); box-shadow: 0 1.4cqw 3cqw rgba(0,0,0,.5); overflow: hidden; }
+.lb-chsel .cs-hd { display: flex; align-items: center; justify-content: center; position: relative; padding: 2cqw; background: linear-gradient(#5a3a1a, #3a220c); color: #ffe9b0; font-size: 5cqw; font-weight: 900; }
+.lb-chsel .cs-x { position: absolute; right: 2cqw; top: 50%; transform: translateY(-50%); width: 8cqw; height: 8cqw; border-radius: 50%; border: .4cqw solid #fff; background: #d8261a; color: #fff; font-size: 4cqw; font-weight: 900; }
+.lb-chsel .cs-gr { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.6cqw; padding: 2.4cqw; align-content: start; scrollbar-width: none; }
+.lb-chsel .cs-dh { grid-column: 1 / -1; padding: 1cqw 2cqw; border-radius: 999px; color: #fff; font-size: 3.4cqw; font-weight: 900; text-shadow: 0 .2cqw 0 rgba(0,0,0,.5); }
+.lb-chsel .cs-c { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .2cqw; aspect-ratio: 1; border: .55cqw solid; border-radius: 2.2cqw; background: linear-gradient(#fffaf0, #f3e2b8); color: #4a3210; box-shadow: 0 .5cqw 0 rgba(0,0,0,.2); padding: .6cqw; min-width: 0; }
+.lb-chsel .cs-c b { font-size: 4.6cqw; line-height: 1; } .lb-chsel .cs-c small { font-size: 2cqw; line-height: 1.1; max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.lb-chsel .cs-c.done small { color: #e8a00a; font-size: 3.4cqw; } .lb-chsel .cs-c.lock { filter: grayscale(.9) brightness(.7); } .lb-chsel .cs-c.now { box-shadow: 0 0 0 .6cqw #ffd23a, 0 0 2.4cqw #ffd23a; } .lb-chsel .cs-c.sel { background: linear-gradient(#fff3a8, #ffd23a); }
 /* ── 새 로비 v2 (2026-10-29 ChatGPT 시안 — 배경 bg-chN · 조각 ui-* · 아이콘 ic-*, 글자 · 숫자는 코드) ── */
 .lb-art.v2 { background-size: cover !important; background-position: center 30% !important; }
 .lb-art.v2::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,0) 12%, rgba(0,0,0,0) 62%, rgba(0,0,0,.45)); z-index: 0; }
@@ -1580,7 +1595,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610290140";
+  const BUILD = "202610290158";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -4135,7 +4150,7 @@ body.game-full { overflow: hidden; }
         stage: 1, stageT: 0, boxes: [], boxT: 12, pools: [], advance: "", bossN: 0, bossNow: null, aim: Math.PI / 2, mvA: Math.PI / 2, dashT: 0, dashCd: 0, dashX: 0, dashY: 1, trail: [], lock: null, hitFx: 0, fields: [], homs: [], hz: [], walk: 0, moving: false, items: [], flash: 0, shotT: 0, bossKills: 0, up: {}, evo: {}, skills: [], cd: {}, cool: 1, ward: 0, msgT: 0, over: false,
         range: AIM_R, tors: [], wardR: 0, wardSpr: "", ring: null, gaura: null, stealth: 0, rest: 0, cleanT: 0, bossDone: false, god: false, cheat: false };
       s.test = testOn(); $("gTest").hidden = !s.test; opTools();
-      s.chap = o.ch || 0; s.run = o.run || ""; s.raid = !!o.raid; s.mode = s.chap ? o.mode || 0 : 0; { const CT = CH_TBL[s.chap] || CH_TBL[0]; s.chHp = CT[0] * MODE_HP[s.mode]; s.chDmg = CT[1] * MODE_DMG[s.mode]; s.chSp = CT[2] * MODE_SP[s.mode]; s.chCap = CT[3] * MODE_CAP[s.mode]; } setMap(s.chap ? chMap(s.chap) : mapFor(1)); // 장마다 맵(무한의 탑은 1장 맵부터) — 빠져 있어 늘 옛 어두운 맵이었다(2026-10-28)
+      s.chap = o.ch || 0; s.run = o.run || ""; s.raid = !!o.raid; s.mode = s.chap ? diffOf(s.chap) : 0; if (s.chap) { const K = chScale(s.chap); s.chHp = K.hp; s.chDmg = K.dmg; s.chSp = K.sp; s.chCap = Math.min(2.2, K.cap); } else { const CT = CH_TBL[0]; s.chHp = CT[0]; s.chDmg = CT[1]; s.chSp = CT[2]; s.chCap = CT[3]; } setMap(s.chap ? chMap(s.chap) : mapFor(1)); // 장마다 맵(무한의 탑은 1장 맵부터) — 빠져 있어 늘 옛 어두운 맵이었다(2026-10-28)
       { const P0 = WPROF[heroKey] || WPROF.je; s.rate = P0.rate; s.range = Math.round(AIM_R * (P0.range || 1)); } // 무기마다 쏘는 빠르기 · 사거리
       const GS = o.gs || {}; if (GS.hp) { s.max += GS.hp; s.hp = s.max; } if (GS.hpP) { s.max = Math.round(s.max * (1 + GS.hpP / 100)); s.hp = s.max; } if (GS.atk) s.dmg *= 1 + GS.atk / 100; if (GS.spd) s.spd *= 1 + GS.spd / 100; s.defR = (GS.def || 0) / ((GS.def || 0) + 100); // 장비(2026-10-28)
       s.wawk = GS.wawk || 0; s.gearOn = (GS.set || 0) > 0; if (GS.wawk) { s.dmg *= 1 + 0.25 * GS.wawk; if (WGRADE[heroKey] && WGRADE[heroKey][2] && WGRADE[heroKey][2].range && GS.wawk >= 1) {} const R0 = (WGRADE[heroKey] || [])[0]; if (R0 && R0.range) s.range = Math.round(s.range * R0.range); } s.skin = GS.skin || "basic"; /* 무기 각성 · 스킨(2026-10-28) · 숨기기면 창구가 basic 으로 줌 */ { const sg = GS.skinG || 0; if (sg) { s.max = Math.round(s.max * (1 + SKIN_HP[sg])); s.hp = s.max; s.dmg *= 1 + SKIN_ATK[sg]; } }
@@ -4289,7 +4304,7 @@ body.game-full { overflow: hidden; }
     const MAPS = ["img/map2.jpg"].concat(Array.from({ length: 10 }, (_, i) => "img/maps/m" + (i + 1) + ".jpg"));
     let mapIdx = 0;
     const CYC_TINT = ["", "rgba(255,120,40,.14)", "rgba(30,40,140,.26)"], CYC_MON = ["", "saturate(1.3) hue-rotate(-18deg) brightness(.95)", "hue-rotate(200deg) saturate(1.15) brightness(.9)"];
-    function cycOf() { return !s ? 0 : s.chap ? Math.min(2, Math.floor((s.chap - 1) / 10)) : s.raid ? 0 : Math.min(2, Math.floor(((s.stage || 1) - 1) / 100)); }
+    function cycOf() { return !s ? 0 : s.chap ? (s.chap > 60 ? 2 : s.chap > 30 ? 1 : 0) : s.raid ? 0 : Math.min(2, Math.floor(((s.stage || 1) - 1) / 100)); }
     function mapFor(n) { return 1 + Math.floor(Math.max(0, (n || 1) - 1) / 10) % 10; } // 무한의 탑도 1~10장 맵을 10층마다 차례로(2026-10-28 "지금 맵은 너무 어둡다")
     function setMap(i) { if (i === mapIdx) return; mapIdx = i; const N = new Image(); N.onload = () => { if (mapOk && MAP && MAP.width === N.width && MAP.height === N.height) { MAP_PREV = MAP; MAP_FADE = performance.now(); } MAP = N; mapFit(); }; N.src = MAPS[i] + "?v=" + BUILD; }
     let MAP_PREV = null, MAP_FADE = 0;
@@ -4397,6 +4412,13 @@ body.game-full { overflow: hidden; }
     /* 땅에 미리 표시되고 t 초 뒤 터지는 공격 — 붉은(또는 보라) 동그라미가 차오르면 피하라 */
     function hazard(x, y, r, t, dmg, c) { c = c || "255,70,50"; s.hz.push({ x: x, y: y, r: r, t: t, full: t, dmg: dmg, c: c, fx: c === "255,120,0" ? "meteor" : c === "170,70,255" ? "dfire" : "quake" }); } // fx = 터질 때 그림(메테오 · 보라 마법 · 땅 울림)
     /* 쏘는 잡귀 · 대장의 재주 */
+    /* 대장 단계(2026-10-29 부장님 "체력이 30~50% 빠지면 공격 패턴이 바뀌게" · ChatGPT 기획안) — 남은 체력 70% 이하 분노 · 50% 이하 광폭화. 원래 재주 뒤에 덧붙이고, 재주 간격도 짧아짐. 바닥 공격은 늘 빨간 표시 먼저 */
+    function bossExtra(f, ux, uy) {
+      const ph = f.phase || 0; if (!ph) return; const a = Math.atan2(uy, ux), bd = (f.bd || 1) * (s.chDmg || 1) * 0.5, k = (f.xn = (f.xn || 0) + 1) % 3;
+      if (k === 0) { const m = ph === 1 ? 5 : 7; for (let r = 0; r < (ph === 1 ? 1 : 2); r++) setTimeout(() => { if (!s || s.over || f.hp <= 0) return; for (let i = 0; i < m; i++) bullet(f.x, f.y, a + (i - (m - 1) / 2) * 0.22, 150, 12 * bd, 6, "#ff7a2a", "bfire"); }, r * 450); } // 부채꼴 탄막 5발 → 7발 두 번
+      else if (k === 1) { const m = ph === 1 ? 3 : 5; for (let i = 0; i < m; i++) setTimeout(() => { if (!s || s.over) return; const q = Math.random() * Math.PI * 2, d = i ? 60 + Math.random() * 140 : 0; hazard(s.x + Math.cos(q) * d, s.y + Math.sin(q) * d, 70, 1.1, 26 * bd); }, i * 250); } // 바닥 폭발 3곳 → 5곳 차례로
+      else { const m = ph === 1 ? 4 : 7; for (let i = 0; i < m; i++) spawn(ph === 2 && i < 2 ? "rock" : "fast", f.x + Math.cos(i * 1.3) * 60, f.y + Math.sin(i * 1.3) * 60); } // 졸개 부르기 4 → 7(정예 둘)
+    }
     function act(f, ux, uy) {
       const a = Math.atan2(uy, ux);
       if (f.k === "spit") { f.cd = 2.6; bullet(f.x, f.y, a, 160, 8, 5, null, f.skin === "carnivorous_plant" ? "spike" : "orb"); return; }
@@ -4715,8 +4737,9 @@ body.game-full { overflow: hidden; }
         if (f.k === "boss") arenaClamp(f);
         f.hit = Math.max(0, f.hit - dt); f.oc -= dt; f.age = (f.age || 0) + dt; f.near = L < f.r + 45;
         if (f.k === "boss") { f.atkT = Math.max(0, (f.atkT || 0) - dt);
-          if (f.wind > 0) { if ((f.wind -= dt) <= 0) { f.wind = 0; f.atkT = 0.4; act(f, dx / L, dy / L); f.cd *= MODE_BCD[s.mode || 0]; } }
+          if (f.wind > 0) { if ((f.wind -= dt) <= 0) { f.wind = 0; f.atkT = 0.4; act(f, dx / L, dy / L); bossExtra(f, dx / L, dy / L); f.cd *= MODE_BCD[s.mode || 0] * [1, 0.85, 0.72][f.phase || 0]; } }
           else if ((f.cd -= dt) <= 0) { f.wind = 0.65; f.cd = 99; } } /* 2026-10-28 "보스 움직임 · 스킬이 봉인검록처럼 자연스럽게" — 기 모으기 → 공격 */
+        if (f.k === "boss") { const hr = f.hp / (f.full || 1), ph = hr <= 0.5 ? 2 : hr <= 0.7 ? 1 : 0; if (ph > (f.phase || 0)) { f.phase = ph; f.spd *= 1.15; f.wind = 0; f.cd = 0.8; msg(f.name + (ph === 1 ? " ㆍ 분노! 공격이 바뀐다!" : " ㆍ 광폭화!! 조심해!")); s.fx.push({ spr: "quake", x: f.x, y: f.y, size: f.r * 7, life: 0.8, dur: 0.8 }, { x: f.x, y: f.y, r: f.r * 2, c: ph === 1 ? "#ffb02e" : "#ff2a2a", life: 0.5 }); SND.siren(); } }
         else if ((f.k === "spit" || f.k === "mage") && (f.cd -= dt) <= 0) act(f, dx / L, dy / L);
         if (L < f.r + 15 && (f.k === "boss" ? ouch(Math.min(f.dps * (1 + enr / 30), s.max * 0.35) * dt) : ouch(f.dps * dt))) {
           if ((f.sw = (f.sw || 0) - dt) <= 0) { f.sw = 0.7; const k = MELEE[f.skin] || "spark"; s.fx.push({ spr: k, x: s.x - dx / L * 10, y: s.y - dy / L * 10, rot: Math.atan2(dy, dx), size: k === "spark" ? 40 : 54, life: 0.3, dur: 0.3 }); }
@@ -5629,15 +5652,15 @@ body.game-full { overflow: hidden; }
        그림: img/lobby.webp(부장님 로비 그림, 바뀌는 글자만 지움 · 시험/로비그림-만들기.cjs) · img/lb/*(탭 그림 조각 · 시험/탭그림-자르기.cjs) · img/loading.webp(로딩).
        자리는 로비 그림 941×1672 기준 % 로 얹는다. 아래 칸 = 상점 · 무기 · 출전 · 순위. 피로도 · 골드 · 경험치 · 장 · 무기 · 물건은 창구(gameProfile …)에. 손님 · 관리자 암호는 저장 없이 */
     /* 30장(2026-10-28 "시나리오를 30장까지") — 맵 · 대장은 10장마다 다시(11장 = 1장 맵), 이름은 장마다 */
-    const CHAPS = ["이끼 숲", "사막 유적", "설원", "화산", "독 늪", "묘지", "얼음 동굴", "황금 신전", "성벽 광장", "하늘 섬",
-      "깊은 이끼 숲", "모래 폭풍 사막", "눈보라 고원", "용암 협곡", "썩은 늪", "망령의 묘지", "수정 미궁", "저주받은 신전", "무너진 성벽", "폭풍의 하늘 섬",
-      "고대 정령의 숲", "왕의 무덤 사막", "영원한 빙하", "화산 심장", "독룡의 늪", "망자의 왕국", "얼음 여왕의 궁전", "황금 제국", "최후의 성", "하늘 왕좌"];
-    const CHSUB = ["숲속의 첫 번째 생존 전투", "모래바람 속 옛 유적", "얼어붙은 눈밭의 사투", "불타는 용암 위 결전", "독기 가득한 늪지대", "망자가 깨어나는 묘지", "수정빛 얼음 동굴", "황금 신전의 수호자", "성벽 광장 최후의 방어", "구름 위 하늘 섬 결전",
-      "짙은 안개 덮인 숲 깊은 곳", "끝없는 모래 폭풍의 땅", "앞이 안 보이는 눈보라", "끓어오르는 용암 강", "독 안개 짙은 습지", "밤마다 깨어나는 망령들", "길을 잃는 얼음 미로", "황금에 깃든 저주", "폐허가 된 성의 싸움", "번개 치는 하늘 위 결전",
-      "고대 나무 정령의 분노", "잠든 왕들의 무덤", "녹지 않는 빙하의 끝", "화산 한가운데 불의 심장", "독룡이 사는 깊은 늪", "죽은 자들이 다스리는 땅", "얼어붙은 여왕의 궁전", "황금 제국의 마지막 수호자", "수달단 최후의 방어선", "하늘 꼭대기 마지막 결전"];
-    const CH_N = 30, chMap = (c) => ((c - 1) % 10) + 1;
+    /* 1~101장 이름 · 부제(2026-10-29 ChatGPT 기획안 — 보관/시안/장101-기획.txt, 영어는 배경 그림 설명) */
+    const CHAPS = ["이끼 숲", "속삭임 숲길", "버섯의 언덕", "반딧불 계곡", "고목의 쉼터", "푸른빛 폭포", "정령의 숲길", "가시덤불 숲", "안개낀 수풀", "숲의 심장부", "사막 유적", "황금빛 모래", "잊혀진 오아시스", "모래폭풍 지대", "고대의 석문", "태양의 신전", "전갈의 둥지", "유령의 사막", "왕가의 무덤", "황금의 피라미드", "서리꽃 설원", "눈보라 고개", "얼어붙은 호수", "수정의 동굴", "빙벽의 협곡", "눈사람 마을", "서리의 성채", "만년설 봉우리", "얼음의 왕좌", "겨울의 심장", "독안개 습지", "썩은뿌리 숲", "늪지의 오솔길", "독버섯 군락", "침묵의 연못", "거머리 소굴", "검은물 수로", "식인꽃 정원", "망각의 늪지", "독왕의 제단", "붉은재 평원", "용암의 강줄기", "불타는 협곡", "잿빛의 광산", "화염석 동굴", "용의 발자국", "분화구 절벽", "불꽃의 성문", "마그마 심연", "화산왕의 왕좌", "황혼의 묘지", "유령의 마을", "까마귀 숲길", "저주받은 정원", "망자의 지하실", "달빛의 폐성", "피묻은 예배당", "영혼의 회랑", "망령의 왕궁", "저주의 왕좌", "끝없는 균열", "검은빛 동굴", "심연의 광맥", "그림자 지대", "잊힌 지하도시", "어둠의 수로", "공허의 협곡", "흑요석 성벽", "심연의 제단", "지하왕의 궁전", "붉은달 황야", "악마의 숲길", "마계의 관문", "핏빛의 강가", "마족의 병영", "타락한 성당", "검붉은 성벽", "악몽의 회랑", "마왕의 대전당", "마왕의 옥좌", "별빛의 균열", "유성의 벌판", "무중력 정거장", "성운의 미궁", "차원의 관문", "붕괴된 위성", "시간의 균열", "공허의 우주", "은하의 무덤", "우주의 심장", "검은태양 지대", "멸망의 대지", "재앙의 폭풍", "붕괴된 차원", "절망의 성채", "파멸의 심연", "종말의 회랑", "검은별 제단", "최후의 관문", "세계의 끝자락", "영겁의 지옥문"];
+    const CHSUB = ["숲속의 첫 번째 생존 전투", "나뭇잎 사이로 들리는 수상한 소리", "거대한 버섯 아래 숨겨진 비밀", "밤을 밝히는 작은 정령의 빛", "오래된 나무가 지키는 숲의 중심", "폭포 뒤에 숨겨진 위험한 통로", "숲의 정령들이 시험을 시작한다", "끝없이 자라나는 가시의 미로", "짙은 안개 속에서 적이 다가온다", "잠든 숲의 수호자가 깨어난다", "모래바람 속 옛 유적", "뜨거운 모래 아래 감춰진 보물", "메마른 땅에 남은 마지막 샘", "시야를 삼키는 거대한 모래바람", "봉인된 신전의 입구가 열린다", "태양의 힘이 잠든 황금 제단", "모래 밑에서 독침이 솟아난다", "사라진 여행자들의 그림자가 맴돈다", "고대 왕의 저주가 되살아난다", "사막의 군주가 잠에서 깨어난다", "하얀 눈 위에 첫 발자국을 남기다", "거센 바람이 길을 막아선다", "얇은 얼음 아래 위험이 숨어 있다", "푸른 수정이 어둠 속에서 빛난다", "가파른 얼음 절벽을 돌파하라", "귀여운 눈사람들의 무서운 반란", "차가운 성벽 너머의 비밀", "끝없는 눈길의 정상에 도전하라", "얼음 왕의 그림자가 드리운다", "영원한 겨울을 끝낼 마지막 전투", "초록빛 안개가 생명을 잠식한다", "오염된 뿌리가 땅을 뒤덮는다", "발밑에서 수상한 움직임이 느껴진다", "화려한 버섯일수록 위험하다", "고요한 물속에 괴물이 잠들었다", "끝없이 달라붙는 늪의 포식자", "오염된 물길을 따라 추적하라", "아름다운 꽃잎 뒤의 날카로운 이빨", "안개 속에서 방향 감각을 잃는다", "늪의 지배자가 모습을 드러낸다", "뜨거운 재가 하늘에서 내려온다", "끓어오르는 용암을 피해 살아남아라", "불길에 둘러싸인 좁은 통로", "버려진 광산에서 불꽃이 피어난다", "붉은 광석이 뜨겁게 타오른다", "거대한 발자국이 재 속에 남았다", "발밑에서 화산이 깨어난다", "화염 군단이 성문을 지킨다", "깊은 곳에서 용암이 솟구친다", "불의 군주가 최후의 시험을 내린다", "해가 지면 무덤이 움직이기 시작한다", "사라진 주민들의 목소리가 들린다", "검은 날개가 하늘을 가린다", "시든 꽃 사이로 망령이 나타난다", "잠든 망자들이 눈을 뜬다", "푸른 달 아래 성벽이 흔들린다", "오래된 의식이 다시 시작된다", "떠도는 영혼들이 길을 가로막는다", "왕궁을 지키는 유령 군단", "저주를 내린 왕과 마주하라", "대지 아래 새로운 세계가 열린다", "빛을 삼키는 수정이 자라난다", "땅속 깊은 곳에서 힘이 맥동한다", "어둠 속에서 또 다른 내가 나타난다", "멸망한 문명의 흔적을 찾아라", "검은 물결이 길을 집어삼킨다", "끝없는 낭떠러지에서 버텨라", "검은 성벽이 앞길을 막는다", "금지된 힘이 제단에 모여든다", "깊은 어둠의 지배자가 기다린다", "붉게 물든 달이 하늘에 떠오른다", "뒤틀린 나무 사이로 악마가 몰려온다", "금지된 세계로 향하는 문", "붉은 강을 따라 군단이 진격한다", "악마 군단의 전초기지를 무너뜨려라", "빛을 잃은 성소에서 전투가 시작된다", "거대한 마계 요새가 모습을 드러낸다", "끝없는 환영이 정신을 흔든다", "마왕의 친위대가 길을 막는다", "마계의 군주와 정면으로 맞서라", "하늘에 거대한 차원의 틈이 열린다", "불타는 별 조각이 쏟아진다", "중력이 사라진 공간에서 살아남아라", "빛나는 구름 속에서 길을 찾아라", "다른 세계의 적들이 몰려온다", "무너진 기계 도시가 떠다닌다", "뒤틀린 시간이 전장을 바꾼다", "별빛조차 닿지 않는 공간", "사라진 별들이 잠든 곳", "우주의 균형을 되찾을 결전", "빛을 잃은 태양이 떠오른다", "무너진 세계 위에서 마지막 진격", "하늘과 땅이 함께 무너진다", "모든 세계의 경계가 허물어진다", "마지막 수호자가 길을 지킨다", "끝을 알 수 없는 어둠이 밀려온다", "수많은 전투의 기억이 되살아난다", "사라진 별의 힘이 모여든다", "마지막 봉인이 눈앞에 다가온다", "모든 세계의 운명이 결정된다", "모든 악의 근원과 최후의 결전"];
+    const CH_N = 101, CH_MAPG = [1, 2, 3, 5, 4, 6, 7, 4, 10, 8, 4], chMap = (c) => CH_MAPG[Math.min(10, Math.floor((c - 1) / 10))]; // 10장 묶음 테마마다 전투 맵(숲 · 사막 · 설산 · 늪 · 화산 · 왕국 · 심연 · 마계 · 우주 · 종말 · 지옥)
     /* 난이도 모드 — 30장을 깨면 어려움, 어려움 30장을 깨면 매우 어려움(창구 GP_MODES). 몬스터 체력 · 공격 × */
-    const MODE_N = ["쉬움", "보통", "어려움", "매우 어려움"], MODE_HP = [1, 2.5, 6, 14], MODE_DMG = [1, 1.6, 2.4, 3.4], MODE_MUL = [1, 1.5, 2, 3], MODE_SP = [1, 1.15, 1.3, 1.5], MODE_CAP = [1, 1.1, 1.2, 1.35], MODE_BCD = [1, 0.9, 0.8, 0.7]; /* 4단계(2026-10-28) · 몬스터 수 · 대장 재주 간격도 */ /* 4단계(2026-10-28) */
+    /* 난이도는 장에서 정해짐(2026-10-29 부장님 "1~30 쉬움 · 31~60 보통 · 61~90 어려움 · 91~100 매우 어려움 · 101 지옥", 배율은 ChatGPT 기획안) — 구간 안에서도 장마다 조금씩 세짐(DIFF_K) */
+    const MODE_N = ["쉬움", "보통", "어려움", "매우 어려움", "지옥"], MODE_HP = [1, 4.5, 13, 38, 75], MODE_DMG = [1, 2.8, 6.5, 16, 28], MODE_MUL = [1, 1.5, 2, 3, 5], MODE_SP = [1, 1.12, 1.25, 1.4, 1.55], MODE_CAP = [1, 1.25, 1.45, 1.65, 1.8], MODE_BCD = [1, 0.9, 0.8, 0.7, 0.6], DIFF_LO = [1, 31, 61, 91, 101], DIFF_TO = [[4, 2.5, 1.25], [12, 6, 1.4], [35, 15, 1.55], [60, 23, 1.75], [75, 28, 1.8]];
+    const diffOf = (c) => c <= 30 ? 0 : c <= 60 ? 1 : c <= 90 ? 2 : c <= 100 ? 3 : 4, DIFF_C = ["#5ad16a", "#4aa8ff", "#ff9a2a", "#e2483a", "#a020f0"];
+    function chScale(c) { const d = diffOf(c), lo = DIFF_LO[d], hi = [30, 60, 90, 100, 101][d], t = hi > lo ? (c - lo) / (hi - lo) : 0, T = DIFF_TO[d], L = (a, b) => a * Math.pow(b / a, t); return { hp: L(MODE_HP[d], T[0]), dmg: L(MODE_DMG[d], T[1]), cap: L(MODE_CAP[d], T[2]) * (d ? 1 : 1), sp: MODE_SP[d] }; } // 구간 처음 → 끝 배율로 고르게(ChatGPT 표: 쉬움 ×1~4 · 보통 ×4.5~12 · 어려움 ×13~35 · 매우 어려움 ×38~60 · 지옥 ×75)
     let lobMode = 0, lobModeHand = false; // 난이도를 손으로 고르면 저절로 안 바꿈
     /* 무기(총) — 열쇠는 창구와 같게. hero = 공격 방식(예전 캐릭터 평타 · 스킬), 그림 = img/lb/w-*.webp. 물대포 · 빙결 총 · 유도 미사일은 준비 중 */
     const WPN = { bow: { n: "기본 총", hero: "je", pic: "w-basic", shot: "연사 탄", d: "곧게 날아가는 한 발 ㆍ 무난한 기본 무기" },
@@ -5699,7 +5722,7 @@ body.game-full { overflow: hidden; }
       ui("ui-face", px(14, 14, 152, 148)); ui("face", px(37, 35, 106, 106), "face"); ui("ui-name", px(150, 22, 272, 140)); ui("ui-pill", px(444, 24, 236, 62)); ui("ui-pill", px(694, 24, 236, 62)); ui("ui-pill", px(444, 98, 236, 62)); ui("ic-en", px(420, 14, 70, 80), "ic");
       { const c = el("span", "lb-coin", ""); c.style.cssText = px(670, 18, 74, 74); art.appendChild(c); }
       const nk = el("span", "lb-nick", nick()); nk.style.cssText = px(178, 40, 220, 40);
-      const lvb = el("div", "lb-lv"); lvb.style.cssText = px(176, 96, 226, 34); const bar = el("i"); bar.style.width = Math.round(lv.cur / lv.need * 100) + "%"; lvb.append(el("b", null, "Lv." + lv.lv), el("span", null, "")); lvb.lastChild.appendChild(bar);
+      const lvb = el("div", "lb-lv"); lvb.style.cssText = px(190, 115, 192, 30); /* 이름판 아래 칸 안에(2026-10-29 "좌측 상단 게이지 바가 이상하다" — 그림에 그려진 노란 막대는 지우고 진짜 막대만) */ const bar = el("i"); bar.style.width = Math.round(lv.cur / lv.need * 100) + "%"; lvb.append(el("b", null, "Lv." + lv.lv), el("span", null, "")); lvb.lastChild.appendChild(bar);
       const gold = el("span", "lb-gold", P && !P.free ? (P.gold >= 1e8 ? (Math.floor(P.gold / 1e7) / 10) + "억" : P.gold >= 1e5 ? Math.floor(P.gold / 1e4).toLocaleString() + "만" : P.gold.toLocaleString()) : "—"); gold.style.cssText = px(744, 34, 136, 42); // 큰 수는 줄여서(ChatGPT 검토)
       const toShop = () => { lobTab = "shop"; lobSel = "en"; lobErr = ""; lobDraw(); };
       /* 보석(2026-10-29) — 레벨 막대 오른쪽에 알약 칸, 누르면 상점 재화(보석 바꾸기) */
@@ -5719,22 +5742,35 @@ body.game-full { overflow: hidden; }
       if (P && !P.free && !["go", "shop", "gear", "dun", "rank"].includes(lobTab)) art.appendChild(chatBar()); // 상점 · 장비 · 던전 · 순위에선 채팅 안 보임(2026-10-29)
       art.style.backgroundImage = "url(" + LBI("bg-ch" + (LOB_BG[lobBgN] ? lobBgN : 1)) + ")"; art.appendChild(nav); if (shopRw && (lobTab === "shop" || lobTab === "go")) art.appendChild(lobRewardBox()); else shopRw = null; { const o = L.querySelector(".lb-page"), st = o && lobDraw.tab === lobTab ? o.scrollTop : 0; L.replaceChildren(art); lobDraw.tab = lobTab; const nw = st && art.querySelector(".lb-page"); if (nw) nw.scrollTop = st; } /* 같은 칸에서 다시 그릴 때 내려 둔 자리 그대로(2026-10-28 실제 시험 — 스킨 눈을 누르면 맨 위로 튐) */ lobFit(art); if (P && P.op) { (matchMedia("(max-width: 760px)").matches ? art : L).appendChild(lobLive()); /* 휴대폰은 그림 안 「← 홈」 옆 */ if (Date.now() - liveAt > 5000) loadLive(); } // 운영자만 오른쪽에 지금 하는 사람
     }
-    const LOB_BG = { 1: 1, 2: 1 }; // 장마다 로비 배경(ChatGPT, img/lb/bg-chN.webp) — 없으면 1장 그림
+    let lobChSel = false;
+    /* 장 선택 창(2026-10-29) — 101장을 칸으로: 깬 장 ★ · 도전할 장 빛 · 안 열린 장 자물쇠, 난이도 색 띠. 누르면 그 장으로 */
+    function chGrid(P, chM, clr) {
+      const ov = el("div", "lb-chsel"), pn = el("div", "cs-pn"), hd = el("div", "cs-hd"), x = el("button", "cs-x", "✕"); x.type = "button"; x.onclick = () => { lobChSel = false; lobDraw(); }; hd.append(el("b", null, "장 선택"), x);
+      const gr = el("div", "cs-gr"); let d0 = -1;
+      for (let c = 1; c <= CH_N; c++) { const d = diffOf(c); if (d !== d0) { d0 = d; const h = el("div", "cs-dh", MODE_N[d] + " · " + DIFF_LO[d] + (d < 4 ? "~" + [30, 60, 90, 100][d] : "") + "장"); h.style.background = DIFF_C[d]; gr.appendChild(h); }
+        const op = P.op || c <= chM, b = el("button", "cs-c" + (clr(c) ? " done" : "") + (op ? "" : " lock") + (c === chM ? " now" : "") + (c === lobCh ? " sel" : "")); b.type = "button"; b.style.borderColor = DIFF_C[d];
+        b.append(el("b", null, String(c)), el("small", null, clr(c) ? "★" : op ? CHAPS[c - 1] : "🔒")); b.onclick = () => { if (!op) return; lobCh = c; lobChSel = false; lobDraw(); }; gr.appendChild(b); }
+      pn.append(hd, gr); ov.appendChild(pn); ov.onclick = (ev) => { if (ev.target === ov) x.onclick(); }; setTimeout(() => { const n = gr.querySelector(".sel") || gr.querySelector(".now"); if (n) n.scrollIntoView({ block: "center" }); }, 0); return ov;
+    }
+    const LOB_BG = { 1: 1, 11: 1 }; // 장마다 로비 배경(ChatGPT, img/lb/bg-chN.webp) — 없으면 1장 그림
     function lobGo(P) {
       const MO = P.modeOpen || [1, 0, 0]; if (!MO[lobMode]) lobMode = 0;
       /* 난이도도 저절로(2026-10-28 "쉬움 30장 다 깨면 보통 1장으로 자동") — 30장까지 다 깬 난이도는 건너뛰고 다음 열린 난이도로 */
-      if (!lobModeHand && !P.free) { const done = (m) => !!(m ? (P.mcl || {})[m + ":" + CH_N] : (P.clears || {})[CH_N]); let m = lobMode; while (done(m) && MO[m + 1]) m++; if (m !== lobMode) { lobMode = m; lobCh = 0; lobFront = 0; } }
-      const M = lobMode, chM = (P.mch || [P.ch])[M] || 1, clr = (cc) => M ? (P.mcl || {})[M + ":" + cc] || 0 : (P.clears || {})[cc] || 0, mul = MODE_MUL[M];
+      if (false) { const done = (m) => !!(m ? (P.mcl || {})[m + ":" + CH_N] : (P.clears || {})[CH_N]); let m = lobMode; while (done(m) && MO[m + 1]) m++; if (m !== lobMode) { lobMode = m; lobCh = 0; lobFront = 0; } }
+      const chM = P.ch || 1, clr = (cc) => (P.clears || {})[cc] || 0, M0 = diffOf(Math.max(1, Math.min(CH_N, lobCh || chM))), M = M0, mul = MODE_MUL[M];
       /* 도전할 장을 저절로(2026-10-28 "1장을 깨면 2장 차례인데 새로고침하면 1장이 나온다") — 처음 열면 · 깨서 다음 장이 열리면 그 장으로 */
       if (!lobCh || (lobFront && lobCh === lobFront && chM > lobFront)) lobCh = chM; lobFront = chM;
       const c = Math.max(1, Math.min(CH_N, lobCh)), open = c <= chM, need = !P.free && P.en < (P.cost || 5), first = !clr(c), out = [];
       const t = (cls, txt, css) => { const e = el("span", cls, txt); e.style.cssText = css; out.push(e); return e; };
-      lobBgN = (c - 1) % 10 + 1; { const sg = el("img", "lb-ui"); sg.src = LBI("ui-sign"); sg.alt = ""; sg.style.cssText = px(170, 178, 600, 342); out.push(sg); }
-      t("lb-chn", c + "장", px(380, 204, 180, 56)); t("lb-chname", CHAPS[c - 1], px(232, 270, 476, 104)); t("lb-chsub", CHSUB[c - 1], px(262, 428, 416, 50)); { const md = lobBtn("lb-diff d" + [1, 2, 4, 5][M] + (MODE_N[M].length > 3 ? " long" : ""), px(40, 1352, 160, 130), () => { let n = M; do { n = (n + 1) % MODE_N.length; } while (!MO[n] && n !== M); if (n === M) { lobErr = "30장을 깨면 「보통」 이 열려요"; lobDraw(); return; } lobMode = n; lobModeHand = true; lobErr = ""; lobCh = Math.min(lobCh, (P.mch || [P.ch])[n] || 1); lobDraw(); }, "난이도 바꾸기"); { const i = el("img"); i.src = LBI("ic-chap"); i.alt = ""; md.append(i, el("b", null, MODE_N[M])); } out.push(md); } /* 그림의 「일반」 자리 — 난이도(누르면 바뀜, 2026-10-28 "30장 깨면 쉬움 > 어려움 > 매우 어려움") */
+      lobBgN = LOB_BG[c] ? c : LOB_BG[Math.floor((c - 1) / 10) * 10 + 1] ? Math.floor((c - 1) / 10) * 10 + 1 : 1; /* 장마다 배경(받은 것부터) — 없으면 그 10장 묶음 첫 장 그림 */ { const sg = el("img", "lb-ui"); sg.src = LBI("ui-sign"); sg.alt = ""; sg.style.cssText = px(170, 178, 600, 342); out.push(sg); }
+      t("lb-chn", c + "장", px(380, 204, 180, 56)); t("lb-chname" + (CHAPS[c - 1].length > 5 ? " long" : ""), CHAPS[c - 1], px(232, 270, 476, 104)); t("lb-chsub", CHSUB[c - 1], px(262, 428, 416, 50)); { const md = lobBtn("lb-diff", px(40, 1352, 160, 130), () => { lobChSel = true; lobDraw(); }, "장 선택"); const ci = el("img"); ci.src = LBI("ic-chap"); ci.alt = ""; md.append(ci, el("b", null, "장 선택")); out.push(md); } /* 난이도는 장에서 정해짐(2026-10-29) — 왼쪽 단추는 장 고르기 */
+      { const db = el("span", "lb-dbadge", MODE_N[M]); db.style.cssText = px(626, 196, 150, 46); db.style.background = DIFF_C[M]; out.push(db); }
+      if (!P.free && clr(c)) { const st = el("span", "lb-stamp", "CLEAR"); st.style.cssText = px(640, 410, 170, 70); out.push(st); } /* 깬 장 — 간판에 도장(ChatGPT 기획안) */
+      if (lobChSel) out.push(chGrid(P, chM, clr));
       if (c > 1) { const m = el("div", "lb-map"); m.style.cssText = px(612, 812, 250, 150); m.style.backgroundImage = "url(img/maps/m" + chMap(c) + ".jpg?v=" + BUILD + ")"; if (c > 10) m.classList.add(c > 20 ? "cyc2" : "cyc1"); m.appendChild(el("small", null, c > 20 ? "전장 · 밤" : c > 10 ? "전장 · 해 질 녘" : "전장")); out.push(m); }
       if (!open) t("lb-lock", "🔒 " + (c - 1) + "장 클리어 시 열림", px(62, 470, 820, 120));
-      else if (!first) t("lb-done", "✔ 깼음 × " + clr(c), px(740, 560, 180, 44));
-      const w = WPN[P.wpn] || WPN.bow, wt = el("span", "lb-wtag"); wt.style.cssText = px(22, 560, 240, 48); const wi = el("img"); wi.src = LBI(w.pic); wi.alt = ""; wt.append(wi, el("b", null, w.n)); out.push(wt);
+      
+      const w = WPN[P.wpn] || WPN.bow, wt = el("span", "lb-wtag v2"); wt.style.cssText = px(230, 530, 480, 50); const wi = el("img"); wi.src = LBI(w.pic); wi.alt = ""; wt.append(wi, el("b", null, "장착 · " + w.n), el("em", null, P.free ? "" : "클리어 " + clr(c) + "회")); out.push(wt); /* 무기 이름 · 깬 횟수는 한 줄로(2026-10-29 "전기 건, 깼음 x1 이거는 먼데" → ChatGPT 기획안) */
       if (c > 1) { const a = lobBtn("lb-arr v2", px(40, 268, 108, 152), () => { lobCh = c - 1; lobDraw(); }, "앞 장"); { const i = el("img"); i.src = LBI("ui-arrl"); i.alt = ""; a.appendChild(i); } out.push(a); }
       if (c < CH_N) { const a = lobBtn("lb-arr v2", px(793, 268, 108, 152), () => { lobCh = c + 1; lobDraw(); }, "다음 장"); { const i = el("img"); i.src = LBI("ui-arrr"); i.alt = ""; a.appendChild(i); } out.push(a); }
       if (!P.free) out.push(patWidget(P)); // 순찰 보상은 메인 화면에(2026-10-29 "탕탕특공대처럼")
@@ -5742,9 +5778,9 @@ body.game-full { overflow: hidden; }
       { const ot = otter360(P, P.skin, false); ot.style.cssText = px(290, 600, 360, 420); ot.classList.add("lb-lobot"); out.push(ot); }
       /* 아래 칸(2026-10-28 "출전 크기를 줄이고 채팅창을 더 키워라") ㆍ 왼쪽 큰 채팅(최근 글 여러 줄) · 오른쪽 작은 출전 */
       if (!P.free) { const cb = lobBtn("lb-sidebtn", px(741, 1352, 160, 130), () => chatOpen(false), "전체 채팅"); cb.append(el("i", null, "💬"), el("b", null, "채팅")); out.push(cb); chatPull(false); } /* 채팅은 오른쪽 단추로(2026-10-29 새 로비) */
-      const go = lobBtn("lb-go v2", px(214, 1336, 512, 196), () => lobStart(c, false, M), "출전 ㆍ 피로도 5"); { const sm = el("div", "gocost"), ei = el("img"); ei.src = LBI("ic-en"); ei.alt = ""; sm.append(ei, el("span", null, String(P.cost || 5))); go.append(el("b", null, "출전"), sm); } const done = !first && !P.op && !P.free; go.disabled = !open || lobBusy || need || done; if (done) go.classList.add("done"); /* 깬 장은 다시 못 함(2026-10-28 "탕탕특공대처럼 클리어한 거는 못 하게") */ out.push(go);
+      const go = lobBtn("lb-go v2", px(214, 1336, 512, 196), () => lobStart(c, false, 0), "출전 ㆍ 피로도 5"); { const sm = el("div", "gocost"), ei = el("img"); ei.src = LBI("ic-en"); ei.alt = ""; sm.append(ei, el("span", null, String(P.cost || 5))); go.append(el("b", null, "출전"), sm); } const done = !first && !P.op && !P.free; go.disabled = !open || lobBusy || need || done; if (done) go.classList.add("done"); /* 깬 장은 다시 못 함(2026-10-28 "탕탕특공대처럼 클리어한 거는 못 하게") */ out.push(go);
       /* 무한의 탑 단추는 던전 칸에만(2026-10-28 "시나리오 창에 왜 넣었노") */
-      t("lb-msg" + (need || lobErr ? " bad" : ""), !first && !P.op && !P.free ? "✔ 깬 장이에요 ㆍ " + (chM > c ? chM + "장에 도전해요" : "다음 난이도에 도전해요") : need ? "피로도가 모자라요 ㆍ 6분마다 1씩 차요 · ＋ 로 살 수 있어요" : lobErr || (P.free ? "로그인하면 피로도 · 골드 · 깬 장 · 무기가 저장돼요" : first ? (c % 10 === 0 && (P.chWpn || [])[M] && WPN[P.chWpn[M][c / 10 - 1]] ? "처음 깨면 무기 「" + WPN[P.chWpn[M][c / 10 - 1]].n + "」 + 골드 2배 + 두루마리" : "처음 깨면 골드 2배 + 두루마리(⚡10 + 물건 하나)") : ""), px(120, 1290, 700, 40)); if (!out[out.length - 1].textContent) out.pop(); // 빈 줄은 안 그림
+      t("lb-msg" + (need || lobErr ? " bad" : ""), !first && !P.op && !P.free ? "✔ 깬 장이에요 ㆍ " + (chM > c ? chM + "장에 도전해요" : "다음 난이도에 도전해요") : need ? "피로도가 모자라요 ㆍ 6분마다 1씩 차요 · ＋ 로 살 수 있어요" : lobErr || (P.free ? "로그인하면 피로도 · 골드 · 깬 장 · 무기가 저장돼요" : first ? (c % 10 === 0 && (P.chWpn || [])[0] && WPN[P.chWpn[0][c / 10 - 1]] ? "처음 깨면 무기 「" + WPN[P.chWpn[0][c / 10 - 1]].n + "」 + 골드 2배 + 두루마리" : "처음 깨면 골드 2배 + 두루마리(⚡10 + 물건 하나)") : ""), px(120, 1290, 700, 40)); if (!out[out.length - 1].textContent) out.pop(); // 빈 줄은 안 그림
       return out;
     }
     let raidBoard = null, raidLoading = false;
@@ -6191,7 +6227,7 @@ body.game-full { overflow: hidden; }
         .catch((e) => { if (run === s) rw.textContent = "기록을 못 했어요 ㆍ " + errMsg(e); });
     }
     /* 장 최고 레벨 — 1장 Lv 22 … 10장 Lv 40 (무한의 탑 · 레이드는 끝없음) */
-    function lvCap() { return 20 + 2 * (s.chap || 0) + 10 * (s.mode || 0); } /* 난이도마다 +10(2026-10-28) */
+    function lvCap() { return 20 + 2 * (s.chap || 0); } /* 난이도마다 +10(2026-10-28) */
     /* 배운 스킬 — 오른쪽에 그림 · 별(2026-10-28 "스킬 배우면 오른쪽에 어떤 걸 배웠는지 볼 수 있게"). 무기 위 · 보조 아래, 진화는 금테 */
     function skList() {
       let box = $("gSkList"); if (!box) { box = el("div", "gsklist"); box.id = "gSkList"; $("gameHud").appendChild(box); }
