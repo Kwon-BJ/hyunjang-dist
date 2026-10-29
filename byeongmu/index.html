@@ -718,6 +718,8 @@ body.game-full { overflow: hidden; }
 .lb-patwin .pw-go:disabled { filter: grayscale(.8); } .lb-patwin .pw-go:not(:disabled):active { transform: translateY(.7cqw); box-shadow: 0 .2cqw 0 #1d4a0a; }
 /* 장 · 난이도 표시(2026-10-29 101장) */
 .lb-art.v2 .lb-chname.long { font-size: 8cqw; }
+.lb-art.v2 .lb-isl { display: grid; place-items: center; pointer-events: none; } .lb-art.v2 .lb-isl img { max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 2.4cqw 2cqw rgba(0,0,0,.45)); animation: lbIsl 4s ease-in-out infinite; } .lb-art.v2 .lb-isl.lock img { filter: grayscale(.85) brightness(.55) drop-shadow(0 2.4cqw 2cqw rgba(0,0,0,.45)); }
+@keyframes lbIsl { 50% { transform: translateY(-1.6cqw); } }
 .lb-art.v2 .lb-dbadge { display: flex; align-items: center; justify-content: center; border-radius: 999px; border: .45cqw solid #fff; color: #fff; font-size: 3.2cqw; font-weight: 900; text-shadow: 0 .25cqw 0 rgba(0,0,0,.5); box-shadow: 0 .5cqw 0 rgba(0,0,0,.35), inset 0 .5cqw 0 rgba(255,255,255,.35); z-index: 3; white-space: nowrap; }
 .lb-art.v2 .lb-stamp { display: flex; align-items: center; justify-content: center; border: .7cqw solid #d8261a; border-radius: 2cqw; color: #d8261a; font-size: 6cqw; font-weight: 900; letter-spacing: .4cqw; transform: rotate(-14deg); background: rgba(255,244,220,.75); box-shadow: inset 0 0 0 .4cqw rgba(216,38,26,.4); z-index: 3; pointer-events: none; }
 .lb-art.v2 .lb-wtag.v2 { justify-content: center; gap: 1.6cqw; border: .4cqw solid #e8c46a; background: rgba(14,30,8,.78); font-size: 3.2cqw; }
@@ -761,7 +763,7 @@ body.game-full { overflow: hidden; }
 .lb-art.v2 .lb-arr.v2:active { transform: scale(.92); }
 .lb-art.v2 .lb-map { display: none; }
 .lb-art.v2 .lb-lobot .lb-o360 { width: 100%; height: 100%; }
-.lb-art.v2 .lb-rw.v2 { justify-content: center; font-size: 3.6cqw; font-weight: 900; color: #fff; text-shadow: 0 .3cqw .4cqw #000, 0 0 .6cqw #000; border-radius: 999px; background: rgba(10,24,6,.55); border: .35cqw solid rgba(232,196,106,.8); }
+.lb-art.v2 .lb-rw.v2 { z-index: 3; justify-content: center; font-size: 3.6cqw; font-weight: 900; color: #fff; text-shadow: 0 .3cqw .4cqw #000, 0 0 .6cqw #000; border-radius: 999px; background: rgba(10,24,6,.55); border: .35cqw solid rgba(232,196,106,.8); }
 .lb-art.v2 .lb-pat.v2 { display: block !important; padding: 0 !important; border: 0 !important; border-radius: 0 !important; background: url(img/lb/ui-pat.webp) center / 100% 100% no-repeat !important; box-shadow: none !important; }
 .lb-art.v2 .lb-pat.v2 > img { position: absolute; left: 1.5%; top: 6%; width: 20%; height: 88%; object-fit: contain; }
 .lb-art.v2 .lb-pat.v2 .pt { position: absolute; left: 22%; top: 9%; width: 27%; display: flex; flex-direction: column; align-items: flex-start; gap: .4cqw; min-width: 0; }
@@ -1616,7 +1618,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610290205";
+  const BUILD = "202610290223";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -5763,7 +5765,7 @@ body.game-full { overflow: hidden; }
       if (P && !P.free && !["go", "shop", "gear", "dun", "rank"].includes(lobTab)) art.appendChild(chatBar()); // 상점 · 장비 · 던전 · 순위에선 채팅 안 보임(2026-10-29)
       art.style.backgroundImage = "url(" + LBI("bg-ch" + (LOB_BG[lobBgN] ? lobBgN : 1)) + ")"; art.appendChild(nav); if (shopRw && (lobTab === "shop" || lobTab === "go")) art.appendChild(lobRewardBox()); else shopRw = null; { const o = L.querySelector(".lb-page"), st = o && lobDraw.tab === lobTab ? o.scrollTop : 0; L.replaceChildren(art); lobDraw.tab = lobTab; const nw = st && art.querySelector(".lb-page"); if (nw) nw.scrollTop = st; } /* 같은 칸에서 다시 그릴 때 내려 둔 자리 그대로(2026-10-28 실제 시험 — 스킨 눈을 누르면 맨 위로 튐) */ lobFit(art); if (P && P.op) { (matchMedia("(max-width: 760px)").matches ? art : L).appendChild(lobLive()); /* 휴대폰은 그림 안 「← 홈」 옆 */ if (Date.now() - liveAt > 5000) loadLive(); } // 운영자만 오른쪽에 지금 하는 사람
     }
-    let lobChSel = false;
+    let lobChSel = false; const CH_ISL = Object.fromEntries(Array.from({ length: 30 }, (_, i) => [i + 1, 1])); /* 장 그림이 있는 장 */
     /* 장 선택 창(2026-10-29) — 101장을 칸으로: 깬 장 ★ · 도전할 장 빛 · 안 열린 장 자물쇠, 난이도 색 띠. 누르면 그 장으로 */
     function chGrid(P, chM, clr) {
       const ov = el("div", "lb-chsel"), pn = el("div", "cs-pn"), hd = el("div", "cs-hd"), x = el("button", "cs-x", "✕"); x.type = "button"; x.onclick = () => { lobChSel = false; lobDraw(); }; hd.append(el("b", null, "장 선택"), x);
@@ -5796,7 +5798,9 @@ body.game-full { overflow: hidden; }
       if (c < CH_N) { const a = lobBtn("lb-arr v2", px(793, 268, 108, 152), () => { lobCh = c + 1; lobDraw(); }, "다음 장"); { const i = el("img"); i.src = LBI("ui-arrr"); i.alt = ""; a.appendChild(i); } out.push(a); }
       if (!P.free) { out.push(patWidget(P)); if (patOpen) out.push(patWin(P)); } // 순찰 보상은 메인 화면에(2026-10-29 "탕탕특공대처럼")
       t("lb-rw v2", "💰 " + (120 * c * (first ? 2 : 1) * mul).toLocaleString() + "   ⭐ " + (50 * c * mul).toLocaleString() + (first ? "   📜 1" : ""), px(250, 1034, 440, 44)); /* 깨면 받는 것 — 발판 아래 한 줄 */
-      { const ot = otter360(P, P.skin, false); ot.style.cssText = px(290, 600, 360, 420); ot.classList.add("lb-lobot"); out.push(ot); }
+      /* 가운데는 수달 대신 장 그림(2026-10-29 부장님 "중간에 캐릭을 빼고 1~30장 맵을 넣자" — ChatGPT 떠 있는 섬, img/lb/isl-N.webp). 아직 없는 장은 수달 그대로 */
+      if (CH_ISL[c]) { const il = el("div", "lb-isl" + (open ? "" : " lock")); il.style.cssText = px(150, 600, 640, 430); const ii = el("img"); ii.src = LBI("isl-" + c); ii.alt = ""; il.appendChild(ii); out.push(il); }
+      else { const ot = otter360(P, P.skin, false); ot.style.cssText = px(290, 600, 360, 420); ot.classList.add("lb-lobot"); out.push(ot); }
       /* 아래 칸(2026-10-28 "출전 크기를 줄이고 채팅창을 더 키워라") ㆍ 왼쪽 큰 채팅(최근 글 여러 줄) · 오른쪽 작은 출전 */
       if (!P.free) { const cb = lobBtn("lb-sidebtn", px(741, 1352, 160, 130), () => chatOpen(false), "전체 채팅"); cb.append(el("i", null, "💬"), el("b", null, "채팅")); out.push(cb); chatPull(false); } /* 채팅은 오른쪽 단추로(2026-10-29 새 로비) */
       const go = lobBtn("lb-go v2", px(214, 1336, 512, 196), () => lobStart(c, false, 0), "출전 ㆍ 피로도 5"); { const sm = el("div", "gocost"), ei = el("img"); ei.src = LBI("ic-en"); ei.alt = ""; sm.append(ei, el("span", null, String(P.cost || 5))); go.append(el("b", null, "출전"), sm); } const done = !first && !P.op && !P.free; go.disabled = !open || lobBusy || need || done; if (done) go.classList.add("done"); /* 깬 장은 다시 못 함(2026-10-28 "탕탕특공대처럼 클리어한 거는 못 하게") */ out.push(go);
