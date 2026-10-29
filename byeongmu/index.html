@@ -1304,6 +1304,33 @@ body.game-full { overflow: hidden; }
 .dn-card { position: relative; display: grid; grid-template-columns: 52% 1fr; grid-template-areas: "h i" "d i" "a i"; align-items: start; gap: 1cqw 2cqw; padding: 2.4cqw; border-radius: 3.4cqw; border: .7cqw solid; }
 .dn-card.tower { border-color: #9a8aff; background: linear-gradient(#2c2c86, #14144a); box-shadow: inset 0 0 0 .4cqw #4aa8ff, 0 0 2.4cqw rgba(120,110,255,.6), 0 .8cqw 0 #08082a; }
 .lb-mti { width: 1.25em; height: 1.25em; object-fit: contain; vertical-align: -.25em; flex: none; } .lb-mats .lb-mti { width: 10cqw; height: 10cqw; }
+/* 결과 창(시안 15) */
+.game-over.rsm { background: rgba(6,10,20,.66) !important; } .game-over.rsm #gameOverIn { background: none !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; width: min(94vw, 440px, calc((100dvh - 24px) * .53)); max-width: none; }
+.rs { container-type: inline-size; width: 100%; box-sizing: border-box; position: relative; display: grid; gap: 2.2cqw; padding: 13cqw 5cqw 5cqw; border: solid transparent; border-width: 8cqw; border-image: url(img/lb/rs-frame.webp) 115 fill / 8cqw; font-family: "Jua", "Noto Sans KR", sans-serif; color: #fff; text-align: center; }
+.rs-sign { position: absolute; left: 50%; top: -9cqw; transform: translateX(-50%); width: 92cqw; aspect-ratio: 600 / 232; display: grid; align-content: center; justify-items: center; gap: 0; padding: 2cqw 0 9cqw; box-sizing: border-box; background: url(img/lb/rs-sign.webp) center / 100% 100% no-repeat; z-index: 2; }
+.rs-mode { position: absolute; top: 0; left: 50%; transform: translateX(-50%); padding: .5cqw 4cqw; border-radius: 1cqw; background: linear-gradient(#e4405a, #a8142c); font-size: 3.4cqw; white-space: nowrap; box-shadow: 0 .4cqw 0 #5a0814; }
+.rs-top { font-size: 4.2cqw; line-height: 1.1; color: #ffe9b0; -webkit-text-stroke: .7cqw #4a2a0a; paint-order: stroke fill; } .rs-name { font-size: 6.2cqw; line-height: 1.05; color: #fff; -webkit-text-stroke: 1cqw #4a2a0a; paint-order: stroke fill; white-space: nowrap; }
+.rs-hero { position: relative; aspect-ratio: 4 / 3; margin-top: 8cqw; border-radius: 2cqw; background: center / cover no-repeat #1a1206; box-shadow: inset 0 0 0 .5cqw rgba(0,0,0,.35); overflow: visible; }
+.rs-ttl { position: absolute; left: 0; right: 0; top: -7cqw; display: grid; justify-items: center; }
+.rs-laurel { position: absolute; top: -6cqw; width: 64cqw; pointer-events: none; }
+.rs-big { position: relative; font-size: 13cqw; line-height: 1.05; white-space: nowrap; color: #fff7c8; -webkit-text-stroke: 1.6cqw #b2440a; paint-order: stroke fill; text-shadow: 0 1cqw 0 #6a2004, 0 0 3cqw rgba(255,200,40,.7); animation: rsPop .5s cubic-bezier(.2,1.6,.4,1) both; }
+.rs.raid .rs-big { font-size: 11cqw; } .rs.lose .rs-big { font-size: 9.6cqw; color: #f2e6ff; -webkit-text-stroke-color: #4a2a8a; text-shadow: 0 1cqw 0 #22104a, 0 0 3cqw rgba(160,120,255,.6); }
+.rs-stars { position: relative; display: flex; gap: 2cqw; margin-top: -.5cqw; } .rs-stars img { width: 11cqw; height: 11cqw; object-fit: contain; animation: rsPop .4s cubic-bezier(.2,1.6,.4,1) both; }
+@keyframes rsPop { from { transform: scale(0); opacity: 0; } to { transform: none; opacity: 1; } }
+.rs-stats { display: grid; grid-template-columns: repeat(3, 1fr); padding: 1.6cqw 1cqw; border-radius: 2cqw; background: linear-gradient(#3a2614, #22160a); box-shadow: inset 0 0 0 .5cqw #8a5a24; }
+.rs-st { display: flex; align-items: center; justify-content: center; gap: 1.2cqw; min-width: 0; } .rs-st + .rs-st { border-left: .3cqw solid rgba(255,220,150,.25); } .rs-st img { width: 8cqw; height: 8cqw; object-fit: contain; flex: none; }
+.rs-st div { display: grid; text-align: left; min-width: 0; } .rs-st small { font-size: 2.8cqw; color: #f6e2b4; white-space: nowrap; } .rs-st b { font-size: 4.6cqw; white-space: nowrap; }
+.rs-lv { display: grid; place-items: center; width: 7.6cqw; height: 7.6cqw; flex: none; clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); background: linear-gradient(#8ee05a, #2e8a14); font-style: normal; font-size: 3.2cqw; -webkit-text-stroke: .5cqw #12400a; paint-order: stroke fill; }
+.rs-board { position: relative; padding: 8cqw 4cqw 3cqw; background: url(img/lb/pf-panel.webp) center / 100% 100% no-repeat; margin-top: 2cqw; }
+.rs-rib { position: absolute; left: 50%; top: -2.4cqw; transform: translateX(-50%); padding: 1.2cqw 7cqw; font-size: 4.6cqw; white-space: nowrap; border: solid transparent; border-width: 2.2cqw 4.6cqw; border-image: url(img/lb/9s-plate.webp) 120 210 120 210 fill / 2.2cqw 4.6cqw; -webkit-text-stroke: .8cqw #4a2a0a; paint-order: stroke fill; }
+.rs-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2cqw; }
+.rs-tile { position: relative; aspect-ratio: 1; display: grid; place-items: center; background: center / 100% 100% no-repeat; animation: rsPop .35s cubic-bezier(.2,1.6,.4,1) both; } .rs-tile img { width: 62%; height: 62%; object-fit: contain; margin-top: -10%; }
+.rs-tile small { position: absolute; right: 8%; bottom: 6%; font-size: 3.3cqw; white-space: nowrap; -webkit-text-stroke: .7cqw #1a1006; paint-order: stroke fill; }
+.rs-tile.none { border-radius: 2cqw; background: rgba(120,80,30,.18); box-shadow: inset 0 0 0 .4cqw rgba(120,80,30,.25); animation: none; }
+.rs-note { margin: 1.6cqw 0 0; min-height: 1em; font-size: 3.4cqw; color: #6a3e14; }
+.rs-btns { display: flex; gap: 3cqw; justify-content: center; margin-top: 1cqw; }
+.rs-btn { flex: 1; max-width: 46%; min-height: 13cqw; border: solid transparent; border-width: 2.4cqw 5cqw; border-image: url(img/lb/wb-green.webp) 24 52 24 52 fill / 2.4cqw 5cqw; background: none; color: #fff; font: 5cqw/1 "Jua", "Noto Sans KR", sans-serif; -webkit-text-stroke: .9cqw #12400a; paint-order: stroke fill; cursor: pointer; padding: 0; }
+.rs-btn.blue { border-image-source: url(img/lb/wb-blue.webp); -webkit-text-stroke-color: #0a2a6a; } .rs-btn.orange { border-image-source: url(img/lb/wb-orange.webp); -webkit-text-stroke-color: #6a2a04; } .rs-btn:active { transform: translateY(.6cqw); } .rs-btn:focus { outline: none; } .rs-btn:focus-visible { filter: brightness(1.12) drop-shadow(0 0 1.4cqw rgba(255,240,150,.9)); }
 .it-list { display: grid; gap: 2.6cqw; } /* 아이템 탭(시안 16) */
 .it-card { --c: #2f7cf0; --c2: #9fd2ff; --hi: #6fd0ff; --lo: #0b3fa8; display: grid; grid-template-columns: 40% 1fr; min-height: 36cqw; border: .9cqw solid var(--c); border-radius: 2.6cqw; overflow: hidden; background: #fbecc8; box-shadow: inset 0 0 0 .35cqw var(--c2), 0 .8cqw 0 rgba(0,0,0,.45), 0 0 2cqw color-mix(in srgb, var(--c) 55%, transparent); }
 .it-card.gold { --c: #e3a21a; --c2: #ffe08a; --hi: #ffd45a; --lo: #b85a08; } .it-card.purple { --c: #9b4be8; --c2: #d9b4ff; --hi: #c47cff; --lo: #4a138a; }
@@ -1996,7 +2023,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610291127";
+  const BUILD = "202610291201";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -4433,7 +4460,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     function panel(nodes) {
       $("gameOverIn").replaceChildren(...nodes);
       $("gMsg").classList.remove("on");
-      $("gameOver").hidden = false; $("gameOver").classList.remove("ps", "lvl");
+      $("gameOver").hidden = false; $("gameOver").classList.remove("ps", "lvl", "rsm");
       const b = $("gameOverIn").querySelector("button"); if (b) b.focus({ preventScroll: true });
     }
     function gBtn(text, fn, cls) { const b = el("button", "btn" + (cls ? " " + cls : ""), text); b.type = "button"; b.onclick = fn; return b; }
@@ -4593,6 +4620,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
       if (s.mine) { mineEnd(); return; } // 골드 광산 — 쓰러져도 그때까지 쌓인 골드
       if (s.chap) { running = false; s.over = true; stick = null; ping(true); draw(); lobEnd(false); return; } // 장 — 쓰러짐
       running = false; s.over = true; stick = null;
+      if (LP) { const sec = Math.floor(s.t); ping(true); draw(); lobEnd(false); if (window.__bmcNewBuildIdle) setTimeout(window.__bmcNewBuildIdle, 20000); if (me && token && !s.test && !s.cheat) call("saveGameScore", token, { sec: sec, stage: s.stage, kills: s.kills, bosses: s.bossKills, lv: s.lv }).then(takeRanks).catch(() => {}); return; } // 로비에서 한 무한의 탑 — 새 결과 창(2026-10-29 시안 15) · 순위는 그대로 저장
       if (s.run && !lobFree()) call("gameEnd", token, { run: s.run, clear: false, stage: s.stage, kills: s.kills, bosses: s.bossKills || 0, healUsed: s.healUsed || 0, revUsed: s.revUsed || 0 }).then((r) => { LP = r; LP.got = Date.now(); const R = r.reward || {}, line = $("gRankLine"); if (line) line.parentNode.appendChild(el("div", "rank", "보상 💰 +" + (R.gold || 0) + " · EXP +" + (R.exp || 0) + (R.en ? " · ⚡ +" + R.en : "") + (R.gem ? " · 💎 +" + R.gem : ""))); }).catch(() => {}); // 무한의 탑 보상
       const sec = Math.floor(s.t), run = s;
       if (window.__bmcNewBuildIdle) setTimeout(window.__bmcNewBuildIdle, 20000); // 결과를 캡처할 틈을 두고 새 판으로
@@ -6875,13 +6903,41 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
       call(fn, token, k).then((r) => { lobBusy = false; LP = r; LP.got = Date.now(); if (then) then(); lobDraw(); }).catch((e) => { lobBusy = false; lobErr = errMsg(e); lobDraw(); });
     }
     /* 판 끝 — 장을 깼거나(10단계 대장) 쓰러짐 · 무한의 탑. 창구가 보상표대로 골드 · 경험치 · 피로도 · 두루마리를 준다 */
+    /* 판 끝 결과 창(2026-10-29 ChatGPT 시안 15 · 부장님 「그대로 진행」) — 장 간판 · 장면(클리어 금빛 · 쓰러짐 푸른 동굴) · 큰 글자 + 별 · 기록 3칸 · 획득 보상 판 · 단추.
+       그림 요소: rs-frame(바깥 틀 9-slice) · rs-sign(간판) · rs-clear / rs-fail(장면) · rs-laurel · rs-star / rs-star0 · rs-time / rs-ghost · wb-blue / wb-orange / wb-green(단추 9-slice) · pf-panel(보상 판) · rw-s1~4(보상 칸) */
+    function rsShow(o) {
+      const w = el("div", "rs " + (o.win ? "win" : "lose")), sg = el("div", "rs-sign"), hero = el("div", "rs-hero"), st = el("div", "rs-stats"), bd = el("div", "rs-board"), grid = el("div", "rs-grid"), note = el("p", "rs-note", o.wait || "보상 받는 중…"), bt = el("div", "rs-btns");
+      if (o.mode) sg.appendChild(el("small", "rs-mode", o.mode)); if (o.top) sg.appendChild(el("b", "rs-top", o.top)); sg.appendChild(el("b", "rs-name", o.name || ""));
+      hero.style.backgroundImage = "url(" + LBI(o.win ? "rs-clear" : "rs-fail") + ")"; const ttl = el("div", "rs-ttl"); if (o.win) { const lr = el("img", "rs-laurel"); lr.src = LBI("rs-laurel"); lr.alt = ""; ttl.appendChild(lr); } ttl.appendChild(el("b", "rs-big", o.big));
+      if (o.stars != null) { const sr = el("div", "rs-stars"); for (let i = 0; i < 3; i++) { const im = el("img"); im.src = LBI(i < o.stars ? "rs-star" : "rs-star0"); im.alt = i < o.stars ? "★" : "☆"; im.style.animationDelay = 0.25 + i * 0.18 + "s"; sr.appendChild(im); } ttl.appendChild(sr); }
+      hero.appendChild(ttl);
+      (o.stats || []).forEach(([ic, lab, val]) => { const c = el("div", "rs-st"); if (ic === "lv") c.appendChild(el("i", "rs-lv", "Lv")); else { const im = el("img"); im.src = LBI(ic); im.alt = ""; c.appendChild(im); } const tx = el("div"); tx.append(el("small", null, lab), el("b", null, val)); c.appendChild(tx); st.appendChild(c); });
+      bd.append(el("div", "rs-rib", "획득 보상"), grid, note);
+      (o.btns || []).forEach(([lab, cls, fn]) => { const b = el("button", "rs-btn " + cls); b.type = "button"; b.appendChild(el("span", null, lab)); b.onclick = fn; bt.appendChild(b); });
+      w.append(sg, hero, st, bd, bt); panel([w]); $("gameOver").classList.add("rsm"); $("gameHud").hidden = true;
+      return { grid, note };
+    }
+    /* 보상 칸 — 골드(금) · 보석(파랑) · 경험치(파랑) · 에너지(보라) · 두루마리 · 부품(등급) · 무기 */
+    function rsTiles(R, grid) {
+      const L = [], add = (pic, n, fr) => L.push([pic, n, fr]);
+      if (R.gold) add("ic-gold", "×" + R.gold.toLocaleString(), 2); if (R.gem) add("ic-gem", "×" + R.gem.toLocaleString(), 1); if (R.exp) add("i-exp", "×" + R.exp.toLocaleString(), 1); if (R.en) add("ic-energy", "×" + R.en, 3);
+      (R.scroll || []).forEach((k) => add((ITEMS[k] || {}).pic || "i-exp", "×1", 4)); (R.mats || []).forEach((n, tr) => { if (n) add("mt-" + tr, "×" + n, tr >= 3 ? 2 : tr === 2 ? 3 : 4); }); if (R.wpn) add("wi-" + R.wpn, "×1", 2);
+      grid.replaceChildren(); L.forEach(([pic, n, fr], i) => { const c = el("div", "rs-tile"), im = el("img"); c.style.backgroundImage = "url(" + LBI("rw-s" + fr) + ")"; c.style.animationDelay = 0.15 + i * 0.07 + "s"; im.src = LBI(pic); im.alt = ""; c.append(im, el("small", null, n)); grid.appendChild(c); });
+      for (let i = L.length; i < Math.max(4, Math.ceil(L.length / 4) * 4); i++) grid.appendChild(el("div", "rs-tile none"));
+    }
     function lobReward(rw, clear, ch, run) {
       if (lobFree() || !s.run) { rw.textContent = "로그인하면 보상이 저장돼요"; return; }
       call("gameEnd", token, { run: s.run, clear: !!clear, stage: s.stage, kills: s.kills, bosses: s.bossKills || 0, healUsed: s.healUsed || 0, revUsed: s.revUsed || 0 }).then((r) => { LP = r; LP.got = Date.now(); if (run !== s) return; const R = r.reward || {};
-        rw.textContent = "💰 +" + (R.gold || 0).toLocaleString() + " · EXP +" + (R.exp || 0) + (R.en ? " · ⚡ +" + R.en : "") + (R.gem ? " · 💎 +" + R.gem : "") + ((R.scroll || []).length ? " · 두루마리: " + R.scroll.map((k) => (ITEMS[k] || {}).n || k).join(", ") : "") + ((R.mats || []).some((n) => n) ? " · 🔩 부품 " + R.mats.reduce((a, b) => a + b, 0) : "") + (clear && ch && ch < CH_N ? " · " + (ch + 1) + "장 열림" : "") + (R.wpn ? " · 🎁 무기 「" + ((WPN[R.wpn] || {}).n || R.wpn) + "」!" : "") + (clear && ch === CH_N && s.mode < MODE_N.length - 1 ? " · 「" + MODE_N[s.mode + 1] + "」 열림!" : ""); })
+        if (rw.grid) { rsTiles(R, rw.grid); rw.textContent = [clear && ch && ch < CH_N ? (ch + 1) + "장 열림!" : "", R.wpn ? "새 무기 「" + ((WPN[R.wpn] || {}).n || R.wpn) + "」!" : "", clear && ch === CH_N && s.mode < MODE_N.length - 1 ? "「" + MODE_N[s.mode + 1] + "」 열림!" : ""].filter(Boolean).join(" ㆍ "); return; }
+      rw.textContent = "💰 +" + (R.gold || 0).toLocaleString() + " · EXP +" + (R.exp || 0) + (R.en ? " · ⚡ +" + R.en : "") + (R.gem ? " · 💎 +" + R.gem : "") + ((R.scroll || []).length ? " · 두루마리: " + R.scroll.map((k) => (ITEMS[k] || {}).n || k).join(", ") : "") + ((R.mats || []).some((n) => n) ? " · 🔩 부품 " + R.mats.reduce((a, b) => a + b, 0) : "") + (clear && ch && ch < CH_N ? " · " + (ch + 1) + "장 열림" : "") + (R.wpn ? " · 🎁 무기 「" + ((WPN[R.wpn] || {}).n || R.wpn) + "」!" : "") + (clear && ch === CH_N && s.mode < MODE_N.length - 1 ? " · 「" + MODE_N[s.mode + 1] + "」 열림!" : ""); })
         .catch((e) => { if (run === s) rw.textContent = "보상을 못 받았어요 ㆍ " + errMsg(e); });
     }
     function lobEnd(clear) {
+      { const run = s, ch = s.chap || 0, tot = ch ? chStages(ch) : 0, stars = !ch ? null : clear ? 3 : s.stage - 1 >= tot * 2 / 3 ? 2 : s.stage > 1 ? 1 : 0, nx = clear && ch && ch < CH_N;
+        const V = rsShow({ win: !!clear, mode: ch && s.mode ? MODE_N[s.mode] : "", top: ch ? ch + "장" : "", name: ch ? CHAPS[ch - 1] : "무한의 탑", big: clear ? "클리어!" : ch ? s.stage + "단계에서 쓰러짐" : s.stage + "층에서 쓰러짐", stars,
+          stats: [["rs-time", clear ? "클리어 시간" : "생존 시간", mmss(s.t)], ["rs-ghost", "잡은 잡귀", s.kills.toLocaleString()], ["lv", "달성 레벨", "Lv." + s.lv]],
+          btns: [["로비로", "blue", lobby], [nx ? "다음 장" : "다시 출전", nx ? "green" : "orange", () => { lobCh = nx ? ch + 1 : ch || lobCh; lobby(); }]] });
+        const rw = V.note; rw.grid = V.grid; lobReward(rw, clear, ch, run); return; }
       const run = s, ch = s.chap || 0, card = el("div", "game-card");
       card.append(el("div", "k", ch ? (s.mode ? MODE_N[s.mode] + " · " : "") + ch + "장 · " + CHAPS[ch - 1] : "무한의 탑"), el("div", "sc gold-text", clear ? "클리어!" : s.stage + (ch ? "단계" : "층")), el("div", "det", mmss(s.t) + " · 잡은 잡귀 " + s.kills + " · Lv " + s.lv));
       const rw = el("div", "rank", "보상 받는 중…"); card.appendChild(rw);
@@ -6905,11 +6961,9 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     }
     function mineEnd() {
       if (s.over) return; const run = s, w = s.mineW || 0; running = false; s.over = true; stick = null; ping(true); draw(); $("gameHud").hidden = true;
-      const card = el("div", "game-card"), rw = el("div", "rank", "보상 받는 중…"), row = el("div", "actions"); row.style.justifyContent = "center";
-      card.append(el("div", "k", "골드 광산"), el("div", "sc gold-text", w + "단"), el("div", "det", mmss(Math.min(MINE.waves * MINE.sec, s.mineT || 0)) + " · 잡은 잡귀 " + s.kills + " · Lv " + s.lv), rw);
-      row.append(gBtn("로비로", () => { lobTab = "dun"; lobby(); })); panel([card, row]);
-      if (!s.run || lobFree()) { rw.textContent = "체험 판 ㆍ 골드 " + (s.mineG || 0).toLocaleString() + " (저장 안 됨)"; return; }
-      call("gameEnd", token, { run: s.run, wave: w, kills: s.kills }).then((x) => { LP = x; LP.got = Date.now(); const R = x.reward || {}; if (run === s) rw.textContent = "보상 골드 +" + (R.gold || 0).toLocaleString() + " ㆍ " + (R.wave || 0) + "단"; }).catch((e) => { rw.textContent = errMsg(e); });
+      const V = rsShow({ win: w >= MINE.waves, top: "던전", name: "골드 광산", big: w + "단" + (w >= MINE.waves ? " 돌파!" : "에서 끝"), stars: Math.floor(w / 2), stats: [["rs-time", "버틴 시간", mmss(Math.min(MINE.waves * MINE.sec, s.mineT || 0))], ["rs-ghost", "잡은 잡귀", s.kills.toLocaleString()], ["lv", "달성 레벨", "Lv." + s.lv]], btns: [["로비로", "blue", () => { lobTab = "dun"; lobby(); }]] }), rw = V.note;
+      if (!s.run || lobFree()) { rsTiles({ gold: s.mineG || 0 }, V.grid); rw.textContent = "체험 판 ㆍ 골드 " + (s.mineG || 0).toLocaleString() + " (저장 안 됨)"; return; }
+      call("gameEnd", token, { run: s.run, wave: w, kills: s.kills }).then((x) => { LP = x; LP.got = Date.now(); const R = x.reward || {}; if (run === s) { rsTiles(R, V.grid); rw.textContent = (R.wave || 0) + "단 인정 ㆍ 기본 골드 " + (R.base || 0) + " × 단"; } }).catch((e) => { rw.textContent = errMsg(e); });
     }
     function raidStart() {
       /* 2026-10-28 "레이드는 10레벨로 시작, 보스 체력 ×999 로 딜을 얼마나 넣었는지" — 탕탕특공대 보스전처럼: 시작 전에 스킬 9개 고름.
@@ -6920,11 +6974,9 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     }
     function raidEnd() {
       if (s.over) return; const dmg = raidDmg(), run = s; running = false; s.over = true; stick = null; ping(true); draw();
-      const card = el("div", "game-card"), rw = el("div", "rank", "기록 저장 중…"); card.append(el("div", "k", "보스 레이드 · " + (s.raidB ? s.raidB.name : "")), el("div", "sc gold-text", dmg.toLocaleString()), el("div", "det", "넣은 피해 · " + mmss(Math.min(RAID_SEC, s.t)) + " · Lv " + s.lv), rw);
-      const row = el("div", "actions"); row.style.justifyContent = "center"; row.append(gBtn("로비로", () => { lobTab = "dun"; lobby(); }), gBtn("다시 도전", () => { lobTab = "dun"; lobby(); }, "ghost"));
-      panel([card, row]); $("gameHud").hidden = true; raidBoard = null;
+      const V = rsShow({ win: true, top: "보스 레이드", name: s.raidB ? s.raidB.name : "", big: dmg.toLocaleString(), stars: null, wait: "기록 저장 중…", stats: [["rs-time", "버틴 시간", mmss(Math.min(RAID_SEC, s.t))], ["rs-ghost", "잡은 쫄병", s.kills.toLocaleString()], ["lv", "달성 레벨", "Lv." + s.lv]], btns: [["로비로", "blue", () => { lobTab = "dun"; lobby(); }], ["다시 도전", "orange", () => { lobTab = "dun"; lobby(); }]] }), rw = V.note; V.grid.closest(".rs").classList.add("raid"); raidBoard = null; /* 결과 창(시안 15) — 큰 글자는 넣은 피해 */
       if (lobFree() || !s.run) { rw.textContent = "로그인하면 순위에 올라가요"; return; }
-      call("gameEnd", token, { run: s.run, raid: 1, dmg }).then((r) => { LP = r; LP.got = Date.now(); if (run !== s) return; const R = r.reward || {}; rw.textContent = "이번 주 " + (R.rank || "-") + "위 · 💰 +" + (R.gold || 0).toLocaleString() + " · EXP +" + (R.exp || 0) + ((R.mats || [])[0] ? " · 🔩 부품 " + R.mats[0] : ""); })
+      call("gameEnd", token, { run: s.run, raid: 1, dmg }).then((r) => { LP = r; LP.got = Date.now(); if (run !== s) return; const R = r.reward || {}; rsTiles(R, V.grid); rw.textContent = "넣은 피해 " + dmg.toLocaleString() + " ㆍ 이번 주 " + (R.rank || "-") + "위"; })
         .catch((e) => { if (run === s) rw.textContent = "기록을 못 했어요 ㆍ " + errMsg(e); });
     }
     /* 장 최고 레벨 — 1장 Lv 22 … 10장 Lv 40 (무한의 탑 · 레이드는 끝없음) */
