@@ -709,6 +709,14 @@ body.game-full { overflow: hidden; }
 .game-box.full .game-hud .tiny { border-color: #8fa6c8 !important; background: linear-gradient(#2a4070, #16264a) !important; }
 .game-box.full .game-hud .pause { border-color: #0d2a6a !important; background: linear-gradient(#5a9bff, #2563d8) !important; color: #fff !important; }
 .game-box.full .game-hud .hpbar { border-color: #0a1430 !important; background: #0e1730 !important; }
+/* 위 계기판 시안 7 모양(2026-10-29) — Lv 방패 + 초록 경험치 막대 · 시간 · 처치 알약 · 파란 네모 멈춤 */
+.game-box.full .game-hud .xp { left: 64px !important; right: 12px !important; height: 22px !important; top: calc(10px + env(safe-area-inset-top, 0px)) !important; border-radius: 0 11px 11px 0 !important; overflow: visible !important; }
+.game-box.full .game-hud .xp b { left: -58px !important; top: 50% !important; transform: translateY(-50%) !important; width: 56px; height: 34px; display: grid !important; place-items: center; clip-path: polygon(14% 0, 86% 0, 100% 50%, 86% 100%, 14% 100%, 0 50%); background: linear-gradient(#3a5a9a, #1b2a4a) !important; font-size: 15px !important; color: #fff; outline: 0; box-shadow: none; }
+.game-box.full .game-hud .xp::before { content: ""; position: absolute; left: -60px; top: 50%; width: 60px; height: 38px; transform: translateY(-50%); clip-path: polygon(14% 0, 86% 0, 100% 50%, 86% 100%, 14% 100%, 0 50%); background: #8fa6c8; z-index: -1; }
+.game-box.full .game-hud .row #gTime, .game-box.full .game-hud .row #gKill { padding: 3px 12px; border-radius: 999px; background: #0e1730; border: 2px solid #2a3f66; }
+.game-box.full .game-hud .row { flex-wrap: wrap; row-gap: 4px !important; } .game-box.full .game-hud .row #gTime, .game-box.full .game-hud .row #gKill { font-size: 14px !important; padding: 2px 9px !important; } .game-box.full .game-hud .row #gStage { font-size: 14px !important; } .game-box.full .game-hud .hpbar { flex: 1 1 80px !important; }
+.game-box.full .game-hud .pause { width: 44px; height: 40px; padding: 0 !important; border-radius: 10px !important; font-size: 0 !important; position: relative; }
+.game-box.full .game-hud .pause::before { content: ""; position: absolute; left: 50%; top: 50%; width: 16px; height: 18px; transform: translate(-50%, -50%); background: linear-gradient(90deg, #fff 0 35%, transparent 35% 65%, #fff 65%); }
 .game-box.full .game-over > div { padding: 18px 16px; border-radius: 22px; border: 3px solid #c79a4a; background: linear-gradient(180deg, #f9eccb, #efdcab); box-shadow: 0 0 0 3px #5a3a14, 0 12px 30px rgba(0,0,0,.5); color: #3a2a10; font-family: "Jua", "Noto Sans KR", sans-serif; }
 .game-box.full .game-over h3 { font-family: "Jua", "Noto Sans KR", sans-serif; font-weight: 400; color: #fff; -webkit-text-stroke: 5px #6a3e14; paint-order: stroke fill; font-size: 28px; }
 .game-box.full .game-over p, .game-box.full .game-over .best { color: #5a3a1a; }
@@ -1656,7 +1664,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610290322";
+  const BUILD = "202610290346";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -5370,19 +5378,18 @@ body.game-full { overflow: hidden; }
           if (z.spr) { // 캐릭터 스킬 땅(태극진 · 독 안개) — 빛깔 바닥 + 그림, 천천히 돈다
             const x = z.x + ox, y = z.y + oy, a = Math.min(1, z.life / 0.5, (z.full - z.life) / 0.25), gr = g.createRadialGradient(x, y, 0, x, y, z.r);
             gr.addColorStop(0, "rgba(" + z.col + "," + (0.35 * a).toFixed(2) + ")"); gr.addColorStop(1, "rgba(" + z.col + ",0)");
-            g.fillStyle = gr; g.beginPath(); g.arc(x, y, z.r, 0, Math.PI * 2); g.fill();
             fxDraw(z.spr, 0, x, y, z.r * 2.1, { alpha: 0.85 * a, rot: z.spr === "hr_bagua" ? (z.full - z.life) * 0.6 : 0 });
             return;
           }
           const x = z.x + ox, y = z.y + oy, a = Math.min(1, z.life / 0.5) * (0.85 + Math.random() * 0.15), gr = g.createRadialGradient(x, y, 0, x, y, z.r);
           gr.addColorStop(0, "rgba(255,210,90," + (0.55 * a).toFixed(2) + ")"); gr.addColorStop(0.6, "rgba(255,90,20," + (0.4 * a).toFixed(2) + ")"); gr.addColorStop(1, "rgba(180,20,10,0)");
-          g.fillStyle = gr; g.beginPath(); g.arc(x, y, z.r, 0, Math.PI * 2); g.fill();
+          if (!lbImg("fx-fire")) { g.fillStyle = gr; g.beginPath(); g.arc(x, y, z.r, 0, Math.PI * 2); g.fill(); } /* 불 그림이 있으면 둥근 빛은 안 그림(2026-10-29) */
           { const FI = lbImg("fx-fire"), age = z.full - z.life; if (FI) { const n = 4, fw = FI.width / n, fr = age < 0.3 ? 0 : age < 0.6 ? 1 : 2 + (Math.floor(age * 7) % 2), w = z.r * 1.9, h = w * FI.height / fw; g.globalAlpha = Math.min(1, z.life / 0.5); g.drawImage(FI, fr * fw, 0, fw, FI.height, x - w / 2, y + z.r * 0.45 - h, w, h); g.globalAlpha = 1; } } /* 새 불바다(ChatGPT 4장면, 2026-10-28 "불꽃 스킬 옛날 것 지우고 최신으로") */
         });
         if (!s.watchView) { g.save(); g.setLineDash([7, 9]); g.lineDashOffset = -s.t * 12; g.strokeStyle = "rgba(255,255,255,.32)"; g.lineWidth = 2; g.beginPath(); g.arc(hx, hy, s.range, 0, Math.PI * 2); g.stroke(); g.restore(); } // 평타 사거리 원(2026-10-28 "평타 사거리 원형도")
-        if (s.aura) { const AR = auraRad(), ev = s.evo && s.evo.aura; g.save(); const gr = g.createRadialGradient(hx, hy, AR * 0.55, hx, hy, AR); gr.addColorStop(0, ev ? "rgba(160,90,255,0)" : "rgba(80,190,255,0)"); gr.addColorStop(1, ev ? "rgba(160,90,255,.32)" : "rgba(80,190,255,.28)"); g.fillStyle = gr; g.beginPath(); g.arc(hx, hy, AR, 0, 7); g.fill(); /* 물결 고리가 잘 보이게(2026-10-29 "캐릭터 주변에 안 보인다") — 파란 물결 띠 · 바깥으로 퍼지는 물결 3줄 */
-          g.lineWidth = 4; g.strokeStyle = ev ? "rgba(200,150,255,.85)" : "rgba(150,225,255,.85)"; g.setLineDash([16, 10]); g.lineDashOffset = -s.t * 40; g.beginPath(); g.arc(hx, hy, AR, 0, 7); g.stroke(); g.setLineDash([]);
-          for (let i = 0; i < 3; i++) { const p = (s.t * 0.8 + i / 3) % 1; g.lineWidth = 2.5; g.strokeStyle = "rgba(190,240,255," + (0.55 * (1 - p)).toFixed(2) + ")"; g.beginPath(); g.arc(hx, hy, AR * (0.35 + 0.65 * p), 0, 7); g.stroke(); } g.restore(); }
+        if (s.aura) { const AR = auraRad(), ev = s.evo && s.evo.aura, AI = lbImg("aura-" + (ev ? 6 : Math.min(5, s.aura))); if (AI) { g.save(); g.translate(hx, hy); g.rotate(s.t * (ev ? 1.6 : 0.9)); g.globalAlpha = 0.42; const w = AR * 2.1; g.drawImage(AI, -w / 2, -w / 2, w, w); g.restore(); } /* 단계 그림(2026-10-29 도감) — 바닥에 눕혀 천천히 돔 */ g.save(); const gr = g.createRadialGradient(hx, hy, AR * 0.55, hx, hy, AR); gr.addColorStop(0, ev ? "rgba(160,90,255,0)" : "rgba(80,190,255,0)"); gr.addColorStop(1, ev ? "rgba(160,90,255,.32)" : "rgba(80,190,255,.28)"); g.fillStyle = gr; g.beginPath(); g.arc(hx, hy, AR, 0, 7); g.fill(); /* 물결 고리가 잘 보이게(2026-10-29 "캐릭터 주변에 안 보인다") — 파란 물결 띠 · 바깥으로 퍼지는 물결 3줄 */
+          if (!AI) { g.lineWidth = 4; g.strokeStyle = ev ? "rgba(200,150,255,.85)" : "rgba(150,225,255,.85)"; g.setLineDash([16, 10]); g.lineDashOffset = -s.t * 40; g.beginPath(); g.arc(hx, hy, AR, 0, 7); g.stroke(); g.setLineDash([]);
+          for (let i = 0; i < 3; i++) { const p = (s.t * 0.8 + i / 3) % 1; g.lineWidth = 2.5; g.strokeStyle = "rgba(190,240,255," + (0.55 * (1 - p)).toFixed(2) + ")"; g.beginPath(); g.arc(hx, hy, AR * (0.35 + 0.65 * p), 0, 7); g.stroke(); } } g.restore(); } /* 그림이 있으면 둘레 원 · 퍼지는 원은 안 그림(2026-10-29) */
         /* 경험치 구슬 3가지 — "경험치 색깔 소량 중량 대량" (2026-10-27): 1 하늘 · 2 ~ 4 초록 · 5 이상(대장 등) 금, 클수록 크게 */
         /* 새 경험치 보석 그림(2026-10-29 ChatGPT, img/lb/gem-1~3) — 있으면 그림, 없으면 예전 마름모 */
         if (lbImg("gem-1") && lbImg("gem-2") && lbImg("gem-3")) { const GS = [16, 21, 28], bob = Math.sin(s.t * 5) * 1.5; s.gems.forEach((m) => { const ti = gemTier(m.v), x = m.x + ox, y = m.y + oy; if (x < -20 || y < -20 || x > W + 20 || y > H + 20) return; const I = lbImg("gem-" + (ti + 1)), h = GS[ti], w = h * I.width / I.height; g.drawImage(I, x - w / 2, y - h / 2 + bob, w, h); }); }
@@ -5420,6 +5427,7 @@ body.game-full { overflow: hidden; }
         });
         s.fx.forEach((x) => {
           /* 스킬 효과 영상(2026-10-28 "봉인검록처럼 동영상으로 · 입체감") — Google Flow 검은 바탕 영상을 칸으로(시험/효과영상-자르기.cjs). 검정은 lighter 로 더해 안 보임 · 꽂히는 자리(FXV_AT)를 몬스터 발에 */
+          if (x.bolt && s.up && s.up.thunder) { const TI = lbImg("thun-" + (s.evo && s.evo.thunder ? 6 : Math.min(5, s.up.thunder))); if (TI) { const w = 70 + 6 * Math.min(5, s.up.thunder), h = w * TI.height / TI.width; g.save(); g.globalAlpha = Math.min(1, x.life / 0.2); g.drawImage(TI, x.x + ox - w / 2, x.y + oy - h - 18, w, h); g.restore(); } } /* 번개 구름 단계 그림(2026-10-29 도감) — 번개 위에 */
           if (x.bolt && FXV["fxv-thunder"]) { const V = FXV["fxv-thunder"], I = lbImg("fxv-thunder"); if (I) { const p = Math.min(0.999, 1 - x.life / (x.dur || 0.65)), fr = Math.floor(p * V.n), sx = (fr % V.cols) * V.w, sy = Math.floor(fr / V.cols) * V.h, w = x.vw || 170, hh = w * V.h / V.w, A = FXV_AT["fxv-thunder"];
             g.save(); g.globalCompositeOperation = "lighter"; g.globalAlpha = Math.min(1, x.life / 0.15); g.drawImage(I, sx, sy, V.w, V.h, x.x + ox - w * A[0], x.y + oy - hh * A[1], w, hh); g.restore(); return; } }
           if (x.nfx || (x.bolt && lbImg("fx-thunder"))) { const I = lbImg(x.nfx || "fx-thunder"); if (I) { const fw = I.width / 4, p = 1 - x.life / (x.dur || 0.3), fr = Math.min(3, Math.floor(p * 4)), sz = x.nfx ? x.size || 90 : 120, w = sz, h = sz * I.height / fw; g.save(); g.globalAlpha = Math.min(1, x.life / 0.12 + 0.2);
@@ -5451,7 +5459,7 @@ body.game-full { overflow: hidden; }
             g.fillStyle = x.heal ? "#5eea7a" : x.crit ? "#ffcf3a" : x.num >= 60 ? "#ffd36b" : "#fff"; g.fillText(x.num, nx, ny); g.lineWidth = 1;
           } else if (x.frost) {
             const bx = x.x + ox, by = x.y + oy, r = x.r * (1 - x.life / 0.45 * 0.6);
-            g.fillStyle = "rgba(165,243,252,.18)"; g.strokeStyle = "rgba(220,250,255,.9)"; g.lineWidth = 3; g.beginPath(); g.arc(bx, by, r, 0, Math.PI * 2); g.fill(); g.stroke(); g.lineWidth = 1;
+            /* 동그란 원은 그리지 않음(2026-10-29 부장님 "스킬 쓰면 주변에 동그란 원은 안 나오게") */ void r; void bx; void by;
           } else if (x.bolt) {
             const bx = x.x + ox, by = x.y + oy;
             g.strokeStyle = "#cfe0ff"; g.lineWidth = 3; g.beginPath(); g.moveTo(bx + 10, by - 160);
@@ -5466,7 +5474,7 @@ body.game-full { overflow: hidden; }
             const bx = x.x + ox, by = x.y + oy, r = Math.max(1, x.r * (1 + (0.3 - x.life) * 3)), gr = g.createRadialGradient(bx, by, 0, bx, by, r);
             gr.addColorStop(0, "rgba(255,243,196,.95)"); gr.addColorStop(0.45, "rgba(255,138,42,.8)"); gr.addColorStop(1, "rgba(196,40,44,0)");
             g.fillStyle = gr; g.beginPath(); g.arc(bx, by, r, 0, Math.PI * 2); g.fill();
-          } else { g.beginPath(); g.arc(x.x + ox, x.y + oy, Math.max(1, x.r * (1 + (0.3 - Math.min(0.3, x.life)) * 4)), 0, Math.PI * 2); /* 수명 0.3 넘는 고리(진화 0.6)는 음수 반지름 → 그리기가 죽어 게임이 멈췄음 */ g.strokeStyle = x.c; g.stroke(); }
+          } else if (false) { g.beginPath(); g.arc(x.x + ox, x.y + oy, Math.max(1, x.r * (1 + (0.3 - Math.min(0.3, x.life)) * 4)), 0, Math.PI * 2); /* 스킬 둘레 고리 — 안 그림(2026-10-29) */ /* 수명 0.3 넘는 고리(진화 0.6)는 음수 반지름 → 그리기가 죽어 게임이 멈췄음 */ g.strokeStyle = x.c; g.stroke(); }
           g.globalAlpha = 1;
         });
         s.foes.forEach((f) => {
@@ -5530,6 +5538,7 @@ body.game-full { overflow: hidden; }
         g.lineCap = "round";
         const shotLook = HEROES[heroKey].shot;
         s.shots.forEach((b) => {
+          { const sl = Math.min(5, Math.max((s.up && s.up.rate) || 0, (s.up && s.up.dmg) || 0)), ev = s.evo && (s.evo.rate || s.evo.dmg), SI = heroKey === "je" && lbImg("shot-" + (ev ? 6 : Math.max(1, sl))); if (SI) { const w = 26 + 5 * sl + (ev ? 20 : 0), h = w * SI.height / SI.width; g.save(); g.translate(b.x + ox, b.y + oy); g.rotate(b.a); g.drawImage(SI, -w * 0.75, -h / 2, w, h); g.restore(); return; } } /* 물총알 단계 그림(2026-10-29 도감) — 빠른 장전 · 단단한 탄환 레벨로 */
           if (shotLook !== "tracer") { shotArt(shotLook, b.x + ox, b.y + oy, b.a, b.c || 0); return; }
           const x = b.x + ox, y = b.y + oy, c = TRACER[b.c || 0], tx = x - Math.cos(b.a) * 26, ty = y - Math.sin(b.a) * 26;
           const gr = g.createLinearGradient(tx, ty, x, y); gr.addColorStop(0, "rgba(" + c[0] + ",0)"); gr.addColorStop(1, "rgba(" + c[0] + ",1)");
@@ -5561,7 +5570,7 @@ body.game-full { overflow: hidden; }
           if (fxOk) fxDraw("whirl", Math.floor(s.t * 12) % 4, x, y + t.R * 0.8, t.R * 2.2, { base: true, alpha: a });
           else { g.strokeStyle = "#f6e2a4"; g.lineWidth = 3; g.beginPath(); g.arc(x, y, t.R * 0.6, s.t * 9, s.t * 9 + 4.5); g.stroke(); g.lineWidth = 1; }
         });
-        if (s.ring) { const R = s.ring.R, a = Math.min(1, s.ring.t / 0.4); g.beginPath(); g.arc(hx, hy, R, 0, Math.PI * 2); g.fillStyle = "rgba(255,120,40," + (0.08 * a).toFixed(2) + ")"; g.fill(); fxDraw("kh_ring", 0, hx, hy, R * 2.3, { rot: s.t * 4, alpha: a }); } // 화염검 진 — 돈다
+        if (s.ring) { const R = s.ring.R, a = Math.min(1, s.ring.t / 0.4); fxDraw("kh_ring", 0, hx, hy, R * 2.3, { rot: s.t * 4, alpha: a }); } // 화염검 진 — 돈다
         if (s.gaura) { const R = s.gaura.R, a = Math.min(1, s.gaura.t / 0.4); g.beginPath(); g.arc(hx, hy, R, 0, Math.PI * 2); g.fillStyle = "rgba(255,210,90," + (0.1 * a).toFixed(2) + ")"; g.fill(); g.strokeStyle = "rgba(255,210,90," + (0.5 * a).toFixed(2) + ")"; g.lineWidth = 2; g.stroke(); g.lineWidth = 1; fxDraw("ds_aura", 0, hx, hy + 12, R * 2.2, { alpha: 0.8 * a }); } // 금강 기운
         if (s.ward && s.wardR) { // 결계 스킬 — 지름 2m(Lv 1) → 6m(Lv 5)
           const R = s.wardR, a = Math.min(1, s.ward / 0.4), gr = g.createRadialGradient(hx, hy, R * 0.5, hx, hy, R);
@@ -5606,7 +5615,7 @@ body.game-full { overflow: hidden; }
     /* 윗줄(HUD) — 바뀐 것만 고침(2026-10-28 최적화: 매 장면 글자 · 막대를 다시 쓰면 폰이 화면을 다시 잼) */
     const HC = {}; const hT = (id, v) => { v = String(v); if (HC[id] !== v) { HC[id] = v; $(id).textContent = v; } }, hW = (id, v) => { const w = Math.round(parseFloat(v) * 2) / 2 + "%", k = id + ":w"; if (HC[k] !== w) { HC[k] = w; $(id).style.width = w; } }, hH = (id, v) => { const k = id + ":h"; v = !!v; if (HC[k] !== v) { HC[k] = v; $(id).hidden = v; } };
     function hud() {
-      hT("gTime", mmss(s.t));
+      hT("gTime", "⏱ " + mmss(s.t));
       hW("gHp", (100 * s.hp / s.max) + "%");
       const len = stageLen(s.stage);
       hT("gStage", s.rest > 0 ? "휴식 " + mmss(s.rest) + " → " + (s.stage + 1) + "단계"
@@ -5615,7 +5624,7 @@ body.game-full { overflow: hidden; }
       if (s.rest > 0) hT("gRest", "휴식 " + mmss(s.rest) + " ㆍ 바로 시작 ▶");
       hT("gLv", "Lv " + s.lv + (s.chap && s.lv >= lvCap() ? " MAX" : ""));
       { const key = Object.keys(s.up).filter((k) => s.up[k]).map((k) => k + s.up[k] + (s.evo[UPS.find((u) => u.k === k) && UPS.find((u) => u.k === k).evo] ? "e" : "")).join(); if (key !== s.skKey) { s.skKey = key; skList(); } }
-      hT("gKill", "잡은 수 " + s.kills); hH("gKill", !!s.raid); // 레이드는 위 판을 덜 붐비게
+      hT("gKill", "💀 " + s.kills); hH("gKill", !!s.raid); // 레이드는 위 판을 덜 붐비게
       hW("gXp", Math.min(100, 100 * s.xp / s.need) + "%"); hT("gXpLv", "Lv " + s.lv + (s.chap && s.lv >= lvCap() ? " MAX" : ""));
       const B = s.bossNow;
       hH("gBoss", !B); SND.boss(B);
