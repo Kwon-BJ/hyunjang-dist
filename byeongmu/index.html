@@ -1246,6 +1246,99 @@ body.game-full { overflow: hidden; }
 .rank-past[hidden] { display: none; }
 .rank-recent { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; font-size: 13px; }
 .game-card .new { margin-top: 2px; padding: 2px 12px; border-radius: 999px; background: var(--red); color: #fff; font-size: 13px; font-weight: 700; }
+
+/* ── 탭 화면 새 디자인(2026-10-29 부장님 "시안대로 안 바뀌었다" → ChatGPT 시안 2 상점 · 3 장비/순위 · 4 던전). 글자 없는 그림: bg-shop · bg-gear · bg-rank · art-* · pk-* · gem-* ── */
+.lb-art.v2.pg .lb-page { left: 0; right: 0; padding: 0 2.6cqw 4cqw; gap: 2.4cqw; border: 0; border-radius: 0; background: linear-gradient(rgba(14,24,12,.9), rgba(8,14,6,.96)); box-shadow: none; color: #fff; }
+.lb-art.pg .lb-head { background: none; } .lb-art.pg .lb-head p { color: #e6d8b8; }
+.lb-art.pg .lb-note { color: #d8c8a0; } .lb-art.pg .lb-h { color: #ffe9a8; }
+.lb-scene { position: relative; flex: none; margin: 0 -2.6cqw -5cqw; aspect-ratio: 1024 / 498; background: center / cover no-repeat; -webkit-mask-image: linear-gradient(#000 82%, transparent); mask-image: linear-gradient(#000 82%, transparent); }
+.lb-scene .sg { position: absolute; left: 49.8%; top: 15.5%; transform: translate(-50%, -50%); font: 900 8.4cqw/1 "Jua", "Noto Sans KR", sans-serif; color: #fff6dc; -webkit-text-stroke: 1.3cqw #4a2408; paint-order: stroke fill; text-shadow: 0 .6cqw 0 #2a1204; white-space: nowrap; }
+.lb-plate { flex: none; align-self: center; display: flex; align-items: center; gap: 1.6cqw; margin-top: 2.6cqw; padding: 1.4cqw 8cqw; border-radius: 3cqw; border: .6cqw solid #3a220c; background: linear-gradient(#b07a3e, #6a4418); box-shadow: inset 0 .5cqw 0 rgba(255,255,255,.25), 0 .8cqw 0 #2a1406, 0 0 0 .5cqw #5a8a2a; }
+.lb-plate i { font-style: normal; font-size: 7cqw; line-height: 1; } .lb-plate b { font: 900 8cqw/1 "Jua", "Noto Sans KR", sans-serif; color: #fff6dc; -webkit-text-stroke: 1.1cqw #3a1e08; paint-order: stroke fill; white-space: nowrap; }
+/* 위 칸 단추(상점 분류 · 순위 탭) — 어두운 나무 + 금테, 고른 것은 금빛 */
+.lb-art.pg .lb-scat button, .lb-rtabs.rk3 button { border: .5cqw solid #c9963c; background: linear-gradient(#4a3420, #2a1c10); color: #fff; box-shadow: 0 .6cqw 0 #1a1008; font-weight: 800; }
+.lb-art.pg .lb-scat button.on, .lb-rtabs.rk3 button.on { border-color: #ffd23a; background: linear-gradient(#6a4a1c, #3a2810); color: #ffe36b; box-shadow: 0 0 0 .4cqw #ffd23a, 0 0 2.6cqw rgba(255,210,58,.85); }
+.lb-rtabs.rk3 { grid-template-columns: repeat(3, 1fr); } .lb-rtabs.rk3 button { display: flex; align-items: center; justify-content: center; gap: 1cqw; padding: 1.8cqw 0; border-radius: 2.4cqw; font-size: 3.6cqw; } .lb-rtabs.rk3 button i { font-style: normal; font-size: 4.4cqw; }
+/* 다른 분류의 카드도 어둡게 */
+.lb-art.pg .lb-scard, .lb-art.pg .lb-sbox, .lb-art.pg .lb-card { background: linear-gradient(#3a2c1c, #241a10); border-color: #c9963c; color: #fff; box-shadow: 0 .8cqw 0 #120c06; }
+.lb-art.pg .lb-scard b, .lb-art.pg .lb-sbtx > b, .lb-art.pg .lb-card b { color: #ffe9a8; } .lb-art.pg .lb-scard p, .lb-art.pg .lb-scard small, .lb-art.pg .lb-card small { color: #e6d8b8; }
+.lb-art.pg .lb-scard.pat, .lb-art.pg .lb-scard.pack { background: linear-gradient(#2c4a1c, #16280c); border-color: #7cc45a; }
+.lb-art.pg .lb-pity { background: rgba(0,0,0,.45); }
+/* 버튼 — 초록 입체 */
+.lb-sbuy.sp-green { border: .4cqw solid #1d4a0a; background: linear-gradient(#a8f06a, #46b41e 55%, #2e8a14); color: #fff; text-shadow: 0 .25cqw 0 #12400a; box-shadow: inset 0 .4cqw 0 rgba(255,255,255,.45), 0 .7cqw 0 #12400a; }
+/* 상점 특별 상품 */
+.sp-top { display: grid; grid-template-columns: 1.7fr 1fr; gap: 2cqw; }
+.sp-pack { position: relative; display: grid; grid-template-columns: 1fr 1fr; grid-template-areas: "t t" "d d" "a l" "x x"; gap: 1.2cqw; padding: 2.4cqw 2cqw 2cqw; border-radius: 3cqw; border: .6cqw solid #e8a020; background: linear-gradient(#fff6d0, #f5c75a); color: #4a2e10; box-shadow: 0 .8cqw 0 #8a5a10; }
+.sp-pack.prem { border-color: #b070ff; background: linear-gradient(#f6edff, #cfaeff); box-shadow: 0 .8cqw 0 #5a2a9a; color: #3a1f6a; }
+.sp-rib { position: absolute; left: -1.2cqw; top: -1.8cqw; padding: .6cqw 2.4cqw; border-radius: 1cqw; background: linear-gradient(#ff6a5a, #c8261a); color: #fff; font: 900 3cqw/1.2 "Jua", sans-serif; font-style: normal; transform: rotate(-8deg); box-shadow: 0 .5cqw 0 #6a1008; z-index: 1; }
+.sp-pack .sp-t { grid-area: t; } .sp-pack .sp-d { grid-area: d; } .sp-t { font: 900 4.6cqw/1.15 "Jua", "Noto Sans KR", sans-serif; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sp-d { margin: 0; font-size: 2.4cqw; line-height: 1.35; text-align: center; opacity: .85; }
+.sp-art { grid-area: a; display: grid; place-items: center; } .sp-art img { width: 100%; filter: drop-shadow(0 1cqw 1cqw rgba(0,0,0,.3)); }
+.sp-its { grid-area: l; align-self: center; display: grid; gap: .7cqw; margin: 0; padding: 1.2cqw; list-style: none; border-radius: 2cqw; background: rgba(255,255,255,.62); }
+.sp-its li { display: flex; align-items: center; gap: 1cqw; min-width: 0; font-size: 2.5cqw; font-weight: 800; } .sp-its li img { width: 5.4cqw; height: 5.4cqw; object-fit: contain; flex: none; } .sp-its li i { font-style: normal; } .sp-its li span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sp-pack > .lb-sbuy { grid-area: x; } .sp-pack .lb-sbuy b, .sp-gift .lb-sbuy b { font-size: 4.4cqw; }
+.sp-gift { display: grid; justify-items: center; align-content: start; gap: 1cqw; padding: 2.4cqw 1.6cqw 2cqw; border-radius: 3cqw; border: .6cqw solid #6ab4ff; background: linear-gradient(#eef8ff, #a6d4ff); color: #123a6a; text-align: center; box-shadow: 0 .8cqw 0 #2a62b8; }
+.sp-gift .sp-t { font-size: 3.8cqw; white-space: normal; } .sp-gift > img { width: 64%; filter: drop-shadow(0 1cqw 1cqw rgba(0,0,0,.25)); }
+.sp-gi { display: grid; grid-template-columns: repeat(3, 1fr); gap: .8cqw; width: 100%; } .sp-gi span { display: grid; justify-items: center; padding: .7cqw 0; border-radius: 1.6cqw; border: .4cqw solid #3a6ac8; background: #1c2f5c; color: #fff; } .sp-gi i { font-style: normal; font-size: 4.4cqw; line-height: 1.1; } .sp-gi small { font-size: 2.2cqw; font-weight: 800; }
+.sp-boxes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.6cqw; }
+.sp-box { display: grid; justify-items: center; align-content: start; gap: .8cqw; padding: 1.8cqw 1.2cqw; border-radius: 3cqw; border: .6cqw solid; color: #fff; text-align: center; box-shadow: 0 .8cqw 0 rgba(0,0,0,.5); min-width: 0; }
+.sp-box.wbox { border-color: #5ad16a; background: radial-gradient(circle at 50% 45%, #3a8a2a, #0f3a0c 70%); } .sp-box.abox { border-color: #4aa8ff; background: radial-gradient(circle at 50% 45%, #2a5aaa, #0c2450 70%); } .sp-box.cbox { border-color: #c07aff; background: radial-gradient(circle at 50% 45%, #6a3aaa, #2a0f50 70%); }
+.sp-box .sp-t { font-size: 4cqw; -webkit-text-stroke: .7cqw rgba(0,0,0,.6); paint-order: stroke fill; max-width: 100%; } .sp-box .sp-d { font-size: 2.1cqw; } .sp-box > img { width: 86%; aspect-ratio: 1; object-fit: contain; filter: drop-shadow(0 1cqw 1.4cqw rgba(0,0,0,.5)); }
+.sp-grade { padding: .4cqw 1.6cqw; border-radius: 999px; background: rgba(0,0,0,.4); font-size: 2.3cqw; font-weight: 800; white-space: nowrap; } .sp-grade em { font-style: normal; color: #ffb02a; }
+.sp-bt { display: grid; grid-template-columns: 1fr 1fr; gap: .8cqw; width: 100%; } .sp-bt .lb-sbuy { flex-direction: column; gap: .2cqw; padding: 1cqw .2cqw; border-radius: 2cqw; } .sp-bt .lb-sbuy span { font-size: 2.3cqw; white-space: nowrap; } .sp-bt .lb-sbuy b { font-size: 2.8cqw; white-space: nowrap; }
+.sp-gems { display: grid; gap: 1.6cqw; padding: 2cqw; border-radius: 3cqw; border: .6cqw solid #a070ff; background: linear-gradient(#4a2a8a, #22104a); box-shadow: 0 .8cqw 0 #120630; }
+.sp-gh { display: flex; align-items: baseline; justify-content: space-between; gap: 2cqw; } .sp-gh b { font: 900 5cqw/1 "Jua", sans-serif; color: #fff; -webkit-text-stroke: .7cqw #2a0f50; paint-order: stroke fill; } .sp-gh small { font-size: 2.6cqw; color: #d8c8ff; white-space: nowrap; }
+.sp-gg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4cqw; }
+.sp-gc { position: relative; display: grid; justify-items: center; gap: .8cqw; padding: 1.6cqw 1cqw; border-radius: 2.4cqw; background: linear-gradient(#f6eeff, #d8c4ff); color: #3a1f6a; min-width: 0; } .sp-gc > b { font-size: 3cqw; white-space: nowrap; } .sp-gc > img { width: 72%; aspect-ratio: 1; object-fit: contain; }
+.sp-bon { position: absolute; right: .4cqw; top: 5cqw; padding: .4cqw .8cqw; border-radius: 1cqw; background: #e8382c; color: #fff; font: 900 2.1cqw/1.15 sans-serif; font-style: normal; white-space: pre-line; text-align: center; transform: rotate(6deg); }
+/* 장비 — 무기고 배경, 칸은 남색 + 등급 빛 */
+.lb-art.pg-gear .lb-gstage { height: 72cqw; background: url(img/lb/bg-gear.webp) center 62% / cover no-repeat; box-shadow: inset 0 0 0 .5cqw #c9963c, 0 .8cqw 0 #120c06; }
+.lb-art.pg-gear .lb-gslot { background: linear-gradient(#2a3050, #141830); color: #fff; box-shadow: 0 0 1.6cqw rgba(255,210,58,.35), 0 .6cqw 0 rgba(0,0,0,.5); }
+.lb-art.pg-gear .lb-gslot.empty { border-color: #6a7aa0 !important; background: rgba(20,24,48,.82); } .lb-art.pg-gear .lb-gslot small { color: #fff; text-shadow: 0 .2cqw 0 #000; }
+.lb-art.pg-gear .lb-gstats { background: rgba(0,0,0,.5); border-color: #c9963c; } .lb-art.pg-gear .lb-gstats div { border-right-color: rgba(201,150,60,.4); } .lb-art.pg-gear .lb-gstats small { color: #e6d8b8; } .lb-art.pg-gear .lb-gstats b { color: #fff; }
+.lb-art.pg-gear .lb-gfx span, .lb-art.pg-gear .lb-gset, .lb-art.pg-gear .lb-mats span, .lb-art.pg-gear .lb-bulk > div { background: rgba(30,22,12,.85); color: #fff; border-color: #8a6a3a; }
+.lb-art.pg-gear .lb-gset b, .lb-art.pg-gear .lb-gset span { color: #ffe9a8; }
+.lb-art.pg-gear .lb-gitem { background: linear-gradient(#2a3050, color-mix(in srgb, var(--gc, #888) 38%, #141830)); color: #fff; box-shadow: 0 0 1.2cqw color-mix(in srgb, var(--gc, #888) 60%, transparent); } .lb-art.pg-gear .lb-gitem small { color: #fff; }
+.lb-art.pg-gear .lb-ghead b { box-shadow: 0 0 0 .4cqw #5a8a2a; }
+/* 던전 — 큰 그림 카드 */
+.dn-card { position: relative; display: grid; grid-template-columns: 52% 1fr; grid-template-areas: "h i" "d i" "a i"; align-items: start; gap: 1cqw 2cqw; padding: 2.4cqw; border-radius: 3.4cqw; border: .7cqw solid; }
+.dn-card.tower { border-color: #9a8aff; background: linear-gradient(#2c2c86, #14144a); box-shadow: inset 0 0 0 .4cqw #4aa8ff, 0 0 2.4cqw rgba(120,110,255,.6), 0 .8cqw 0 #08082a; }
+.dn-card.raid { border-color: #ff8a3a; background: linear-gradient(#7a1e0a, #3a0a04); box-shadow: inset 0 0 0 .4cqw #ff5a2a, 0 0 2.4cqw rgba(255,90,40,.6), 0 .8cqw 0 #2a0402; }
+.dn-card h3 { grid-area: h; margin: 0; font: 900 6.4cqw/1.1 "Jua", "Noto Sans KR", sans-serif; color: #fff; -webkit-text-stroke: .9cqw #14145a; paint-order: stroke fill; white-space: nowrap; } .dn-card.raid h3 { -webkit-text-stroke-color: #5a0a04; }
+.dn-d { grid-area: d; margin: 0; font-size: 2.5cqw; line-height: 1.35; color: #eef; }
+.dn-art { grid-area: a; aspect-ratio: 482 / 446; border-radius: 2.4cqw; border: .4cqw solid rgba(255,255,255,.55); background: center / cover no-repeat; box-shadow: 0 .6cqw 1.4cqw rgba(0,0,0,.5); }
+.dn-info { grid-area: i; align-self: stretch; display: flex; flex-direction: column; justify-content: flex-end; gap: 1.2cqw; min-width: 0; }
+.dn-box { display: grid; justify-items: center; gap: .3cqw; padding: 1.2cqw 1.4cqw; border-radius: 2cqw; border: .3cqw solid rgba(255,255,255,.28); background: rgba(0,0,0,.42); text-align: center; min-width: 0; }
+.dn-box small { font-size: 2.3cqw; color: #dde; } .dn-box b { font-size: 3.6cqw; color: #ffe36b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; } .dn-box b.dn-big { font: 900 8.4cqw/1 "Jua", sans-serif; -webkit-text-stroke: .6cqw #5a3a08; paint-order: stroke fill; }
+.dn-box.boss b { font: 900 4.6cqw/1.1 "Jua", sans-serif; color: #ffd23a; white-space: normal; } .dn-pill { padding: .2cqw 2cqw; border-radius: 999px; border: .3cqw solid #ff9a5a; background: #3a0a04; color: #fff !important; }
+.dn-two { display: grid; grid-template-columns: 1fr 1fr; gap: 1cqw; } .dn-two .dn-box b { font-size: 2.8cqw; }
+.dn-box.top3 { justify-items: stretch; gap: .6cqw; } .dn-t3 { display: grid; grid-template-columns: 5.4cqw 5.4cqw 1fr auto; align-items: center; gap: 1cqw; font-size: 2.4cqw; text-align: left; }
+.dn-t3 img { width: 100%; } .dn-t3 img:not(.md) { border-radius: 50%; background: #fff; } .dn-t3 span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .dn-t3 b { font-size: 2.4cqw; color: #fff; } .dn-none { margin: .6cqw 0; font-size: 2.4cqw; color: #dde; }
+.dn-go { display: flex; align-items: center; justify-content: center; gap: 1.6cqw; padding: 1.6cqw; border-radius: 3cqw; border: .5cqw solid #1d4a0a; background: linear-gradient(#c4f56a, #52b51e 55%, #3f9a16); color: #fff; font: 900 6cqw/1 "Jua", "Noto Sans KR", sans-serif; -webkit-text-stroke: .9cqw #1d4a0a; paint-order: stroke fill; box-shadow: inset 0 .5cqw 0 rgba(255,255,255,.5), 0 .8cqw 0 #1d4a0a; cursor: pointer; }
+.dn-go i { font-style: normal; font-size: 4.6cqw; color: #ffe36b; } .dn-go:disabled { filter: grayscale(.7); } .dn-go:not(:disabled):active { transform: translateY(.6cqw); box-shadow: 0 .2cqw 0 #1d4a0a; }
+/* 순위 — 명예의 전당 + 시상대 */
+.rk-pod { position: relative; flex: none; margin: 0 -2.6cqw; aspect-ratio: 1024 / 600; background: url(img/lb/bg-rank.webp) center 30% / cover no-repeat; overflow: hidden; }
+.rk-podimg { position: absolute; left: 0; bottom: 0; width: 100%; }
+.rk-p { position: absolute; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; z-index: 1; }
+.rk-p.p1 { left: 51%; top: 20.5%; } .rk-p.p2 { left: 32%; top: 34%; } .rk-p.p3 { left: 70.5%; top: 36.5%; }
+.rk-face { width: 12cqw; aspect-ratio: 1; border-radius: 50%; border: .6cqw solid #c8d0dc; background: #fff; box-shadow: 0 .6cqw 1.2cqw rgba(0,0,0,.5); } .rk-p.p1 .rk-face { width: 15cqw; border-color: #ffd23a; } .rk-p.p3 .rk-face { border-color: #d08a4a; }
+.rk-crown { position: absolute; top: -5.4cqw; font-style: normal; font-size: 6cqw; filter: drop-shadow(0 .4cqw 0 rgba(0,0,0,.4)); }
+.rk-plate { display: grid; justify-items: center; margin-top: -1.2cqw; padding: .4cqw 1.4cqw; border-radius: 1.6cqw; border: .35cqw solid #e8c46a; background: rgba(24,16,6,.86); max-width: 24cqw; } .rk-plate span { font-size: 2.5cqw; font-weight: 800; color: #fff; max-width: 21cqw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .rk-plate b { font-size: 2.5cqw; color: #ffe36b; white-space: nowrap; }
+.rk-p.me .rk-plate { border-color: #8fe36b; box-shadow: 0 0 1.4cqw #8fe36b; } .rk-pdel { position: absolute; right: -5cqw; top: 0; }
+.rk-list { display: grid; border-radius: 3cqw; border: .6cqw solid #8a5a24; background: linear-gradient(#f8ead0, #e8cf9a); color: #3a2a10; overflow: hidden; box-shadow: 0 .8cqw 0 #3a220c; }
+.rk-row { display: grid; grid-template-columns: 11cqw 1fr auto auto; align-items: center; gap: 1.6cqw; padding: 1.3cqw 2.4cqw; border-top: .2cqw solid rgba(138,90,36,.28); font-size: 3.2cqw; }
+.rk-row.hd { border: 0; background: #4a3218; color: #ffe9a8; font-size: 2.8cqw; font-weight: 800; } .rk-row.hd span:last-child { text-align: right; }
+.rk-row .no { text-align: center; font-weight: 900; font-size: 3.8cqw; } .rk-row .nm { display: flex; align-items: center; gap: 1.4cqw; min-width: 0; } .rk-row .nm img { width: 7cqw; border-radius: 50%; border: .3cqw solid #8a5a24; background: #fff; flex: none; } .rk-row .nm b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rk-row .v { font-weight: 900; color: #6a3a08; white-space: nowrap; text-align: right; } .rk-row.me { background: #fff3a8; } .rk-row .lb-del { border: 0; background: none; font-size: 3.4cqw; padding: 0; cursor: pointer; }
+.rk-my { position: sticky; bottom: 0; z-index: 2; display: grid; grid-template-columns: 13cqw 9cqw 1fr auto; align-items: center; gap: 1.6cqw; padding: 1.2cqw 2.4cqw 1.2cqw 1.2cqw; border-radius: 3cqw; border: .6cqw solid #e8a020; background: linear-gradient(#fff6d0, #f5d27a); color: #3a2a10; box-shadow: 0 -1cqw 2.4cqw rgba(0,0,0,.45); }
+.rk-myno { display: grid; justify-items: center; padding: .5cqw; border-radius: 2cqw; background: #4a3218; color: #ffe9a8; } .rk-myno small { font-size: 2.2cqw; } .rk-myno b { font: 900 5cqw/1 "Jua", sans-serif; }
+.rk-my > img { width: 9cqw; border-radius: 50%; border: .4cqw solid #e8a020; background: #fff; } .rk-my .nm { font-weight: 900; font-size: 3.4cqw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .rk-my .v { font-weight: 900; font-size: 3.2cqw; color: #6a3a08; white-space: nowrap; max-width: 40cqw; overflow: hidden; text-overflow: ellipsis; }
+
+.lb-art.pg .lb-big { display: none !important; } .lb-psub { margin: -1cqw 0 0; text-align: center; font-size: 3cqw; color: #e6d8b8; }
+.lb-art.pg .lb-odd { color: #e6d8b8; } .lb-art.pg .lb-sbtx small { color: #e6d8b8; }
+.lb-art.pg-gear .lb-bulk b, .lb-art.pg-gear .lb-mats b { color: #ffe9a8; } .lb-art.pg-gear .lb-mats em { color: #ffe36b; }
+.rk-plate { max-width: 19cqw; padding: .3cqw 1cqw; } .rk-plate span { max-width: 17cqw; font-size: 2.3cqw; } .rk-plate b { font-size: 2.3cqw; }
+.rk-p.p2 { left: 30.5%; top: 35%; } .rk-p.p3 { left: 71.5%; top: 37.5%; } .rk-p.p2 .rk-plate, .rk-p.p3 .rk-plate { margin-top: -.6cqw; }
 </style>
 </head>
 <body>
@@ -1700,7 +1793,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610290430";
+  const BUILD = "202610290453";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -5873,7 +5966,7 @@ body.game-full { overflow: hidden; }
       [LOB_LIVE, LOB_RANK].forEach((n) => { if (n && L.contains(n)) $("gameView").appendChild(n); }); // 순위 칸에 빌려 간 순위표를 제자리로(안 그러면 지워짐)
       const art = el("div", "lb-art"), lv = P && P.lv ? P.lv : { lv: 1, cur: 0, need: 100 };
       /* 새 로비(2026-10-29 ChatGPT 시안 · 글자 없는 조각 그림 ui-* · ic-*, 글자 · 숫자는 코드로) */ const ui = (n, css, cls) => { const i = el("img", "lb-ui" + (cls ? " " + cls : "")); i.src = LBI(n); i.alt = ""; i.style.cssText = css; i.draggable = false; art.appendChild(i); return i; };
-      art.classList.add("v2"); art.style.backgroundImage = "url(" + LBI("bg-ch" + (LOB_BG[lobBgN] ? lobBgN : 1)) + ")";
+      art.classList.add("v2"); if (lobTab !== "go") art.classList.add("pg", "pg-" + (lobTab === "skin" || lobTab === "wpn" ? "gear" : lobTab)); /* 탭 화면 새 디자인(2026-10-29 시안 2~4) */ art.style.backgroundImage = "url(" + LBI("bg-ch" + (LOB_BG[lobBgN] ? lobBgN : 1)) + ")";
       ui("ui-face", px(14, 14, 152, 148)); ui("face", px(37, 35, 106, 106), "face"); ui("ui-name", px(150, 22, 272, 140)); ui("ui-pill", px(444, 24, 236, 62)); ui("ui-pill", px(694, 24, 236, 62)); ui("ui-pill", px(444, 98, 236, 62)); ui("ic-en", px(420, 14, 70, 80), "ic");
       { const c = el("span", "lb-coin", ""); c.style.cssText = px(670, 18, 74, 74); art.appendChild(c); }
       const nk = el("span", "lb-nick", nick()); nk.style.cssText = px(178, 40, 220, 40);
@@ -5958,6 +6051,9 @@ body.game-full { overflow: hidden; }
       lobBusy = true; lobErr = ""; lobDraw();
       call("gameStart", token, { ch: ch, raid: raid ? 1 : 0, mode: mode || 0 }).then((r) => { lobBusy = false; LP = r; LP.got = Date.now(); go(r); }).catch((e) => { lobBusy = false; lobErr = errMsg(e); lobDraw(); });
     }
+    /* 탭 위 장면(2026-10-29 시안) — ChatGPT 글자 없는 배경 그림 + 간판 글자는 코드로 */
+    function lobScene(bg, title) { const d = el("div", "lb-scene"); d.style.backgroundImage = "url(" + LBI(bg) + ")"; d.appendChild(el("b", "sg", title)); return d; }
+    function lobPlate(ic, title) { const d = el("div", "lb-plate"); d.append(el("i", null, ic), el("b", null, title)); return d; }
     function lobHead(sign, sub) { const h = el("div", "lb-head"), i = el("img"); i.src = LBI(sign); i.alt = ""; h.append(i, el("p", null, sub)); return h; }
     function lobCard(pic, name, small, on, lock, fn) { const b = el("button", "lb-card" + (on ? " on" : "") + (lock ? " lock" : "")); b.type = "button"; const i = el("img"); i.src = LBI(pic); i.alt = ""; b.append(i, el("b", null, name), el("small", null, small)); if (fn) b.onclick = fn; else b.disabled = true; return b; }
     function lobWpn(P) {
@@ -5981,7 +6077,7 @@ body.game-full { overflow: hidden; }
         { const GL = el("div", "lb-awk-tr"); (WGRADE[(WPN[sel] || {}).hero] || []).forEach((g0, gi) => GL.appendChild(el("small", gi < a ? "on" : "", (gi < a ? "✔ " : "🔒 ") + GRADE_N[gi + 1] + " ㆍ " + g0.t))); aw.appendChild(GL); } /* 등급마다 바뀌는 평타 */
         const ab = el("button", "lb-awkbtn" + (a >= 3 ? " max" : "")); ab.type = "button"; ab.setAttribute("aria-label", a >= 3 ? "전설 완성" : "각성"); ab.innerHTML = a >= 3 ? "<b>★</b>" : "<b>★</b><i>▲</i>"; /* 각성 — 별 + 위 화살표 아이콘 */ ab.disabled = a >= 3 || P.free || !AC || have < AC.dup || (P.gold || 0) < AC.gold || ((P.mats || [])[AC.tier] || 0) < AC.n; ab.onclick = () => lobAct("gameAwaken", sel); aw.appendChild(ab); det.appendChild(aw); }
       det.appendChild(el("small", "lb-ghint", "같은 무기는 무기 상자 · 10장마다 깨기 보상으로 얻어요"));
-      return [lobHead("sign-wpn", "다양한 무기를 장착하고 더 강력하게!"), grid, det];
+      return [lobPlate("⚔", "무기"), el("p", "lb-psub", "다양한 무기를 장착하고 더 강력하게!"), grid, det];
     }
     /* 장비 탭(2026-10-28 부장님 참고 그림 「장비 착용」) — 가운데 수달 · 왼쪽 투구 · 갑옷 · 장갑 · 오른쪽 무기 · 허리띠 · 신발 · 아래 장신구 · 능력치 · 세트 · 장비 가방 */
     const GRADE_N = ["일반", "희귀", "영웅", "전설"], GRADE_C = ["#9aa3ad", "#3d8bff", "#a64dff", "#ffb300"];
@@ -6149,24 +6245,30 @@ body.game-full { overflow: hidden; }
     function lobAct2(fn, a, b) { if (lobFree() || lobBusy) return; lobBusy = true; lobErr = ""; call(fn, token, a, b).then((r) => { lobBusy = false; LP = r; LP.got = Date.now(); lobDraw(); }).catch((e) => { lobBusy = false; lobErr = errMsg(e); lobDraw(); }); }
     /* 던전 탭 — 1~10장 · 무한의 탑 한눈에. 누르면 출전 화면 그 장으로 */
     function lobDun(P) {
-      const out = [el("div", "lb-ghead")]; out[0].append(el("b", null, "🗺 던전"), el("span", "lb-power", "최고 " + (P.tower || 0) + "층"));
-      const tw = el("button", "lb-dcard tower"); tw.type = "button"; tw.style.backgroundImage = "url(img/maps/m" + (1 + Math.floor((P.tower || 0) / 10) % 10) + ".jpg?v=" + BUILD + ")"; tw.append(el("b", null, "🗼 무한의 탑"), el("small", null, "최고 " + (P.tower || 0) + "층 · 오를수록 보상이 커져요"), el("i", null, "⚡ " + (P.cost || 5))); tw.onclick = () => lobStart(0); out.push(tw);
-      /* 보상 표는 뺌(2026-10-28 "무한의 탑 보상은 저렇게 적을 필요가 있나") — 대신 보스 레이드 · 이번 주 피해 순위 */
-      const wi = raidWeek(), rd = el("button", "lb-dcard raid"); rd.type = "button"; rd.style.backgroundImage = "url(img/maps/m" + (wi + 1) + ".jpg?v=" + BUILD + ")"; { const bi = el("img", "lb-rboss"); bi.src = LBI("boss-" + (wi + 1)); bi.alt = ""; rd.appendChild(bi); }
-      rd.append(el("b", null, "⚔ 보스 레이드"), el("small", null, "120초 · 이번 주 " + OCB[wi]), el("small", null, "내 최고 피해 " + (P.raidBest || 0).toLocaleString()), el("i", null, "⚡ " + (P.cost || 5))); rd.onclick = () => lobStart(0, true); out.push(rd);
-      const RB = raidBoard, tb = el("div", "lb-table raidt"), hd = el("div", "lb-tr hd"); hd.append(el("span", null, "순위"), el("span", null, "닉네임"), el("span", null, "피해")); tb.append(el("b", "lb-rtitle", "🏆 이번 주 피해 순위"), hd);
-      if (!RB) { tb.appendChild(el("p", "lb-note", "불러오는 중…")); if (!raidLoading && !P.free) { raidLoading = true; call("gameRaidBoard", token).then((r) => { raidLoading = false; raidBoard = r; if (lobTab === "dun") lobDraw(); }).catch(() => { raidLoading = false; }); } }
-      else { RB.top.slice(0, 10).forEach((x, i) => { const r = el("div", "lb-tr" + (me && x.id === me.id ? " me" : "")); r.append(el("span", "rk", ["🥇", "🥈", "🥉"][i] || String(i + 1)), el("span", "nm", x.nick), el("span", null, x.dmg.toLocaleString())); tb.appendChild(r); });
-        if (!RB.top.length) tb.appendChild(el("p", "lb-note", "아직 도전한 사람이 없어요 ㆍ 첫 기록을 남겨요!"));
-        if (RB.mine && RB.mine.rank > 10) { const r = el("div", "lb-tr me"); r.append(el("span", "rk", String(RB.mine.rank)), el("span", "nm", (me && me.gameId) || "나"), el("span", null, RB.mine.dmg.toLocaleString())); tb.appendChild(r); } }
-      out.push(tb); return out;
+      /* 던전(2026-10-29 ChatGPT 시안 4) — 무한의 탑(파랑 · 보라 테) · 보스 레이드(빨강 테), 그림 왼쪽 · 정보 오른쪽 · 초록 도전 단추 */
+      const out = [lobPlate("🌀", "던전")], go = (fn) => { const b = el("button", "dn-go"); b.type = "button"; b.append(el("span", null, "도전"), el("i", null, "⚡" + (P.cost || 5))); b.disabled = lobBusy; b.onclick = fn; return b; };
+      const art = (n) => { const a = el("div", "dn-art"); a.style.backgroundImage = "url(" + LBI(n) + ")"; return a; };
+      { const c = el("div", "dn-card tower"), inf = el("div", "dn-info"), best = el("div", "dn-box"); best.append(el("small", null, "내 최고 층"), el("b", "dn-big", (P.tower || 0) + "층"));
+        const nx = Math.floor((P.tower || 0) / 10) * 10 + 10, nb = el("div", "dn-box"); nb.append(el("small", null, "다음 보상"), el("b", null, nx + "층"), el("small", null, "10층마다 부품 · 보석"));
+        inf.append(best, nb, go(() => lobStart(0)));
+        c.append(el("h3", null, "무한의 탑"), el("p", "dn-d", "끝없이 이어지는 탑에 도전하세요!"), art("art-tower"), inf); out.push(c); }
+      { const wi = raidWeek(), RB = raidBoard, c = el("div", "dn-card raid"), inf = el("div", "dn-info"), left = Math.max(0, Math.ceil((Date.now() + 9 * 3600e3 + 3 * 864e5) / 6048e5) * 6048e5 - 9 * 3600e3 - 3 * 864e5 - Date.now());
+        if (!RB && !raidLoading && !P.free) { raidLoading = true; call("gameRaidBoard", token).then((r) => { raidLoading = false; raidBoard = r; if (lobTab === "dun") lobDraw(); }).catch(() => { raidLoading = false; }); }
+        const bo = el("div", "dn-box boss"); bo.append(el("small", "dn-pill", "이번 주 보스"), el("b", null, OCB[wi]), el("small", null, "⏱ 남은 시간 " + Math.floor(left / 864e5) + "일 " + Math.floor(left % 864e5 / 3600e3) + "시간"));
+        const two = el("div", "dn-two"), a1 = el("div", "dn-box"), a2 = el("div", "dn-box"), mr = RB && RB.mine ? RB.mine.rank : (RB ? RB.top.findIndex((x) => me && x.id === me.id) + 1 : 0);
+        a1.append(el("small", null, "내 최고 피해"), el("b", null, "⚔ " + (P.raidBest || 0).toLocaleString())); a2.append(el("small", null, "이번 주 순위"), el("b", null, "🏆 " + (mr > 0 ? mr + "위" : "—"))); two.append(a1, a2);
+        const t3 = el("div", "dn-box top3"); t3.appendChild(el("small", null, "이번 주 피해 순위 TOP 3"));
+        if (RB && RB.top.length) RB.top.slice(0, 3).forEach((x, i) => { const r = el("div", "dn-t3"), f = el("img"); f.src = LBI("face"); f.alt = ""; const md = el("img", "md"); md.src = LBI("md" + (i + 1)); md.alt = (i + 1) + "위"; r.append(md, f, el("span", null, x.nick), el("b", null, x.dmg.toLocaleString())); t3.appendChild(r); });
+        else t3.appendChild(el("p", "dn-none", RB ? "아직 도전한 사람이 없어요" : "불러오는 중…"));
+        inf.append(bo, two, t3, go(() => lobStart(0, true)));
+        c.append(el("h3", null, "보스 레이드"), el("p", "dn-d", "강력한 보스와의 치열한 전투! " + RAID_SEC + "초 동안 더 많은 피해를 기록하세요!"), art("art-raid"), inf); out.push(c); }
+      return out;
     }
-    /* 상점 — 탕탕특공대 상점처럼 다시(2026-10-28 "상점 아이템 구입 마음에 안 든다, 조사해서 바꿔라"). 부장님 그림 「상점 오픈」 의 왼쪽 분류(특별 상품 · 상자 · 아이템 · 재화)를 위 띠로.
-       고르고 아래로 내려가 사던 것을 → 카드마다 바로 사는 단추 · 상자는 1번 / 10번(9번 값) · 영웅 보장까지 남은 수 · 산 뒤엔 「획득!」 창(상자가 흔들리고 열림) */
+    /* 상점 — 탕탕특공대 상점처럼(2026-10-28) · 새 디자인(2026-10-29 ChatGPT 시안 2) */
     let lobShopCat = "special", shopRw = null;
     function lobShop(P) {
       if (lobSel === "en") { lobShopCat = "en"; lobSel = null; }
-      const pr = (P.shop.items || {}), E = P.shop.en || { n: 10, gem: 15 }, out = [lobHead("sign-shop", "필요한 아이템을 구매하세요!")];
+      const pr = (P.shop.items || {}), E = P.shop.en || { n: 10, gem: 15 }, out = [lobScene("bg-shop", "상점")];
       const cats = el("div", "lb-scat"); [["special", "⭐", "특별 상품"], ["daily", "🛒", "오늘 상점"], ["box", "🎁", "상자"], ["item", "🧪", "아이템"], ["en", "⚡", "재화"]].forEach(([k, ic, n]) => { const b = el("button", k === lobShopCat ? "on" : ""); b.type = "button"; b.append(el("i", null, ic), el("span", null, n)); b.onclick = () => { lobShopCat = k; lobErr = ""; lobDraw(); }; cats.appendChild(b); }); out.push(cats);
       const buyBtn = (txt, price, dis, fn, cls) => { const b = el("button", "lb-sbuy" + (cls ? " " + cls : "")); b.type = "button"; b.append(el("span", null, txt)); const gm = price != null && typeof price === "object", pv = gm ? price.gem : price; if (price != null) b.appendChild(el("b", null, (gm ? "💎 " : "💰 ") + pv.toLocaleString())); b.disabled = P.free || dis || (price != null && (gm ? P.gem || 0 : P.gold) < pv); b.onclick = fn; return b; };
       const pic = (n) => { const i = el("img"); i.src = LBI(n); i.alt = ""; return i; };
@@ -6174,12 +6276,29 @@ body.game-full { overflow: hidden; }
       const boxOpen = (k, n) => shopCall("gameBox", k, n, (r) => ({ chest: "box-" + k, list: (r.gots || [r.got]).map((g) => g.wpn ? { pic: (WPN[g.wpn] || WPN.bow).pic, n: (WPN[g.wpn] || {}).n || "무기", g: 3 } : g.gear ? { pic: "g-" + g.gear.k, n: (r.gdef[g.gear.k] || {}).n || "장비", g: g.gear.g, gg: 1 } : { pic: "i-gboost", n: "💰 " + (g.gold || 0), g: 0 }) }));
       const MN = P.matN || ["낡은 부품", "튼튼한 부품", "빛나는 부품", "전설 부품"];
       if (lobShopCat === "special") {
-        out.push(patCard(P, buyBtn, shopCall, MN));
-        const G = P.gift && P.gift.gold ? P.gift : null, fr = el("div", "lb-scard wide"); fr.append(pic("box-gold"), el("b", null, "오늘의 무료 선물"), el("p", null, "💰 300 · ⚡ 5 · 💎 10 ㆍ 하루 한 번"), buyBtn(G ? "무료 받기" : "내일 또 받아요", null, !G, () => shopCall("gameFree", null, null, (r) => ({ chest: "box-gold", list: [{ pic: "i-gboost", n: "💰 " + r.got.gold, g: 3 }, { pic: "i-en", n: "⚡ " + r.got.en, g: 3 }].concat(r.got.gem ? [{ ico: "💎", n: "💎 " + r.got.gem, g: 3 }] : []) })), "free")); out.push(fr);
-        /* 패키지 — 부장님 그림 「상점 오픈」 의 초보자 · 프리미엄 패키지를 게임 머니로(2026-10-28 "다 게임 머니로 살 수 있게, 적정 금액으로"), 한 번씩 */
-        const pk = el("div", "lb-sgrid"); Object.entries(P.packs || {}).forEach(([k, K]) => { const c = el("div", "lb-scard pack " + k); const SH = { exp: "EXP 부스트", gboost: "골드 부스트", luck: "행운 부적" }, its = [((P.boxes || {})[K.box[0]] || {}).n + " ×" + K.box[1], "⚡" + K.en].concat(Object.entries(K.items).map(([i, n]) => SH[i] + (n > 1 ? " ×" + n : ""))); if (K.wbox) its.unshift("무기 1");
-          c.append(el("em", "lb-stag", K.got ? "구매 완료" : "1회 한정"), pic(k === "starter" ? "box-abox" : "box-wbox"), el("b", null, K.n), el("p", null, its.join(" · ")), buyBtn(K.got ? "샀어요" : "구매", K.got ? null : { gem: K.gem }, K.got, () => shopCall("gamePack", k, null, (r) => ({ chest: k === "starter" ? "box-abox" : "box-wbox", list: (r.gots || []).map((g) => g.wpn ? { pic: (WPN[g.wpn] || WPN.bow).pic, n: (WPN[g.wpn] || {}).n, g: 3 } : g.gear ? { pic: "g-" + g.gear.k, n: (r.gdef[g.gear.k] || {}).n, g: g.gear.g, gg: 1 } : { pic: "i-gboost", n: "💰 " + (g.gold || 0), g: 0 }).concat([{ pic: "i-en", n: "⚡ " + K.en, g: 1 }], Object.entries(K.items).map(([i, n]) => ({ pic: ITEMS[i].pic, n: ITEMS[i].n + (n > 1 ? " ×" + n : ""), g: 1 }))) })))); pk.appendChild(c); }); out.push(pk);
-        const g2 = el("div", "lb-sgrid"); ["abox", "cbox"].forEach((k) => { const B = (P.boxes || {})[k]; if (!B) return; const c = el("div", "lb-scard"); c.append(el("em", "lb-stag", "10% 할인"), pic("box-" + k), el("b", null, B.n + " ×10"), el("p", null, "영웅 이상 1개 보장"), buyBtn("10번 열기", { gem: B.gem * 9 }, false, () => boxOpen(k, 10))); g2.appendChild(c); }); out.push(g2);
+        /* 특별 상품(2026-10-29 ChatGPT 시안 2) — 초보자 패키지(큰 금빛 카드) + 오늘의 무료 선물(하늘색) / 무기 · 방어구 · 장신구 상자(초록 · 파랑 · 보라) / 보석 묶음(보라 띠) */
+        const SH = { exp: "EXP 부스트", gboost: "골드 부스트", luck: "행운 부적" }, SI = { exp: "i-exp", gboost: "i-gboost", luck: "i-luck" };
+        const packGo = (k, K) => () => shopCall("gamePack", k, null, (r) => ({ chest: k === "starter" ? "box-abox" : "box-wbox", list: (r.gots || []).map((g) => g.wpn ? { pic: (WPN[g.wpn] || WPN.bow).pic, n: (WPN[g.wpn] || {}).n, g: 3 } : g.gear ? { pic: "g-" + g.gear.k, n: (r.gdef[g.gear.k] || {}).n, g: g.gear.g, gg: 1 } : { pic: "i-gboost", n: "💰 " + (g.gold || 0), g: 0 }).concat([{ pic: "i-en", n: "⚡ " + K.en, g: 1 }], Object.entries(K.items).map(([i, n]) => ({ pic: ITEMS[i].pic, n: ITEMS[i].n + (n > 1 ? " ×" + n : ""), g: 1 }))) }));
+        const packCard = (k, K, cls) => { const c = el("div", "sp-pack " + cls), ul = el("ul", "sp-its"), li = (pc, t) => { const l = el("li"); if (pc.length > 2) l.appendChild(pic(pc)); else l.appendChild(el("i", null, pc)); l.appendChild(el("span", null, t)); ul.appendChild(l); };
+          if (K.wbox) li("w-basic", "무기 1"); li("box-" + K.box[0], (((P.boxes || {})[K.box[0]] || {}).n || "상자") + " ×" + K.box[1]); li("i-en", "에너지 " + K.en); Object.entries(K.items).forEach(([i, n]) => li(SI[i] || "i-exp", SH[i] + (n > 1 ? " ×" + n : "")));
+          const art = el("div", "sp-art"); art.appendChild(pic(k === "starter" ? "pk-starter" : "box-wbox"));
+          c.append(el("em", "sp-rib", K.got ? "구매 완료" : "1회 한정"), el("b", "sp-t", K.n), el("p", "sp-d", k === "starter" ? "수달단의 모험을 시작하는 당신을 위한 특별한 패키지!" : "더 강해지고 싶은 수달을 위한 큰 패키지!"), art, ul, buyBtn(K.got ? "샀어요" : "", K.got ? null : { gem: K.gem }, K.got, packGo(k, K), "sp-green")); return c; };
+        const top = el("div", "sp-top"), PK = P.packs || {};
+        if (PK.starter) top.appendChild(packCard("starter", PK.starter, ""));
+        { const G = P.gift && P.gift.gold ? P.gift : null, c = el("div", "sp-gift"), row = el("div", "sp-gi"), tile = (ic, t) => { const d = el("span"); d.append(el("i", null, ic), el("small", null, t)); row.appendChild(d); };
+          tile("💎", "×10"); tile("💰", "×300"); tile("⚡", "×5");
+          c.append(el("b", "sp-t", "오늘의 무료 선물"), el("p", "sp-d", "매일 특별한 선물을 받아요!"), pic("pk-gift"), row, buyBtn(G ? "▶ 무료 받기" : "내일 또 받아요", null, !G, () => shopCall("gameFree", null, null, (r) => ({ chest: "box-gold", list: [{ pic: "i-gboost", n: "💰 " + r.got.gold, g: 3 }, { pic: "i-en", n: "⚡ " + r.got.en, g: 3 }].concat(r.got.gem ? [{ ico: "💎", n: "💎 " + r.got.gem, g: 3 }] : []) })), "sp-green")); top.appendChild(c); }
+        out.push(top);
+        const bx = el("div", "sp-boxes"), BS = { wbox: "강력한 무기를 얻어요!", abox: "튼튼한 방어구를 얻어요!", cbox: "멋진 장신구를 얻어요!" };
+        ["wbox", "abox", "cbox"].forEach((k) => { const B = (P.boxes || {})[k]; if (!B) return; const c = el("div", "sp-box " + k), gl = el("div", "sp-grade"), bt = el("div", "sp-bt");
+          gl.append(el("span", null, "일반 ~ "), el("em", null, "전설"), el("span", null, " 등급"));
+          bt.append(buyBtn("1회 열기", { gem: B.gem }, false, () => boxOpen(k, 1), "sp-green"), buyBtn("10회 열기", { gem: B.gem * 9 }, k !== "wbox" && (P.gear || []).length > 50, () => boxOpen(k, 10), "ten"));
+          c.append(el("b", "sp-t", B.n), el("p", "sp-d", BS[k] || ""), pic("box-" + k), gl, bt); bx.appendChild(c); });
+        out.push(bx);
+        if (PK.premium) out.push(packCard("premium", PK.premium, "prem"));
+        const gb = el("div", "sp-gems"), gh = el("div", "sp-gh"), gg = el("div", "sp-gg"); gh.append(el("b", null, "💎 보석 묶음"), el("small", null, "가진 보석 " + (P.gem || 0).toLocaleString()));
+        (P.gems || []).forEach((G, i) => { const d = el("div", "sp-gc"), bon = Math.round((G.gem * 20 / G.gold - 1) * 100); d.append(el("b", null, "보석 " + G.gem.toLocaleString() + "개"), pic(["gem-s", "gem-m", "gem-l"][Math.min(2, i)])); if (bon > 0) d.appendChild(el("em", "sp-bon", bon + "%\n추가")); d.appendChild(buyBtn("", G.gold, false, () => shopCall("gameGem", i, null, () => ({ chest: null, list: [{ ico: "💎", n: "💎 " + G.gem.toLocaleString(), g: 3 }] })), "sp-green")); gg.appendChild(d); });
+        gb.append(gh, gg); out.push(gb);
       } else if (lobShopCat === "daily") {
         /* 오늘 상점(2026-10-29 탕탕특공대 일일 상점처럼) — 한국 날짜마다 6칸 바뀜 · 첫 칸 무료 · 칸마다 하루 한 번 */
         const g3 = el("div", "lb-sgrid three"), D = P.gdef || {};
@@ -6192,7 +6311,7 @@ body.game-full { overflow: hidden; }
           const c = el("div", "lb-sbox"), tx = el("div", "lb-sbtx"), N = P.pityN || 10, left = N - ((P.pity || {})[k] || 0);
           tx.append(el("b", null, B.n), el("small", null, ""));
           if (k === "wbox") ["없는 무기가 잘 나와요(70%)", "가진 무기면 각성 재료"].forEach((t) => tx.querySelector("small").appendChild(el("span", "lb-odd", t)));
-          if (k !== "wbox") { const od = tx.querySelector("small"); (P.odds || [0.5, 0.3, 0.14, 0.05, 0.01]).forEach((o, g) => { const e = el("span", "lb-odd", GG_N[g] + " " + Math.round(o * 1000) / 10 + "%"); e.style.color = g ? GG_C[g] : "#6a5a3a"; od.appendChild(e); }); } /* 확률(2026-10-29 실제와 다르게 4등급으로 적혀 있던 것 → 창구 값 그대로) */
+          if (k !== "wbox") { const od = tx.querySelector("small"); (P.odds || [0.5, 0.3, 0.14, 0.05, 0.01]).forEach((o, g) => { const e = el("span", "lb-odd", GG_N[g] + " " + Math.round(o * 1000) / 10 + "%"); e.style.color = g ? GG_C[g] : ""; od.appendChild(e); }); } /* 확률(2026-10-29 실제와 다르게 4등급으로 적혀 있던 것 → 창구 값 그대로) */
           if (k !== "wbox") { const bar = el("div", "lb-pity"), f = el("i"); f.style.width = Math.round((N - left) / N * 100) + "%"; bar.append(f, el("span", null, "영웅 보장까지 " + left + "번")); tx.appendChild(bar); }
           const bt = el("div", "lb-sbbt"); bt.append(buyBtn("1번", { gem: B.gem }, false, () => boxOpen(k, 1)), buyBtn("10번", { gem: B.gem * 9 }, k !== "wbox" && (P.gear || []).length > 50, () => boxOpen(k, 10), "ten")); tx.appendChild(bt);
           c.append(pic("box-" + k), tx); out.push(c);
@@ -6204,7 +6323,7 @@ body.game-full { overflow: hidden; }
       } else {
         const c = el("div", "lb-scard wide"); c.append(pic("i-en"), el("b", null, "에너지 충전 ⚡" + E.n), el("p", null, "30을 넘어도 받아요 · 오늘 " + (P.shop.enLeft || 0) + "번 남음"), buyBtn("충전", { gem: E.gem }, !P.shop.enLeft, () => shopCall("gameBuy", "en", null, () => ({ chest: null, list: [{ pic: "i-en", n: "⚡ " + E.n, g: 1 }] })))); out.push(c);
         /* 보석 바꾸기 — 지금은 골드로(2026-10-29 "보석을 금전으로 사는 방식으로 우선") */
-        const g4 = el("div", "lb-sgrid three"); (P.gems || []).forEach((G, i) => { const d = el("div", "lb-scard day"), bon = Math.round((G.gem * 20 / G.gold - 1) * 100); d.append(el("span", "ico", "💎"), el("em", "lb-stag", bon > 0 ? "덤 " + bon + "%" : "보석"), el("b", null, "💎 " + G.gem.toLocaleString()), buyBtn("", G.gold, false, () => shopCall("gameGem", i, null, () => ({ chest: null, list: [{ ico: "💎", n: "💎 " + G.gem.toLocaleString(), g: 3 }] })))); g4.appendChild(d); });
+        const g4 = el("div", "lb-sgrid three"); (P.gems || []).forEach((G, i) => { const d = el("div", "lb-scard day"), bon = Math.round((G.gem * 20 / G.gold - 1) * 100); d.append(pic(["gem-s", "gem-m", "gem-l"][Math.min(2, i)]), el("em", "lb-stag", bon > 0 ? "덤 " + bon + "%" : "보석"), el("b", null, "💎 " + G.gem.toLocaleString()), buyBtn("", G.gold, false, () => shopCall("gameGem", i, null, () => ({ chest: null, list: [{ ico: "💎", n: "💎 " + G.gem.toLocaleString(), g: 3 }] })))); g4.appendChild(d); });
         out.push(el("h4", "lb-h", "💎 보석 ㆍ 가진 보석 " + (P.gem || 0).toLocaleString()), g4, el("p", "lb-note", "보석으로 상자 · 패키지 · 에너지를 사요 ㆍ 장을 처음 깨거나 탑 10층마다 받아요"));
       }
       return out;
@@ -6255,28 +6374,30 @@ body.game-full { overflow: hidden; }
       const ok = el("button", "lb-buy", "확인"); ok.type = "button"; ok.onclick = () => { shopRw = null; lobDraw(); }; pn.append(g2, ok); ov.appendChild(pn); ov.onclick = (e) => { if (e.target === ov) ok.onclick(); }; return ov;
     }
     function lobRank() {
-      /* 순위표 3개(2026-10-29 부장님 "전체 · 이번 달 · 이번 주 · 레이드가 아니라 전투력 · 무한의 탑 · 레이드") — 무한의 탑 = 예전 전체 칸 */
+      /* 순위표 3개(2026-10-29 부장님 "전투력 · 무한의 탑 · 레이드") · 새 디자인(ChatGPT 시안 3) — 명예의 전당 배경 위 시상대, 4등부터 양피지 줄, 맨 아래 내 순위 */
       if (!["power", "tower", "raid"].includes(lobRankTab)) lobRankTab = "power";
-      const R = ranks || { all: [], month: [], week: [] }, list = (R.all || []).slice(0, 30), mine = list.findIndex((x) => me && x.id === me.id), op = !!(LP && LP.op) || canWrite;
-      const tabs = el("div", "lb-rtabs"); [["power", "⚡ 전투력"], ["tower", "🗼 무한의 탑"], ["raid", "⚔ 레이드"]].forEach(([k, n]) => { const b = el("button", k === lobRankTab ? "on" : "", n); b.type = "button"; b.onclick = () => { lobRankTab = k; lobDraw(); }; tabs.appendChild(b); });
-      if (lobRankTab === "raid") return [lobHead("sign-rank", "보스 레이드 ㆍ 이번 주 피해 순위"), tabs, raidTable(LP || {})];
-      if (lobRankTab === "power") { const PB = powerBoard, L = PB ? PB.top : [], t2 = el("div", "lb-table"), h2 = el("div", "lb-tr hd"); h2.append(el("span", null, "순위"), el("span", null, "닉네임"), el("span", null, "Lv"), el("span", null, "전투력")); t2.appendChild(h2);
+      const R = ranks || { all: [], month: [], week: [] }, op = !!(LP && LP.op) || canWrite;
+      const tabs = el("div", "lb-rtabs rk3"); [["power", "⚔", "전투력"], ["tower", "🗼", "무한의 탑"], ["raid", "👹", "레이드"]].forEach(([k, ic, n]) => { const b = el("button", k === lobRankTab ? "on" : ""); b.type = "button"; b.append(el("i", null, ic), el("span", null, n)); b.onclick = () => { lobRankTab = k; lobDraw(); }; tabs.appendChild(b); });
+      const head = lobPlate("🏆", "순위");
+      if (lobRankTab === "raid") { const RB = raidBoard; if (!RB && !raidLoading && LP && !LP.free) { raidLoading = true; call("gameRaidBoard", token).then((r) => { raidLoading = false; raidBoard = r; if (lobTab === "rank") lobDraw(); }).catch(() => { raidLoading = false; }); }
+        const L = RB ? RB.top : [], M = RB && RB.mine; return rankView(head, tabs, L.map((x) => ({ id: x.id, nick: x.nick, v: x.dmg.toLocaleString() })), "피해", M ? { rank: M.rank, v: M.dmg.toLocaleString() } : null, RB ? "아직 도전한 사람이 없어요" : "불러오는 중…", "이번 주 보스 레이드에 도전해 보세요", "👹"); }
+      if (lobRankTab === "power") { const PB = powerBoard, L = PB ? PB.top : [];
         if ((!PB || Date.now() - PB.got > 60000) && !powerLoading && !lobFree()) { powerLoading = true; call("gamePowerBoard", token).then((r) => { powerLoading = false; powerBoard = r; r.got = Date.now(); if (lobTab === "rank") lobDraw(); }).catch((e) => { powerLoading = false; lobErr = errMsg(e); lobDraw(); }); }
-        L.forEach((x, i) => { const r = el("div", "lb-tr" + (me && x.id === me.id ? " me" : "")), no = el("span", "no"); if (i < 3) { const md = el("img"); md.src = LBI("md" + (i + 1)); md.alt = (i + 1) + "위"; no.appendChild(md); } else no.textContent = i + 1; const nm = el("span", "nm"), f = el("img"); f.src = LBI("face"); f.alt = ""; nm.append(f, el("b", null, x.nick || "?")); r.append(no, nm, el("span", null, String(x.lv)), el("span", null, (x.power || 0).toLocaleString())); t2.appendChild(r); });
-        if (!L.length) t2.appendChild(el("p", "lb-note", PB ? "아직 기록이 없어요" : "불러오는 중…"));
-        const M = PB && PB.mine, m2 = el("div", "lb-mascot rank"), i2 = el("img"); i2.src = LBI("m-rank"); i2.alt = ""; const y2 = el("div", "lb-my"); y2.append(el("small", null, "나의 전투력 순위"), el("b", null, M ? M.rank + "위" : "—"), el("small", null, M ? "⚡ " + M.power.toLocaleString() : "장비를 맞춰 전투력을 올려 보세요")); m2.append(i2, y2);
-        return [lobHead("sign-rank", "최고의 수달이 되어보세요! (전투력)"), m2, tabs, t2]; } /* 순위 탭에도 레이드(2026-10-28) */
-      const tb = el("div", "lb-table" + (op ? " op" : "")), hd = el("div", "lb-tr hd"); hd.append(el("span", null, "순위"), el("span", null, "닉네임"), el("span", null, "층"), el("span", null, "처치")); /* 수달단 무한의 탑 — 층 · 잡은 수(2026-10-29, 예전 단계 · 점수) */ if (op) hd.appendChild(el("span")); tb.appendChild(hd);
-      const sure = (b, label, fn) => { b.onclick = () => { if (b.dataset.sure !== "1") { b.dataset.sure = "1"; b.textContent = "정말?"; setTimeout(() => { b.dataset.sure = ""; b.textContent = label; }, 3000); return; } b.disabled = true; fn(); }; };
-      list.forEach((x, i) => { const r = el("div", "lb-tr" + (i === mine ? " me" : "")), no = el("span", "no"); if (i < 3) { const md = el("img"); md.src = LBI("md" + (i + 1)); md.alt = (i + 1) + "위"; no.appendChild(md); } else no.textContent = i + 1;
-        const nm = el("span", "nm"), f = el("img"); f.src = LBI("face"); f.alt = ""; nm.append(f, el("b", null, x.nick || "?")); r.append(no, nm, el("span", null, (x.stage || 0) + "층"), el("span", null, (x.kills || 0).toLocaleString()));
-        if (op) { const d = el("button", "lb-del", "🗑"); d.type = "button"; d.setAttribute("aria-label", x.nick + " 기록 지우기"); sure(d, "🗑", () => call("deleteGameScore", adminPw || token, "all", x.id).then((r) => { takeRanks(r); lobDraw(); }).catch((e) => { lobErr = errMsg(e); lobDraw(); })); r.appendChild(d); }
-        tb.appendChild(r); });
-      if (!list.length) tb.appendChild(el("p", "lb-note", ranks ? "아직 기록이 없어요" : "불러오는 중…"));
-      const m = el("div", "lb-mascot rank"), mi = el("img"); mi.src = LBI("m-rank"); mi.alt = ""; const my = el("div", "lb-my"); my.append(el("small", null, "나의 순위"), el("b", null, mine >= 0 ? mine + 1 + "위" : "—"), el("small", null, mine >= 0 ? (list[mine].stage || 0) + "층 · " + (list[mine].kills || 0).toLocaleString() + "마리" : "무한의 탑에 도전해 보세요")); m.append(mi, my);
-      const out = [lobHead("sign-rank", "최고의 수달이 되어보세요! (무한의 탑 기록)"), m, tabs, tb];
-      /* 전체 초기화는 오른쪽 「운영자 권한」 으로(2026-10-28) — 줄마다 🗑 는 그대로 */
-      return out;
+        const M = PB && PB.mine; return rankView(head, tabs, L.map((x) => ({ id: x.id, nick: x.nick, v: (x.power || 0).toLocaleString(), lv: x.lv })), "전투력", M ? { rank: M.rank, v: M.power.toLocaleString() } : null, PB ? "아직 기록이 없어요" : "불러오는 중…", "장비를 맞춰 전투력을 올려 보세요", "⚔"); }
+      const list = (R.all || []).slice(0, 30), mine = list.findIndex((x) => me && x.id === me.id);
+      const del = op ? (x) => { const d = el("button", "lb-del", "🗑"); d.type = "button"; d.setAttribute("aria-label", x.nick + " 기록 지우기"); d.onclick = () => { if (d.dataset.sure !== "1") { d.dataset.sure = "1"; d.textContent = "정말?"; setTimeout(() => { d.dataset.sure = ""; d.textContent = "🗑"; }, 3000); return; } d.disabled = true; call("deleteGameScore", adminPw || token, "all", x.id).then((r) => { takeRanks(r); lobDraw(); }).catch((e) => { lobErr = errMsg(e); lobDraw(); }); }; return d; } : null; /* 운영자 — 줄마다 🗑(두 번 눌러 지움) */
+      return rankView(head, tabs, list.map((x) => ({ id: x.id, nick: x.nick, v: (x.stage || 0) + "층", sub: (x.kills || 0).toLocaleString() + "마리", raw: x })), "층", mine >= 0 ? { rank: mine + 1, v: (list[mine].stage || 0) + "층" } : null, ranks ? "아직 기록이 없어요" : "불러오는 중…", "무한의 탑에 도전해 보세요", "🗼", del);
+    }
+    function rankView(head, tabs, L, unit, M, empty, hint, ic, del) {
+      const pod = el("div", "rk-pod"), pimg = el("img", "rk-podimg"); pimg.src = LBI("art-podium"); pimg.alt = ""; pod.appendChild(pimg);
+      [1, 0, 2].forEach((i) => { const x = L[i], s = el("div", "rk-p p" + (i + 1)); if (x) { const f = el("img", "rk-face"); f.src = LBI("face"); f.alt = ""; if (i === 0) s.appendChild(el("i", "rk-crown", "👑")); const pl = el("div", "rk-plate"); pl.append(el("span", null, x.nick || "?"), el("b", null, ic + " " + x.v)); s.append(f, pl); if (me && x.id === me.id) s.classList.add("me"); } pod.appendChild(s); });
+      const tb = el("div", "rk-list"), hd = el("div", "rk-row hd"); hd.append(el("span", null, "순위"), el("span", null, "닉네임"), el("span", null, unit)); tb.appendChild(hd);
+      L.slice(3).forEach((x, j) => { const r = el("div", "rk-row" + (me && x.id === me.id ? " me" : "")), nm = el("span", "nm"), f = el("img"); f.src = LBI("face"); f.alt = ""; nm.append(f, el("b", null, x.nick || "?")); r.append(el("span", "no", String(j + 4)), nm, el("span", "v", ic + " " + x.v)); if (del) r.appendChild(del(x.raw || x)); tb.appendChild(r); });
+      if (del) L.slice(0, 3).forEach((x, i) => { const b = del(x.raw || x); b.classList.add("rk-pdel"); pod.querySelector(".p" + (i + 1)).appendChild(b); });
+      if (!L.length) tb.appendChild(el("p", "lb-note", empty)); else if (L.length <= 3) tb.appendChild(el("p", "lb-note", "4등부터 여기에 보여요"));
+      const my = el("div", "rk-my"), fm = el("img"); fm.src = LBI("face"); fm.alt = ""; const lab = el("div", "rk-myno"); lab.append(el("small", null, "내 순위"), el("b", null, M ? String(M.rank) : "—"));
+      my.append(lab, fm, el("span", "nm", (me && me.gameId) || nick()), el("b", "v", M ? ic + " " + M.v : hint));
+      return [head, tabs, pod, tb, my];
     }
     /* ── 운영자 몰래 보기 (2026-10-28 "다른 사람 게임하는 거 운영자는 몰래 들어가서 볼 수 있게, 내 캐릭터는 투명화해서 따라다니면서") ──
        보는 사람: 0.5초마다 gameWatch(보는 중이라고 20초씩 늘림 + 마지막 상태 받기) → 그 상태로 그림(내 캐릭터는 안 나옴, 화면은 그 사람을 따라감).
