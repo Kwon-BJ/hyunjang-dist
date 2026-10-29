@@ -1700,7 +1700,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610290404";
+  const BUILD = "202610290430";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -3973,6 +3973,11 @@ body.game-full { overflow: hidden; }
        짝수 단계는 시간이 끝나면 대장. 통과하면 30초 휴식 — 「바로 시작」 으로 건너뛸 수 있다 */
     const STAGE_SEC = [30, 35, 40, 45, 50, 55, 60], REST = 30, CLEAN_WAIT = 30;
     function stageLen(n) { return STAGE_SEC[Math.min(n, STAGE_SEC.length) - 1]; }
+    /* 장마다 단계 수 — 2026-10-29 부장님 "3/3 4/4 5/5 6/6 처럼 점점". 탕탕특공대도 앞 장은 짧고 뒤로 갈수록 길어져서 그대로 따름:
+       1장 3단계 → 8장부터 10단계. 보스는 장마다 두 번 — 가운데 단계(중간 보스) · 마지막 단계(최종 보스). 무한의 탑은 예전처럼 2단계마다 */
+    function chStages(c) { return c ? Math.min(10, 2 + c) : Infinity; }
+    function midStage(c) { return Math.ceil(chStages(c) / 2); }
+    function bossStage() { return s.chap ? s.stage === midStage(s.chap) || s.stage === chStages(s.chap) : s.stage % 2 === 0; }
     function aliveCap() { return Math.round(Math.min(150, 30 + s.stage * 6) * ((s && s.chCap) || 1)); }
     /* 장마다 난이도(2026-10-28 "1장부터 10장까지 몬스터 양이랑 난이도 결정해라") — [체력 ×, 공격 ×, 나오는 빠르기 ×, 한 번에 많아야 ×] · 0 = 무한의 탑 · 레이드 */
     const CH_TBL = [[1, 1, 1, 1], [1, 1, 0.8, 0.8], [1.4, 1.2, 0.9, 0.9], [1.9, 1.4, 1, 1], [2.5, 1.7, 1.1, 1.05], [3.2, 2, 1.2, 1.1], [4, 2.3, 1.3, 1.15], [5, 2.7, 1.4, 1.2], [6, 3.1, 1.5, 1.25], [7.2, 3.5, 1.6, 1.3], [8.5, 4, 1.8, 1.4]];
@@ -4158,7 +4163,7 @@ body.game-full { overflow: hidden; }
     /* 멈춤 화면(2026-10-29 ChatGPT 시안 8) — 리본 제목 · 장 · 단계 · 처치 · 시간 칸 · 보유 스킬(공격 · 보조, 별) · 소리 켜기 · 계속하기(초록) · 그만하기(빨강) */
     function showPause() {
       const tiles = el("div", "ps-tiles"), tile = (ic, b, sm) => { const t = el("div", "ps-t"); t.append(el("i", null, ic), el("b", null, b), el("small", null, sm)); tiles.appendChild(t); };
-      tile(s.chap ? "⛰" : "🗼", s.chap ? s.chap + "장" : "무한의 탑", s.chap ? CHAPS[s.chap - 1] : "층 " + s.stage); tile("👿", s.stage + "단계", s.chap ? "/ 10단계" : ""); tile("💀", String(s.kills), "처치 수"); tile("⏱", mmss(s.t), "생존 시간");
+      tile(s.chap ? "⛰" : "🗼", s.chap ? s.chap + "장" : "무한의 탑", s.chap ? CHAPS[s.chap - 1] : "층 " + s.stage); tile("👿", s.stage + "단계", s.chap ? "/ " + chStages(s.chap) + "단계" : ""); tile("💀", String(s.kills), "처치 수"); tile("⏱", mmss(s.t), "생존 시간");
       const sk = el("div", "ps-sk"), grp = (title, cls, list) => { const h = el("div", "ps-gh " + cls, title), g = el("div", "ps-g"); for (let i = 0; i < 6; i++) { const u = list[i], c = el("div", "ps-c" + (u ? "" : " none")); if (u) { const lv = s.up[u.k] || 0, ev = UPS.some((x) => x.evo === u.k && s.up[x.k]); c.appendChild(icon(u.k)); const st = el("i", "ps-st" + (ev ? " evo" : "")); for (let j = 0; j < 5; j++) st.appendChild(el("u", j < lv ? "on" : "", "★")); c.append(st, el("small", null, ev ? "진화" : "Lv." + lv)); } g.appendChild(c); } sk.append(h, g); };
       grp("⚔ 공격 스킬", "atk", UPS.filter((u) => !u.evo && s.up[u.k] && UP_ATK(u))); grp("✚ 보조 스킬", "sup", UPS.filter((u) => !u.evo && s.up[u.k] && !UP_ATK(u)));
       const tg = el("div", "ps-tog"), snd = el("button", "ps-sw"), on = () => $("gSnd").textContent === "🔊"; snd.type = "button"; const paint = () => { snd.className = "ps-sw" + (on() ? " on" : ""); snd.textContent = on() ? "ON" : "OFF"; }; paint(); snd.onclick = () => { $("gSnd").textContent = SND.toggle() ? "🔊" : "🔇"; paint(); }; tg.append(el("span", null, "🔊 소리"), snd);
@@ -4261,7 +4266,7 @@ body.game-full { overflow: hidden; }
         stage: 1, stageT: 0, boxes: [], boxT: 12, pools: [], advance: "", bossN: 0, bossNow: null, aim: Math.PI / 2, mvA: Math.PI / 2, dashT: 0, dashCd: 0, dashX: 0, dashY: 1, trail: [], lock: null, hitFx: 0, fields: [], homs: [], hz: [], walk: 0, moving: false, items: [], flash: 0, shotT: 0, bossKills: 0, up: {}, evo: {}, skills: [], cd: {}, cool: 1, ward: 0, msgT: 0, over: false,
         range: AIM_R, tors: [], wardR: 0, wardSpr: "", ring: null, gaura: null, stealth: 0, rest: 0, cleanT: 0, bossDone: false, god: false, cheat: false };
       s.test = testOn(); $("gTest").hidden = !s.test; opTools();
-      s.chap = o.ch || 0; s.run = o.run || ""; s.raid = !!o.raid; s.mode = s.chap ? diffOf(s.chap) : 0; if (s.chap) { const K = chScale(s.chap); s.chHp = K.hp; s.chDmg = K.dmg; s.chSp = K.sp; s.chCap = Math.min(2.2, K.cap); } else { const CT = CH_TBL[0]; s.chHp = CT[0]; s.chDmg = CT[1]; s.chSp = CT[2]; s.chCap = CT[3]; } setMap(s.chap ? chMap(s.chap) : mapFor(1)); // 장마다 맵(무한의 탑은 1장 맵부터) — 빠져 있어 늘 옛 어두운 맵이었다(2026-10-28)
+      s.chap = o.ch || 0; s.run = o.run || ""; s.raid = !!o.raid; s.mode = s.chap ? diffOf(s.chap) : 0; if (s.chap) { const K = chScale(s.chap); s.chHp = K.hp; s.chDmg = K.dmg; s.chSp = K.sp; s.chCap = Math.min(2.2, K.cap); s.chMv = K.mv; s.painK = MODE_PAIN[K.d]; } else { const CT = CH_TBL[0]; s.chHp = CT[0]; s.chDmg = CT[1]; s.chSp = CT[2]; s.chCap = CT[3]; } setMap(s.chap ? chMap(s.chap) : mapFor(1)); // 장마다 맵(무한의 탑은 1장 맵부터) — 빠져 있어 늘 옛 어두운 맵이었다(2026-10-28)
       { const P0 = WPROF[heroKey] || WPROF.je; s.rate = P0.rate; s.range = Math.round(AIM_R * (P0.range || 1)); } // 무기마다 쏘는 빠르기 · 사거리
       const GS = o.gs || {}; if (GS.hp) { s.max += GS.hp; s.hp = s.max; } if (GS.hpP) { s.max = Math.round(s.max * (1 + GS.hpP / 100)); s.hp = s.max; } if (GS.atk) s.dmg *= 1 + GS.atk / 100; if (GS.spd) s.spd *= 1 + GS.spd / 100; s.defR = (GS.def || 0) / ((GS.def || 0) + 100); // 장비(2026-10-28)
       s.wawk = GS.wawk || 0; s.gearOn = (GS.set || 0) > 0; if (GS.wawk) { s.dmg *= 1 + 0.25 * GS.wawk; if (WGRADE[heroKey] && WGRADE[heroKey][2] && WGRADE[heroKey][2].range && GS.wawk >= 1) {} const R0 = (WGRADE[heroKey] || [])[0]; if (R0 && R0.range) s.range = Math.round(s.range * R0.range); } s.skin = GS.skin || "basic"; /* 무기 각성 · 스킨(2026-10-28) · 숨기기면 창구가 basic 으로 줌 */ { const sg = GS.skinG || 0; if (sg) { s.max = Math.round(s.max * (1 + SKIN_HP[sg])); s.hp = s.max; s.dmg *= 1 + SKIN_ATK[sg]; } }
@@ -4447,7 +4452,7 @@ body.game-full { overflow: hidden; }
       /* 단계가 오를수록 체력 · 공격력 · 빠르기 — "레벨 오르면 오를수록 체력, 공격력 강하게, 속도도 점점 빠르게" (2026-10-26).
          단계마다 체력 +50% · 공격력 +15% · 빠르기 +6%(많아야 2.2배) */
       const F = FOES[kind], st = s.stage - 1, hp = F.hp * 1.15 * (1 + st * 0.6) * (s.chHp || 1); // 2026-10-26 조금 더 세게: 체력 +15% · 단계마다 +60%
-      s.foes.push({ k: kind, skin: skinOf(kind), x: x, y: y, r: F.r, hp: hp, full: hp, spd: F.spd * 1.08 * Math.min(2.4, 1 + st * 0.07), dps: F.dps * 1.15 * (1 + st * 0.2) * (s.chDmg || 1), c: F.c, xp: F.xp, hit: 0, oc: 0, cd: 1 + Math.random() * 2, dash: 0, ph: Math.random() * 10, age: 0 });
+      s.foes.push({ k: kind, skin: skinOf(kind), x: x, y: y, r: F.r, hp: hp, full: hp, spd: F.spd * 1.08 * Math.min(2.4, 1 + st * 0.07) * (s.chMv || 1), dps: F.dps * 1.15 * (1 + st * 0.2) * (s.chDmg || 1), c: F.c, xp: F.xp, hit: 0, oc: 0, cd: 1 + Math.random() * 2, dash: 0, ph: Math.random() * 10, age: 0 });
     }
     /* 단계가 오를 때 한 무리가 빙 둘러싸며 나온다 */
     /* 몬스터 나오는 쪽 — "1단계 좌측 2단계 우측 3단계 윗쪽 4단계 아랫쪽 5단계 4방향 등등, 너무 다방면에서 나오니 정신을 못 차린다" (2026-10-26).
@@ -4496,7 +4501,7 @@ body.game-full { overflow: hidden; }
       s.foes.forEach((f) => s.fx.push({ boom: true, spr: "smoke", x: f.x, y: f.y, r: f.r, c: f.c, size: f.r * 3.4, life: 0.4, dur: 0.4 }));
       s.foes = []; s.ebs = []; s.hz = []; s.bossNow = null; s.arena = null;
       s.gems.forEach((m) => { m.pull = true; });
-      if (s.chap && s.stage >= 10) { chapterClear(); return; } // 10단계 대장까지 — 장을 깸
+      if (s.chap && s.stage >= chStages(s.chap)) { chapterClear(); return; } // 마지막 단계 최종 보스까지 — 장을 깸
       if (s.chap) { msg(s.stage + "단계 통과!"); startStage(); return; } // 시나리오는 쉬지 않고 바로
       s.rest = REST; msg(s.stage + "단계 통과! " + REST + "초 쉬어요");
     }
@@ -4508,14 +4513,18 @@ body.game-full { overflow: hidden; }
       const B = BOSSES[i % BOSSES.length], lap = Math.floor(i / BOSSES.length), k = 1 + lap * 1.0, name = ["", "성난 ", "어둠의 "][cycOf()] + (OCB[(mapIdx || 1) - 1] || B.name) + (lap ? " " + (lap + 1) : "");
       /* 대장은 맵 가운데(시작한 제단)에 — "보스도 중앙에 나오게 해라" (2026-10-27). 나오고 1.6초는 움직이지도 때리지도 않고(wake), 나는 2.5초 보호막 */
       const f = { k: "boss", skin: B.skin, name: name, act: B.act, x: 0, y: 0, wake: 1.6, r: B.r, hp: B.hp * k * (1 + (s.stage - 1) * 0.2) * (s.chHp || 1), full: B.hp * k * (1 + (s.stage - 1) * 0.2) * (s.chHp || 1),
-        spd: B.spd * (1 + lap * 0.1) * Math.min(1.8, 1 + (s.stage - 1) * 0.04), dps: B.dps * (1 + lap * 0.5) * (1 + (s.stage - 1) * 0.1) * (s.chDmg || 1), bd: 1 + (s.stage - 1) * 0.12, c: B.c, xp: B.xp * (1 + lap), hit: 0, oc: 0, cd: 2.5, dash: 0, n: 0, ph: Math.random() * 10, age: 0 };
+        spd: B.spd * (1 + lap * 0.1) * Math.min(1.8, 1 + (s.stage - 1) * 0.04) * (s.chMv || 1), dps: B.dps * (1 + lap * 0.5) * (1 + (s.stage - 1) * 0.1) * (s.chDmg || 1), bd: (1 + (s.stage - 1) * 0.12) * Math.sqrt(s.chDmg || 1), c: B.c, xp: B.xp * (1 + lap), hit: 0, oc: 0, cd: 2.5, dash: 0, n: 0, ph: Math.random() * 10, age: 0 };
       s.ward = Math.max(s.ward, 2.5);
       s.fx.push({ boom: true, spr: "smoke", x: 0, y: 0, r: B.r * 2, c: B.c, size: B.r * 6, life: 0.8, dur: 0.8 }, { spr: "quake", x: 0, y: 0, size: B.r * 7, life: 0.8, dur: 0.8 });
       /* 대장전 — 10 · 20 · 30 …단계 대장은 잡귀를 다 처치하고 맵 가운데 13m × 13m(1040) 결투장에서. 잡을 때까지 잡귀 안 나옴 (2026-10-26, 10m → 13m 2026-10-27 — 맵 세로에 들어가는 가장 큰 네모) */
-      if (s.stage % 10 === 0) {
-        s.foes.forEach((o) => { o.hp = 0; }); s.ebs = []; s.hz = [];
+      const fin = s.chap && s.stage >= chStages(s.chap), mid = s.chap && !fin;
+      if (mid) { f.hp *= 0.6; f.full *= 0.6; f.name = "중간 보스 ㆍ " + f.name; } else if (fin) f.name = "최종 보스 ㆍ " + f.name; // 중간 보스는 체력 60%
+      /* 보스방(2026-10-29 "탕탕특공대처럼 보스 생기면 잔몹은 다 죽고 경험치를 떨어뜨리게") — 장의 보스는 둘 다, 탑은 10층마다 */
+      if (s.chap || s.stage % 10 === 0) {
+        s.foes.forEach((o) => { s.kills++; s.gems.push({ x: o.x, y: o.y, v: o.xp, pull: true }); if (s.fx.length < 150) s.fx.push({ boom: true, spr: "smoke", x: o.x, y: o.y, r: o.r, c: o.c, size: o.r * 3.4, life: 0.4, dur: 0.4 }); });
+        s.foes = []; s.ebs = []; s.hz = [];
         s.arena = { x: 0, y: 0, h: 520 }; arenaClamp(s);
-        s.foes.push(f); s.bossNow = f; msg("대장전! " + name + " ㆍ 결투장 가운데에 나타났다"); return;
+        s.foes.push(f); s.bossNow = f; msg((mid ? "중간 보스 등장!" : fin ? "최종 보스 등장!" : "대장전!") + " 보스방이 닫혔다"); return;
       }
       s.foes.push(f); s.bossNow = f; msg(name + " ㆍ 맵 가운데에 나타남!");
     }
@@ -4532,8 +4541,8 @@ body.game-full { overflow: hidden; }
     }
     function act(f, ux, uy) {
       const a = Math.atan2(uy, ux);
-      if (f.k === "spit") { f.cd = 2.6; bullet(f.x, f.y, a, 160, 8, 5, null, f.skin === "carnivorous_plant" ? "spike" : "orb"); return; }
-      if (f.k === "mage") { f.cd = 3.4; bullet(f.x, f.y, a, 120, 16, 9, "#c084fc", "dfire"); return; }
+      if (f.k === "spit") { f.cd = 2.6; bullet(f.x, f.y, a, 160, 8 * (1 + (s.stage - 1) * 0.15) * (s.chDmg || 1), 5, null, f.skin === "carnivorous_plant" ? "spike" : "orb"); return; }
+      if (f.k === "mage") { f.cd = 3.4; bullet(f.x, f.y, a, 120, 16 * (1 + (s.stage - 1) * 0.15) * (s.chDmg || 1), 9, "#c084fc", "dfire"); return; }
       /* 대장마다 재주 셋을 차례로 — "보스들마다 개성있게 공격스킬 조금 더" (2026-10-26). 피해는 단계에 따라 세진다(f.bd) */
       const bd = (f.bd || 1) * (1 + Math.max(0, f.age - 45) / 30), n = f.n = (f.n || 0) + 1;
       if (f.act === "dash") { // 바위 거인 — 돌진 · 바위 던지기 · 땅 울림
@@ -4593,7 +4602,7 @@ body.game-full { overflow: hidden; }
       if (s.gaura) n *= 0.5; // 금강 기운 — 받는 피해 절반
       /* 깎이는 피해는 모두 합쳐 한꺼번에 최대 체력 25%, 그 뒤 초당 40% 까지 — "76단에서 갑자기 죽는다" (2026-10-27). 76단은 잡귀 150 마리가 한꺼번에 나와 0.8초 만에
          26 마리가 붙고(마리당 초당 147~330) 체력 400 이 0.2초에 0 이 됐다. 몬스터 세기 · 수는 그대로, 둘러싸여도 2초쯤 버텨 빠져나갈 틈 */
-      const room = s.max * PAIN - (s.pain || 0); if (room <= 0) return true; n = Math.min(n, room); s.pain = (s.pain || 0) + n;
+      const room = s.max * ((s.painK || 0)[0] || PAIN) - (s.pain || 0); if (room <= 0) return true; n = Math.min(n, room); s.pain = (s.pain || 0) + n;
       n *= 1 - (s.defR || 0); // 장비 방어력
       s.hp -= n; s.hurt = 0.15; s.hitFx = Math.max(s.hitFx, fx || 0.35); s.calm = 2;
       return true;
@@ -4619,7 +4628,7 @@ body.game-full { overflow: hidden; }
         blast(P.x, P.y, R, 40 + 28 * l); s.fx.push({ boom: true, spr: "smoke", x: P.x, y: P.y, r: R / 2, c: "#ffb347", size: R * 2.4, life: 0.5, dur: 0.5 }, { spr: "quake", x: P.x, y: P.y, size: R * 2.2, life: 0.4, dur: 0.4 }); s.hitFx = Math.max(s.hitFx, 0.2);
       } else if (k === "fire") { /* 화염병 — 가까운 몬스터 쪽으로 1~3병, 땅이 2.5초 불탐(탕탕특공대처럼 자주 · 여러 병) */
         const T = s.foes.filter((f) => f.hp > 0 && (f.x - s.x) ** 2 + (f.y - s.y) ** 2 < 330 * 330).sort(() => Math.random() - 0.5), n = 1 + Math.floor(l / 2);
-        for (let i = 0; i < n; i++) { const f = T[i], P = f ? { x: f.x, y: f.y } : (() => { const a = Math.random() * Math.PI * 2, d = 90 + Math.random() * 120; return { x: s.x + Math.cos(a) * d, y: s.y + Math.sin(a) * d }; })(); s.fields.push({ x: P.x, y: P.y, r: 46 + 6 * l, dps: 20 + 10 * l, life: 2.5, full: 2.5 }); }
+        for (let i = 0; i < n; i++) { const f = T[i], P = f ? { x: f.x, y: f.y } : (() => { const a = Math.random() * Math.PI * 2, d = 90 + Math.random() * 120; return { x: s.x + Math.cos(a) * d, y: s.y + Math.sin(a) * d }; })(); s.fields.push({ x: P.x, y: P.y, r: 46 + 6 * l, dps: 20 + 10 * l, life: 2.5, full: 2.5 }); if (FXV["fxv-fire"] && s.fx.length < 150) s.fx.push({ fxv: "fxv-fire", x: P.x, y: P.y - 10, size: 150 + 12 * l, life: 0.45, dur: 0.45 }); }
       } else if (k === "homing") {
         { const D = droneAt(), n = 2 + Math.floor(l / 2); D.kick = 0.25; for (let i = 0; i < n; i++) { const a = -Math.PI / 2 + (i - (n - 1) / 2) * 0.5; s.homs.push({ x: D.x, y: D.y, a: a, life: 1.2 + 0.15 * l, dmg: 24 + 16 * l, tg: null, px: D.x, py: D.y, R: droneR(l) }); } } /* 드론 자리에서 쏨(2026-10-29) · 레벨마다 범위 · 피해 늘어남 */
       } else if (k === "frost") {
@@ -4672,7 +4681,7 @@ body.game-full { overflow: hidden; }
     /* 테스트 모드 — "너랑 나는(기준량)은 플레이할 때 테스트용으로 공격력 쌔지게, 단계별로 테스트할 수 있게" (2026-10-26).
        기준량 · 관리자 계정(문주 빼고) · 관리자 암호로 들어온 사람에게만 시작 안내에 보인다. 켜면 모든 공격 10배, 순위표에는 안 올린다 */
     const TEST_MUL = 10;
-    function canTest() { return !!((me && (me.gameId === "기준량" || (me.admin && !me.leader))) || (!me && canWrite)); }
+    function canTest() { return !!((me && (isOpName(me.gameId) || (me.admin && !me.leader))) || (!me && canWrite)); }
     function testOn() { if (!canTest()) return false; try { return localStorage.getItem("bmc-game-test") !== "0"; } catch (e) { return true; } }
     function testRow() {
       const lab = el("label", "game-test"), cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = testOn();
@@ -4721,8 +4730,8 @@ body.game-full { overflow: hidden; }
         if (g0.boom) B.boom = Math.max(B.boom || 0, g0.boom); if (g0.boomMul) B.boom = (B.boom || 0) * g0.boomMul; if (g0.dm) B.dm *= g0.dm; if (g0.v) B.v *= g0.v; } return B; }
     function shoot() {
       const WP = wprof();
-      let near = targets();
-      if (!near.length) near = boxTargets();
+      let near = boxTargets(); // 사거리 안에 상자가 있으면 상자 먼저(2026-10-29 부장님 "평타 사거리 안에 상자가 있을 때 상자를 우선 타겟")
+      if (!near.length) near = targets();
       s.lock = near[0] || null;
       for (let i = 0; i < s.multi; i++) {
         /* 겨눌 몬스터보다 부적이 많으면 남는 부적은 그 몬스터를 가운데 두고 양쪽으로 고르게 — 예전엔 한쪽으로만 벌어져 빗나갔다
@@ -4752,7 +4761,7 @@ body.game-full { overflow: hidden; }
       s.trail.forEach((p) => { p.life -= dt; }); s.trail = s.trail.filter((p) => p.life > 0);
       inMap(s); arenaClamp(s);
       /* 숨 고르기 — 맞은 뒤 2초 동안은 안 찬다. 예전엔 맞는 중에도 초당 4까지 차서 안 죽었다 (2026-10-26) */
-      s.calm = Math.max(0, (s.calm || 0) - dt); s.pain = Math.max(0, (s.pain || 0) - s.max * PAIN_RATE * dt);
+      s.calm = Math.max(0, (s.calm || 0) - dt); s.pain = Math.max(0, (s.pain || 0) - s.max * ((s.painK || 0)[1] || PAIN_RATE) * dt);
       if (s.regen && !s.calm) s.hp = Math.min(s.max, s.hp + s.regen * dt);
       s.hurt = Math.max(0, s.hurt - dt); s.castT = Math.max(0, (s.castT || 0) - dt); s.ward = Math.max(0, s.ward - dt); if (!s.ward) { s.wardR = 0; s.wardSpr = ""; }
       /* 피격 효과 (2026-10-26 "주인공이 데미지 받으면 피격 효과") — 화면 가장자리 붉게 · 살짝 흔들림 · 붉은 불꽃 */
@@ -4774,7 +4783,7 @@ body.game-full { overflow: hidden; }
           msg(B.name + " 물러남! 남은 잡귀를 잡아라");
         }
       } else if ((s.stageT += dt) >= stageLen(s.stage)) {
-        if (s.stage % 2 === 0 && !s.bossDone) { s.bossDone = true; spawnBoss(s.bossN++); }
+        if (bossStage() && !s.bossDone) { s.bossDone = true; spawnBoss(s.bossN++); }
         else if (!s.foes.length || (s.cleanT += dt) >= CLEAN_WAIT) stageClear();
       }
       /* 1단계 초당 1마리 → 8단계 13마리 → 많아야 20마리. 단계 시간 안에만, 대장이 있으면 안 나옴, 한 번에 많아야 aliveCap 마리 —
@@ -4883,6 +4892,8 @@ body.game-full { overflow: hidden; }
         s.boxT = 18 + Math.random() * 10;
         if (s.boxes.length < 3) for (let k = 0; k < 15; k++) { const a = Math.random() * Math.PI * 2, d = 220 + Math.random() * 380, x = s.x + Math.cos(a) * d, y = s.y + Math.sin(a) * d; if (!mapOk || inside(x, y)) { s.boxes.push({ x, y, t: 0, hp: 3 }); break; } }
       }
+      /* 물방울 구슬도 상자를 깸(2026-10-29 "물방울로 상자에 가니 안 깨진다") — 몬스터처럼 0.35초에 한 번 */
+      if (s.orbs) s.boxes.forEach((b) => { if (b.hp <= 0 || (b.oc = (b.oc || 0) - dt) > 0) return; for (let i = 0; i < s.orbs; i++) { const a = s.orbA + i * Math.PI * 2 / s.orbs, ox = s.x + Math.cos(a) * 70, oy = s.y + Math.sin(a) * 70; if ((b.x - ox) ** 2 + (b.y - oy) ** 2 < 34 * 34) { b.hp--; b.hitT = 0.12; b.oc = 0.35; if (s.fx.length < 150) s.fx.push({ nfx: "fx-splash", x: b.x, y: b.y, size: 56, life: 0.3, dur: 0.3 }); break; } } });
       s.boxes = s.boxes.filter((b) => { b.t += dt; b.hitT = Math.max(0, (b.hitT || 0) - dt); if (b.hp <= 0) { openBox(b); return false; } return true; });
       s.pools = s.pools.filter((z) => { z.life -= dt; z.warm = Math.max(0, (z.warm || 0) - dt); if (!z.warm && (z.x - s.x) ** 2 + (z.y - s.y) ** 2 < z.r * z.r) ouch(z.dps * dt); return z.life > 0; });
       /* HP 포션 — 주우면 최대 체력의 40% 회복. 구슬 끌기 범위 + 40 안이면 끌려온다 */
@@ -4906,7 +4917,7 @@ body.game-full { overflow: hidden; }
         if (!m.tg || m.tg.hp <= 0 || !s.foes.includes(m.tg)) { let best = m.R ? m.R * m.R : 1e12; m.tg = null; s.foes.forEach((f) => { const d = (f.x - m.x) ** 2 + (f.y - m.y) ** 2; if (d < best) { best = d; m.tg = f; } }); }
         if (m.tg) { let d = Math.atan2(m.tg.y - m.y, m.tg.x - m.x) - m.a; d = Math.atan2(Math.sin(d), Math.cos(d)); m.a += Math.max(-7 * dt, Math.min(7 * dt, d)); }
         m.px = m.x; m.py = m.y; m.x += Math.cos(m.a) * 380 * dt; m.y += Math.sin(m.a) * 380 * dt; m.life -= dt;
-        if (m.tg && (m.tg.x - m.x) ** 2 + (m.tg.y - m.y) ** 2 < (m.tg.r + 6) ** 2) { hurt(m.tg, m.dmg, true); if (s.fx.length < 150) s.fx.push({ nfx: "fx-boom", x: m.x, y: m.y, size: 70, life: 0.35, dur: 0.35 }); s.fx.push({ spark: true, x: m.x, y: m.y, c: 2, life: 0.15 }); m.life = 0; }
+        if (m.tg && (m.tg.x - m.x) ** 2 + (m.tg.y - m.y) ** 2 < (m.tg.r + 6) ** 2) { hurt(m.tg, m.dmg, true); if (s.fx.length < 150) s.fx.push(FXV["fxv-boom"] ? { fxv: "fxv-boom", x: m.x, y: m.y, size: 120, life: 0.6, dur: 0.6 } : { nfx: "fx-boom", x: m.x, y: m.y, size: 70, life: 0.35, dur: 0.35 }); s.fx.push({ spark: true, x: m.x, y: m.y, c: 2, life: 0.15 }); m.life = 0; }
       });
       s.homs = s.homs.filter((m) => m.life > 0);
       if (s.up && s.up.homing) { const D = droneAt(), k2 = Math.min(1, dt * 6); D.x += (D.tx - D.x) * k2; D.y += (D.ty - D.y) * k2; D.kick = Math.max(0, (D.kick || 0) - dt); }
@@ -5024,6 +5035,9 @@ body.game-full { overflow: hidden; }
        img/bg/ = 봉인검록에서 가져온 것(시험/봉인그림-가져오기.cjs): m_<사람>2(서기 · 걷기 · 평타 · 스킬) · m_<사람>3(대시 · 맞기 · 쓰러짐) ·
        mm_<몬스터>(걷기 · 힘 모으기 · 공격 · 맞기 · 쓰러짐) · sfx/sk_*(스킬 영상, 검은 바탕이라 더해 그림). 못 읽으면 예전 그림 그대로 */
     const BGF = {}, BGI = {}, FXV = {}, FXV_AT = { "fxv-thunder": [0.49, 0.55] };
+    /* 스킬 효과 영상 한 칸 그리기(2026-10-29 부장님 "스킬도 영상으로") — p 0~1 = 재생 위치, 검은 바탕은 lighter 로 더해 안 보임. 그림이 없으면 false */
+    function fxvDraw(n, p, x, y, w, rot, al) { const V = FXV[n], I = V && lbImg(n); if (!I) return false; const fr = Math.min(V.n - 1, Math.max(0, Math.floor(p * V.n))), hh = w * V.h / V.w;
+      g.save(); if (!V.al) g.globalCompositeOperation = "lighter"; g.globalAlpha = al == null ? 1 : al; g.translate(x, y); if (rot) g.rotate(rot); g.drawImage(I, (fr % V.cols) * V.w, Math.floor(fr / V.cols) * V.h, V.w, V.h, -w / 2, -hh / 2, w, hh); g.restore(); return true; }
     fetch("img/lb/fxv.json?v=" + BUILD).then((r) => r.json()).then((j) => { Object.assign(FXV, j); Object.keys(j).forEach((n) => lbImg(n)); }).catch(() => {});
     fetch("img/bg/frames.json?v=" + BUILD).then((r) => r.json()).then((j) => { Object.assign(BGF, j); }).catch(() => {});
     function lbImg(n) { let i = BGI["lb:" + n]; if (!i) { i = BGI["lb:" + n] = new Image(); i.src = "img/lb/" + n + ".webp?v=" + BUILD; } return i.complete && i.naturalWidth ? i : null; } // 맵 물건 그림(ChatGPT, 보관/로비그림/맵물건6-gpt.png)
@@ -5464,6 +5478,7 @@ body.game-full { overflow: hidden; }
         s.fx.forEach((x) => {
           /* 스킬 효과 영상(2026-10-28 "봉인검록처럼 동영상으로 · 입체감") — Google Flow 검은 바탕 영상을 칸으로(시험/효과영상-자르기.cjs). 검정은 lighter 로 더해 안 보임 · 꽂히는 자리(FXV_AT)를 몬스터 발에 */
           if (x.bolt && s.up && s.up.thunder) { const TI = lbImg("thun-" + (s.evo && s.evo.thunder ? 6 : Math.min(5, s.up.thunder))); if (TI) { const w = 70 + 6 * Math.min(5, s.up.thunder), h = w * TI.height / TI.width; g.save(); g.globalAlpha = Math.min(1, x.life / 0.2); g.drawImage(TI, x.x + ox - w / 2, x.y + oy - h - 18, w, h); g.restore(); } } /* 번개 구름 단계 그림(2026-10-29 도감) — 번개 위에 */
+          if (x.fxv && fxvDraw(x.fxv, 1 - x.life / (x.dur || 0.5), x.x + ox, x.y + oy, x.size || 100, 0, Math.min(1, x.life / 0.12))) return; // 미사일 폭발 · 화염병 깨짐 영상
           if (x.bolt && FXV["fxv-thunder"]) { const V = FXV["fxv-thunder"], I = lbImg("fxv-thunder"); if (I) { const p = Math.min(0.999, 1 - x.life / (x.dur || 0.65)), fr = Math.floor(p * V.n), sx = (fr % V.cols) * V.w, sy = Math.floor(fr / V.cols) * V.h, w = x.vw || 170, hh = w * V.h / V.w, A = FXV_AT["fxv-thunder"];
             g.save(); g.globalCompositeOperation = "lighter"; g.globalAlpha = Math.min(1, x.life / 0.15); g.drawImage(I, sx, sy, V.w, V.h, x.x + ox - w * A[0], x.y + oy - hh * A[1], w, hh); g.restore(); return; } }
           if (x.nfx || (x.bolt && lbImg("fx-thunder"))) { const I = lbImg(x.nfx || "fx-thunder"); if (I) { const fw = I.width / 4, p = 1 - x.life / (x.dur || 0.3), fr = Math.min(3, Math.floor(p * 4)), sz = x.nfx ? x.size || 90 : 120, w = sz, h = sz * I.height / fw; g.save(); g.globalAlpha = Math.min(1, x.life / 0.12 + 0.2);
@@ -5593,11 +5608,13 @@ body.game-full { overflow: hidden; }
         for (let i = 0; i < s.orbs; i++) {
           const a = s.orbA + i * Math.PI * 2 / s.orbs;
           const x = hx + Math.cos(a) * 70, y = hy + Math.sin(a) * 70;
+          if (fxvDraw("fxv-orb", ((s.t * 4 + i * 0.37) % 1), x, y, 74)) continue; // 물방울 구슬 영상(출렁 · 물보라)
           g.fillStyle = "rgba(111,155,255,.25)"; g.beginPath(); g.arc(x, y, 13, 0, Math.PI * 2); g.fill();
           g.fillStyle = "#6f9bff"; g.beginPath(); g.arc(x, y, 8, 0, Math.PI * 2); g.fill();
         }
         s.tors.forEach((t) => { // 회오리 — 날아가는 그림
           const x = t.x + ox, y = t.y + oy, a = Math.min(1, t.life / 0.3);
+          if (t.spr === "arrow" && fxvDraw("fxv-kunai", (s.t * 3 + (t.ph || 0)) % 1, x, y, 150, 0, t.back ? 1 : Math.min(1, t.life / 0.2))) return; // 쿠나이 = 빙글 도는 표창 영상
           { const NF = { arrow: "fx-kunai", mj_star: "fx-rang", je_storm: "fx-drill" }[t.spr], I = NF && lbImg(NF); if (I) { const fw = I.width / 4, fr = Math.floor((s.t + (t.ph || 0)) * 14) % 4, sz = t.spr === "arrow" ? 46 : t.size || 100, h = sz * I.height / fw; g.save(); g.translate(x, y); g.rotate(t.a); g.globalAlpha = t.back ? 1 : Math.min(1, t.life / 0.2); g.drawImage(I, fr * fw, 0, fw, I.height, -sz / 2, -h / 2, sz, h); g.restore(); return; } } /* 날아가는 스킬 영상 */
           if (t.spr === "arrow") { g.save(); g.translate(x, y); g.scale(1.6, 1.6); shotArt("arrow", 0, 0, t.a, 1); g.restore(); return; }
           if (t.spr) { fxDraw(t.spr, 0, x, y, t.size || 100, { rot: t.spin ? s.t * 14 : t.still ? 0 : t.a, fly: !t.spin && !t.still, alpha: t.back ? 1 : Math.min(1, t.life / 0.2) }); return; } // 그림이 오른쪽을 보고 있어 날아가는 쪽으로 돌림
@@ -5655,7 +5672,7 @@ body.game-full { overflow: hidden; }
       hW("gHp", (100 * s.hp / s.max) + "%");
       const len = stageLen(s.stage);
       hT("gStage", s.rest > 0 ? "휴식 " + mmss(s.rest) + " → " + (s.stage + 1) + "단계"
-        : s.bossNow ? s.stage + "단계 · 대장" : s.stageT < len ? s.stage + "단계 · " + mmss(len - s.stageT) : s.stage + "단계 · 남은 잡귀 " + s.foes.length);
+        : (s.chap ? s.stage + "/" + chStages(s.chap) : s.stage) + "단계 · " + (s.bossNow ? (s.chap ? (s.stage >= chStages(s.chap) ? "최종 보스" : "중간 보스") : "대장") : s.stageT < len ? mmss(len - s.stageT) : "남은 잡귀 " + s.foes.length));
       hH("gRest", !(s.rest > 0));
       if (s.rest > 0) hT("gRest", "휴식 " + mmss(s.rest) + " ㆍ 바로 시작 ▶");
       hT("gLv", "Lv " + s.lv + (s.chap && s.lv >= lvCap() ? " MAX" : ""));
@@ -5723,7 +5740,8 @@ body.game-full { overflow: hidden; }
     $("gRest").addEventListener("pointerdown", (e) => { e.preventDefault(); e.stopPropagation(); if (running && s && s.rest > 0) startStage(); }); // "바로 진행하실 분은 바로 시작" (2026-10-27)
     /* 기준량 점검 단추 — "기준량이 운영자니깐 어떤 스테이지에서 오류가 생기는지 확인, 레벨업 버튼 · 무적 버튼, 기준량 화면만" (2026-10-27).
        기준량 계정에만 보이고, 한 번이라도 쓰면 그 판은 순위표에 안 올린다 */
-    function isOp() { return !!(me && me.gameId === "기준량"); }
+    function isOpName(n) { return n === "운영자" || n === "기준량"; } /* 2026-10-29 기준량 → 운영자 이름 바꿈(옛 이름도 받음) */
+    function isOp() { return !!(me && isOpName(me.gameId)); }
     function opTools() { $("gLvUp").hidden = $("gGod").hidden = !isOp(); $("gGod").setAttribute("aria-pressed", String(!!(s && s.god))); $("gGod").textContent = s && s.god ? "무적 켬" : "무적"; }
     $("gLvUp").addEventListener("pointerdown", (e) => { e.preventDefault(); e.stopPropagation(); if (!isOp() || !running || !s) return; s.cheat = true; s.xp = Math.max(s.xp, s.need); });
     $("gGod").addEventListener("pointerdown", (e) => { e.preventDefault(); e.stopPropagation(); if (!isOp() || !s || s.over) return; s.cheat = true; s.god = !s.god; opTools(); });
@@ -5768,7 +5786,7 @@ body.game-full { overflow: hidden; }
       s.ward = Math.max(s.ward || 0, 2); $("gTest").hidden = !s.test;
       // 2026-10-27 전 판에서 저장된 게임 — 새로 생긴 값 채움(사거리 · 회오리 · 휴식 · 상자 체력)
       s.range = s.range || AIM_R; s.tors = s.tors || []; s.wardR = s.wardR || 0; s.rest = s.rest || 0; s.cleanT = s.cleanT || 0;
-      if (s.bossDone == null) s.bossDone = !!s.bossNow; if (s.stageT > stageLen(s.stage) && !s.bossNow && s.stage % 2 === 0) s.bossDone = true;
+      if (s.bossDone == null) s.bossDone = !!s.bossNow; if (s.stageT > stageLen(s.stage) && !s.bossNow && bossStage()) s.bossDone = true;
       s.boxes.forEach((b) => { if (b.hp == null) b.hp = 3; }); opTools();
       /* 전체 게임 종료 — "지금 홈페이지 로그인한 사람들 전체 게임 종료 한번 시켜라" (2026-10-26). 이 판(FORCE_END) 전 판에서 저장된 게임은 이어하지 않고
          끝낸다(점수는 순위표에). 앞으로의 업데이트는 다시 이어서 */
@@ -5790,9 +5808,9 @@ body.game-full { overflow: hidden; }
     const CH_N = 101, CH_MAPG = [1, 2, 3, 5, 4, 6, 7, 4, 10, 8, 4], chMap = (c) => CH_MAPG[Math.min(10, Math.floor((c - 1) / 10))]; // 10장 묶음 테마마다 전투 맵(숲 · 사막 · 설산 · 늪 · 화산 · 왕국 · 심연 · 마계 · 우주 · 종말 · 지옥)
     /* 난이도 모드 — 30장을 깨면 어려움, 어려움 30장을 깨면 매우 어려움(창구 GP_MODES). 몬스터 체력 · 공격 × */
     /* 난이도는 장에서 정해짐(2026-10-29 부장님 "1~30 쉬움 · 31~60 보통 · 61~90 어려움 · 91~100 매우 어려움 · 101 지옥", 배율은 ChatGPT 기획안) — 구간 안에서도 장마다 조금씩 세짐(DIFF_K) */
-    const MODE_N = ["쉬움", "보통", "어려움", "매우 어려움", "지옥"], MODE_HP = [1, 4.5, 13, 38, 75], MODE_DMG = [1, 2.8, 6.5, 16, 28], MODE_MUL = [1, 1.5, 2, 3, 5], MODE_SP = [1, 1.12, 1.25, 1.4, 1.55], MODE_CAP = [1, 1.25, 1.45, 1.65, 1.8], MODE_BCD = [1, 0.9, 0.8, 0.7, 0.6], DIFF_LO = [1, 31, 61, 91, 101], DIFF_TO = [[4, 2.5, 1.25], [12, 6, 1.4], [35, 15, 1.55], [60, 23, 1.75], [75, 28, 1.8]];
+    const MODE_N = ["쉬움", "보통", "어려움", "매우 어려움", "지옥"], MODE_HP = [1, 5, 15, 50, 120], MODE_DMG = [1, 3, 7.5, 20, 45], MODE_MUL = [1, 1.5, 2, 3, 5], MODE_SP = [1, 1.15, 1.32, 1.55, 1.75], MODE_CAP = [1, 1.25, 1.5, 1.8, 2], MODE_MV = [1, 1.06, 1.13, 1.22, 1.3], MODE_PAIN = [[0.25, 0.4], [0.28, 0.48], [0.32, 0.6], [0.4, 0.8], [0.5, 1]], MODE_BCD = [1, 0.9, 0.8, 0.7, 0.6], DIFF_LO = [1, 31, 61, 91, 101], DIFF_TO = [[4, 2.5, 1.2], [13, 6.5, 1.45], [45, 18, 1.75], [110, 40, 2.1], [120, 45, 2.1]]; /* 2026-10-29 "매우 어려움이 너무 쉽다" — 어려움 · 매우 어려움 · 지옥 크게 올림, 쉬움은 그대로 */
     const diffOf = (c) => c <= 30 ? 0 : c <= 60 ? 1 : c <= 90 ? 2 : c <= 100 ? 3 : 4, DIFF_C = ["#5ad16a", "#4aa8ff", "#ff9a2a", "#e2483a", "#a020f0"];
-    function chScale(c) { const d = diffOf(c), lo = DIFF_LO[d], hi = [30, 60, 90, 100, 101][d], t = hi > lo ? (c - lo) / (hi - lo) : 0, T = DIFF_TO[d], L = (a, b) => a * Math.pow(b / a, t); return { hp: L(MODE_HP[d], T[0]), dmg: L(MODE_DMG[d], T[1]), cap: L(MODE_CAP[d], T[2]) * (d ? 1 : 1), sp: MODE_SP[d] }; } // 구간 처음 → 끝 배율로 고르게(ChatGPT 표: 쉬움 ×1~4 · 보통 ×4.5~12 · 어려움 ×13~35 · 매우 어려움 ×38~60 · 지옥 ×75)
+    function chScale(c) { const d = diffOf(c), lo = DIFF_LO[d], hi = [30, 60, 90, 100, 101][d], t = hi > lo ? (c - lo) / (hi - lo) : 0, T = DIFF_TO[d], L = (a, b) => a * Math.pow(b / a, t); return { hp: L(MODE_HP[d], T[0]), dmg: L(MODE_DMG[d], T[1]), cap: L(MODE_CAP[d], T[2]), sp: MODE_SP[d], mv: MODE_MV[d] * (1 + t * 0.06), d: d }; } // 구간 처음 → 끝 배율로 고르게(ChatGPT 표: 쉬움 ×1~4 · 보통 ×4.5~12 · 어려움 ×13~35 · 매우 어려움 ×38~60 · 지옥 ×75)
     let lobMode = 0, lobModeHand = false; // 난이도를 손으로 고르면 저절로 안 바꿈
     /* 무기(총) — 열쇠는 창구와 같게. hero = 공격 방식(예전 캐릭터 평타 · 스킬), 그림 = img/lb/w-*.webp. 물대포 · 빙결 총 · 유도 미사일은 준비 중 */
     const WPN = { bow: { n: "기본 총", hero: "je", pic: "w-basic", shot: "연사 탄", d: "곧게 날아가는 한 발 ㆍ 무난한 기본 무기" },
