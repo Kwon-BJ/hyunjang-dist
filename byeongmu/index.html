@@ -1331,6 +1331,48 @@ body.game-full { overflow: hidden; }
 .rs-btns { display: flex; gap: 3cqw; justify-content: center; margin-top: 1cqw; }
 .rs-btn { flex: 1; max-width: 46%; min-height: 13cqw; border: solid transparent; border-width: 2.4cqw 5cqw; border-image: url(img/lb/wb-green.webp) 24 52 24 52 fill / 2.4cqw 5cqw; background: none; color: #fff; font: 5cqw/1 "Jua", "Noto Sans KR", sans-serif; -webkit-text-stroke: .9cqw #12400a; paint-order: stroke fill; cursor: pointer; padding: 0; }
 .rs-btn.blue { border-image-source: url(img/lb/wb-blue.webp); -webkit-text-stroke-color: #0a2a6a; } .rs-btn.orange { border-image-source: url(img/lb/wb-orange.webp); -webkit-text-stroke-color: #6a2a04; } .rs-btn:active { transform: translateY(.6cqw); } .rs-btn:focus { outline: none; } .rs-btn:focus-visible { filter: brightness(1.12) drop-shadow(0 0 1.4cqw rgba(255,240,150,.9)); }
+/* 상자 열기 연출(시안 14) — 시간은 --t0(지난 시간)만큼 당김 */
+.lb-reward.bx { display: grid; place-items: center; background: radial-gradient(circle at 50% 45%, rgba(40,26,8,.88), rgba(4,4,10,.97)) !important; }
+.bx-stage { position: relative; width: 86cqw; aspect-ratio: 1; display: grid; place-items: center; }
+.bx-skip { position: absolute; right: 3cqw; top: 3cqw; padding: 1.4cqw 3.4cqw; border: .5cqw solid #c79a4a; border-radius: 2cqw; background: linear-gradient(#4a3418, #2a1c0a); color: #ffe9b0; font: 4cqw/1 "Jua", sans-serif; cursor: pointer; z-index: 3; }
+.bx-chest { position: absolute; width: 62%; animation: bxIn .5s cubic-bezier(.2,1.5,.4,1) both, bxShake .5s linear .5s both, bxOpen .5s ease-in 1s forwards; animation-delay: calc(0s + var(--t0, 0s)), calc(.5s + var(--t0, 0s)), calc(1s + var(--t0, 0s)); }
+.bx.many .bx-chest { animation: bxIn .5s cubic-bezier(.2,1.5,.4,1) both, bxShake .25s linear 4 both, bxOpen .5s ease-in forwards; animation-delay: calc(0s + var(--t0, 0s)), calc(.5s + var(--t0, 0s)), calc(1.4s + var(--t0, 0s)); }
+.bx-rays { position: absolute; inset: -20%; background: repeating-conic-gradient(rgba(255,214,90,.45) 0 8deg, transparent 8deg 22deg); -webkit-mask-image: radial-gradient(closest-side, #000 20%, transparent 75%); mask-image: radial-gradient(closest-side, #000 20%, transparent 75%); opacity: 0; animation: bxRays 3s linear forwards; animation-delay: calc(.6s + var(--t0, 0s)); }
+.bx.many .bx-rays { background: repeating-conic-gradient(rgba(200,120,255,.5) 0 8deg, transparent 8deg 22deg); }
+.bx-flash { position: absolute; width: 70%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, #fff 0, rgba(255,240,180,.9) 30%, rgba(255,200,80,0) 70%); opacity: 0; animation: bxFlash .6s ease-out forwards; animation-delay: calc(1s + var(--t0, 0s)); }
+.bx.many .bx-flash { animation-delay: calc(1.4s + var(--t0, 0s)); }
+.bx-item { position: absolute; width: 40%; aspect-ratio: 1; display: grid; place-items: center; background: center / 100% 100% no-repeat; opacity: 0; animation: bxPop .5s cubic-bezier(.2,1.6,.4,1) forwards; animation-delay: calc(1.5s + var(--t0, 0s)); } .bx-item img { width: 66%; height: 66%; object-fit: contain; }
+.bx-cards { position: absolute; inset: 6% 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 2cqw; align-content: center; }
+.bx-card { position: relative; aspect-ratio: 2 / 3; perspective: 60cqw; opacity: 0; animation: bxCard .45s cubic-bezier(.2,1.4,.4,1) forwards; animation-delay: calc(1.6s + var(--i) * .08s + var(--t0, 0s)); }
+.bx-back, .bx-front { position: absolute; inset: 0; width: 100%; height: 100%; backface-visibility: hidden; -webkit-backface-visibility: hidden; animation: bxFlipB .45s ease-in forwards; animation-delay: calc(2.7s + var(--i) * .06s + var(--t0, 0s)); }
+.bx-back { object-fit: contain; }
+.bx-front { display: grid; place-items: center; background: center / 100% 100% no-repeat; transform: rotateY(180deg); animation-name: bxFlipF; } .bx-front img { width: 70%; height: 70%; object-fit: contain; }
+@keyframes bxIn { from { transform: translateY(30%) scale(.3); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes bxShake { 0%, 100% { transform: rotate(0); } 20% { transform: rotate(-7deg) scale(1.03); } 40% { transform: rotate(7deg) scale(1.05); } 60% { transform: rotate(-6deg) scale(1.06); } 80% { transform: rotate(5deg) scale(1.07); } }
+@keyframes bxOpen { 0% { transform: scale(1.08); opacity: 1; filter: brightness(1.2); } 100% { transform: scale(1.5); opacity: 0; filter: brightness(3); } }
+@keyframes bxRays { 0% { opacity: 0; transform: rotate(0); } 15% { opacity: 1; } 100% { opacity: .8; transform: rotate(60deg); } }
+@keyframes bxFlash { 0% { opacity: 0; transform: scale(.4); } 30% { opacity: 1; } 100% { opacity: 0; transform: scale(2.4); } }
+@keyframes bxPop { from { opacity: 0; transform: translateY(20%) scale(.2); } to { opacity: 1; transform: none; } }
+@keyframes bxCard { from { opacity: 0; transform: translateY(40%) scale(.3) rotate(-12deg); } to { opacity: 1; transform: none; } }
+@keyframes bxFlipB { from { transform: rotateY(0); } to { transform: rotateY(-180deg); } }
+@keyframes bxFlipF { from { transform: rotateY(180deg); } to { transform: rotateY(0); } }
+/* 장 선택 창(시안 17) */
+.lb-art.v2 > .lb-chsel.v2, .lb-chsel.v2 { grid-template-rows: 100%; } /* 줄 높이를 고정해야 창이 82% 로 멈춤 */
+.lb-chsel.v2 .cs-pn { container-type: inline-size; width: min(94%, 520px); box-sizing: border-box; height: 82%; max-height: none; margin-top: 6%; display: grid; grid-template-rows: auto minmax(0, 1fr); padding: 0 2cqw 2cqw; border: solid transparent; border-width: 8cqw 6cqw; border-image: url(img/lb/rs-frame.webp) 115 fill / 8cqw 6cqw; background: none; box-shadow: none; border-radius: 0; overflow: visible; }
+.lb-chsel.v2 .cs-hd { position: relative; display: grid; place-items: center; margin: -12cqw 0 2cqw; padding: 0; background: none; border: 0; }
+.lb-chsel.v2 .cs-hd > b { display: block; padding: 2.4cqw 12cqw; border: solid transparent; border-width: 4cqw 9cqw; border-image: url(img/lb/9s-plate.webp) 120 210 120 210 fill / 4cqw 9cqw; font: 7.6cqw/1 "Jua", sans-serif; color: #fff4c8; -webkit-text-stroke: 1.2cqw #4a2a0a; paint-order: stroke fill; white-space: nowrap; }
+.lb-chsel.v2 .cs-x { position: absolute; right: -2cqw; top: 1cqw; width: 12cqw; height: 12cqw; padding: 0; border: 0; background: none; box-shadow: none; cursor: pointer; } .lb-chsel.v2 .cs-x img { width: 100%; height: 100%; object-fit: contain; }
+.lb-chsel.v2 .cs-gr { display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: max-content; align-content: start; gap: 2.4cqw; overflow-y: auto; padding: 1cqw; min-height: 0; } /* 줄이 칸 크기만큼(정해진 높이 안에서 찌그러지지 않게) */
+.lb-chsel.v2 .cs-dh { grid-column: 1 / -1; justify-self: center; margin: 2cqw 0 .6cqw; padding: 1.2cqw 8cqw; border-radius: 2cqw; border: .6cqw solid #c79a4a; color: #fff; font: 5cqw/1 "Jua", sans-serif; -webkit-text-stroke: .9cqw rgba(0,0,0,.45); paint-order: stroke fill; box-shadow: inset 0 .5cqw 0 rgba(255,255,255,.3), 0 .6cqw 0 rgba(0,0,0,.4); white-space: nowrap; }
+.lb-chsel.v2 .cs-c { position: relative; aspect-ratio: 1 / 1.08; display: block; padding: 0; border: .8cqw solid #c79a4a !important; border-radius: 2cqw; background: #2a1a0a; overflow: hidden; box-shadow: 0 .8cqw 0 rgba(0,0,0,.45); cursor: pointer; color: #fff; }
+.lb-chsel.v2 .cs-th { position: absolute; inset: 0 0 22% 0; background: linear-gradient(#7fc7ff, #d8f0ff 60%, #a8d880); display: grid; place-items: center; overflow: hidden; } .lb-chsel.v2 .cs-th img { width: 112%; height: 112%; object-fit: cover; }
+.lb-chsel.v2 .cs-no { position: absolute; left: 0; right: 0; top: 4%; font: 9cqw/1 "Jua", sans-serif; color: #fff; -webkit-text-stroke: 1.3cqw #2a1a0a; paint-order: stroke fill; text-align: center; }
+.lb-chsel.v2 .cs-st { position: absolute; left: 0; right: 0; top: 36%; display: flex; justify-content: center; gap: .4cqw; } .lb-chsel.v2 .cs-st img { width: 7cqw; height: 7cqw; object-fit: contain; filter: drop-shadow(0 .3cqw .2cqw rgba(0,0,0,.5)); }
+.lb-chsel.v2 .cs-nm { position: absolute; left: 4%; right: 4%; bottom: 3%; height: 18%; display: grid; place-items: center; border-radius: 1.4cqw; background: linear-gradient(#6a4220, #3e2410); box-shadow: inset 0 0 0 .4cqw #a8743a; font: 3.8cqw/1 "Jua", sans-serif; color: #fff4d8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 1cqw; }
+.lb-chsel.v2 .cs-c.now { border-color: #ffd23a !important; box-shadow: 0 0 0 .6cqw #ffe98a, 0 0 4cqw rgba(255,210,58,.85), 0 .8cqw 0 rgba(0,0,0,.45); animation: csGlow 1.4s ease-in-out infinite; } @keyframes csGlow { 50% { box-shadow: 0 0 0 .6cqw #fff3b0, 0 0 6cqw rgba(255,210,58,1), 0 .8cqw 0 rgba(0,0,0,.45); } }
+.lb-chsel.v2 .cs-c.sel:not(.now) { box-shadow: 0 0 0 .6cqw #8fd8ff, 0 .8cqw 0 rgba(0,0,0,.45); }
+.lb-chsel.v2 .cs-c.lock { cursor: default; } .lb-chsel.v2 .cs-c.lock .cs-th { filter: grayscale(.6) brightness(.38); } .lb-chsel.v2 .cs-c.lock .cs-no { color: #c8c8c8; } .lb-chsel.v2 .cs-c.lock .cs-nm { color: #b8b0a0; }
+.lb-chsel.v2 .cs-lk { position: absolute; left: 50%; top: 34%; width: 14cqw; transform: translateX(-50%); filter: drop-shadow(0 .4cqw .3cqw rgba(0,0,0,.6)); }
 .it-list { display: grid; gap: 2.6cqw; } /* 아이템 탭(시안 16) */
 .it-card { --c: #2f7cf0; --c2: #9fd2ff; --hi: #6fd0ff; --lo: #0b3fa8; display: grid; grid-template-columns: 40% 1fr; min-height: 36cqw; border: .9cqw solid var(--c); border-radius: 2.6cqw; overflow: hidden; background: #fbecc8; box-shadow: inset 0 0 0 .35cqw var(--c2), 0 .8cqw 0 rgba(0,0,0,.45), 0 0 2cqw color-mix(in srgb, var(--c) 55%, transparent); }
 .it-card.gold { --c: #e3a21a; --c2: #ffe08a; --hi: #ffd45a; --lo: #b85a08; } .it-card.purple { --c: #9b4be8; --c2: #d9b4ff; --hi: #c47cff; --lo: #4a138a; }
@@ -2023,7 +2065,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610291250";
+  const BUILD = "202610291320";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -6308,11 +6350,15 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     let lobChSel = false; const CH_ISL = Object.fromEntries(Array.from({ length: 30 }, (_, i) => [i + 1, 1])); /* 장 그림이 있는 장 */
     /* 장 선택 창(2026-10-29) — 101장을 칸으로: 깬 장 ★ · 도전할 장 빛 · 안 열린 장 자물쇠, 난이도 색 띠. 누르면 그 장으로 */
     function chGrid(P, chM, clr) {
-      const ov = el("div", "lb-chsel"), pn = el("div", "cs-pn"), hd = el("div", "cs-hd"), x = el("button", "cs-x", "✕"); x.type = "button"; x.onclick = () => { lobChSel = false; lobDraw(); }; hd.append(el("b", null, "장 선택"), x);
+      /* 2026-10-29 ChatGPT 시안 17 — 나무 틀(rs-frame) · 간판(9s-plate) · 빨간 닫기(ui-x) · 난이도 띠 · 한 줄 3칸 카드(섬 그림 · 큰 번호 · 별 · 나무 이름판) · 도전할 장 금빛 · 잠긴 장 어둡게 + 자물쇠 */
+      const ov = el("div", "lb-chsel v2"), pn = el("div", "cs-pn"), hd = el("div", "cs-hd"), x = el("button", "cs-x"); x.type = "button"; x.setAttribute("aria-label", "닫기"); { const xi = el("img"); xi.src = LBI("ui-x"); xi.alt = ""; x.appendChild(xi); } x.onclick = () => { lobChSel = false; lobDraw(); }; hd.append(el("b", null, "장 선택"), x);
       const gr = el("div", "cs-gr"); let d0 = -1;
       for (let c = 1; c <= CH_N; c++) { const d = diffOf(c); if (d !== d0) { d0 = d; const h = el("div", "cs-dh", MODE_N[d] + " · " + DIFF_LO[d] + (d < 4 ? "~" + [30, 60, 90, 100][d] : "") + "장"); h.style.background = DIFF_C[d]; gr.appendChild(h); }
         const op = P.op || c <= chM, b = el("button", "cs-c" + (clr(c) ? " done" : "") + (op ? "" : " lock") + (c === chM ? " now" : "") + (c === lobCh ? " sel" : "")); b.type = "button"; b.style.borderColor = DIFF_C[d];
-        b.append(el("b", null, String(c)), el("small", null, clr(c) ? "★" : op ? CHAPS[c - 1] : "🔒")); b.onclick = () => { if (!op) return; lobCh = c; lobChSel = false; lobDraw(); }; gr.appendChild(b); }
+        { const th = el("div", "cs-th"), im = el("img"); im.src = LBI("isl-" + ((c - 1) % 30 + 1)); im.alt = ""; th.appendChild(im); b.appendChild(th); }
+        b.appendChild(el("b", "cs-no", String(c)));
+        if (op) { const st = el("div", "cs-st"); for (let k = 0; k < 3; k++) { const si = el("img"); si.src = LBI(clr(c) ? "rs-star" : "rs-star0"); si.alt = ""; st.appendChild(si); } b.appendChild(st); } else { const lk = el("img", "cs-lk"); lk.src = LBI("ii-lock"); lk.alt = "잠김"; b.appendChild(lk); }
+        b.appendChild(el("small", "cs-nm", CHAPS[c - 1])); b.onclick = () => { if (!op) return; lobCh = c; lobChSel = false; lobDraw(); }; gr.appendChild(b); }
       pn.append(hd, gr); ov.appendChild(pn); ov.onclick = (ev) => { if (ev.target === ov) x.onclick(); }; setTimeout(() => { const n = gr.querySelector(".sel") || gr.querySelector(".now"); if (n) n.scrollIntoView({ block: "center" }); }, 0); return ov;
     }
     const LOB_BG = { 1: 1, 11: 1, g1: 1, g2: 1, g3: 1 }; // 장마다 로비 배경(ChatGPT, img/lb/bg-chN.webp) — 없으면 1장 그림
@@ -6378,9 +6424,8 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
       card.append(el("div", "k", "튜토리얼"), el("div", "sc gold-text", "건너뛸까요?"), el("div", "det", "건너뛰면 튜토리얼 보상(골드 · 보석)을 받을 수 없어요"));
       row.append(gBtn("건너뛰기", () => tutEnd(false), "ghost"), gBtn("계속하기", () => { resume(); tutMsg(); })); panel([card, row]); }
     function tutEnd(done) { running = false; stick = null; s.over = true; s.tut = 9; $("gameHud").hidden = true;
-      const card = el("div", "game-card"), rw = el("div", "rank", done ? "보상 받는 중…" : "보상 없이 건너뛰었어요"), row = el("div", "actions"); row.style.justifyContent = "center";
-      card.append(el("div", "k", "튜토리얼"), el("div", "sc gold-text", done ? "완료!" : "건너뜀"), rw); row.append(gBtn("로비로", () => { lobCh = 1; lobby(); })); panel([card, row]);
-      if (!token) return; call("gameTutorial", token, done ? 1 : 0).then((x) => { const g = x && x.got; if (x) { LP = x; LP.got = Date.now(); } /* got 은 받은 보상 — 받은 시각으로 덮기 전에 */ rw.textContent = g ? "보상 골드 +" + g.gold.toLocaleString() + " ㆍ 보석 +" + g.gem : done ? "튜토리얼 끝 ㆍ 보상은 처음 한 번만" : "보상 없이 건너뛰었어요"; }).catch((e) => { rw.textContent = errMsg(e); });
+      const V = rsShow({ win: !!done, top: "튜토리얼", name: "수달단 훈련", big: done ? "완료!" : "건너뜀", stars: done ? 3 : 0, wait: done ? "보상 받는 중…" : "보상 없이 건너뛰었어요", stats: [["rs-time", "걸린 시간", mmss(s.t)], ["rs-ghost", "잡은 잡귀", String(s.kills)], ["lv", "달성 레벨", "Lv." + s.lv]], btns: [["로비로", "blue", () => { lobCh = 1; lobby(); }], ["1장 출전", "green", () => { lobCh = 1; lobby(); }]] }), rw = V.note; rsTiles({}, V.grid); /* 결과 창(시안 15)으로(2026-10-29) */
+      if (!token) return; call("gameTutorial", token, done ? 1 : 0).then((x) => { const g = x && x.got; if (x) { LP = x; LP.got = Date.now(); } /* got 은 받은 보상 — 받은 시각으로 덮기 전에 */ if (g) rsTiles({ gold: g.gold, gem: g.gem }, V.grid); rw.textContent = g ? "보상 골드 +" + g.gold.toLocaleString() + " ㆍ 보석 +" + g.gem : done ? "튜토리얼 끝 ㆍ 보상은 처음 한 번만" : "보상 없이 건너뛰었어요"; }).catch((e) => { rw.textContent = errMsg(e); });
     }
     /* 휴대폰 전체화면(2026-10-29 부장님 「휴대폰으로 하는 사람이 전체화면이 안 된다」) — 「크게」 단추를 지운 뒤로 브라우저 전체화면을 켜는 길이 없었음.
        출전을 누르는 그 순간(손가락 누름 안에서만 허락됨) 화면 전체를 켬. 아이폰 사파리 · 카카오톡 안 브라우저는 웹 전체화면이 막혀 있어 안 됨(홈 화면에 추가하면 앱처럼) */
@@ -6745,13 +6790,29 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     }
     /* 부품 그림(2026-10-29 ChatGPT) — 낡은 mt-0 · 튼튼한 mt-1 · 빛나는 mt-2 · 전설 mt-3 */
     function matImg(t) { const i = el("img", "lb-mti"); i.src = LBI("mt-" + Math.max(0, Math.min(3, t | 0))); i.alt = ""; return i; }
+    /* 상자 열기 연출(2026-10-29 ChatGPT 시안 14) — 1회: 상자 등장 0.5 → 흔들림 0.5 → 빛과 함께 열림 0.5 → 아이템 등장 0.5 → 획득 창.
+       10회: 상자 등장 0.5 → 강한 빛 1.0 → 카드 등장 1.0(등급색 뒷면 cb-0~3) → 한꺼번에 뒤집기 1.0 → 획득 창. 「스킵」은 바로 획득 창.
+       로비가 다시 그려져도 지난 시간만큼 이어서(--t0 음수 지연) */
+    function boxSeq(R) {
+      if (!R.t0) R.t0 = performance.now(); const el0 = (performance.now() - R.t0) / 1000, many = R.list.length > 1, END = many ? 3.9 : 2.3;
+      const done = () => { if (shopRw !== R || R.seen) return; R.seen = true; lobDraw(); };
+      if (el0 >= END) { R.seen = true; return null; } clearTimeout(R.tm); R.tm = setTimeout(done, (END - el0) * 1000);
+      const ov = el("div", "lb-reward bx" + (many ? " many" : " one")), st = el("div", "bx-stage"), sk = el("button", "bx-skip", "스킵 ▶▶"); ov.style.setProperty("--t0", -el0 + "s"); sk.type = "button"; sk.onclick = (e) => { e.stopPropagation(); clearTimeout(R.tm); done(); };
+      const ch = el("img", "bx-chest"); ch.src = LBI(R.chest); ch.alt = ""; st.append(el("div", "bx-rays"), ch, el("div", "bx-flash"));
+      const cb = (x) => x.gg ? (x.g >= 4 ? 3 : x.g === 3 ? 2 : x.g === 2 ? 1 : 0) : x.g >= 3 ? 2 : 1; // 등급 → 뒷면 색(파랑 · 초록 · 보라 · 금)
+      const pic0 = (x) => { const P = { "i-gboost": "ic-gold", "i-en": "ic-energy" }; return x.ico === "💎" ? "ic-gem" : P[x.pic] || x.pic; };
+      if (many) { const cs = el("div", "bx-cards"); R.list.slice(0, 10).forEach((x, i) => { const c = el("div", "bx-card"), bk = el("img", "bx-back"), fr = el("div", "bx-front"), im = el("img"); bk.src = LBI("cb-" + cb(x)); bk.alt = ""; fr.style.backgroundImage = "url(" + LBI("rw-s" + (x.gg && x.g >= 4 ? 2 : x.gg && x.g === 3 ? 3 : 4)) + ")"; im.src = LBI(pic0(x) || "i-exp"); im.alt = ""; fr.appendChild(im); c.style.setProperty("--i", i); c.append(bk, fr); cs.appendChild(c); }); st.appendChild(cs); }
+      else { const x = R.list[0] || {}, it = el("div", "bx-item"), im = el("img"); im.src = LBI(pic0(x) || "i-exp"); im.alt = ""; it.style.backgroundImage = "url(" + LBI("rw-s" + (x.gg && x.g >= 4 ? 2 : x.gg && x.g === 3 ? 3 : 4)) + ")"; it.appendChild(im); st.appendChild(it); }
+      ov.append(st, sk); ov.onclick = () => {}; return ov;
+    }
     function lobRewardBox() {
-      const R = shopRw, ov = el("div", "lb-reward"), pn = el("div", "lb-rwin" + (R.chest ? " chest" : "")); if (R.chest) { const c = el("img", "lb-rwchest"); c.src = LBI(R.chest); c.alt = ""; pn.appendChild(c); }
+      if (shopRw && shopRw.chest && !shopRw.seen) { const sq = boxSeq(shopRw); if (sq) return sq; }
+      const R = shopRw, ov = el("div", "lb-reward"), pn = el("div", "lb-rwin" + (R.chest && !R.seen ? " chest" : "")); if (R.chest && !R.seen) { /* 연출을 본 뒤에는 상자 그림 없이(시안 14) */ const c = el("img", "lb-rwchest"); c.src = LBI(R.chest); c.alt = ""; pn.appendChild(c); }
       { const rb = el("div", "lb-rwrib"); rb.appendChild(el("b", null, "획득!")); pn.appendChild(rb); } const g2 = el("div", "lb-rwgrid" + (R.list.length > 4 ? " many" : ""));
       /* 칸 그림(2026-10-29 ChatGPT 시안) — 보석 파랑(rw-s1) · 골드 금색(rw-s2) · 에너지 보라(rw-s3) · 그 밖은 등급(영웅 보라 · 전설 금색 · 나머지 주황 rw-s4), 그림도 시안 아이콘으로 */
       const ICO = { "💎": "ic-gem" }, PIC = { "i-gboost": "ic-gold", "i-en": "ic-energy" };
       R.list.forEach((x, i) => { const c = el("div", "lb-rwc"), pk = ICO[x.ico] || PIC[x.pic] || x.pic, im = pk ? el("img") : el("span", "ico", x.ico); if (pk) { im.src = LBI(pk); im.alt = ""; }
-        const fr = pk === "ic-gem" ? 1 : pk === "ic-gold" ? 2 : pk === "ic-energy" ? 3 : x.gg && x.g >= 4 ? 2 : x.gg && x.g === 3 ? 3 : 4; c.style.backgroundImage = "url(" + LBI("rw-s" + fr) + ")"; x = Object.assign({}, x, { n: String(x.n).replace(/^[💰💎⚡⭐]\s*/u, "") }); c.style.animationDelay = (R.chest ? 0.7 : 0.05) + i * 0.07 + "s"; c.append(im, el("small", null, x.n)); g2.appendChild(c); });
+        const fr = pk === "ic-gem" ? 1 : pk === "ic-gold" ? 2 : pk === "ic-energy" ? 3 : x.gg && x.g >= 4 ? 2 : x.gg && x.g === 3 ? 3 : 4; c.style.backgroundImage = "url(" + LBI("rw-s" + fr) + ")"; x = Object.assign({}, x, { n: String(x.n).replace(/^[💰💎⚡⭐]\s*/u, "") }); c.style.animationDelay = (R.chest && !R.seen ? 0.7 : 0.05) + i * 0.07 + "s"; c.append(im, el("small", null, x.n)); g2.appendChild(c); });
       const ok = el("button", "lb-rwok", "확인"); ok.type = "button"; ok.onclick = () => { shopRw = null; lobDraw(); }; pn.append(g2, ok); ov.appendChild(pn); ov.onclick = (e) => { if (e.target === ov) ok.onclick(); }; return ov;
     }
     function lobRank() {
