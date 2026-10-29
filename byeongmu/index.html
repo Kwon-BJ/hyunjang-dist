@@ -671,6 +671,44 @@ body.game-full { overflow: hidden; }
 .game-box.full .dashbtn span { font-size: 15px; } .game-box.full .dashbtn small { color: #e5f1ff; }
 /* 결과 · 고르기 판 */
 .game-box.full .game-over { background: rgba(19,36,10,.72); }
+/* ── 전투 화면 새 디자인(2026-10-29 ChatGPT 시안 7 · 8): 어두운 남색 판 · 파란 금속 테 · 금빛 글씨 · 초록/빨강 입체 단추 ── */
+.game-over.ps, .game-over.lvl { background: rgba(6,12,28,.72) !important; }
+.game-over.ps #gameOverIn, .game-over.lvl #gameOverIn { background: none !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; max-width: 440px; width: 94%; }
+.ps-pn { position: relative; padding: 46px 14px 16px; border-radius: 18px; border: 4px solid #8fa6c8; background: linear-gradient(#1b2a4a, #101a33); box-shadow: inset 0 0 0 3px #2a3f66, 0 10px 30px rgba(0,0,0,.6); font-family: "Jua", "Noto Sans KR", sans-serif; color: #fff; }
+.ps-rib { position: absolute; left: 50%; top: -26px; transform: translateX(-50%); padding: 8px 38px; border-radius: 10px; border: 3px solid #0d2a6a; background: linear-gradient(#5a9bff, #2563d8 55%, #1a4fb8); font-size: 30px; color: #fff; -webkit-text-stroke: 5px #0d2a6a; paint-order: stroke fill; box-shadow: 0 5px 0 #0a1f50, 0 8px 16px rgba(0,0,0,.5); white-space: nowrap; }
+.ps-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.ps-t { display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: 5px; align-items: center; padding: 7px 6px; border-radius: 10px; background: #0e1730; border: 2px solid #2a3f66; min-width: 0; }
+.ps-t i { grid-row: 1 / 3; font-style: normal; font-size: 22px; } .ps-t b { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ps-t small { font-size: 10px; color: #8fb2ff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ps-skh { margin: 12px 2px 6px; font-size: 18px; color: #fff; }
+.ps-sk { padding: 8px; border-radius: 12px; background: #0e1730; border: 2px solid #2a3f66; }
+.ps-gh { margin: 2px 0 6px; padding: 3px 10px; border-radius: 6px; font-size: 14px; } .ps-gh.atk { background: linear-gradient(90deg, #c8261a, rgba(200,38,26,0)); } .ps-gh.sup { margin-top: 8px; background: linear-gradient(90deg, #2e9a2a, rgba(46,154,42,0)); }
+.ps-g { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; }
+.ps-c { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 4px 2px; border-radius: 8px; background: #1a2848; border: 2px solid #34507e; min-width: 0; } .ps-c.none { opacity: .35; min-height: 62px; }
+.ps-c svg, .ps-c img, .ps-c canvas { width: 32px; height: 32px; } .ps-st { font-style: normal; font-size: 8px; letter-spacing: -1px; color: #4a5878; } .ps-st u { text-decoration: none; } .ps-st u.on { color: #ffd23a; } .ps-st.evo u { color: #ff9a2a; } .ps-c small { font-size: 10px; }
+.ps-tog { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 10px 0 4px; padding: 7px; border-radius: 10px; background: #0e1730; border: 2px solid #2a3f66; font-size: 15px; }
+.ps-sw { min-width: 62px; padding: 4px 10px; border-radius: 999px; border: 2px solid #1a1a1a; background: #556; color: #fff; font: 400 14px "Jua", sans-serif; } .ps-sw.on { background: linear-gradient(#8fe36b, #3fae2c); }
+.ps-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+.ps-go, .ps-quit { padding: 14px 6px; border-radius: 12px; font: 400 22px "Jua", "Noto Sans KR", sans-serif; color: #fff; cursor: pointer; }
+.ps-go { border: 3px solid #12400a; background: linear-gradient(#a8f06a, #46b41e 55%, #2e8a14); -webkit-text-stroke: 4px #12400a; paint-order: stroke fill; box-shadow: inset 0 3px 0 rgba(255,255,255,.45), 0 5px 0 #12400a; }
+.ps-quit { border: 3px solid #5a0a06; background: linear-gradient(#ff8a6a, #e8382c 55%, #b8241b); -webkit-text-stroke: 4px #5a0a06; paint-order: stroke fill; box-shadow: inset 0 3px 0 rgba(255,255,255,.4), 0 5px 0 #5a0a06; }
+.ps-go:active, .ps-quit:active { transform: translateY(4px); box-shadow: none; }
+.lu-hd { text-align: center; margin: 10px 0 8px; font-family: "Jua", "Noto Sans KR", sans-serif; }
+.lu-big { font-size: clamp(40px, 13vw, 60px); line-height: 1; color: #ffd23a; -webkit-text-stroke: 7px #1a3a8a; paint-order: stroke fill; filter: drop-shadow(0 4px 0 #0d1f5a) drop-shadow(0 0 12px rgba(255,210,58,.6)); animation: luPop .5s cubic-bezier(.2,1.6,.4,1); }
+.lu-sub { display: inline-block; margin-top: 6px; padding: 5px 22px; border-radius: 8px; background: linear-gradient(90deg, rgba(16,30,70,0), #13285a 20%, #13285a 80%, rgba(16,30,70,0)); color: #fff; font-size: 17px; }
+@keyframes luPop { from { transform: scale(.4); opacity: 0; } }
+.game-over.lvl .game-picks { gap: 8px; }
+.game-over.lvl .game-picks button { border: 4px solid #3a7bff !important; border-radius: 14px !important; background: linear-gradient(#1c2f5c, #101c3a) !important; color: #fff !important; box-shadow: inset 0 0 0 2px #5a9bff, 0 6px 14px rgba(0,0,0,.5) !important; font-family: "Jua", "Noto Sans KR", sans-serif; }
+.game-over.lvl .game-picks button > b { color: #fff !important; } .game-over.lvl .game-picks button > span { color: #cfe0ff !important; }
+.game-over.lvl .game-picks button.pk-evo { border-color: #ffc21a !important; background: linear-gradient(#5a3a08, #2a1a04) !important; box-shadow: inset 0 0 0 2px #ffe36b, 0 0 22px rgba(255,194,26,.7) !important; animation: luGlow 1.2s ease-in-out infinite; }
+@keyframes luGlow { 50% { box-shadow: inset 0 0 0 2px #ffe36b, 0 0 34px rgba(255,194,26,1); } }
+.game-over.lvl .pk-slots { padding: 6px; border-radius: 12px; background: rgba(10,18,40,.85); border: 2px solid #2a3f66; }
+/* 위 계기판(2026-10-29) — Lv 방패 + 파란 경험치 막대 · 시간 알약 · 처치 알약 · 멈춤 네모 단추 */
+.game-box.full .game-hud .xp { height: 20px; border: 2px solid #0a1430; background: #0e1730; box-shadow: 0 2px 0 rgba(0,0,0,.4); }
+.game-box.full .game-hud .xp i { background: linear-gradient(180deg, #9cf06a, #46b41e 55%, #2e8a14); }
+.game-box.full .game-hud .row { border: 3px solid #8fa6c8 !important; background: linear-gradient(#1b2a4a, #101a33) !important; box-shadow: inset 0 0 0 2px #2a3f66, 0 4px 10px rgba(0,0,0,.45) !important; }
+.game-box.full .game-hud .tiny { border-color: #8fa6c8 !important; background: linear-gradient(#2a4070, #16264a) !important; }
+.game-box.full .game-hud .pause { border-color: #0d2a6a !important; background: linear-gradient(#5a9bff, #2563d8) !important; color: #fff !important; }
+.game-box.full .game-hud .hpbar { border-color: #0a1430 !important; background: #0e1730 !important; }
 .game-box.full .game-over > div { padding: 18px 16px; border-radius: 22px; border: 3px solid #c79a4a; background: linear-gradient(180deg, #f9eccb, #efdcab); box-shadow: 0 0 0 3px #5a3a14, 0 12px 30px rgba(0,0,0,.5); color: #3a2a10; font-family: "Jua", "Noto Sans KR", sans-serif; }
 .game-box.full .game-over h3 { font-family: "Jua", "Noto Sans KR", sans-serif; font-weight: 400; color: #fff; -webkit-text-stroke: 5px #6a3e14; paint-order: stroke fill; font-size: 28px; }
 .game-box.full .game-over p, .game-box.full .game-over .best { color: #5a3a1a; }
@@ -1618,7 +1656,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610290307";
+  const BUILD = "202610290322";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -4041,7 +4079,7 @@ body.game-full { overflow: hidden; }
     function panel(nodes) {
       $("gameOverIn").replaceChildren(...nodes);
       $("gMsg").classList.remove("on");
-      $("gameOver").hidden = false;
+      $("gameOver").hidden = false; $("gameOver").classList.remove("ps", "lvl");
       const b = $("gameOverIn").querySelector("button"); if (b) b.focus({ preventScroll: true });
     }
     function gBtn(text, fn, cls) { const b = el("button", "btn" + (cls ? " " + cls : ""), text); b.type = "button"; b.onclick = fn; return b; }
@@ -4073,10 +4111,15 @@ body.game-full { overflow: hidden; }
       drawPick();
     }
     function mine() { return UPS.filter((u) => s.up[u.k]).map((u) => u.n + " " + s.up[u.k]).join(" · ") || "아직 강화 없음"; }
+    /* 멈춤 화면(2026-10-29 ChatGPT 시안 8) — 리본 제목 · 장 · 단계 · 처치 · 시간 칸 · 보유 스킬(공격 · 보조, 별) · 소리 켜기 · 계속하기(초록) · 그만하기(빨강) */
     function showPause() {
-      const row = el("div", "actions"); row.style.justifyContent = "center";
-      row.append(gBtn("계속", resume), gBtn("그만하기", end, "ghost"));
-      panel([el("h3", null, "멈춤"), el("p", null, mmss(s.t) + " 버팀 · " + s.stage + "단계 · 잡은 수 " + s.kills), el("p", "best", mine()), row]);
+      const tiles = el("div", "ps-tiles"), tile = (ic, b, sm) => { const t = el("div", "ps-t"); t.append(el("i", null, ic), el("b", null, b), el("small", null, sm)); tiles.appendChild(t); };
+      tile(s.chap ? "⛰" : "🗼", s.chap ? s.chap + "장" : "무한의 탑", s.chap ? CHAPS[s.chap - 1] : "층 " + s.stage); tile("👿", s.stage + "단계", s.chap ? "/ 10단계" : ""); tile("💀", String(s.kills), "처치 수"); tile("⏱", mmss(s.t), "생존 시간");
+      const sk = el("div", "ps-sk"), grp = (title, cls, list) => { const h = el("div", "ps-gh " + cls, title), g = el("div", "ps-g"); for (let i = 0; i < 6; i++) { const u = list[i], c = el("div", "ps-c" + (u ? "" : " none")); if (u) { const lv = s.up[u.k] || 0, ev = UPS.some((x) => x.evo === u.k && s.up[x.k]); c.appendChild(icon(u.k)); const st = el("i", "ps-st" + (ev ? " evo" : "")); for (let j = 0; j < 5; j++) st.appendChild(el("u", j < lv ? "on" : "", "★")); c.append(st, el("small", null, ev ? "진화" : "Lv." + lv)); } g.appendChild(c); } sk.append(h, g); };
+      grp("⚔ 공격 스킬", "atk", UPS.filter((u) => !u.evo && s.up[u.k] && UP_ATK(u))); grp("✚ 보조 스킬", "sup", UPS.filter((u) => !u.evo && s.up[u.k] && !UP_ATK(u)));
+      const tg = el("div", "ps-tog"), snd = el("button", "ps-sw"), on = () => $("gSnd").textContent === "🔊"; snd.type = "button"; const paint = () => { snd.className = "ps-sw" + (on() ? " on" : ""); snd.textContent = on() ? "ON" : "OFF"; }; paint(); snd.onclick = () => { $("gSnd").textContent = SND.toggle() ? "🔊" : "🔇"; paint(); }; tg.append(el("span", null, "🔊 소리"), snd);
+      const go = el("button", "ps-go", "▶ 계속하기"), quit = el("button", "ps-quit", "⏏ 그만하기"); go.type = quit.type = "button"; go.onclick = resume; quit.onclick = end; const row = el("div", "ps-row"); row.append(go, quit);
+      const pn = el("div", "ps-pn"); pn.append(el("div", "ps-rib", "일시정지"), tiles, el("div", "ps-skh", "보유 스킬"), sk, tg, row); panel([pn]); $("gameOver").classList.add("ps");
     }
     function canPick() { const nAtk = UPS.filter((u) => UP_ATK(u) && s.up[u.k]).length; return UPS.some((u) => (s.up[u.k] || 0) < u.max && (!u.ok || u.ok()) && !(UP_ATK(u) && !s.up[u.k] && nAtk >= UP_MAX_ATK)); } // 고를 카드가 남았나(2026-10-28 "59레벨에 스킬을 못 배워 진행이 안 된다")
     function showPicks(title) {
@@ -4094,7 +4137,7 @@ body.game-full { overflow: hidden; }
         const tt = el("b", null, u.n), st = el("i", "pk-st"); /* 별 5칸을 카드 아래에 ㆍ 이번에 오를 별은 깜빡(2026-10-28 탕탕특공대 레벨업 화면처럼) */
         for (let i = 0; i < (u.evo ? 1 : u.max); i++) st.appendChild(el("u", i < have ? "on" : i === have ? "nw" : "", "★")); if (u.evo) { tt.appendChild(el("em", "pk-new evo", "진화")); } else if (!have) tt.appendChild(el("em", "pk-new", "NEW"));
         b.classList.add(u.evo ? "pk-evo" : UP_ATK(u) ? "pk-atk" : "pk-sup"); const ty = u.evo ? ["진화", "evo"] : UP_ATK(u) ? ["자동 무기", "atk"] : u.k === "rate" ? ["평타 강화", "basic"] : u.k === "dmg" ? ["모든 공격", "all"] : u.k === "cool" ? ["무기 보조", "atk2"] : u.k === "max" ? ["체력", "hp"] : ["몸 강화", "body"]; if (!u.evo) tt.appendChild(el("em", "pk-type t-" + ty[1], ty[0])); // 2026-10-28 "스킬인지 평타 기반인지 알 수가 없어"
-        { const E = u.evo ? [] : UPS.filter((x) => x.evo && !s.up[x.k] && (x.evo === u.k || x.pair === u.k)); if (E.length) { const pr = el("span", "pk-pair"); E.slice(0, 2).forEach((x) => { const o = x.evo === u.k ? x.pair : x.evo, c = el("b", s.up[o] ? "on" : ""); c.appendChild(icon(o)); pr.appendChild(c); }); st.appendChild(pr); } } /* 진화 짝 — 가진 짝은 밝게(탕탕특공대처럼) */
+        { const E = []; UPS.filter((x) => x.evo && !s.up[x.k] && (x.evo === u.k || x.pair === u.k)); if (E.length) { const pr = el("span", "pk-pair"); E.slice(0, 2).forEach((x) => { const o = x.evo === u.k ? x.pair : x.evo, c = el("b", s.up[o] ? "on" : ""); c.appendChild(icon(o)); pr.appendChild(c); }); st.appendChild(pr); } } /* 진화 짝 — 가진 짝은 밝게(탕탕특공대처럼) */
         b.append(icon(u.evo || u.k), tt, el("span", null, have && u.up ? u.up : u.d), st); // 탕탕특공대처럼 — 별로 레벨 · 새 것은 NEW
         b.onclick = () => take(u); box.appendChild(b);
       });
@@ -4102,7 +4145,8 @@ body.game-full { overflow: hidden; }
          죽는 것은 고른 직후 둘러싸여서 · 끌던 손가락을 떼며 잘못 눌려서. 그래서 「일시정지」 라고 보이고, 0.5초는 못 누르게, 고른 뒤 1.5초 보호막 */
       const bs = box.querySelectorAll("button"); bs.forEach((b) => { b.disabled = true; });
       setTimeout(() => bs.forEach((b) => { b.disabled = false; }), 500);
-      panel([el("h3", null, title || "Lv " + s.lv + " ㆍ 하나 고르세요"), pkSlots(), el("p", "best", "⏸ 멈춤 ㆍ 고르면 1.5초 보호막과 함께 다시 시작"), box]);
+      const lu = el("div", "lu-hd"); lu.append(el("div", "lu-big", title ? "SKILL!" : "LEVEL UP!"), el("div", "lu-sub", title || "스킬을 선택하세요!")); /* 레벨업 화면(2026-10-29 ChatGPT 시안 7) */
+      panel([pkSlots(), lu, box]); $("gameOver").classList.add("lvl");
     }
     /* 가진 스킬 칸 — 위에 무기 6칸 · 보조 6칸(2026-10-28 "탕탕특공대처럼 레벨업 할 때마다 저런 식으로"). 빈 칸은 흐리게, 진화한 무기는 금테 */
     function pkSlots() {
@@ -5218,7 +5262,7 @@ body.game-full { overflow: hidden; }
     /* 드론 그림 — 레벨마다 모습이 바뀜(1 작은 회색 · 2 날개 둘 · 3 파랑 · 4 금색 날개 넷 · 5 보라 빛 · 진화 쌍둥이 금빛). 그림(img/lb/drone-N.webp)이 있으면 그것 */
     function drawDrone(x, y, lv) { const I = lbImg("drone-" + Math.min(6, lv)), t = s.t, kick = (s.drone && s.drone.kick) || 0, face = Math.cos(s.aim || 0) < 0 ? -1 : 1, sz = 34 + lv * 4;
       g.save(); g.translate(x, y - kick * 10); g.fillStyle = "rgba(0,0,0,.18)"; g.beginPath(); g.ellipse(0, 58, sz * 0.45, 6, 0, 0, 7); g.fill(); g.rotate(Math.sin(t * 3) * 0.08);
-      if (I) { const w = sz * 1.6, h = w * I.height / I.width; if (face < 0) g.scale(-1, 1); g.drawImage(I, -w / 2, -h / 2, w, h); g.restore(); return; }
+      if (I) { const w = sz * 1.15, h = w * I.height / I.width; if (face < 0) g.scale(-1, 1); g.drawImage(I, -w / 2, -h / 2, w, h); g.restore(); return; }
       const C = [["#9aa3ad", "#5c646d"], ["#9aa3ad", "#5c646d"], ["#5ab4ff", "#1d5fa8"], ["#ffd23a", "#b07a0a"], ["#c084fc", "#6b2bb5"], ["#ffe36b", "#ff8a1a"]][Math.min(5, lv - 1)], arms = lv >= 4 ? 4 : 2;
       if (lv >= 5) { g.globalCompositeOperation = "lighter"; const gr = g.createRadialGradient(0, 0, 0, 0, 0, sz); gr.addColorStop(0, C[0] + "88"); gr.addColorStop(1, C[0] + "00"); g.fillStyle = gr; g.beginPath(); g.arc(0, 0, sz, 0, 7); g.fill(); g.globalCompositeOperation = "source-over"; }
       g.strokeStyle = "#222"; g.lineWidth = 3; for (let i = 0; i < arms; i++) { const a = (arms === 2 ? [0, Math.PI] : [0.6, Math.PI - 0.6, Math.PI + 0.6, -0.6])[i], ax = Math.cos(a) * sz * 0.55, ay = Math.sin(a) * sz * 0.22; g.beginPath(); g.moveTo(0, 0); g.lineTo(ax, ay - 4); g.stroke(); g.fillStyle = "rgba(255,255,255,.55)"; g.beginPath(); g.ellipse(ax, ay - 8, sz * 0.3 * Math.abs(Math.cos(t * 40 + i)), 2.5, 0, 0, 7); g.fill(); }
@@ -5340,7 +5384,9 @@ body.game-full { overflow: hidden; }
           g.lineWidth = 4; g.strokeStyle = ev ? "rgba(200,150,255,.85)" : "rgba(150,225,255,.85)"; g.setLineDash([16, 10]); g.lineDashOffset = -s.t * 40; g.beginPath(); g.arc(hx, hy, AR, 0, 7); g.stroke(); g.setLineDash([]);
           for (let i = 0; i < 3; i++) { const p = (s.t * 0.8 + i / 3) % 1; g.lineWidth = 2.5; g.strokeStyle = "rgba(190,240,255," + (0.55 * (1 - p)).toFixed(2) + ")"; g.beginPath(); g.arc(hx, hy, AR * (0.35 + 0.65 * p), 0, 7); g.stroke(); } g.restore(); }
         /* 경험치 구슬 3가지 — "경험치 색깔 소량 중량 대량" (2026-10-27): 1 하늘 · 2 ~ 4 초록 · 5 이상(대장 등) 금, 클수록 크게 */
-        GEM.forEach((G, ti) => {
+        /* 새 경험치 보석 그림(2026-10-29 ChatGPT, img/lb/gem-1~3) — 있으면 그림, 없으면 예전 마름모 */
+        if (lbImg("gem-1") && lbImg("gem-2") && lbImg("gem-3")) { const GS = [16, 21, 28], bob = Math.sin(s.t * 5) * 1.5; s.gems.forEach((m) => { const ti = gemTier(m.v), x = m.x + ox, y = m.y + oy; if (x < -20 || y < -20 || x > W + 20 || y > H + 20) return; const I = lbImg("gem-" + (ti + 1)), h = GS[ti], w = h * I.width / I.height; g.drawImage(I, x - w / 2, y - h / 2 + bob, w, h); }); }
+        else GEM.forEach((G, ti) => {
           g.fillStyle = G[0]; g.beginPath();
           s.gems.forEach((m) => { if (gemTier(m.v) !== ti) return; const x = m.x + ox, y = m.y + oy, r = G[2]; if (x < -12 || y < -12 || x > W + 12 || y > H + 12) return; g.moveTo(x, y - r); g.lineTo(x + r, y); g.lineTo(x, y + r); g.lineTo(x - r, y); g.closePath(); });
           g.fill(); g.strokeStyle = G[1]; g.lineWidth = 1.6; g.stroke(); g.lineWidth = 1;
