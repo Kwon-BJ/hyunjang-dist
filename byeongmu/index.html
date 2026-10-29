@@ -1973,7 +1973,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610290738";
+  const BUILD = "202610290804";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -6494,7 +6494,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
         const packCard = (k, K, cls) => { const c = el("div", "sp-pack " + cls), ul = el("ul", "sp-its"), li = (pc, t) => { const l = el("li"); if (pc.length > 2) l.appendChild(pic(pc)); else l.appendChild(el("i", null, pc)); l.appendChild(el("span", null, t)); ul.appendChild(l); };
           if (K.wbox) li("w-basic", "무기 1"); li("box-" + K.box[0], (((P.boxes || {})[K.box[0]] || {}).n || "상자") + " ×" + K.box[1]); li("i-en", "에너지 " + K.en); Object.entries(K.items).forEach(([i, n]) => li(SI[i] || "i-exp", SH[i] + (n > 1 ? " ×" + n : "")));
           const art = el("div", "sp-art"); art.appendChild(pic(k === "starter" ? "pk-starter" : "box-wbox"));
-          c.append(el("em", "sp-rib", K.got ? "구매 완료" : "주 1회"), el("b", "sp-t", K.n), el("p", "sp-d", k === "starter" ? "수달단의 모험을 시작하는 당신을 위한 특별한 패키지!" : "더 강해지고 싶은 수달을 위한 큰 패키지!"), art, ul, K.got ? waitBtn(nextWeek(), "다시 구매까지") : buyBtn("", { gem: K.gem }, false, packGo(k, K), "sp-green")); return c; };
+          c.append(el("em", "sp-rib", K.got ? "구매 완료" : "1회 한정"), el("b", "sp-t", K.n), el("p", "sp-d", k === "starter" ? "수달단의 모험을 시작하는 당신을 위한 특별한 패키지!" : "더 강해지고 싶은 수달을 위한 큰 패키지!"), art, ul, buyBtn(K.got ? "구매 완료" : "", K.got ? null : { gem: K.gem }, K.got, packGo(k, K), "sp-green") /* 1회 한정(2026-10-29) — 산 뒤엔 「구매 완료」 */); return c; };
         const top = el("div", "sp-top"), PK = P.packs || {};
         if (PK.starter) top.appendChild(packCard("starter", PK.starter, ""));
         { const G = P.gift && P.gift.gold ? P.gift : null, c = el("div", "sp-gift"), row = el("div", "sp-gi"), tile = (ic, t) => { const d = el("span"); d.append(el("i", null, ic), el("small", null, t)); row.appendChild(d); };
