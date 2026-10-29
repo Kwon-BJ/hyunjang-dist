@@ -1496,7 +1496,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610282313";
+  const BUILD = "202610290040";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -4649,7 +4649,7 @@ body.game-full { overflow: hidden; }
         if (f.k === "boss") { s.bossKills++; if (s.bossNow === f) { s.bossNow = null; s.arena = null; } s.items.push({ k: "chest", x: f.x + 30, y: f.y, pop: 0.35 }); msg(f.name + " 쓰러뜨림! 남은 잡귀를 잡으면 단계 통과"); } // 단계 통과는 남은 잡귀를 다 잡은 뒤에 (2026-10-27)
         s.gems.push({ x: f.x, y: f.y, v: f.xp }); if (s.gems.length > 140) { const o = s.gems.shift(); s.gems[0].v += o.v; } /* 구슬이 너무 많으면 오래된 것끼리 합침(경험치는 그대로 · 2026-10-28 최적화) */
         if (f.k === "boss") s.items.push({ k: "hp", x: f.x, y: f.y }); // "보스 잡을 때마다 HP 포션" (2026-10-26)
-        if (f.skin) { const face = mon2Ok && MF2[SKIN2[f.skin]] ? FACE2[SKIN2[f.skin]] : FACE_R[f.skin], d2 = mon2Ok && MF2[SKIN2[f.skin]] ? (MF2[SKIN2[f.skin]].dead.length > 1 ? 1.2 : 0.7) : 0.35; s.fx.push({ cm: f.cm, corpse: true, skin: f.skin, x: f.x, y: f.y, r: f.r, flip: face && (s.x < f.x ? -1 : 1) !== face ? -1 : 1, life: d2, dur: d2 }); }
+        if (f.skin) { const face = mon2Ok && MF2[SKIN2[f.skin]] ? FACE2[SKIN2[f.skin]] : FACE_R[f.skin], d2 = mon2Ok && MF2[SKIN2[f.skin]] ? (MF2[SKIN2[f.skin]].dead.length > 1 ? 1.2 : 0.7) : 0.35; s.fx.push({ cm: f.cm, corpse: true, boss: f.k === "boss", skin: f.skin, x: f.x, y: f.y, r: f.r, flip: face && (s.x < f.x ? -1 : 1) !== face ? -1 : 1, life: vmD(f) || d2, dur: vmD(f) || d2 }); }
         s.fx.push({ boom: true, spr: "smoke", x: f.x, y: f.y, r: f.r, c: f.c, size: f.r * 3.4, life: 0.4, dur: 0.4 });
         return false;
       });
@@ -4861,6 +4861,10 @@ body.game-full { overflow: hidden; }
       const skA = otLook(), /* 스킨이면 스킨 동작 · 아니면 장비 입은 동작(2026-10-28 "스킨 안 입었으면 입고 있는 장비를") */ b = "m_ot2" + skA, rx = "m_ot3" + skA, // 스킨 한 벌 입은 동작 그림이 있으면 그것(2026-10-28 "게임에서도 착용한 상태로") // 캐릭터는 하나(수달, 부장님 설정 그림 · 시험/수달-자르기.cjs) — 무기만 바뀜 (2026-10-28)
         F = BGF[b], M = BGF[b + "_meta"]; if (!F || !M) return false;
       const I = bgImg(b); if (!I) return false; const R = BGF[rx], RM = BGF[rx + "_meta"], I3 = R && bgImg(rx);
+      /* 기본 수달 걷기 · 쏘기는 Google Flow 영상 장면으로(2026-10-29 "영상이 좋다", 시험/영상동작-자르기.cjs) — 대기 · 대시 · 맞음 · 다른 모습은 부위 움직임 그대로 */
+      if (!dead && skA === "" && s && !(s.hurt > 0.02) && !(s.dashT > 0)) { const mv = s.moving && (running || s.watchView), key = mv ? "vm-ot-walk" : s.shotT > 0.05 ? "vm-ot-shoot" : "", V = key && VM[key], VI = V && ocImg(key);
+        if (VI) { const n = mv ? V.n.walk : V.n.shoot, fr = mv ? Math.floor(s.walk / 12 * 10) % n : Math.min(n - 1, 1 + Math.floor((0.5 - s.shotT) / 0.45 * (n - 1))), k = 78 / V.h, w = V.w * k, ax = mv ? 0.47 : 0.42;
+          g.save(); g.translate(cx, cy + 19); if (flip < 0) g.scale(-1, 1); g.drawImage(VI, fr * V.w, 0, V.w, V.h, -w * ax, -V.h * k, w, V.h * k); g.restore(); return true; } }
       const C = Object.assign({}, M.counts, I3 ? RM.counts : {}), at = (k, q) => k + Math.min(C[k] - 1, Math.max(0, Math.floor(q * C[k])));
       let nm;
       if (dead) nm = I3 ? "dead" + (C.dead - 1) : "down";
@@ -5024,8 +5028,28 @@ body.game-full { overflow: hidden; }
     /* 11~30장 몬스터 빛깔 — 그릴 때마다 g.filter 를 걸면 폰에서 아주 느려서(2026-10-28 최적화), 그림마다 한 번 칠해 둔 사본을 씀 */
     const TINTC = {}; function tinted(I, cy) { if (!cy) return I; const key = I.src + "|" + cy; let c = TINTC[key]; if (!c) { c = TINTC[key] = document.createElement("canvas"); c.width = I.naturalWidth; c.height = I.naturalHeight; const x = c.getContext("2d"); x.filter = CYC_MON[cy]; x.drawImage(I, 0, 0); } return c; }
     const MON_H = 76; /* 잡몹 그림 크기 = 수달 키(76)와 같게(2026-10-28 "몬스터 크기랑 주인공 수달 크기 똑같이, 보스는 그대로") */
+    /* 영상 동작(2026-10-29 부장님 "영상이 좋다" → Google Flow 8초 영상: 걷기 · 공격 2번 · 뒤로 넘어짐, 시험/영상동작-자르기.cjs) — vm.json[vm-mon-N · vm-boss-N] = { w, h, n: {walk, atk, dead}, order }. 그림은 왼쪽을 봄 */
+    const VM = {}; fetch("img/lb/vm.json?v=" + BUILD).then((r) => r.json()).then((j) => { Object.assign(VM, j); }).catch(() => {});
+    const vmD = (f) => { const b = f.k === "boss", n = f.cm || Math.max(1, Math.min(10, mapIdx || 1)); return VM[(b ? "vm-boss-" : "vm-mon-") + n] ? (b ? 1.6 : 1.1) : 0; }; // 넘어지는 영상 길이(쓰러짐)
+    function vmMon(f, x, y, m, dead, boss, n) {
+      const vk = (boss ? "vm-boss-" : "vm-mon-") + n, V = VM[vk], I0 = V && ocImg(vk); if (!I0) return false;
+      const N = V.n, off = {}; let o = 0; V.order.forEach((k) => { off[k] = o; o += N[k]; }); const t = s.t + (f.ph || 0);
+      let fr; if (dead != null) fr = off.dead + Math.min(N.dead - 1, Math.floor(dead / 0.75 * N.dead)); else if ((boss && (f.wind > 0 || f.atkT > 0)) || (!boss && f.near)) fr = off.atk + Math.floor(t * 8) % N.atk; else fr = off.walk + Math.floor(t * (boss ? 8 : 10)) % N.walk;
+      const hh = boss ? f.r * 5 : MON_H, k = hh / (V.h * (boss ? 0.9 : 1.2)), w = V.w * k, h = V.h * k, flip = s.x > f.x, I = tinted(I0, cycOf());
+      g.fillStyle = "rgba(0,0,0,.3)"; g.beginPath(); g.ellipse(x, y + hh * 0.42, hh * 0.36, hh * 0.08, 0, 0, Math.PI * 2); g.fill();
+      g.save(); g.translate(x + (m && m.dx ? m.dx : 0), y + hh * 0.42 + h * 0.04); g.globalAlpha = dead != null ? Math.max(0, Math.min(1, (1 - dead) / 0.25)) : m ? m.a : 1;
+      if (m && m.face != null ? m.face > 0 : flip) g.scale(-1, 1);
+      if (boss) { g.shadowColor = "rgba(255,60,40,.9)"; g.shadowBlur = f.wind > 0 ? 18 + Math.sin(s.t * 30) * 8 : 0; }
+      g.drawImage(I, fr * V.w, 0, V.w, V.h, -w / 2, -h, w, h);
+      if (f.hit > 0) { g.globalCompositeOperation = "lighter"; g.globalAlpha *= 0.5; g.drawImage(I, fr * V.w, 0, V.w, V.h, -w / 2, -h, w, h); }
+      g.restore(); g.globalAlpha = 1; g.globalCompositeOperation = "source-over";
+      if (boss && dead == null) { g.fillStyle = "rgba(0,0,0,.6)"; g.fillRect(x - 30, y + hh * 0.42 + 4, 60, 5); g.fillStyle = "#ff6a4a"; g.fillRect(x - 30, y + hh * 0.42 + 4, 60 * Math.max(0, f.hp) / f.full, 5); }
+      return true;
+    }
     function ocMon(f, x, y, m, dead) {
-      const boss = f.k === "boss", n = f.cm || (f.cm = Math.max(1, Math.min(10, mapIdx || 1))), I0 = ocImg((boss ? "boss-" : "mon-") + n), A = ocImg((boss ? "mb-" : "ma-") + n); if (!I0 && !A) return false;
+      const boss = f.k === "boss", n = f.cm || (f.cm = Math.max(1, Math.min(10, mapIdx || 1)));
+      if (vmMon(f, x, y, m, dead, boss, n)) return true;
+      const I0 = ocImg((boss ? "boss-" : "mon-") + n), A = ocImg((boss ? "mb-" : "ma-") + n); if (!I0 && !A) return false;
       /* 동작 그림(ChatGPT 6칸: 걷기 4 · 공격 준비 · 공격, 오른쪽 봄) — 있으면 걸을 땐 1~4, 붙으면 5 · 6 번갈아(2026-10-28 "탕탕특공대처럼 자연스럽게"). 없으면 그림 한 장 */
       let I = I0, sx0 = 0, sw0 = I0 ? I0.naturalWidth : 0, ih = I0 ? I0.naturalHeight : 0;
       if (A) { const cw = A.naturalWidth / 6, t = s.t + f.ph, fr = dead != null ? 0 : boss && f.wind > 0 ? 4 : boss && f.atkT > 0 ? 5 : !boss && f.near ? 4 + (Math.floor(t * 4) % 2) : Math.floor(t * (boss ? 5 : 8)) % 4; I = A; sx0 = fr * cw; sw0 = cw; ih = A.naturalHeight; }
