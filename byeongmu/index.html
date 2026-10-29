@@ -695,6 +695,12 @@ body.game-full { overflow: hidden; }
 #lbEn, .lb-gold { display: flex; align-items: center; justify-content: safe center; font-size: 3.9cqw; letter-spacing: -.1cqw; font-weight: 900; color: #fff; text-shadow: 0 1px 2px #000; font-variant-numeric: tabular-nums; }
 #lbEn small { position: absolute; top: 108%; left: 0; right: 0; text-align: center; font-size: 2.6cqw; color: #ffe27a; text-shadow: 0 1px 2px #000; }
 .lb-plus { border: 0; border-radius: 50%; background: transparent; }
+.lb-pat { display: flex !important; flex-direction: column; align-items: center; justify-content: center; gap: .2cqw; padding: .6cqw .8cqw 1cqw !important; border-radius: 2.6cqw !important; border: .5cqw solid #e8c46a !important; background: radial-gradient(circle at 50% 30%, rgba(74,127,44,.95), rgba(20,40,10,.95) 75%) !important; box-shadow: 0 .7cqw 0 #13240a, 0 1cqw 2cqw rgba(0,0,0,.4); color: #fff; }
+.lb-pat img { width: 9cqw; height: 7.4cqw; object-fit: contain; filter: drop-shadow(0 .4cqw 0 rgba(0,0,0,.35)); } .lb-pat.hot img { animation: lbBob 1.2s ease-in-out infinite; }
+.lb-pat b { font-size: 2.9cqw; font-weight: 900; text-shadow: 0 1px 2px #000; line-height: 1.1; } .lb-pat small { font-size: 2.3cqw; font-weight: 800; color: #ffe36b; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.lb-pat .pbar { display: block; width: 86%; height: 1.1cqw; margin: .4cqw 0; border-radius: 999px; background: rgba(0,0,0,.5); overflow: hidden; } .lb-pat .pbar em { display: block; height: 100%; background: linear-gradient(90deg, #ffd23a, #ff9a1a); }
+.lb-pat .lb-badge { position: absolute; top: -1.2cqw; right: -1.2cqw; } .lb-pat.full { border-color: #ffd23a !important; box-shadow: 0 0 2cqw #ffd23a, 0 .7cqw 0 #13240a; }
+@keyframes lbBob { 50% { transform: translateY(-.8cqw) rotate(-4deg); } }
 .lb-gem { display: flex !important; align-items: center; gap: .8cqw; padding: 0 .6cqw 0 1.2cqw !important; border-radius: 999px !important; border: .45cqw solid #e8c46a !important; background: rgba(20,36,12,.88) !important; color: #fff; box-shadow: 0 .5cqw 0 #13240a; }
 .lb-gem i { font-style: normal; font-size: 3.6cqw; } .lb-gem b { flex: 1; text-align: left; font-size: 3.4cqw; font-weight: 900; text-shadow: 0 1px 2px #000; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; }
 .lb-gem em { font-style: normal; display: grid; place-items: center; width: 3.6cqw; height: 3.6cqw; border-radius: 50%; background: #4caf3c; border: .3cqw solid #e8f7c0; font-size: 3cqw; font-weight: 900; line-height: 1; }
@@ -844,6 +850,22 @@ body.game-full { overflow: hidden; }
 .lb-sbox > img { width: 100%; aspect-ratio: 1; object-fit: contain; filter: drop-shadow(0 1cqw 1cqw rgba(0,0,0,.25)); } .lb-sbtx { display: grid; gap: 1cqw; min-width: 0; } .lb-sbtx > b { font-size: 4.6cqw; } .lb-sbtx > small { font-size: 3cqw; color: #6a4a1e; }
 .lb-pity { position: relative; height: 4.4cqw; border-radius: 999px; background: #7a5a32; overflow: hidden; } .lb-pity i { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, #c27dff, #8a3dff); } .lb-pity span { position: relative; display: block; text-align: center; font-size: 2.6cqw; line-height: 4.4cqw; color: #fff; text-shadow: 0 .2cqw .3cqw #000; white-space: nowrap; }
 .lb-sbbt { display: grid; grid-template-columns: 1fr 1fr; gap: 1.6cqw; } .lb-sbbt .lb-sbuy { flex-direction: column; gap: .2cqw; padding: 1.4cqw .6cqw; }
+/* 상점 단추 · 칸 다시(2026-10-29 부장님 "상점에서 클릭이 너무 보기 흉하다, 버튼도 근사하게") — 진한 테두리 · 위 광택 · 아래 그림자 · 흰 글씨 외곽선의 입체 게임 단추 */
+.lb-page.lb-shop .lb-sbuy { position: relative; overflow: hidden; border: .5cqw solid #1d4a0a; border-radius: 2.6cqw; background: linear-gradient(#c4f56a 0%, #7fd636 46%, #52b51e 54%, #3f9a16 100%); color: #fff; font-weight: 900; text-shadow: 0 .25cqw 0 #1d4a0a, .2cqw 0 0 #1d4a0a, -.2cqw 0 0 #1d4a0a, 0 -.15cqw 0 #1d4a0a; box-shadow: inset 0 .55cqw 0 rgba(255,255,255,.5), inset 0 -.7cqw 0 rgba(0,0,0,.18), 0 .8cqw 0 #1d4a0a, 0 1.2cqw 1.6cqw rgba(0,0,0,.3); }
+.lb-page.lb-shop .lb-sbuy::before { content: ""; position: absolute; left: 6%; right: 6%; top: .5cqw; height: 38%; border-radius: 2cqw 2cqw 50% 50%; background: linear-gradient(rgba(255,255,255,.55), rgba(255,255,255,0)); pointer-events: none; }
+.lb-page.lb-shop .lb-sbuy::after { content: ""; position: absolute; top: -20%; bottom: -20%; width: 18%; left: -30%; background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.55), rgba(255,255,255,0)); transform: skewX(-20deg); animation: lbShine 3.2s ease-in-out infinite; pointer-events: none; }
+.lb-page.lb-shop .lb-sbuy b { display: inline-flex; align-items: center; gap: .6cqw; padding: .2cqw 1.6cqw; border-radius: 999px; background: rgba(0,0,0,.24); box-shadow: inset 0 .3cqw .5cqw rgba(0,0,0,.25); }
+.lb-page.lb-shop .lb-sbuy.ten { border-color: #6a2a04; background: linear-gradient(#ffe08a 0%, #ffb02e 46%, #f58a12 54%, #e0700a 100%); text-shadow: 0 .25cqw 0 #6a2a04, .2cqw 0 0 #6a2a04, -.2cqw 0 0 #6a2a04, 0 -.15cqw 0 #6a2a04; box-shadow: inset 0 .55cqw 0 rgba(255,255,255,.5), inset 0 -.7cqw 0 rgba(0,0,0,.15), 0 .8cqw 0 #6a2a04, 0 1.2cqw 1.6cqw rgba(0,0,0,.3); }
+.lb-page.lb-shop .lb-sbuy.free { border-color: #0a3a6a; background: linear-gradient(#9ee4ff 0%, #45b6f5 46%, #2490e0 54%, #1a78c8 100%); text-shadow: 0 .25cqw 0 #0a3a6a, .2cqw 0 0 #0a3a6a, -.2cqw 0 0 #0a3a6a; box-shadow: inset 0 .55cqw 0 rgba(255,255,255,.5), inset 0 -.7cqw 0 rgba(0,0,0,.15), 0 .8cqw 0 #0a3a6a, 0 1.2cqw 1.6cqw rgba(0,0,0,.3); }
+.lb-page.lb-shop .lb-sbuy:disabled { filter: grayscale(1) brightness(.9); opacity: .75; } .lb-page.lb-shop .lb-sbuy:disabled::after { display: none; }
+.lb-page.lb-shop .lb-sbuy:not(:disabled):active { transform: translateY(.7cqw); box-shadow: inset 0 .55cqw 0 rgba(255,255,255,.5), 0 .1cqw 0 #1d4a0a; }
+@keyframes lbShine { 0%, 55% { left: -30%; } 85%, 100% { left: 120%; } }
+.lb-page.lb-shop .lb-scat button { position: relative; overflow: hidden; border: .5cqw solid #2a1806; background: linear-gradient(#7a5530 0%, #5a3a1a 50%, #4a2e12 51%, #3a220c 100%); color: #f6e6c2; text-shadow: 0 .2cqw 0 #1a0e04; box-shadow: inset 0 .4cqw 0 rgba(255,255,255,.22), 0 .6cqw 0 #1a0e04, 0 .9cqw 1.2cqw rgba(0,0,0,.3); }
+.lb-page.lb-shop .lb-scat button i { filter: drop-shadow(0 .3cqw 0 rgba(0,0,0,.4)); }
+.lb-page.lb-shop .lb-scat button.on { border-color: #7a4a04; background: linear-gradient(#fff3a8 0%, #ffd23a 48%, #f5b50e 52%, #e89a0a 100%); color: #4a2604; text-shadow: 0 .15cqw 0 rgba(255,255,255,.6); transform: translateY(-.6cqw); box-shadow: inset 0 .45cqw 0 rgba(255,255,255,.7), 0 .6cqw 0 #7a4a04, 0 0 2cqw rgba(255,210,58,.7); }
+.lb-page.lb-shop .lb-scard { border: .55cqw solid #c9963c; background: radial-gradient(120% 80% at 50% 0%, #fffdf5 0%, #fbefd2 55%, #f1dcab 100%); box-shadow: inset 0 0 0 .4cqw #fff6dc, inset 0 -1cqw 2cqw rgba(201,150,60,.18), 0 .8cqw 0 #a87a2a, 0 1.4cqw 2cqw rgba(0,0,0,.25); }
+.lb-page.lb-shop .lb-scard img { filter: drop-shadow(0 .8cqw .8cqw rgba(0,0,0,.25)); }
+.lb-page.lb-shop .lb-stag { background: linear-gradient(#ff6a5a, #d8261a); color: #fff; border: .35cqw solid #fff; box-shadow: 0 .4cqw .8cqw rgba(0,0,0,.3); text-shadow: 0 .2cqw 0 #8a1008; font-weight: 900; }
 .lb-reward { position: absolute; inset: 0; z-index: 30; display: grid; place-items: center; background: rgba(10,20,6,.72); animation: lbFade .2s; }
 .lb-rwin { position: relative; width: 84%; padding: 4cqw 3cqw 3cqw; border-radius: 4cqw; border: .7cqw solid #c79a4a; background: linear-gradient(#f9eccb, #efdcab); box-shadow: 0 0 0 .5cqw #5a3a14, 0 2cqw 5cqw rgba(0,0,0,.5); text-align: center; }
 .lb-rwin.chest { padding-top: 22cqw; } .lb-rwchest { position: absolute; left: 50%; top: -14cqw; width: 36cqw; margin-left: -18cqw; animation: lbShake .7s ease-in-out; filter: drop-shadow(0 0 4cqw rgba(255,220,100,.9)); }
@@ -1496,7 +1518,7 @@ body.game-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610290040";
+  const BUILD = "202610290101";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -5564,7 +5586,7 @@ body.game-full { overflow: hidden; }
     const WPN_SOON = [["물대포", "w-water"], ["빙결 총", "w-ice2"], ["유도 미사일", "w-missile2"]]; // 자물쇠 없는 그림은 제미나이(시험/무기아이콘-자르기.cjs)
     const ITEMS = { exp: { n: "경험치 부스트", pic: "i-exp", d: "5판 동안 경험치 1.5배" }, gboost: { n: "골드 부스트", pic: "i-gboost", d: "5판 동안 골드 1.5배" }, luck: { n: "행운 부적", pic: "i-luck", d: "다음 장비 상자 3번 ㆍ 희귀 이상 확정" } }; // 2026-10-28 회복약 · 물약 · 부활권 없앰
     const LBI = (n) => "img/lb/" + n + ".webp?v=" + BUILD;
-    let LP = null, lobTab = "go", lobCh = 0, lobFront = 0, lobErr = "", lobBusy = false, lobT = 0, lobSel = null, lobRankTab = "all";
+    let LP = null, lobTab = "go", lobCh = 0, lobFront = 0, lobErr = "", lobBusy = false, lobT = 0, lobSel = null, lobRankTab = "power", powerBoard = null, powerLoading = false;
     const lobFree = () => !(me && token); // 손님 · 관리자 암호 — 저장 없이
     const px = (x, y, w, h) => "left:" + (x / 9.41) + "%;top:" + (y / 16.72) + "%;width:" + (w / 9.41) + "%;height:" + (h / 16.72) + "%"; // 로비 그림 941×1672 자리 → %
     /* 글자가 칸을 넘치면 글씨를 줄여 한 줄에(2026-10-28 "10장 · 큰 골드 · 무한의 탑 · 최고 1층 이 넘친다") */
@@ -5626,10 +5648,9 @@ body.game-full { overflow: hidden; }
       else { const pg = el("div", "lb-page lb-" + lobTab); pg.append(...(lobTab === "wpn" ? lobWpn(P) : lobTab === "shop" ? lobShop(P) : lobTab === "op" ? lobOp() : lobTab === "mail" ? lobMail(P) : lobTab === "skin" ? lobSkin(P) : lobTab === "gear" ? lobGear(P) : lobTab === "dun" ? lobDun(P) : lobRank())); if (lobErr) pg.appendChild(el("p", "lb-err", lobErr)); art.appendChild(pg); const gp = pg.querySelector(".lb-gpop"); if (gp) art.appendChild(gp); } /* 장비 창은 그림 틀 위에 */
       const nav = el("nav", "lb-nav lb-nav5"); [["shop", "상점"], ["gear", "장비"], ["go", "출전"], ["dun", "던전"], ["rank", "순위"]].forEach(([k, n]) => { const b = el("button", k === lobTab || (k === "gear" && lobTab === "skin") ? "on" : ""); b.type = "button"; b.setAttribute("aria-label", n); b.appendChild(el("span", null, n)); if (k === "gear" && lobTab === "wpn") b.className = "on"; b.onclick = () => { lobTab = k; lobErr = ""; lobSel = null; lobDraw(); if (k === "rank") loadRanks(); }; nav.appendChild(b); });
       if (P && !P.free) { const mb = lobBtn("lb-mailbtn" + (lobTab === "mail" ? " on" : ""), px(782, 100, 58, 58), () => { lobTab = lobTab === "mail" ? "go" : "mail"; lobErr = ""; lobDraw(); }, "우편함"); mb.innerHTML = `<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="12" width="36" height="25" rx="3" fill="#f9eccb" stroke="#5a3a14" stroke-width="2.5"/><path d="M7 14l17 13 17-13" fill="none" stroke="#5a3a14" stroke-width="2.5" stroke-linejoin="round"/><circle cx="24" cy="27" r="4.5" fill="#e8382c" stroke="#5a3a14" stroke-width="1.8"/></svg>`; /* 홈 왼쪽 · 글자 없이(2026-10-28) */ const n = (P.mail || []).length; if (n) mb.appendChild(el("b", "lb-badge", String(n))); art.appendChild(mb);
-        /* 순찰 단추(2026-10-29) — 우편 왼쪽, 1시간 넘게 모이면 빨간 점 · 누르면 상점 특별 상품 맨 위 순찰 칸 */
-        const pb = lobBtn("lb-mailbtn lb-patbtn", px(714, 100, 58, 58), () => { lobTab = "shop"; lobShopCat = "special"; lobErr = ""; lobDraw(); }, "순찰 보상"); { const i = el("img"); i.src = LBI("it-crate"); i.alt = ""; i.style.cssText = "width:78%;height:78%;object-fit:contain"; pb.appendChild(i); } if (((P.pat || {}).sec || 0) + (Date.now() - (P.got || Date.now())) / 1000 >= 3600) pb.appendChild(el("b", "lb-badge", "!")); art.appendChild(pb); }
-      if (P && !P.free && lobTab !== "go") art.appendChild(chatBar());
-      art.appendChild(nav); if (shopRw && lobTab === "shop") art.appendChild(lobRewardBox()); else shopRw = null; { const o = L.querySelector(".lb-page"), st = o && lobDraw.tab === lobTab ? o.scrollTop : 0; L.replaceChildren(art); lobDraw.tab = lobTab; const nw = st && art.querySelector(".lb-page"); if (nw) nw.scrollTop = st; } /* 같은 칸에서 다시 그릴 때 내려 둔 자리 그대로(2026-10-28 실제 시험 — 스킨 눈을 누르면 맨 위로 튐) */ lobFit(art); if (P && P.op) { (matchMedia("(max-width: 760px)").matches ? art : L).appendChild(lobLive()); /* 휴대폰은 그림 안 「← 홈」 옆 */ if (Date.now() - liveAt > 5000) loadLive(); } // 운영자만 오른쪽에 지금 하는 사람
+        }
+      if (P && !P.free && !["go", "shop", "gear", "dun", "rank"].includes(lobTab)) art.appendChild(chatBar()); // 상점 · 장비 · 던전 · 순위에선 채팅 안 보임(2026-10-29)
+      art.appendChild(nav); if (shopRw && (lobTab === "shop" || lobTab === "go")) art.appendChild(lobRewardBox()); else shopRw = null; { const o = L.querySelector(".lb-page"), st = o && lobDraw.tab === lobTab ? o.scrollTop : 0; L.replaceChildren(art); lobDraw.tab = lobTab; const nw = st && art.querySelector(".lb-page"); if (nw) nw.scrollTop = st; } /* 같은 칸에서 다시 그릴 때 내려 둔 자리 그대로(2026-10-28 실제 시험 — 스킨 눈을 누르면 맨 위로 튐) */ lobFit(art); if (P && P.op) { (matchMedia("(max-width: 760px)").matches ? art : L).appendChild(lobLive()); /* 휴대폰은 그림 안 「← 홈」 옆 */ if (Date.now() - liveAt > 5000) loadLive(); } // 운영자만 오른쪽에 지금 하는 사람
     }
     function lobGo(P) {
       const MO = P.modeOpen || [1, 0, 0]; if (!MO[lobMode]) lobMode = 0;
@@ -5647,6 +5668,7 @@ body.game-full { overflow: hidden; }
       const w = WPN[P.wpn] || WPN.bow, wt = el("span", "lb-wtag"); wt.style.cssText = px(80, 210, 190, 40); const wi = el("img"); wi.src = LBI(w.pic); wi.alt = ""; wt.append(wi, el("b", null, w.n)); out.push(wt);
       if (c > 1) { const a = lobBtn("lb-arr", px(62, 548, 68, 68 * 941 / 1672 * 1672 / 941), () => { lobCh = c - 1; lobDraw(); }, "앞 장"); a.textContent = "‹"; out.push(a); }
       if (c < CH_N) { const a = lobBtn("lb-arr r", px(812, 548, 68, 68 * 941 / 1672 * 1672 / 941), () => { lobCh = c + 1; lobDraw(); }, "다음 장"); a.textContent = "›"; out.push(a); }
+      if (!P.free) out.push(patWidget(P)); // 순찰 보상은 메인 화면에(2026-10-29 "탕탕특공대처럼")
       t("lb-rw", "x" + (120 * c * (first ? 2 : 1) * mul).toLocaleString(), px(282, 1168, 90, 40)); t("lb-rw", "x" + (50 * c * mul).toLocaleString(), px(430, 1168, 82, 40)); t("lb-rw", first ? "x1" : "—", px(582, 1168, 66, 40));
       /* 아래 칸(2026-10-28 "출전 크기를 줄이고 채팅창을 더 키워라") ㆍ 왼쪽 큰 채팅(최근 글 여러 줄) · 오른쪽 작은 출전 */
       { const dk = el("div", "lb-dock"); dk.style.cssText = px(28, 1238, 885, 204); out.push(dk); if (!P.free) out.push(chatBox()); }
@@ -5924,6 +5946,13 @@ body.game-full { overflow: hidden; }
     }
     /* 「획득!」 창 — 상자 그림이 흔들리다 열리고, 얻은 것이 등급 색 테두리 카드로 하나씩 */
     /* 순찰(2026-10-29 탕탕특공대처럼) — 시간마다 골드 · 경험치 · 부품이 쌓임(12시간까지), 받기 */
+    /* 메인 화면 순찰(2026-10-29 부장님 "순찰 보상은 탕탕특공대처럼 메인 화면에") — 장 그림 왼쪽 아래 상자 · 모인 시간 막대, 누르면 바로 받기 */
+    function patWidget(P) {
+      const T = P.pat || { sec: 0, max: 12, rate: {} }, sec = Math.min(T.max * 3600, T.sec + Math.floor((Date.now() - (P.got || Date.now())) / 1000)), full = sec >= T.max * 3600, ready = sec >= 60;
+      const b = lobBtn("lb-pat" + (sec >= 3600 ? " hot" : "") + (full ? " full" : ""), px(70, 812, 190, 150), () => { if (!ready || lobBusy || lobFree()) return; lobBusy = true; lobErr = ""; const MN = P.matN || ["낡은 부품", "튼튼한 부품", "빛나는 부품", "전설 부품"]; call("gamePatrol", token).then((r) => { lobBusy = false; LP = r; LP.got = Date.now(); shopRw = { chest: "it-crate", list: [{ pic: "i-gboost", n: "💰 " + r.got.gold.toLocaleString(), g: 1 }, { pic: "i-exp", n: "⭐ " + r.got.exp.toLocaleString(), g: 1 }].concat(r.got.mats.map((k, t) => k ? { ico: "🔩", n: MN[t] + " " + k, g: t + 1, gg: 1 } : null).filter(Boolean)) }; lobDraw(); }).catch((e) => { lobBusy = false; lobErr = errMsg(e); lobDraw(); }); }, "순찰 보상 받기");
+      const im = el("img"); im.src = LBI("it-crate"); im.alt = ""; const bar = el("span", "pbar"), f = el("em"); bar.style.cssText = "display:block;width:86%;height:1.2cqw;flex:none;border-radius:999px;background:rgba(0,0,0,.55);overflow:hidden"; f.style.cssText = "display:block;height:100%;background:linear-gradient(90deg,#ffd23a,#ff9a1a)"; f.style.width = Math.round(sec / (T.max * 3600) * 100) + "%"; bar.appendChild(f);
+      b.append(im, el("b", null, "순찰"), bar, el("small", null, full ? "가득!" : Math.floor(sec / 3600) + ":" + pad(Math.floor(sec % 3600 / 60)))); if (sec >= 3600) b.appendChild(el("span", "lb-badge", "!")); return b;
+    }
     function patCard(P, buyBtn, shopCall, MN) {
       const T = P.pat || { sec: 0, max: 12, gold: 0, exp: 0, mats: [0, 0, 0, 0], rate: { gold: 0, mats: [] } }, gone = Math.floor((Date.now() - (P.got || Date.now())) / 1000), sec = Math.min(T.max * 3600, T.sec + gone), h = sec / 3600, R = T.rate || {};
       const amt = { gold: Math.floor((R.gold || 0) * h), exp: Math.floor((R.exp || 0) * h), mats: (R.mats || []).map((n) => Math.floor(n * h)) }, ms = amt.mats.map((n, t) => n ? MN[t].split(" ")[0] + " " + n : "").filter(Boolean);
@@ -5938,14 +5967,22 @@ body.game-full { overflow: hidden; }
       const ok = el("button", "lb-buy", "확인"); ok.type = "button"; ok.onclick = () => { shopRw = null; lobDraw(); }; pn.append(g2, ok); ov.appendChild(pn); ov.onclick = (e) => { if (e.target === ov) ok.onclick(); }; return ov;
     }
     function lobRank() {
-      const R = ranks || { all: [], month: [], week: [] }, list = (R[lobRankTab] || []).slice(0, 30), mine = list.findIndex((x) => me && x.id === me.id), op = !!(LP && LP.op) || canWrite;
-      const tabs = el("div", "lb-rtabs"); [["all", "전체"], ["month", "이번 달"], ["week", "이번 주"], ["raid", "⚔ 레이드"]].forEach(([k, n]) => { const b = el("button", k === lobRankTab ? "on" : "", n); b.type = "button"; b.onclick = () => { lobRankTab = k; lobDraw(); }; tabs.appendChild(b); });
-      if (lobRankTab === "raid") return [lobHead("sign-rank", "보스 레이드 ㆍ 이번 주 피해 순위"), tabs, raidTable(LP || {})]; /* 순위 탭에도 레이드(2026-10-28) */
+      /* 순위표 3개(2026-10-29 부장님 "전체 · 이번 달 · 이번 주 · 레이드가 아니라 전투력 · 무한의 탑 · 레이드") — 무한의 탑 = 예전 전체 칸 */
+      if (!["power", "tower", "raid"].includes(lobRankTab)) lobRankTab = "power";
+      const R = ranks || { all: [], month: [], week: [] }, list = (R.all || []).slice(0, 30), mine = list.findIndex((x) => me && x.id === me.id), op = !!(LP && LP.op) || canWrite;
+      const tabs = el("div", "lb-rtabs"); [["power", "⚡ 전투력"], ["tower", "🗼 무한의 탑"], ["raid", "⚔ 레이드"]].forEach(([k, n]) => { const b = el("button", k === lobRankTab ? "on" : "", n); b.type = "button"; b.onclick = () => { lobRankTab = k; lobDraw(); }; tabs.appendChild(b); });
+      if (lobRankTab === "raid") return [lobHead("sign-rank", "보스 레이드 ㆍ 이번 주 피해 순위"), tabs, raidTable(LP || {})];
+      if (lobRankTab === "power") { const PB = powerBoard, L = PB ? PB.top : [], t2 = el("div", "lb-table"), h2 = el("div", "lb-tr hd"); h2.append(el("span", null, "순위"), el("span", null, "닉네임"), el("span", null, "Lv"), el("span", null, "전투력")); t2.appendChild(h2);
+        if ((!PB || Date.now() - PB.got > 60000) && !powerLoading && !lobFree()) { powerLoading = true; call("gamePowerBoard", token).then((r) => { powerLoading = false; powerBoard = r; r.got = Date.now(); if (lobTab === "rank") lobDraw(); }).catch((e) => { powerLoading = false; lobErr = errMsg(e); lobDraw(); }); }
+        L.forEach((x, i) => { const r = el("div", "lb-tr" + (me && x.id === me.id ? " me" : "")), no = el("span", "no"); if (i < 3) { const md = el("img"); md.src = LBI("md" + (i + 1)); md.alt = (i + 1) + "위"; no.appendChild(md); } else no.textContent = i + 1; const nm = el("span", "nm"), f = el("img"); f.src = LBI("face"); f.alt = ""; nm.append(f, el("b", null, x.nick || "?")); r.append(no, nm, el("span", null, String(x.lv)), el("span", null, (x.power || 0).toLocaleString())); t2.appendChild(r); });
+        if (!L.length) t2.appendChild(el("p", "lb-note", PB ? "아직 기록이 없어요" : "불러오는 중…"));
+        const M = PB && PB.mine, m2 = el("div", "lb-mascot rank"), i2 = el("img"); i2.src = LBI("m-rank"); i2.alt = ""; const y2 = el("div", "lb-my"); y2.append(el("small", null, "나의 전투력 순위"), el("b", null, M ? M.rank + "위" : "—"), el("small", null, M ? "⚡ " + M.power.toLocaleString() : "장비를 맞춰 전투력을 올려 보세요")); m2.append(i2, y2);
+        return [lobHead("sign-rank", "최고의 수달이 되어보세요! (전투력)"), m2, tabs, t2]; } /* 순위 탭에도 레이드(2026-10-28) */
       const tb = el("div", "lb-table" + (op ? " op" : "")), hd = el("div", "lb-tr hd"); hd.append(el("span", null, "순위"), el("span", null, "닉네임"), el("span", null, "층"), el("span", null, "처치")); /* 수달단 무한의 탑 — 층 · 잡은 수(2026-10-29, 예전 단계 · 점수) */ if (op) hd.appendChild(el("span")); tb.appendChild(hd);
       const sure = (b, label, fn) => { b.onclick = () => { if (b.dataset.sure !== "1") { b.dataset.sure = "1"; b.textContent = "정말?"; setTimeout(() => { b.dataset.sure = ""; b.textContent = label; }, 3000); return; } b.disabled = true; fn(); }; };
       list.forEach((x, i) => { const r = el("div", "lb-tr" + (i === mine ? " me" : "")), no = el("span", "no"); if (i < 3) { const md = el("img"); md.src = LBI("md" + (i + 1)); md.alt = (i + 1) + "위"; no.appendChild(md); } else no.textContent = i + 1;
         const nm = el("span", "nm"), f = el("img"); f.src = LBI("face"); f.alt = ""; nm.append(f, el("b", null, x.nick || "?")); r.append(no, nm, el("span", null, (x.stage || 0) + "층"), el("span", null, (x.kills || 0).toLocaleString()));
-        if (op) { const d = el("button", "lb-del", "🗑"); d.type = "button"; d.setAttribute("aria-label", x.nick + " 기록 지우기"); sure(d, "🗑", () => call("deleteGameScore", adminPw || token, lobRankTab, x.id).then((r) => { takeRanks(r); lobDraw(); }).catch((e) => { lobErr = errMsg(e); lobDraw(); })); r.appendChild(d); }
+        if (op) { const d = el("button", "lb-del", "🗑"); d.type = "button"; d.setAttribute("aria-label", x.nick + " 기록 지우기"); sure(d, "🗑", () => call("deleteGameScore", adminPw || token, "all", x.id).then((r) => { takeRanks(r); lobDraw(); }).catch((e) => { lobErr = errMsg(e); lobDraw(); })); r.appendChild(d); }
         tb.appendChild(r); });
       if (!list.length) tb.appendChild(el("p", "lb-note", ranks ? "아직 기록이 없어요" : "불러오는 중…"));
       const m = el("div", "lb-mascot rank"), mi = el("img"); mi.src = LBI("m-rank"); mi.alt = ""; const my = el("div", "lb-my"); my.append(el("small", null, "나의 순위"), el("b", null, mine >= 0 ? mine + 1 + "위" : "—"), el("small", null, mine >= 0 ? (list[mine].stage || 0) + "층 · " + (list[mine].kills || 0).toLocaleString() + "마리" : "무한의 탑에 도전해 보세요")); m.append(mi, my);
