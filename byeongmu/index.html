@@ -1149,7 +1149,10 @@ body.game-full { overflow: hidden; }
 .game-hud .msg.on { opacity: 1; }
 /* 대쉬는 오른쪽 아래 — "휴대폰으로 하는 사람이 대시 왼쪽에 있어서 불편하단다" (2026-10-26). 스킬은 그 왼쪽 */
 .game-hud .dashbtn { position: absolute; right: 10px; bottom: 10px; pointer-events: auto; }
-.game-hud .skills { position: absolute; right: 78px; bottom: 10px; display: flex; flex-wrap: wrap-reverse; justify-content: flex-end; gap: 8px; max-width: 214px; pointer-events: auto; }
+.game-hud .skills { position: absolute; right: 78px; bottom: 10px; display: flex; flex-wrap: wrap-reverse; justify-content: flex-end; gap: 8px; max-width: 214px; pointer-events: none; } /* 묶음 상자는 터치를 안 받고 단추만(2026-10-30 「모바일 키 씹힘」 — 단추 사이 틈 · 빈 자리를 누르면 아무 일도 안 일어났음) */
+.game-hud .skills .gskill { pointer-events: auto; }
+.gskill { position: relative; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.gskill::before { content: ""; position: absolute; inset: -8px; border-radius: 50%; } /* 누르는 자리를 보이는 테두리 밖 5px 쯤 더 넓게(inset 은 테두리 안쪽부터 잼) — 살짝 빗나가도 단추로 */
 .gskill .ic { display: block; width: 20px; height: 20px; margin: 0 auto 1px; filter: drop-shadow(0 0 4px currentColor); }
 .gskill canvas.ic { width: 26px; height: 26px; margin-bottom: 0; filter: none; }
 .game-box canvas.gico { min-height: 0; } /* 게임판 canvas 규칙(min-height 360px)을 받지 않게 */
@@ -2065,7 +2068,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610291358";
+  const BUILD = "202610300206";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -6142,15 +6145,24 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
 
     /* ── 손 · 자판 ── 누른 자리가 손잡이 가운데가 된다 */
     function spot(e) { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) / ZM, (e.clientY - r.top) / ZM]; }
+    /* 2026-10-30 「모바일 키 씹힘」 — 판을 누른 다른 손가락(스킬 단추를 살짝 빗나간 손가락)이 손잡이를 빼앗고, 그 손가락을 떼면 이동하던 손가락이 그대로인데 멈췄음.
+       손잡이는 먼저 누른 손가락 것. 그 손가락을 떼면 아직 판에 닿아 있는 손가락이 이어받음 */
+    const pts = new Map(); // 판에 닿아 있는 손가락 → 지금 자리
     cv.addEventListener("pointerdown", (e) => {
       if (!running) return;
       e.preventDefault();
       try { cv.setPointerCapture(e.pointerId); } catch (err) {}
-      const [x, y] = spot(e); stick = { id: e.pointerId, ox: x, oy: y, x: x, y: y };
+      const [x, y] = spot(e); pts.set(e.pointerId, [x, y]);
+      if (!stick || e.pointerType === "mouse") stick = { id: e.pointerId, ox: x, oy: y, x: x, y: y };
     });
-    cv.addEventListener("pointermove", (e) => { if (stick && e.pointerId === stick.id) { const [x, y] = spot(e); stick.x = x; stick.y = y; } });
-    const lift = (e) => { if (stick && e.pointerId === stick.id) stick = null; };
-    cv.addEventListener("pointerup", lift); cv.addEventListener("pointercancel", lift);
+    cv.addEventListener("pointermove", (e) => { if (!pts.has(e.pointerId)) return; const [x, y] = spot(e); pts.set(e.pointerId, [x, y]); if (stick && e.pointerId === stick.id) { stick.x = x; stick.y = y; } });
+    const lift = (e) => {
+      pts.delete(e.pointerId);
+      if (!stick || e.pointerId !== stick.id) return;
+      stick = null; const n = [...pts].pop();
+      if (n && running) stick = { id: n[0], ox: n[1][0], oy: n[1][1], x: n[1][0], y: n[1][1] };
+    };
+    cv.addEventListener("pointerup", lift); cv.addEventListener("pointercancel", lift); cv.addEventListener("lostpointercapture", lift);
     cv.addEventListener("contextmenu", (e) => e.preventDefault());
     window.addEventListener("keydown", (e) => {
       if (view !== "game" || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
