@@ -1434,6 +1434,13 @@ body.game-full { overflow: hidden; }
 .dn-box.top3 { justify-items: stretch; gap: .6cqw; } .dn-t3 { display: grid; grid-template-columns: 5.4cqw 5.4cqw 1fr auto; align-items: center; gap: 1cqw; font-size: 2.4cqw; text-align: left; }
 .dn-t3 img { width: 100%; } .dn-t3 img:not(.md) { border-radius: 50%; background: #fff; } .dn-t3 span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .dn-t3 b { font-size: 2.4cqw; color: #fff; } .dn-none { margin: .6cqw 0; font-size: 2.4cqw; color: #dde; }
 .dn-go { display: flex; align-items: center; justify-content: center; gap: 1.6cqw; padding: 1.6cqw; border-radius: 3cqw; border: .5cqw solid #1d4a0a; background: linear-gradient(#c4f56a, #52b51e 55%, #3f9a16); color: #fff; font: 900 6cqw/1 "Jua", "Noto Sans KR", sans-serif; -webkit-text-stroke: .9cqw #1d4a0a; paint-order: stroke fill; box-shadow: inset 0 .5cqw 0 rgba(255,255,255,.5), 0 .8cqw 0 #1d4a0a; cursor: pointer; }
+/* 글씨 스타일(2026-10-30 ChatGPT 「텍스트 스타일 가이드」 · 「글씨가 너무 밝다 · 형광색 말고」) — 형광 · 번짐 없이 크림 → 금 그라데이션 + 짙은 갈색 테두리 */
+.dn-card h3, .dn-card.mine h3, .dn-card.raid h3 { background: linear-gradient(#fff0d6, #e3b35c); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-stroke: 0; filter: drop-shadow(0 .5cqw 0 #5a2f0d) drop-shadow(0 0 .25cqw #5a2f0d) drop-shadow(0 .4cqw .5cqw rgba(0,0,0,.4)); text-shadow: none !important; }
+.dn-box b.dn-big { background: linear-gradient(#ffe07a, #d29b2e); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-stroke: 0; filter: drop-shadow(0 .5cqw 0 #6b3e00) drop-shadow(0 0 .3cqw #6b3e00) drop-shadow(0 .5cqw .6cqw rgba(0,0,0,.45)); text-shadow: none !important; }
+.dn-box b:not(.dn-big), .dn-box.boss b { color: #ffe896; text-shadow: 0 .3cqw 0 #6b3e00, 0 .3cqw .4cqw rgba(0,0,0,.45) !important; }
+.dn-box small { color: #f1e4c8; text-shadow: 0 .2cqw 0 #4a2c10 !important; } .dn-d { color: #e8d7b8; text-shadow: 0 .2cqw .3cqw rgba(0,0,0,.4) !important; }
+.dn-go { filter: saturate(.72) brightness(.9); } .dn-go:disabled { filter: grayscale(.7); } /* 형광 연두 → 시안처럼 차분한 초록 */
+.dn-go, .dn-go span { color: #f5e9c8 !important; -webkit-text-stroke: .5cqw #3e2a0f !important; text-shadow: 0 .3cqw 0 #3e2a0f !important; } .dn-go i { color: #ffe896 !important; -webkit-text-stroke: .5cqw #6b3e00 !important; }
 .dn-go i { font-style: normal; font-size: 4.6cqw; color: #ffe36b; } .dn-go:disabled { filter: grayscale(.7); } .dn-go:not(:disabled):active { transform: translateY(.6cqw); box-shadow: 0 .2cqw 0 #1d4a0a; }
 /* 순위 — 명예의 전당 + 시상대 */
 .rk-pod { position: relative; flex: none; margin: 0 -2.6cqw; aspect-ratio: 1024 / 600; background: url(img/lb/bg-rank.webp) center 30% / cover no-repeat; overflow: hidden; }
@@ -2101,7 +2108,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610300856";
+  const BUILD = "202610300925";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
