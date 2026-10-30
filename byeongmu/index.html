@@ -1638,8 +1638,6 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
       <button type="button" class="menu-item" data-go="board">자유게시판</button>
       <button type="button" class="menu-item" data-go="bad">비매너 게시판</button>
       <button type="button" class="menu-item" data-go="game">수달단</button>
-      <!-- 봉인검록 — 새 게임 시제품(따로 만든 폴더 · bongin/), 새 창으로 (2026-10-27) -->
-      <button type="button" class="menu-item" data-href="../bongin/">봉인검록 <small class="beta">베타</small></button>
       <button type="button" class="menu-item" data-go="members" id="membersMenu" hidden>가입 승인</button>
     </div>
     <div class="acct" id="acct"></div>
@@ -2068,7 +2066,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610300328";
+  const BUILD = "202610300335";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
