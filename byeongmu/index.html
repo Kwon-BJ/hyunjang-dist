@@ -2068,7 +2068,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610300206";
+  const BUILD = "202610300217";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -4449,16 +4449,18 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     /* 레벨업 · 스킬 아이콘 그림 — 강화 16 · 스킬 6 (제미나이 그림, img/icons.png · 시험/몬스터효과-아이콘-자르기.cjs, 2026-10-26).
        "레벨업하면 뜨는 스킬창도 이미지 넣자". 그림을 아직 못 읽었으면 예전 선 그림(스킬만) */
     /* 판에서만 쓰는 그림(2026-10-29 첫 로딩 줄이기 — 로비 전에 12MB 를 받던 것) — 로비가 뜨고 조금 뒤 또는 판 시작 때 한 번 받음 */
+    /* 못 받은 그림은 다시 받기(2026-10-30 「새로고침하니 배경이 사라졌다」 · 몬스터가 빨간 임시 모양) — 배포 중 깃허브가 판을 바꾸는 사이 · 잠깐 끊긴 인터넷에 한 번 실패하면 그 판 내내 안 나왔음. 1.5 · 3 · 4.5 · 6 · 7.5초 뒤 5번까지 */
+    function reImg(i, url) { i.onerror = () => { const n = (i._re || 0) + 1; if (n > 5) return; i._re = n; setTimeout(() => { i.src = url + (url.includes("?") ? "&" : "?") + "r=" + n; }, 1500 * n); }; i.src = url; return i; }
     const GAME_IMG = []; let gameImgOn = false; function gameImgs() { if (gameImgOn) return; gameImgOn = true; GAME_IMG.forEach((fn) => { try { fn(); } catch (e) {} }); }
     const ICO = new Image(), ICOF = {"dmg":[0,0,100,112],"rate":[102,0,112,108],"multi":[216,0,111,112],"pierce":[329,0,110,112],"fan":[441,0,112,108],"crit":[555,0,112,111],"boom":[669,0,112,111],"bounce":[783,0,108,112],"dashx":[893,0,112,99],"orbs":[0,114,108,112],"aura":[110,114,112,112],"spd":[224,114,112,112],"max":[338,114,111,112],"magnet":[451,114,109,112],"regen":[562,114,112,111],"cool":[676,114,107,112],"thunder":[785,114,111,112],"whirl":[898,114,112,108],"ward":[0,228,112,94],"fire":[114,228,112,110],"homing":[228,228,112,96],"frost":[342,228,112,109]};
     let icoOk = false;
     ICO.onload = () => { icoOk = true; };
-    GAME_IMG.push(() => { ICO.src = "img/icons.png?v=" + BUILD; }); // 판에서만 씀 — gameImgs() 때 받음(2026-10-29 첫 로딩 줄이기)
+    GAME_IMG.push(() => { reImg(ICO, "img/icons.png?v=" + BUILD); }); // 판에서만 씀 — gameImgs() 때 받음(2026-10-29 첫 로딩 줄이기)
     /* 캐릭터 스킬 그림 — 15가지 한 장씩(img/hsk.png · 시험/캐릭터스킬-자르기.cjs, 2026-10-27). 스킬 효과 · 레벨업 카드 · 스킬 단추에 같이 쓴다 */
     const HSK = new Image(), HSKF = {"kh_wave":[0,0,155,160],"kh_ring":[157,0,160,97],"kh_dash":[319,0,160,76],"hr_tali":[481,0,158,160],"hr_bolt":[641,0,160,111],"hr_bagua":[803,0,160,115],"ds_bell":[0,162,160,125],"ds_slam":[162,162,160,93],"ds_aura":[324,162,160,90],"je_wind":[486,162,160,70],"je_rain":[648,162,160,102],"je_storm":[810,162,160,78],"mj_shadow":[0,289,160,84],"mj_poison":[162,289,160,80],"mj_star":[324,289,160,75]};
     let hskOk = false;
     HSK.onload = () => { hskOk = true; };
-    GAME_IMG.push(() => { HSK.src = "img/hsk.png?v=" + BUILD; }); // 판에서만 씀 — gameImgs() 때 받음(2026-10-29 첫 로딩 줄이기)
+    GAME_IMG.push(() => { reImg(HSK, "img/hsk.png?v=" + BUILD); }); // 판에서만 씀 — gameImgs() 때 받음(2026-10-29 첫 로딩 줄이기)
     function icon(k) {
       if (k === "wpn") { const i = document.createElement("img"); i.className = "ic gico sk-pic"; i.alt = ""; const wk = Object.keys(WCODE).find((x) => WCODE[x] === wcode()) || "bow"; i.src = "img/lb/" + ((WPN[wk] || WPN.bow).pic) + ".webp?v=" + BUILD; return i; } // 장착 무기 카드
       if (UPS.some((u) => u.k === k)) { const i = document.createElement("img"); i.className = "ic gico sk-pic"; i.alt = ""; i.setAttribute("aria-hidden", "true"); i.src = "img/lb/s-" + k + ".webp?v=" + BUILD; return i; } // 수달단 레벨업 스킬 — 제미나이 아이콘(시험/스킬아이콘-자르기.cjs)
@@ -4805,14 +4807,14 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     const CYC_TINT = ["", "rgba(255,120,40,.14)", "rgba(30,40,140,.26)"], CYC_MON = ["", "saturate(1.3) hue-rotate(-18deg) brightness(.95)", "hue-rotate(200deg) saturate(1.15) brightness(.9)"];
     function cycOf() { return !s ? 0 : s.chap ? (s.chap > 60 ? 2 : s.chap > 30 ? 1 : 0) : s.raid ? 0 : Math.min(2, Math.floor(((s.stage || 1) - 1) / 100)); }
     function mapFor(n) { return 1 + Math.floor(Math.max(0, (n || 1) - 1) / 10) % 10; } // 무한의 탑도 1~10장 맵을 10층마다 차례로(2026-10-28 "지금 맵은 너무 어둡다")
-    function setMap(i) { if (i === mapIdx) return; mapIdx = i; const N = new Image(); N.onload = () => { if (mapOk && MAP && MAP.width === N.width && MAP.height === N.height) { MAP_PREV = MAP; MAP_FADE = performance.now(); } MAP = N; mapFit(); }; N.src = MAPS[i] + "?v=" + BUILD; }
+    function setMap(i) { if (i === mapIdx) return; mapIdx = i; const N = new Image(); N.onload = () => { if (mapOk && MAP && MAP.width === N.width && MAP.height === N.height) { MAP_PREV = MAP; MAP_FADE = performance.now(); } MAP = N; mapFit(); }; reImg(N, MAPS[i] + "?v=" + BUILD); }
     let MAP_PREV = null, MAP_FADE = 0;
-    const MAPC = { src: "", cy: -1, c: null }; function mapTinted(M, cy) { if (MAPC.src === M.src && MAPC.cy === cy && MAPC.c) return MAPC.c; const c = document.createElement("canvas"); c.width = M.width; c.height = M.height; const x = c.getContext("2d"); x.drawImage(M, 0, 0); x.fillStyle = "rgba(0,0,0,.12)"; x.fillRect(0, 0, c.width, c.height); if (cy) { x.fillStyle = CYC_TINT[cy]; x.fillRect(0, 0, c.width, c.height); } Object.assign(MAPC, { src: M.src, cy, c }); return c; }
+    const MAPC = { src: "", cy: -1, c: null }; function mapTinted(M, cy) { if (MAPC.src === M.src && MAPC.cy === cy && MAPC.c) return MAPC.c; const c = document.createElement("canvas"); c.width = M.width; c.height = M.height; c.addEventListener("contextlost", () => { if (MAPC.c === c) MAPC.c = null; }); /* 폰이 메모리가 모자라면 캔버스를 비움 — 다시 칠함 */ const x = c.getContext("2d"); x.drawImage(M, 0, 0); x.fillStyle = "rgba(0,0,0,.12)"; x.fillRect(0, 0, c.width, c.height); if (cy) { x.fillStyle = CYC_TINT[cy]; x.fillRect(0, 0, c.width, c.height); } Object.assign(MAPC, { src: M.src, cy, c }); return c; }
 
     /* "좀더 어두운 용암맵으로 바꿔라 몹이 잘안보인다" (2026-10-26) — 숲 맵 색만 바꾼 용암 맵(무료, 시험/용암맵-만들기.cjs). 숲 맵(map.jpg)은 남겨 둠 */
     /* 맵 바꿈 — 부장님이 주신 어두운 돌바닥 법진 맵 (2026-10-26, img/map2.jpg · 시험/맵2-만들기.cjs). 크기 · 시작 자리는 MAP.onload 에서 그림에 맞춘다 */
     /* 게임 그림 주소에 판 번호(BUILD)를 붙인다 — 깃허브가 그림을 10분 동안 브라우저에 남겨 두어, 새 판 홈페이지에 예전 그림이 섞여 캐릭터가 안 보였다 (2026-10-26) */
-    GAME_IMG.push(() => { MAP.src = "img/map2.jpg?v=" + BUILD; }); // 판에서만 씀 — gameImgs() 때 받음(2026-10-29 첫 로딩 줄이기)
+    GAME_IMG.push(() => { reImg(MAP, "img/map2.jpg?v=" + BUILD); }); // 판에서만 씀 — gameImgs() 때 받음(2026-10-29 첫 로딩 줄이기)
     function bounds() { return [-MAP_O[0] * MAP_K + MAP_PAD, (MAP.width - MAP_O[0]) * MAP_K - MAP_PAD, -MAP_O[1] * MAP_K + MAP_PAD, (MAP.height - MAP_O[1]) * MAP_K - MAP_PAD]; }
     function inside(x, y) { const b = bounds(); return x >= b[0] && x <= b[1] && y >= b[2] && y <= b[3]; }
     function inMap(p) { if (!mapOk) return p; const b = bounds(); p.x = Math.min(b[1], Math.max(b[0], p.x)); p.y = Math.min(b[3], Math.max(b[2], p.y)); return p; }
@@ -5391,14 +5393,14 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     const FXI = new Image(), FXF = {"thunder":[[0,0,108,128],[110,0,107,128],[219,0,116,128],[337,0,121,128]],"whirl":[[0,130,121,128],[123,130,120,128],[245,130,124,128],[371,130,123,128]],"ward":[[0,274,128,114],[130,265,128,123],[260,269,128,119],[390,269,128,119]],"fire":[[0,441,128,77],[130,432,128,86],[260,416,128,102],[390,398,128,120]],"homing":[[0,590,128,58],[130,557,128,91],[260,544,128,104],[390,577,128,71]],"frost":[[0,650,95,128],[97,650,121,128],[220,650,127,128],[349,655,128,123]],"levelup":[[0,780,113,128],[115,780,113,128],[230,780,113,128],[345,780,113,128]],"smoke":[[0,935,128,103],[130,942,128,96],[260,945,128,93],[390,914,128,124]]};
     let fxOk = false;
     FXI.onload = () => { fxOk = true; };
-    GAME_IMG.push(() => { FXI.src = "img/fx.png?v=" + BUILD; }); // 판에서만 씀 — gameImgs() 때 받음(2026-10-29 첫 로딩 줄이기)
+    GAME_IMG.push(() => { reImg(FXI, "img/fx.png?v=" + BUILD); }); // 판에서만 씀 — gameImgs() 때 받음(2026-10-29 첫 로딩 줄이기)
     /* 몬스터 공격 효과 그림 — 부장님이 주신 제미나이 그림 2장(img/mfx.png · 시험/몬스터효과-아이콘-자르기.cjs, 2026-10-26).
        탄(분홍 구슬 · 보라 불덩이 · 독 가시 · 바위 · 마왕 불덩이)은 날아가는 그림 + 맞으면 터짐, 땅 울림 · 메테오 · 독 웅덩이 · 울부짖음, 붙어서 때릴 때 칼자국 · 손톱 · 불꽃.
        피하라는 땅 표시(차오르는 원)는 그대로 두고 그 위에 얹는다. 그림을 못 읽으면 예전 도형 */
     const MFX = new Image(), MFXF = {"orb_fly":[[0,0,54,53],[56,0,128,47]],"orb_hit":[[186,0,128,98],[316,0,114,91]],"dfire_fly":[[432,0,63,73],[497,0,128,53]],"dfire_hit":[[627,0,128,79],[757,0,100,75]],"spike_fly":[[859,0,72,71],[0,100,128,41]],"spike_hit":[[130,100,128,93],[260,100,120,109]],"slash":[[382,100,79,52],[463,100,128,72]],"claw":[[593,100,81,87],[676,100,128,111],[806,100,104,95],[912,100,98,90]],"spark":[[0,213,52,63],[54,213,128,121],[184,213,127,111]],"quake":[[313,213,93,48],[408,213,126,54],[536,213,128,75],[666,213,126,61]],"rock_fly":[[794,213,103,57],[0,336,128,59]],"rock_hit":[[130,336,128,74],[260,336,120,68]],"howl":[[382,336,74,30],[458,336,128,50],[588,336,128,42],[718,336,127,37]],"bfire_fly":[[847,336,88,49],[0,412,128,52]],"bfire_hit":[[130,412,127,66],[259,412,128,58]],"meteor_fly":[[389,412,102,101],[493,412,128,110]],"meteor_hit":[[623,412,128,68]],"pool":[[753,412,99,60],[854,412,126,75],[0,524,128,69],[130,524,128,81]]};
     let mfxOk = false;
     MFX.onload = () => { mfxOk = true; };
-    GAME_IMG.push(() => { MFX.src = "img/mfx.png?v=" + BUILD; }); // 판에서만 씀 — gameImgs() 때 받음(2026-10-29 첫 로딩 줄이기)
+    GAME_IMG.push(() => { reImg(MFX, "img/mfx.png?v=" + BUILD); }); // 판에서만 씀 — gameImgs() 때 받음(2026-10-29 첫 로딩 줄이기)
     const MELEE = { wolf: "claw", bat: "claw", red_demon: "claw", skeleton_warrior: "slash", goblin: "slash", demon_mage: "slash" }; // 나머지는 타격 불꽃
     function sprOf(name) { return HSKF[name] ? (hskOk ? [HSK, [HSKF[name]]] : null) : FXF[name] ? (fxOk ? [FXI, FXF[name]] : null) : MFXF[name] && mfxOk ? [MFX, MFXF[name]] : null; }
     function fxDraw(name, fi, x, y, size, o) {
@@ -5462,7 +5464,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     const HEROES = {};
     Object.keys(ROSTER).forEach((k) => { HEROES[k] = Object.assign({}, ROSTER[k], { img: H5, F: H5F[k], K: ROSTER[k].F }); }); // F = 그림 칸 자리, K = 동작 → 칸 이름
     H5.onload = () => { Object.keys(HEROES).forEach((k) => { HEROES[k].ok = true; }); draw(); drawPick(); };
-    GAME_IMG.push(() => { H5.src = "img/heroes5.png?v=" + BUILD; }); // 판에서만 씀 — gameImgs() 때 받음(2026-10-29 첫 로딩 줄이기)
+    GAME_IMG.push(() => { reImg(H5, "img/heroes5.png?v=" + BUILD); }); // 판에서만 씀 — gameImgs() 때 받음(2026-10-29 첫 로딩 줄이기)
     /* ── 봉인검록 영상 그림 (2026-10-28 부장님 "연병장도 봉인검록처럼 몬스터 · 캐릭터가 자연스럽게 움직이고 총 쏘고 스킬 쏘게") ──
        img/bg/ = 봉인검록에서 가져온 것(시험/봉인그림-가져오기.cjs): m_<사람>2(서기 · 걷기 · 평타 · 스킬) · m_<사람>3(대시 · 맞기 · 쓰러짐) ·
        mm_<몬스터>(걷기 · 힘 모으기 · 공격 · 맞기 · 쓰러짐) · sfx/sk_*(스킬 영상, 검은 바탕이라 더해 그림). 못 읽으면 예전 그림 그대로 */
@@ -5475,8 +5477,8 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     /* 빛 그림(2026-10-29 「폰에서 shadowBlur 는 매우 느림」) — 색마다 128px 둥근 빛을 한 번만 그려 두고 drawImage 로 */
     const GLOW = {}; function glowSpr(col) { let c = GLOW[col]; if (!c) { c = GLOW[col] = document.createElement("canvas"); c.width = c.height = 128; const x = c.getContext("2d"), gr = x.createRadialGradient(64, 64, 6, 64, 64, 64); gr.addColorStop(0, col); gr.addColorStop(1, "rgba(0,0,0,0)"); x.fillStyle = gr; x.fillRect(0, 0, 128, 128); } return c; }
     function glowAt(col, cx, cy, R) { const o = g.globalCompositeOperation; g.globalCompositeOperation = "lighter"; g.drawImage(glowSpr(col), cx - R, cy - R, R * 2, R * 2); g.globalCompositeOperation = o; }
-    function lbImg(n) { let i = BGI["lb:" + n]; if (!i) { i = BGI["lb:" + n] = new Image(); i.src = "img/lb/" + n + ".webp?v=" + BUILD; } return i.complete && i.naturalWidth ? i : null; } // 맵 물건 그림(ChatGPT, 보관/로비그림/맵물건6-gpt.png)
-    function bgImg(n) { let i = BGI[n]; if (!i) { i = BGI[n] = new Image(); i.src = "img/bg/" + n + ".webp?v=" + BUILD; } return i.complete && i.naturalWidth ? i : null; }
+    function lbImg(n) { let i = BGI["lb:" + n]; if (!i) { i = BGI["lb:" + n] = reImg(new Image(), "img/lb/" + n + ".webp?v=" + BUILD); } return i.complete && i.naturalWidth ? i : null; } // 맵 물건 그림(ChatGPT, 보관/로비그림/맵물건6-gpt.png)
+    function bgImg(n) { let i = BGI[n]; if (!i) { i = BGI[n] = reImg(new Image(), "img/bg/" + n + ".webp?v=" + BUILD); } return i.complete && i.naturalWidth ? i : null; }
     function bgPut(I, r, x, y, k, flip, ax, a) { const w = r[2] * k, h = r[3] * k; g.save(); g.translate(x, y); if (flip) g.scale(-1, 1); if (a != null) g.globalAlpha *= a; g.drawImage(I, r[0], r[1], r[2], r[3], -w * ax, -h, w, h); g.restore(); }
     /* 주인공 — 겨누는 쪽(왼 · 오)을 보고, 쏘면 평타 동작 · 스킬은 기술 동작 · 대시 · 맞기 · 쓰러짐 */
     function otLook() { if (!s) return ""; const has = (n) => BGF["m_ot2_" + n] && bgImg("m_ot2_" + n); const k = s.skin && s.skin !== "basic" ? s.skin : "";
@@ -5644,7 +5646,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     const FACE_R = { wolf: 1, skeleton_archer: 1, skeleton_warrior: 1, goblin: -1 }; // 그림이 보는 쪽 (1 오른쪽 · -1 왼쪽 · 없으면 앞)
     let monOk = false;
     MON.onload = () => { monOk = true; draw(); };
-    GAME_IMG.push(() => { MON.src = "img/mon.png?v=" + BUILD; }); // 판에서만 씀 — gameImgs() 때 받음(2026-10-29 첫 로딩 줄이기)
+    GAME_IMG.push(() => { reImg(MON, "img/mon.png?v=" + BUILD); }); // 판에서만 씀 — gameImgs() 때 받음(2026-10-29 첫 로딩 줄이기)
     /* 몬스터 움직임 — "몬스터도 좀 임팩트 있게, 현실감있게" (2026-10-26). 그림은 한 장이라 코드로 흔든다:
        슬라임 통통 튀며 찌그러짐 · 박쥐 날갯짓 · 늑대 기울이며 달려듦 · 골렘 무겁게 쿵쿵 · 나머지 뒤뚱 걸음 · 식충 식물 제자리 흔들림.
        나올 때 땅에서 솟듯 커지고, 맞으면 찌그러지며 밀리고, 가까우면 앞으로 숙여 달려든다 */
@@ -5656,7 +5658,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     const FACE2 = { wolf: 1, plant: 1, goblin: 1, demon: 1, skel2: 1, dmage: 1 };
     let mon2Ok = false;
     MON2.onload = () => { mon2Ok = true; };
-    GAME_IMG.push(() => { MON2.src = "img/mon2.png?v=" + BUILD; }); // 판에서만 씀 — gameImgs() 때 받음(2026-10-29 첫 로딩 줄이기)
+    GAME_IMG.push(() => { reImg(MON2, "img/mon2.png?v=" + BUILD); }); // 판에서만 씀 — gameImgs() 때 받음(2026-10-29 첫 로딩 줄이기)
     function frame2(f) {
       const A = MF2[SKIN2[f.skin]];
       if (!mon2Ok || !A) return null;
@@ -5696,7 +5698,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
       return { y: y + (1 - grow) * hh * 0.35, rot, sx: 1, sy: 1, a: grow, dx, face: f.face };
     }
     /* 수달단 몬스터 — 맵(장)마다 그 맵 몬스터 하나(2026-10-28 "기존 몬스터는 다 없애고 맵별로 어울리는 몬스터"). 그림은 한 장이라 motion() 으로 흔듦 */
-    const OCM = {}; function ocImg(n) { let i = OCM[n]; if (!i) { i = OCM[n] = new Image(); i.src = "img/lb/" + n + ".webp?v=" + BUILD; } return i.complete && i.naturalWidth ? i : null; } // mon-N · boss-N(맵마다 대장, 2026-10-28)
+    const OCM = {}; function ocImg(n) { let i = OCM[n]; if (!i) { i = OCM[n] = reImg(new Image(), "img/lb/" + n + ".webp?v=" + BUILD); } return i.complete && i.naturalWidth ? i : null; } // mon-N · boss-N(맵마다 대장, 2026-10-28)
     /* 11~30장 몬스터 빛깔 — 그릴 때마다 g.filter 를 걸면 폰에서 아주 느려서(2026-10-28 최적화), 그림마다 한 번 칠해 둔 사본을 씀 */
     const TINTC = {}; function tinted(I, cy) { if (!cy) return I; const key = I.src + "|" + cy; let c = TINTC[key]; if (!c) { c = TINTC[key] = document.createElement("canvas"); c.width = I.naturalWidth; c.height = I.naturalHeight; const x = c.getContext("2d"); x.filter = CYC_MON[cy]; x.drawImage(I, 0, 0); } return c; }
     const MON_H = 76; /* 잡몹 그림 크기 = 수달 키(76)와 같게(2026-10-28 "몬스터 크기랑 주인공 수달 크기 똑같이, 보스는 그대로") */
@@ -5836,7 +5838,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
       if (!W) return;
       const shake = s && s.hitFx > 0.15 ? 3 : 0;
       g.setTransform(DPR * ZM, 0, 0, DPR * ZM, (Math.random() - 0.5) * shake * DPR, (Math.random() - 0.5) * shake * DPR);
-      if (!mapOk || !s || MAP.width * MAP_K < W + 20 || MAP.height * MAP_K < H + 20 || MAP_PREV) { g.fillStyle = "#0d0b09"; g.fillRect(-8, -8, W + 16, H + 16); } /* 맵이 화면을 덮으면 검정 칠은 건너뜀(최적화) — 맵 끝은 카메라가 안 비춤 */
+      g.fillStyle = "#0d0b09"; g.fillRect(-8, -8, W + 16, H + 16); /* 매 장면 꼭 지움 — 맵을 덮으면 건너뛰던 것(최적화)은 맵이 투명하게 그려질 때 잔상이 남았음(2026-10-30 휴대폰 사진) */
       /* 화면(카메라)은 맵 밖을 비추지 않게 멈춘다 — "맵이 끝쪽으로 가면 검정색 화면 안 보이게 해라" (2026-10-26).
          그때는 주인공이 화면 가운데에서 벗어난다(hx, hy 가 주인공의 화면 자리) */
       let px = s ? s.x : 0, py = s ? s.y : 0;
@@ -6618,7 +6620,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
       let top = ch; for (let y = 0; y < ch && top === ch; y++) for (let x = 0; x < c.width; x++) if (d[(y * c.width + x) * 4 + 3] > 40) { top = y; break; }
       const H = ch - top, band = (a, b) => { let L = c.width, R = 0; for (let y = Math.round(top + H * a); y < top + H * b; y++) for (let x = 0; x < c.width; x++) if (d[(y * c.width + x) * 4 + 3] > 40) { if (x < L) L = x; if (x > R) R = x; } return [L, Math.max(L, R)]; };
       const [hl, hr] = band(0.05, 0.3), [bl, br] = band(0.45, 0.62); return (O360M[key] = { top, h: H, hx: (hl + hr) / 2, hw: hr - hl, bx: (bl + br) / 2, bw: br - bl }); }
-    function o360Img(n) { let i = O360[n]; if (!i) { i = O360[n] = new Image(); i.onload = () => { if (!$("gLobby").hidden && (lobTab === "gear" || lobTab === "skin")) lobDraw(); }; i.src = LBI(n); } return i.complete && i.naturalWidth ? i : null; }
+    function o360Img(n) { let i = O360[n]; if (!i) { i = O360[n] = new Image(); i.onload = () => { if (!$("gLobby").hidden && (lobTab === "gear" || lobTab === "skin")) lobDraw(); }; reImg(i, LBI(n)); } return i.complete && i.naturalWidth ? i : null; }
     function otter360(P, skin, preview) {
       /* 2026-10-28 "자동으로 돌지 말고, 캐릭 아래 좌우 화살표로 직접 돌려 보게" · "모자 스킨 사서 껴도 적용이 안 된다" —
          장비 입은 수달(ChatGPT 8방향) 위에 모자를 머리 자리(칸마다 그림에서 잰 머리 가운데 · 폭)에 맞춰 씌움, 왼쪽을 볼 땐 뒤집음. 끌어도 돌아감 */
