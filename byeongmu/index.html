@@ -1169,28 +1169,6 @@ body.game-full { overflow: hidden; }
 .gskill small { display: block; font-size: 10px; font-weight: 700; color: var(--muted); }
 .gskill.ready { border-color: var(--gold); box-shadow: 0 0 12px rgba(214,176,98,.6); }
 @media (max-width: 480px) { .gskill { width: 56px; height: 56px; } }
-/* 수달기지 지키기 대결(2026-10-30) — 위: 내 기지 · 남은 시간 · 상대 기지 / 왼쪽 아래: 조개 · 소환 4칸(대쉬는 오른쪽 아래) */
-.duel-hud { position: absolute; inset: 0; pointer-events: none; z-index: 4; font-family: "Jua", sans-serif; }
-.duel-top { position: absolute; left: 10px; right: 10px; max-width: 720px; margin: 0 auto; top: calc(128px + env(safe-area-inset-top, 0px)); display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center; padding: 6px 10px; border-radius: 14px; background: rgba(16,24,48,.86); border: 2px solid #8fb0ff; box-shadow: 0 2px 8px rgba(0,0,0,.45); }
-.duel-bar small { display: block; font-size: 12px; color: #e9f0ff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.duel-bar::after { content: ""; display: block; height: 10px; margin-top: 3px; border-radius: 6px; background: rgba(0,0,0,.55); }
-.duel-bar { position: relative; min-width: 0; } .duel-bar i { position: absolute; left: 0; bottom: 0; height: 10px; border-radius: 6px; background: linear-gradient(#7cf08f, #2fb04b); transition: width .3s; } .duel-bar.foe { text-align: right; } .duel-bar.foe i { left: auto; right: 0; background: linear-gradient(#ff8a7a, #d8362a); }
-.duel-time { font-size: 18px; color: #ffd76a; text-shadow: 0 1px 2px #000; min-width: 54px; text-align: center; }
-.duel-coin { position: absolute; left: 10px; bottom: calc(86px + env(safe-area-inset-bottom, 0px)); padding: 4px 12px; border-radius: 999px; background: rgba(16,24,48,.86); border: 2px solid #ffd76a; color: #fff4c8; font-size: 16px; }
-.duel-sum { position: absolute; left: 10px; right: 96px; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); display: flex; gap: 6px; pointer-events: auto; }
-.duel-s { flex: 1 1 0; max-width: 74px; min-width: 0; height: 70px; padding: 4px 2px; border-radius: 12px; border: 2px solid #ffd76a; background: linear-gradient(#2d4a8a, #18284f); color: #fff; font: inherit; display: grid; grid-template-rows: 1fr auto auto; place-items: center; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; cursor: pointer; }
-.duel-s img { width: 32px; height: 32px; object-fit: contain; } .duel-s span { font-size: 11px; line-height: 1.1; white-space: nowrap; } .duel-s em { font-style: normal; font-size: 12px; color: #ffd76a; } .duel-s em::before { content: "🐚"; }
-.duel-s:disabled { filter: grayscale(.8) brightness(.7); }
-.duel-pick { position: absolute; left: 10px; right: 96px; bottom: calc(118px + env(safe-area-inset-bottom, 0px)); z-index: 5; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; padding: 18px 6px 10px; border-radius: 14px; background: rgba(16,24,48,.9); border: 2px solid #ffd76a; box-shadow: 0 2px 10px rgba(0,0,0,.5); font-family: "Jua", sans-serif; max-width: 420px; }
-.duel-pick-h { position: absolute; left: 50%; top: -12px; transform: translateX(-50%); padding: 1px 12px; border-radius: 999px; background: #2d4a8a; border: 2px solid #ffd76a; color: #ffd76a; font-size: 13px; white-space: nowrap; }
-.duel-pick-t { position: absolute; left: 8px; bottom: 4px; height: 3px; border-radius: 2px; background: #ffd76a; width: 100%; max-width: calc(100% - 16px); }
-.duel-pc { min-width: 0; padding: 4px 2px; border-radius: 10px; border: 2px solid #5b7fd8; background: linear-gradient(#2d4a8a, #18284f); color: #fff; font: inherit; display: grid; justify-items: center; gap: 1px; touch-action: none; user-select: none; -webkit-user-select: none; cursor: pointer; } .duel-pc.atk { border-color: #ff9a5a; } .duel-pc.sup { border-color: #6fd36b; } .duel-pc.evo { border-color: #ffd76a; box-shadow: 0 0 10px rgba(255,215,106,.6); }
-.duel-pc .ic, .duel-pc canvas, .duel-pc img { width: 34px !important; height: 34px !important; object-fit: contain; margin: 0; } .duel-pc span { font-size: 11px; line-height: 1.1; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .duel-pc em { font-style: normal; font-size: 10px; color: #ffd76a; }
-.duel-find { position: fixed; inset: 0; z-index: 9000; display: grid; place-content: center; justify-items: center; gap: 10px; padding: 20px; background: rgba(8,14,30,.88); color: #fff; font-family: "Jua", sans-serif; text-align: center; }
-.duel-find b { font-size: 22px; color: #ffd76a; } .duel-find small { font-size: 13px; color: #cfe0ff; max-width: 280px; } .duel-find .duel-row { display: flex; gap: 10px; margin-top: 8px; }
-.duel-btn { padding: 10px 18px; border-radius: 12px; border: 2px solid #ffd76a; background: #2d4a8a; color: #fff; font: inherit; font-size: 15px; cursor: pointer; } .duel-btn.green { background: linear-gradient(#5fd35a, #2c9a2f); }
-.duel-spin { width: 46px; height: 46px; border-radius: 50%; border: 5px solid rgba(255,215,106,.25); border-top-color: #ffd76a; animation: duelSpin 1s linear infinite; } @keyframes duelSpin { to { transform: rotate(360deg); } }
-
 .game-over { position: absolute; inset: 0; display: flex; padding: 16px; background: rgba(5,4,3,.82); overflow-y: auto; scrollbar-width: none; } /* 오른쪽 스크롤바는 숨김(휠 · 손가락으로는 내려감) — 2026-10-27 */
 .game-over::-webkit-scrollbar { display: none; }
 .game-over[hidden] { display: none; }
@@ -2089,7 +2067,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610300559";
+  const BUILD = "202610300618";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -4698,7 +4676,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
       if (GS.cool) s.cool *= 1 - Math.min(40, GS.cool) / 100; if (GS.crit) s.crit += GS.crit / 100; if (GS.mag) s.magnet *= 1 + GS.mag / 100; if (GS.range) s.range = Math.round(s.range * (1 + GS.range / 100));
       s.dashK = 1 - Math.min(50, GS.dash || 0) / 100; if (GS.regen) s.regen += s.max * GS.regen / 100;
       const U = o.used || {}, K = o.carry || {}; if (U.atk) s.dmg *= 1.2; if (U.spd) s.spd *= 1.15; s.heal = K.heal || 0; s.rev = K.rev || 0; s.healUsed = 0; s.revUsed = 0; healLabel(); // 상점 물건 setMap(s.chap || 1); // 장마다 맵 · 몬스터 세기
-      renderSkills(); resume(); if (s.raid) { raidStart(); return; } if (o.mine) { mineStart(); return; } if (o.duel) { duelStart(o.duel); return; } msg(s.chap ? (s.mode ? "[" + MODE_N[s.mode] + "] " : "") + s.chap + "장 " + CHAPS[s.chap - 1] + " ㆍ 1단계!" : "1단계 ㆍ 죽을 때까지 버텨라!");
+      renderSkills(); resume(); if (s.raid) { raidStart(); return; } if (o.mine) { mineStart(); return; } msg(s.chap ? (s.mode ? "[" + MODE_N[s.mode] + "] " : "") + s.chap + "장 " + CHAPS[s.chap - 1] + " ㆍ 1단계!" : "1단계 ㆍ 죽을 때까지 버텨라!");
     }
     function resume() {
       $("gameOver").hidden = true; $("gameHud").hidden = false;
@@ -5268,7 +5246,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
          그다음 남은 잡귀를 다 잡으면(30초 지나면 물러감) 단계 통과 → 30초 휴식 → 다음 단계 (2026-10-27).
          대장을 잡아야 다음 단계 — "보스 나오면, 보스 잡으면 다음 단계로 넘어가게" (2026-10-26) */
       const bossOn = !!(s.bossNow && s.foes.includes(s.bossNow));
-      if (s.duel) duelStep(dt); else if (s.mine) mineStep(dt); else if (s.tut) tutStep(dt); // 튜토리얼은 단계 · 잡귀 대신 차례대로 안내(2026-10-29)
+      if (s.mine) mineStep(dt); else if (s.tut) tutStep(dt); // 튜토리얼은 단계 · 잡귀 대신 차례대로 안내(2026-10-29)
       else if (s.rest > 0) {
         if ((s.rest -= dt) <= 0) startStage();
       } else if (bossOn) {
@@ -5357,7 +5335,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
         if (enr) { sp *= 1 + enr / 60; if (!f.enraged) { f.enraged = 1; msg(f.name + " ㆍ 분노! 점점 강해진다"); } }
         if (f.k === "spit" && L < 170) sp = L < 140 ? -f.spd * 0.6 : 0;
         if (f.k === "mage" && L < 230) sp = L < 190 ? -f.spd * 0.6 : 0;
-        { let mx = dx / L, my = dy / L; const D = s.duel; if (D && f.rush == null) f.rush = f.sent || Math.random() < 0.45; /* 45%(보낸 몬스터는 모두)는 수달을 무시하고 기지로 돌진 */ if (D && D.hp > 0 && (L > 170 || f.rush)) { const bx = D.bx - f.x, by = D.by - f.y, bl = Math.hypot(bx, by) || 1; mx = bx / bl; my = by / bl; if (bl < D.br + f.r) { mx = my = 0; D.hp -= f.dps * DUEL.hit * (f.elite ? 3 : 1) * dt; D.hurt = 0.15; } } f.x += mx * sp * dt; f.y += my * sp * dt; } /* 수달기지 지키기 — 수달이 170 밖이면 기지로 가서 때림(2026-10-30) */
+        f.x += dx / L * sp * dt; f.y += dy / L * sp * dt;
         if (f.k === "boss") arenaClamp(f);
         f.hit = Math.max(0, f.hit - dt); f.oc -= dt; f.age = (f.age || 0) + dt; f.near = L < f.r + 45;
         if (f.k === "boss") { f.atkT = Math.max(0, (f.atkT || 0) - dt);
@@ -5378,7 +5356,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
         if (f.hp > 0) return true;
         if (s.wevo && f.burnT > 0 && wcode() === "kh" && s.fx.length < 150) { blast(f.x, f.y, 50, s.dmg * 0.6); s.fx.push({ x: f.x, y: f.y, r: 22, c: "#a050ff", life: 0.25 }); } // 지옥 화염포 — 불붙은 적이 쓰러지면 작은 폭발
         if (f.frz > 0 && wcode() === "ic" && (s.wevo || (s.wawk || 0) >= 3)) blast(f.x, f.y, 50, s.dmg * 0.5); // 얼린 적 처치 — 얼음 파편
-        s.kills++; if (s.duel) s.duel.coin += f.elite || f.k === "boss" ? 15 : 1; // 수달기지 지키기 — 잡으면 조개
+        s.kills++;
         if (f.k === "boss") { s.bossKills++; if (s.bossNow === f) { s.bossNow = null; s.arena = null; } s.items.push({ k: "chest", x: f.x + 30, y: f.y, pop: 0.35 }); msg(f.name + " 쓰러뜨림! 남은 잡귀를 잡으면 단계 통과"); } // 단계 통과는 남은 잡귀를 다 잡은 뒤에 (2026-10-27)
         s.gems.push({ x: f.x, y: f.y, v: f.xp }); if (s.gems.length > 140) { const o = s.gems.shift(); s.gems[0].v += o.v; } /* 구슬이 너무 많으면 오래된 것끼리 합침(경험치는 그대로 · 2026-10-28 최적화) */
         if (f.k === "boss") s.items.push({ k: "hp", x: f.x, y: f.y }); // "보스 잡을 때마다 HP 포션" (2026-10-26)
@@ -5455,12 +5433,11 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
       s.stealth = Math.max(0, (s.stealth || 0) - dt);
       s.fx.forEach((x) => { x.life -= dt; }); s.fx = s.fx.filter((x) => x.life > 0);
       if (s.hp <= 0 && s.rev > 0) { s.rev--; s.revUsed = (s.revUsed || 0) + 1; s.hp = s.max * 0.5; s.ward = Math.max(s.ward || 0, 3); msg("부활권 ㆍ 다시 일어났다!"); } // 부활권
-      if (s.hp <= 0 && s.duel) { s.hp = s.max; s.x = s.duel.bx; s.y = s.duel.by + 90; s.ward = Math.max(s.ward || 0, 3); s.duel.coin = Math.floor(s.duel.coin * 0.7); msg("쓰러졌다! 기지에서 다시 ㆍ 조개 30% 잃음"); } // 수달기지 지키기 — 지는 건 기지가 무너질 때
       if (s.hp <= 0) { s.hp = 0; return end(); }
       /* 대장 보상 — 대장을 잡으면 강화 · 스킬 하나 고르기 (2026-10-26) */
       if (s.bossPick) { s.bossPick = false; if (!canPick()) { s.hp = Math.min(s.max, s.hp + s.max * 0.3); msg("대장 보상 ㆍ 체력 +30%"); } else { running = false; stick = null; hud(); showPicks("대장 보상 ㆍ 하나 고르세요"); return; } }
       if (s.chap && s.lv >= lvCap() && s.xp >= s.need) { s.xp = s.need; if (!s.capSaid) { s.capSaid = true; msg("최고 레벨 Lv " + lvCap() + "!"); } } // 장마다 최고 레벨(2026-10-28 "무작정 막 올리게 하지 말고")
-      else if (s.xp >= s.need) { s.fx.push({ x: s.x, y: s.y, r: 30, c: "#ffe08a", life: 0.3 }, { spr: "levelup", x: s.x, y: s.y + 22, size: 120, base: true, add: true, life: 0.8, dur: 0.8 }); s.xp -= s.need; s.lv++; s.need = Math.round(s.need * (s.raid ? 1.45 : 1.22) + 2); if (!canPick()) { s.hp = Math.min(s.max, s.hp + s.max * 0.1); msg("Lv " + s.lv + " ㆍ 스킬 모두 최대! 체력 +10%"); } else if (s.duel) { s.lvQ = (s.lvQ || 0) + 1; SND.level(); duelPick(); } /* 대결은 안 멈춤(2026-10-30 「2인 유저가 멈춰버리면 곤란」) */ else { running = false; stick = null; hud(); SND.level(); showPicks(); } } // 다 배웠으면 멈추지 않고 계속
+      else if (s.xp >= s.need) { s.fx.push({ x: s.x, y: s.y, r: 30, c: "#ffe08a", life: 0.3 }, { spr: "levelup", x: s.x, y: s.y + 22, size: 120, base: true, add: true, life: 0.8, dur: 0.8 }); s.xp -= s.need; s.lv++; s.need = Math.round(s.need * (s.raid ? 1.45 : 1.22) + 2); if (!canPick()) { s.hp = Math.min(s.max, s.hp + s.max * 0.1); msg("Lv " + s.lv + " ㆍ 스킬 모두 최대! 체력 +10%"); } else { running = false; stick = null; hud(); SND.level(); showPicks(); } } // 다 배웠으면 멈추지 않고 계속
     }
 
     /* ── 그리기 — 모두 도형 ── */
@@ -6140,8 +6117,6 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
           if (fxOk) fxDraw("whirl", Math.floor(s.t * 12) % 4, x, y + t.R * 0.8, t.R * 2.2, { base: true, alpha: a });
           else { g.strokeStyle = "#f6e2a4"; g.lineWidth = 3; g.beginPath(); g.arc(x, y, t.R * 0.6, s.t * 9, s.t * 9 + 4.5); g.stroke(); g.lineWidth = 1; }
         });
-        if (s.duel) { const D = s.duel, I = lbImg("duel-base"), x = D.bx + ox, y = D.by + oy, sz = D.br * 2.6; if (I) { g.save(); if (D.hurt > 0) g.filter = "brightness(1.6) saturate(.6)"; g.drawImage(I, x - sz / 2, y - sz * I.height / I.width * 0.62, sz, sz * I.height / I.width); g.restore(); } else { g.fillStyle = D.hurt > 0 ? "#c98a5a" : "#8a5a3a"; g.beginPath(); g.arc(x, y, D.br, 0, 7); g.fill(); g.strokeStyle = "#ffd78a"; g.lineWidth = 3; g.stroke(); g.lineWidth = 1; }
-          const w = 90, r = Math.max(0, D.hp / D.max); g.fillStyle = "rgba(0,0,0,.6)"; g.fillRect(x - w / 2, y - D.br - 26, w, 9); g.fillStyle = r > 0.3 ? "#45d36b" : "#ff5a4a"; g.fillRect(x - w / 2 + 1, y - D.br - 25, (w - 2) * r, 7); } // 수달기지 — 체력 막대
         if (s.mines) s.mines.forEach((m) => { const I = lbImg("s-mine"), x = m.x + ox, y = m.y + oy, sz = 58; g.globalAlpha = m.arm > 0 ? 0.6 : 1; if (I) g.drawImage(I, x - sz / 2, y - sz * I.height / I.width / 2, sz, sz * I.height / I.width); g.globalAlpha = 1; if (m.arm <= 0 && (m.fuse != null || Math.sin(s.t * 10 + m.x) > 0.3)) { g.fillStyle = "rgba(255,60,40,.6)"; g.beginPath(); g.arc(x, y - 3, 6, 0, Math.PI * 2); g.fill(); } }); // 조개 지뢰 — 켜지면 빨간 불이 깜빡
         if (s.drops) s.drops.forEach((d) => { const x = d.x + ox, y = d.y + oy, k = Math.max(0, d.t / d.full); g.fillStyle = "rgba(0,0,0," + (0.35 * (1 - k)).toFixed(2) + ")"; g.beginPath(); g.ellipse(x, y, d.R * 0.6 * (1 - k * 0.5), d.R * 0.25 * (1 - k * 0.5), 0, 0, Math.PI * 2); g.fill(); if (d.t > 0) { const I = lbImg("fx-log"); if (I) { const w = d.size, h = w * I.height / I.width; g.drawImage(I, x - w / 2, y - h + 14 - k * 260, w, h); } } }); // 떨어지는 통나무 — 그림자가 커지며 내려옴
         if (s.beams) s.beams.forEach((b) => { const I = lbImg("fx-beam"); g.save(); g.translate(hx, hy); g.rotate(b.a); g.globalAlpha = Math.min(1, b.life / 0.12); if (I) g.drawImage(I, 8, -b.w * 0.9, b.len, b.w * 1.8); else { g.fillStyle = "rgba(120,200,255,.8)"; g.fillRect(8, -b.w / 2, b.len, b.w); } g.restore(); }); // 물줄기 빔
@@ -6193,7 +6168,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
       hT("gTime", "⏱ " + mmss(s.t));
       hW("gHp", (100 * s.hp / s.max) + "%");
       const len = stageLen(s.stage);
-      hT("gStage", s.duel ? "수달기지 지키기 ㆍ " + s.duel.foe : s.mine ? "골드 광산 " + Math.min(MINE.waves, (s.mineW || 0) + 1) + "단 · " + mmss(Math.max(0, MINE.waves * MINE.sec - (s.mineT || 0))) : s.tut ? "튜토리얼 " + Math.min(5, s.tut) + "/5" : s.rest > 0 ? "휴식 " + mmss(s.rest) + " → " + (s.stage + 1) + "단계"
+      hT("gStage", s.mine ? "골드 광산 " + Math.min(MINE.waves, (s.mineW || 0) + 1) + "단 · " + mmss(Math.max(0, MINE.waves * MINE.sec - (s.mineT || 0))) : s.tut ? "튜토리얼 " + Math.min(5, s.tut) + "/5" : s.rest > 0 ? "휴식 " + mmss(s.rest) + " → " + (s.stage + 1) + "단계"
         : (s.chap ? s.stage + "/" + chStages(s.chap) : s.stage) + "단계 · " + (s.bossNow ? (s.chap ? (s.stage >= chStages(s.chap) ? "최종 보스" : "중간 보스") : "대장") : s.stageT < len ? mmss(len - s.stageT) : "남은 잡귀 " + s.foes.length));
       const tutOn = s.tut > 0 && s.tut < 9; hH("gRest", !(s.rest > 0) && !tutOn);
       if (tutOn) hT("gRest", "건너뛰기 ▶"); else if (s.rest > 0) hT("gRest", "휴식 " + mmss(s.rest) + " ㆍ 바로 시작 ▶");
@@ -6216,9 +6191,9 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
       hudStack();
     }
     /* 윗줄 판 → 대장 띠 → 알림 글을 위에서부터 차례로 쌓음(2026-10-29 전투 HUD 겹침 검사) — 글자 길이 · 줄 수 · 화면 폭이 바뀌어도 안 겹치게. 0.5초마다 또는 대장이 나타나고 사라질 때 */
-    function hudStack() { const B = $("gBoss"), M = $("gMsg"), Rs = $("gRest"), key = (B.hidden ? 0 : 1) + (Rs.hidden ? 0 : 2) + (s && s.duel ? 4 : 0); if (hudStack.k === key && hudStack.at != null && Math.abs(s.t - hudStack.at) < 0.5) return; hudStack.k = key; hudStack.at = s.t;
+    function hudStack() { const B = $("gBoss"), M = $("gMsg"), Rs = $("gRest"), key = (B.hidden ? 0 : 1) + (Rs.hidden ? 0 : 2); if (hudStack.k === key && hudStack.at != null && Math.abs(s.t - hudStack.at) < 0.5) return; hudStack.k = key; hudStack.at = s.t;
       const Hb = $("gameHud").getBoundingClientRect(), R = document.querySelector("#gameHud .row").getBoundingClientRect(); if (R.height <= 4) { B.style.removeProperty("top"); M.style.removeProperty("top"); Rs.style.removeProperty("top"); return; } /* 가로 화면은 따로 배치 */
-      let y = R.bottom - Hb.top + 6; { const DT = document.querySelector("#gDuel .duel-top"); if (DT) y = Math.max(y, DT.getBoundingClientRect().bottom - Hb.top + 6); } /* 대결 기지 체력 판도 피함(2026-10-30) */ if (!B.hidden) { B.style.setProperty("top", Math.round(y) + "px", "important"); y += B.getBoundingClientRect().height + 8; } if (!Rs.hidden) { Rs.style.setProperty("top", Math.round(y) + "px", "important"); y += Rs.getBoundingClientRect().height + 8; } /* 건너뛰기 · 휴식 단추도 판 아래로(2026-10-29 윗줄 판을 덮던 것) */ M.style.setProperty("top", Math.max(Math.round(y), Math.round(Hb.height * 0.19)) + "px", "important"); }
+      let y = R.bottom - Hb.top + 6; if (!B.hidden) { B.style.setProperty("top", Math.round(y) + "px", "important"); y += B.getBoundingClientRect().height + 8; } if (!Rs.hidden) { Rs.style.setProperty("top", Math.round(y) + "px", "important"); y += Rs.getBoundingClientRect().height + 8; } /* 건너뛰기 · 휴식 단추도 판 아래로(2026-10-29 윗줄 판을 덮던 것) */ M.style.setProperty("top", Math.max(Math.round(y), Math.round(Hb.height * 0.19)) + "px", "important"); }
     /* 스킬 단추 — 끄는 손가락과 따로 누를 수 있게 pointerdown 으로 */
     function renderSkills() {
       $("gSkills").replaceChildren(...s.skills.map((k, i) => {
@@ -6293,7 +6268,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     window.__bmcGameNotice = (on) => { $("gUpd").hidden = !on; }; // 전체화면에서도 보이게 게임 화면 위에도
     /* 잠수함 패치 — 하던 판을 세션에 저장(2분 안에 새로 열리면 이어서). 몬스터를 가리키는 것(대장 · 조준 · 화살 목표 · 맞힌 목록)은 번호로 바꾸거나 비운다 */
     window.__bmcSaveGame = () => {
-      if (!s || s.over || s.duel) return false; // 대결 판은 이어하기 없음
+      if (!s || s.over) return false;
       try {
         sessionStorage.setItem("bmc-game-save", saveBlob());
         return true;
@@ -6306,7 +6281,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     /* 새로고침 · 다시 접속해도 이어하기(2026-10-28 "업데이트 때 중단시키는 건 좋은데 새로고침하고 재접속하면 이어서 하기도") —
        하는 판을 5초마다 · 창을 닫을 때 이 기기(localStorage, 회원마다)에 저장, 30분 안에 다시 들어오면 「멈춤」 상태로 그 판에서 이어서. 끝난 판 · 새 판이면 지움 */
     const RUN_KEY = () => "bmc-game-run:" + ((me && me.id) || "guest");
-    function runSave() { try { if (s && !s.over && !s.watchView && !s.duel && s.t > 3) localStorage.setItem(RUN_KEY(), saveBlob()); else if (s && s.over) localStorage.removeItem(RUN_KEY()); } catch (e) {} }
+    function runSave() { try { if (s && !s.over && !s.watchView && s.t > 3) localStorage.setItem(RUN_KEY(), saveBlob()); else if (s && s.over) localStorage.removeItem(RUN_KEY()); } catch (e) {} }
     function runDrop() { try { localStorage.removeItem(RUN_KEY()); } catch (e) {} }
     setInterval(() => { if (s && (running || s.over)) runSave(); }, 5000);
     window.addEventListener("pagehide", runSave); document.addEventListener("visibilitychange", () => { if (document.hidden) runSave(); });
@@ -6767,10 +6742,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
         a1.append(el("small", null, "6단 다 하면"), el("b", null, "💰 " + (M.base * M.waves * (M.waves + 1) / 2).toLocaleString())); a2.append(el("small", null, "내 최고"), el("b", null, (M.best || 0) + "단")); two.append(a1, a2);
         const gb = el("button", "dn-go"); gb.type = "button"; gb.append(el("span", null, "도전"), el("i", null, "남은 " + M.left)); gb.disabled = lobBusy || !M.left; gb.onclick = () => lobStart(0, false, 0, true);
         inf.append(b1, two, gb); c.append(el("h3", null, "골드 광산"), el("p", "dn-d", "잔몹만 나와요 ㆍ 20초마다 단이 오르고 골드가 쌓여요(2분)"), art("art-mine"), inf); out.push(c); } /* 골드 광산(2026-10-29) */
-      { const Dq = P.duel || { left: 5, n: 5, win: 0, lose: 0, gold: [3000, 500] }, c = el("div", "dn-card duel"), inf = el("div", "dn-info"), b1 = el("div", "dn-box"), two = el("div", "dn-two"), a1 = el("div", "dn-box"), a2 = el("div", "dn-box");
-        b1.append(el("small", null, "오늘 남은 보상"), el("b", "dn-big", Dq.left + " / " + Dq.n)); a1.append(el("small", null, "이기면"), el("b", null, "💰 " + (Dq.gold || [3000])[0].toLocaleString())); a2.append(el("small", null, "내 전적"), el("b", null, (Dq.win || 0) + "승 " + (Dq.lose || 0) + "패")); two.append(a1, a2);
-        const gb = el("button", "dn-go"); gb.type = "button"; gb.append(el("span", null, "대결"), el("i", null, "5분")); gb.disabled = lobBusy; gb.onclick = duelFind;
-        inf.append(b1, two, gb); c.append(el("h3", null, "수달기지 지키기"), el("p", "dn-d", "상대와 동시에 기지를 지켜요 ㆍ 잡아서 모은 조개로 상대 기지에 몬스터를 보내요"), art("art-duel"), inf); out.push(c); } /* 수달기지 지키기 대결(2026-10-30) */
+
       { const wi = raidWeek(), RB = raidBoard, c = el("div", "dn-card raid"), inf = el("div", "dn-info"), left = Math.max(0, Math.ceil((Date.now() + 9 * 3600e3 + 3 * 864e5) / 6048e5) * 6048e5 - 9 * 3600e3 - 3 * 864e5 - Date.now());
         if (!RB && !raidLoading && !P.free) { raidLoading = true; call("gameRaidBoard", token).then((r) => { raidLoading = false; raidBoard = r; if (lobTab === "dun") lobDraw(); }).catch(() => { raidLoading = false; }); }
         const bo = el("div", "dn-box boss"); bo.append(el("small", "dn-pill", "이번 주 보스"), el("b", null, OCB[wi]), el("small", null, "⏱ 남은 시간 " + Math.floor(left / 864e5) + "일 " + Math.floor(left % 864e5 / 3600e3) + "시간"));
@@ -7131,59 +7103,6 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     function raidDmg() { const B = s.raidB; return B ? Math.max(0, Math.round(B.full - B.hp)) : 0; }
     /* 골드 광산(2026-10-29 부장님) — 던전 · 하루 2번 · 잔몹만 · 20초마다 1단(6단 = 2분) · 단이 오를 때마다 골드가 쌓임 · 쓰러지거나 2분이면 끝.
        골드는 창구가 다시 셈(기본 × 단, 기본 = 30 + 깬 장 × 6). 단이 오를수록 잡몹이 많고 셈(s.stage = 단) */
-    /* ── 수달기지 지키기 대결(2026-10-30 부장님 · 던전) ── 둘이 각자 자기 기지를 지키고, 잡아서 모은 조개로 상대에게 몬스터를 보냄. 5분 · 먼저 무너지면 짐.
-       상대 찾기는 워커 /duel 웹소켓(짝짓기 · 주고받기만, 판은 각자 화면). 30초 안에 상대가 없으면 컴퓨터와 연습(보상 없음) */
-    const DUEL = { sec: 300, hp: 2500, hit: 0.35, wait: 30, sum: [["mob", "잡귀 무리", 10, "duel-mob"], ["bat", "박쥐 떼", 15, "duel-bat"], ["golem", "돌 골렘", 30, "duel-golem"], ["boss", "대장", 80, "duel-boss"]] };
-    let duelWs = null;
-    function duelFind() { if (lobFree() || !token) { lobErr = "로그인해야 대결할 수 있어요"; lobDraw(); return; } goFull(); duelClose();
-      const P = LP || {}, ov = el("div", "duel-find"), tx = el("b", null, "상대를 찾는 중…"), tm = el("small", null, "0:00"), row = el("div", "duel-row"), pr = el("button", "duel-btn green", "연습으로 하기"), cn = el("button", "duel-btn", "취소"); pr.type = cn.type = "button";
-      row.append(pr, cn); ov.append(el("i", "duel-spin"), tx, tm, el("small", null, DUEL.wait + "초 안에 상대가 없으면 컴퓨터와 연습해요(연습은 보상 없음)"), row); document.body.appendChild(ov); /* 화면 전체를 덮는 창 — 로비 안에 두면 다시 그릴 때 지워지고, 게임 상자에 두면 로비 뒤에 가려졌음 */
-      const t0 = Date.now(), iv = setInterval(() => { const e = Math.floor((Date.now() - t0) / 1000); tm.textContent = mmss(e); if (e >= DUEL.wait) go(null); }, 250);
-      const go = (st) => { clearInterval(iv); ov.remove(); if (!st) duelClose(); heroKey = (WPN[P.wpn] || WPN.bow).hero; $("gLobby").hidden = true; begin({ wpn: P.wpn, ch: 1, gs: P.stats, duel: st || { practice: true, foe: "연습 상대", at: Date.now() + 1500, len: DUEL.sec } }); };
-      pr.onclick = () => go(null); cn.onclick = () => { clearInterval(iv); ov.remove(); duelClose(); };
-      try { const TQ = /[?&]bmctest=1/.test(location.search), ws = new WebSocket(((TQ && localStorage.getItem("bmc-duel-ws")) || API.replace(/^http/, "ws")) + "/duel?token=" + encodeURIComponent((TQ && localStorage.getItem("bmc-duel-tok")) || token)); /* 시험(?bmctest=1)만 로컬 대결 방으로 */ duelWs = ws;
-        ws.onmessage = (ev) => { let o; try { o = JSON.parse(ev.data); } catch (e) { return; } if (o.t === "start" && ov.isConnected) go({ foe: o.foe, at: o.at, len: o.len }); else duelMsg(o); };
-        ws.onclose = () => { if (duelWs === ws) duelWs = null; if (s && s.duel && !s.duel.practice && !s.duel.done) duelEnd("win", "left", null); }; } catch (e) {} }
-    function duelClose() { const w = duelWs; duelWs = null; if (w) try { w.close(); } catch (e) {} }
-    function duelSend(o) { if (duelWs && duelWs.readyState === 1) try { duelWs.send(JSON.stringify(o)); } catch (e) {} }
-    function duelMsg(o) { const D = s && s.duel; if (!D || D.done) return; if (o.t === "sum") duelGet(o.k); else if (o.t === "fhp") D.fhp = o.v; else if (o.t === "end") duelEnd(o.res, o.why, o.reward); }
-    function duelStart(o) { s.duel = { practice: !!o.practice, foe: o.foe || "상대", at: o.at || Date.now(), len: o.len || DUEL.sec, bx: s.x, by: s.y, br: 46, hp: DUEL.hp, max: DUEL.hp, fhp: 1, coin: 0, sentHp: 1, hpT: 0, ai: 8, aiHp: 1, done: false, hurt: 0 };
-      s.stage = 1; s.boxT = 1e9; s.spawn = 0; s.y += 90; lbImg("duel-base"); DUEL.sum.forEach((x) => lbImg(x[3])); duelHud(); msg("수달기지 지키기 ㆍ " + s.duel.foe + " 님과 대결! 조개로 몬스터를 보내라"); hud(); }
-    function duelStep(dt) { const D = s.duel; if (D.done) return; D.hurt = Math.max(0, D.hurt - dt); const e = (Date.now() - D.at) / 1000;
-      if (e < 0) { s.spawn = 0; duelHud(); return; } // 시작 전 3초
-      s.stage = 1 + Math.floor(e / 45); s.spawn += dt * (0.7 + e / 70) * (s.chSp || 1); while (s.spawn >= 1) { s.spawn--; if (s.foes.length < aliveCap()) spawn(); } // 시간이 갈수록 많이 · 세게
-      if (D.pick && (D.pickT -= dt) <= 0) duelTake(D.pick[0]); else if (D.pick) { const tb = document.querySelector("#gDuelPick .duel-pick-t"); if (tb) tb.style.width = (100 * Math.max(0, D.pickT) / DUEL_PICK_SEC).toFixed(1) + "%"; }
-      if ((D.hpT -= dt) <= 0) { D.hpT = 0.5; const v = Math.max(0, D.hp / D.max); if (Math.abs(v - D.sentHp) > 0.004) { D.sentHp = v; duelSend({ t: "hp", v }); } }
-      if (D.practice) { D.ai -= dt; if (D.ai <= 0) { const k = e < 60 ? "mob" : e < 150 ? (Math.random() < 0.5 ? "mob" : "bat") : ["bat", "golem", "golem", "boss"][Math.floor(Math.random() * 4)]; duelGet(k); D.ai = 9 + Math.random() * 7 - Math.min(5, e / 60); } D.aiHp = Math.max(0, D.aiHp - dt * 0.0008); D.fhp = D.aiHp; if (D.aiHp <= 0) return duelEnd("win", "base", null); }
-      if (D.hp <= 0) { D.hp = 0; if (D.practice) return duelEnd("lose", "base", null); if (!D.dead) { D.dead = true; duelSend({ t: "dead" }); msg("기지가 무너졌다…"); } }
-      if (e >= D.len) { if (D.practice) return duelEnd(D.hp / D.max >= D.aiHp ? "win" : "lose", "time", null); if (!D.timeUp) { D.timeUp = true; duelSend({ t: "hp", v: Math.max(0, D.hp / D.max) }); msg("시간 끝! 기지 체력으로 승부"); } }
-      duelHud(); }
-    function duelBuy(k) { const D = s && s.duel, S = DUEL.sum.find((x) => x[0] === k); if (!D || D.done || !running || !S || D.coin < S[2] || Date.now() < D.at) return; D.coin -= S[2]; if (D.practice) { D.aiHp = Math.max(0, D.aiHp - S[2] * 0.0016); D.fhp = D.aiHp; } else duelSend({ t: "sum", k }); s.fx.push({ x: s.x, y: s.y, r: 30, c: "#7ad7ff", life: 0.4 }); msg(S[1] + "을(를) " + D.foe + " 님 기지로 보냈다!"); duelHud(); }
-    function duelGet(k) { const S = DUEL.sum.find((x) => x[0] === k); if (!S || !s || s.over) return; const n = { mob: 8, bat: 6, golem: 2, boss: 1 }[k], kind = { mob: "imp", bat: "fast", golem: "rock", boss: "rock" }[k], a0 = Math.random() * Math.PI * 2, d = Math.max(W, H) / 2 + 60;
-      for (let i = 0; i < n; i++) { const a = a0 + (i - n / 2) * 0.12; spawn(kind, s.duel.bx + Math.cos(a) * d, s.duel.by + Math.sin(a) * d); const f = s.foes[s.foes.length - 1]; if (f) { f.sent = true; if (k === "boss") { f.elite = true; f.hp = f.full = f.full * 10; f.r *= 1.7; f.dps *= 2; f.spd *= 0.8; } } }
-      msg("⚠ " + s.duel.foe + " 님이 " + S[1] + "을(를) 보냈다!"); }
-    /* 대결 레벨업 — 게임은 계속, 아래에 작은 카드 3장 · 6초 안에 안 고르면 첫 장(진화가 있으면 진화)을 저절로. 밀린 레벨업은 차례로 */
-    const DUEL_PICK_SEC = 6;
-    function duelPick() { const D = s && s.duel; if (!D || D.done || !s.lvQ || $("gDuelPick")) return;
-      const pool = UPS.filter((u) => (s.up[u.k] || 0) < u.max && (!u.ok || u.ok()) && !upShut(u)), picks = []; while (picks.length < 3 && pool.length) picks.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
-      { const ev = UPS.find((u) => u.evo && !s.up[u.k] && u.ok()); if (ev && !picks.includes(ev)) picks[0] = ev; } if (!picks.length) { s.lvQ = 0; return; }
-      const box = el("div", "duel-pick"); box.id = "gDuelPick"; const bar = el("i", "duel-pick-t"); box.appendChild(el("b", "duel-pick-h", "LEVEL UP!"));
-      picks.forEach((u) => { const have = s.up[u.k] || 0, b = el("button", "duel-pc " + (u.evo ? "evo" : UP_ATK(u) ? "atk" : "sup")); b.type = "button"; b.append(icon(u.evo || u.k), el("span", null, u.n), el("em", null, u.evo ? "진화" : have ? "Lv " + (have + 1) : "NEW")); b.addEventListener("pointerdown", (e) => { e.preventDefault(); e.stopPropagation(); duelTake(u); }); box.appendChild(b); });
-      box.appendChild(bar); $("gameBox").appendChild(box); D.pick = picks; D.pickT = DUEL_PICK_SEC; }
-    function duelTake(u) { const D = s && s.duel, box = $("gDuelPick"); if (box) box.remove(); if (!D || D.done) return; D.pick = null; s.lvQ = Math.max(0, (s.lvQ || 0) - 1); take(u); if (s.lvQ) setTimeout(() => { if (s && s.duel === D) duelPick(); }, 250); }
-    function duelHud() { const D = s && s.duel; let h = $("gDuel"); if (!D) { if (h) h.remove(); return; }
-      if (!h) { h = el("div", "duel-hud"); h.id = "gDuel"; const top = el("div", "duel-top"), mk = (cls, lab) => { const b = el("div", "duel-bar " + cls); b.append(el("small", null, lab), el("i")); return b; };
-        top.append(mk("me", "내 기지"), el("b", "duel-time"), mk("foe", D.foe)); const coin = el("div", "duel-coin"), btns = el("div", "duel-sum");
-        DUEL.sum.forEach(([k, n, c, pic]) => { const b = el("button", "duel-s"); b.type = "button"; b.dataset.k = k; const im = el("img"); im.src = LBI(pic); im.alt = ""; im.onerror = () => { im.remove(); }; b.append(im, el("span", null, n), el("em", null, String(c))); b.addEventListener("pointerdown", (ev) => { ev.preventDefault(); ev.stopPropagation(); duelBuy(k); }); btns.appendChild(b); });
-        h.append(top, coin, btns); $("gameBox").appendChild(h); }
-      const e = Math.max(0, D.len - Math.max(0, (Date.now() - D.at) / 1000)); h.querySelector(".duel-time").textContent = Date.now() < D.at ? "준비 " + Math.ceil((D.at - Date.now()) / 1000) : mmss(e);
-      h.querySelector(".me i").style.width = Math.max(0, 100 * D.hp / D.max).toFixed(1) + "%"; h.querySelector(".foe i").style.width = Math.max(0, 100 * D.fhp).toFixed(1) + "%"; h.querySelector(".duel-coin").textContent = "🐚 " + D.coin;
-      h.querySelectorAll(".duel-s").forEach((b) => { const S = DUEL.sum.find((x) => x[0] === b.dataset.k); b.disabled = D.coin < S[2]; }); }
-    function duelEnd(res, why, reward) { const D = s && s.duel; if (!D || D.done) return; D.done = true; duelClose(); running = false; s.over = true; stick = null; draw(); $("gameHud").hidden = true; const h = $("gDuel"); if (h) h.remove(); { const pk = $("gDuelPick"); if (pk) pk.remove(); }
-      const W1 = res === "win", vs = "vs " + D.foe + " ㆍ ", big = W1 ? "승리!" : res === "draw" ? "무승부" : "패배", sub = why === "left" ? (W1 ? "상대가 나갔어요" : "판을 나갔어요") : why === "time" ? "5분 ㆍ 기지 체력 승부" : W1 ? "상대 기지를 무너뜨렸어요" : "기지가 무너졌어요";
-      const V = rsShow({ win: W1, top: "던전", name: "수달기지 지키기", big, stars: W1 ? 3 : 0, wait: D.practice ? "연습 판 ㆍ 보상 없음" : reward ? (reward.gold ? "보상 받는 중…" : "오늘 보상 5판을 다 했어요") : sub, stats: [["rs-time", "버틴 시간", mmss(Math.min(D.len, Math.max(0, (Date.now() - D.at) / 1000)))], ["rs-ghost", "잡은 잡귀", String(s.kills)], ["lv", "달성 레벨", "Lv." + s.lv]], btns: [["로비로", "blue", () => { lobTab = "dun"; lobby(); }], ["다시 대결", "green", () => { lobTab = "dun"; lobby(); setTimeout(duelFind, 300); }]] });
-      if (reward && reward.gold) { rsTiles({ gold: reward.gold }, V.grid); V.note.textContent = vs + "남은 보상 " + reward.left + "판"; /* 골드는 칸에 — 길면 두 줄로 꺾여 칸에 겹쳤음 */ } else V.note.textContent = D.practice ? "연습 판 ㆍ 보상 없음" : vs + sub; /* 짧게 — 길면 PC 폭에서 양 끝이 잘렸음 */
-      if (!D.practice && token) call("gameProfile", token).then((x) => { LP = x; LP.got = Date.now(); }).catch(() => {}); }
     const MINE = { sec: 20, waves: 6 };
     function mineStart() { s.mine = true; s.mineT = 0; s.mineW = 0; s.mineG = 0; s.stage = 1; s.boxT = 1e9; s.spawn = 0; msg("골드 광산 ㆍ 2분 동안 버티면 단마다 골드!"); hud(); }
     function mineStep(dt) {
@@ -7230,7 +7149,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     function autoLabel() { const b = $("gAuto"); if (!b) return; b.textContent = autoSk ? "🤖 자동 켬" : "🤖 자동"; b.setAttribute("aria-pressed", String(autoSk)); }
     function autoCast() { if (!autoSk || !s || !s.skills) return; const near = s.foes.some((f) => (f.x - s.x) ** 2 + (f.y - s.y) ** 2 < 330 * 330); if (!near) return; s.skills.forEach((k) => { if (!(s.cd[k] > 0)) cast(k); }); }
     autoLabel();
-    if (/[?&]bmctest=1/.test(location.search)) window.__bmcGame = { get s() { return s; }, hud: () => hud(), elMul: () => elMul(), /* 2026-10-29 전투 HUD 넘침 시험 */ otRig: (n, sc) => otRig(bgImg(n), BGF[n].idle0, sc), get LP() { return LP; }, mapc: () => [MAPC.cy, Object.keys(TINTC).length], lobby: lobby, mapIdx: () => mapIdx, running: () => running, size: () => size(), draw: draw, setHero: (k) => { heroKey = k; }, lobStart: lobStart, setTab: (k) => { lobTab = k; lobDraw(); }, setCh: (c) => { lobTab = "go"; lobCh = c; lobDraw(); }, chapterClear: chapterClear, begin: begin, step: step, spawnBoss: spawnBoss, take: take, cast: cast, startStage: startStage, stageLen: stageLen, W: () => W, H: () => H, UPS: UPS, SK: SK, TEST_MUL: TEST_MUL, openBox: openBox, useItem: useItem, dash: dash, spawn: spawn, bullet: bullet, hazard: hazard, showPicks: showPicks, tutStart: tutStart, tutSkip: tutSkip, tutNeed: tutNeed, watchStart: (id, n) => watchStart(id, n), watch: () => watchOn, duelGet: (k) => duelGet(k), duelBuy: (k) => duelBuy(k), duelMsg: (o) => duelMsg(o), duelPick: () => duelPick(), DUEL: DUEL };
+    if (/[?&]bmctest=1/.test(location.search)) window.__bmcGame = { get s() { return s; }, hud: () => hud(), elMul: () => elMul(), /* 2026-10-29 전투 HUD 넘침 시험 */ otRig: (n, sc) => otRig(bgImg(n), BGF[n].idle0, sc), get LP() { return LP; }, mapc: () => [MAPC.cy, Object.keys(TINTC).length], lobby: lobby, mapIdx: () => mapIdx, running: () => running, size: () => size(), draw: draw, setHero: (k) => { heroKey = k; }, lobStart: lobStart, setTab: (k) => { lobTab = k; lobDraw(); }, setCh: (c) => { lobTab = "go"; lobCh = c; lobDraw(); }, chapterClear: chapterClear, begin: begin, step: step, spawnBoss: spawnBoss, take: take, cast: cast, startStage: startStage, stageLen: stageLen, W: () => W, H: () => H, UPS: UPS, SK: SK, TEST_MUL: TEST_MUL, openBox: openBox, useItem: useItem, dash: dash, spawn: spawn, bullet: bullet, hazard: hazard, showPicks: showPicks, tutStart: tutStart, tutSkip: tutSkip, tutNeed: tutNeed, watchStart: (id, n) => watchStart(id, n), watch: () => watchOn };
     return {
       /* 다른 메뉴로 가면 멈춘다. 처음 들어오면(또는 다른 사람이 들어오면) 시작 안내 */
       render() {
