@@ -1439,6 +1439,15 @@ body.game-full { overflow: hidden; }
 .dn-box b.dn-big { background: linear-gradient(#ffe07a, #d29b2e); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-stroke: 0; filter: drop-shadow(0 .5cqw 0 #6b3e00) drop-shadow(0 0 .3cqw #6b3e00) drop-shadow(0 .5cqw .6cqw rgba(0,0,0,.45)); text-shadow: none !important; }
 .dn-box b:not(.dn-big), .dn-box.boss b { color: #ffe896; text-shadow: 0 .3cqw 0 #6b3e00, 0 .3cqw .4cqw rgba(0,0,0,.45) !important; }
 .dn-box small { color: #f1e4c8; text-shadow: 0 .2cqw 0 #4a2c10 !important; } .dn-d { color: #e8d7b8; text-shadow: 0 .2cqw .3cqw rgba(0,0,0,.4) !important; }
+/* 다른 탭도 같은 텍스트 스타일 가이드(2026-10-30 「다른 탭 형광 글씨도 같은 가이드로」) — 상점 · 장비 · 순위 · 출전 */
+.lb-art.pg .lb-sbtx > b, .lb-art.pg .lb-h { background: linear-gradient(#fff0d6, #e3b35c); -webkit-background-clip: text; background-clip: text; color: transparent !important; filter: drop-shadow(0 .4cqw 0 #5a2f0d) drop-shadow(0 0 .2cqw #5a2f0d); text-shadow: none !important; }
+.lb-art.pg .lb-scard > b { color: #fff0d6 !important; text-shadow: 0 .3cqw 0 #5a2f0d, .15cqw 0 0 #5a2f0d, -.15cqw 0 0 #5a2f0d !important; } /* 칸 이름 — 그라데이션이 안 입혀져 투명했음 */
+.lb-art.pg .lb-card b, .lb-art.pg .lb-scard b, .lb-art.pg-gear .lb-gset b, .lb-art.pg-gear .lb-gset span, .lb-art.pg-gear .lb-bulk b, .lb-art.pg-gear .lb-mats b { color: #f1e4c8; text-shadow: 0 .25cqw 0 #4a2c10 !important; }
+.lb-power, .lb-art.pg-gear .lb-gstats b, .lb-art.pg-gear .lb-mats em { color: #ffe896 !important; text-shadow: 0 .3cqw 0 #6b3e00, 0 .3cqw .4cqw rgba(0,0,0,.45) !important; }
+.lb-art.pg-gear .lb-gslot small, .lb-art.pg-gear .lb-gitem small, .lb-art.pg .lb-scat button, .lb-rtabs.rk3 button { color: #f1e4c8 !important; text-shadow: 0 .2cqw 0 #4a2c10 !important; }
+.lb-art.pg .lb-scat button.on, .lb-rtabs.rk3 button.on { color: #ffe896 !important; text-shadow: 0 .25cqw 0 #6b3e00 !important; }
+.lb-sbuy:not(.ten):not(.free):not(.sp-green) { background: linear-gradient(#6fb446 0%, #4c9a2c 46%, #3a8222 54%, #2c6a18 100%) !important; } .lb-sbuy.sp-green { filter: saturate(.72) brightness(.9); } /* 그림 틀 단추는 바탕 대신 색을 낮춤 */ .lb-art.v2 .lb-pat.v2 .pgo { filter: saturate(.72) brightness(.9); } /* 형광 연두 → 짙은 초록(시안) */ .lb-sbuy:not(.ten):not(.free) b, .lb-sbuy:not(.ten):not(.free) { color: #f5e9c8 !important; text-shadow: 0 .3cqw 0 #3e2a0f, .2cqw 0 0 #3e2a0f, -.2cqw 0 0 #3e2a0f, 0 -.2cqw 0 #3e2a0f !important; } .lb-art.v2 .lb-pat.v2 .pgo { color: #f5e9c8 !important; text-shadow: 0 .3cqw 0 #3e2a0f !important; } /* 형광 연두 단추 → 차분한 초록 */
+.lb-sbuy:disabled { filter: grayscale(1) brightness(.9); } .lb-sbuy > * { position: relative; z-index: 1; } .lb-sbuy::before { opacity: .55; } /* 글씨가 광택에 덮여 흐렸음 */
 .dn-go { filter: saturate(.72) brightness(.9); } .dn-go:disabled { filter: grayscale(.7); } /* 형광 연두 → 시안처럼 차분한 초록 */
 .dn-go, .dn-go span { color: #f5e9c8 !important; -webkit-text-stroke: .5cqw #3e2a0f !important; text-shadow: 0 .3cqw 0 #3e2a0f !important; } .dn-go i { color: #ffe896 !important; -webkit-text-stroke: .5cqw #6b3e00 !important; }
 .dn-go i { font-style: normal; font-size: 4.6cqw; color: #ffe36b; } .dn-go:disabled { filter: grayscale(.7); } .dn-go:not(:disabled):active { transform: translateY(.6cqw); box-shadow: 0 .2cqw 0 #1d4a0a; }
@@ -2108,7 +2117,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610300925";
+  const BUILD = "202610300951";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
