@@ -2068,7 +2068,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610300225";
+  const BUILD = "202610300238";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -5836,6 +5836,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     function gemTier(v) { return v >= 5 ? 2 : v >= 2 ? 1 : 0; }
     function draw() {
       if (!W) return;
+      if (s && !gameImgOn) gameImgs(); /* 판을 그리는데 판 그림을 안 받았으면 받음 — 업데이트 뒤 「하던 판 이어서」는 begin 을 안 거쳐 몬스터 · 주인공이 임시 모양이었음(2026-10-30 두 번째 지적) */
       const shake = s && s.hitFx > 0.15 ? 3 : 0;
       g.setTransform(DPR * ZM, 0, 0, DPR * ZM, (Math.random() - 0.5) * shake * DPR, (Math.random() - 0.5) * shake * DPR);
       g.fillStyle = "#0d0b09"; g.fillRect(-8, -8, W + 16, H + 16); /* 매 장면 꼭 지움 — 맵을 덮으면 건너뛰던 것(최적화)은 맵이 투명하게 그려질 때 잔상이 남았음(2026-10-30 휴대폰 사진) */
@@ -6865,18 +6866,19 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
       sh: s.shots.slice(0, 60).map((b) => [Math.round(b.x), Math.round(b.y), Math.round(b.vx), Math.round(b.vy), +b.a.toFixed(2), b.c || 0]),
       fl: s.fields.slice(0, 12).map((z) => [Math.round(z.x), Math.round(z.y), Math.round(z.r), +z.life.toFixed(1), z.full]),
       f: s.foes.slice(0, 150).map((f) => [Math.round(f.x), Math.round(f.y), f.skin, f.k === "boss" ? 1 : 0, f.r, +(f.hp / (f.full || 1)).toFixed(2), f.hit > 0 ? 1 : 0, f.near ? 1 : 0, f.sid || (f.sid = s.sidN = (s.sidN || 0) + 1)]) }; }
-    function snapSend(ts) { if (!s || !s.watched || s.over || s.watchView || !me || !token || ts - (s.snapAt || 0) < 300) return; s.snapAt = ts; call("gameSnap", token, snapOf()).then((r) => { if (s && r) s.watched = !!r.watched; }).catch(() => {}); }
+    function snapSend(ts) { if (!s || !s.watched || s.over || s.watchView || !me || !token || ts - (s.snapAt || 0) < 300 || s.snapBusy) return; s.snapAt = ts; const S0 = s; S0.snapBusy = 1; /* 앞 것이 안 끝났으면 건너뜀 — 느린 망에서 줄이 쌓이던 것(2026-10-30) */ call("gameSnap", token, snapOf()).then((r) => { if (s && r) s.watched = !!r.watched; }).catch(() => {}).finally(() => { S0.snapBusy = 0; }); }
     function watchStart(id, nick) {
       if (watchOn) watchStop(true);
       $("gLobby").hidden = true; begin({}); running = false; if (raf) { cancelAnimationFrame(raf); raf = 0; } $("gameHud").hidden = true; s.god = true; s.watchView = true;
       const bar = el("div", "gwatch"), tx = el("span", null, "👁 " + nick + " 님의 게임은 관전중"), out = el("button", "tiny", "나가기"); out.type = "button"; out.onclick = () => watchStop();
       bar.append(tx, out); $("gameBox").appendChild(bar);
-      watchOn = { id, nick, bar, tx, cur: null, prev: null, poll: 0, raf: 0, last: performance.now(), buf: [], clock: null, t0: performance.now() };
-      const poll = () => { if (!watchOn) return; call("gameWatch", token, id).then((sn) => { if (!watchOn) return; if (sn && sn.s && (!watchOn.cur || sn.at !== watchOn.cur.at)) { watchOn.prev = watchOn.cur; watchOn.cur = { at: sn.at, t: performance.now(), S: sn.s }; const B0 = watchOn.buf, tt = sn.s.tt != null ? sn.s.tt : sn.at; if (!B0.length || tt > B0[B0.length - 1].tt) { if (B0.length && tt < B0[B0.length - 1].tt - 5000) B0.length = 0; B0.push({ tt, S: sn.s }); if (B0.length > 30) B0.shift(); } tx.textContent = "👁 " + nick + " 님의 게임은 관전중"; /* 2026-10-28 "이렇게만 해라, 작대기는 없애라" */ } else if (!sn) tx.textContent = performance.now() - watchOn.t0 > 9000 ? "👁 " + nick + " 님 화면을 기다리는 중 ㆍ 상대가 옛 화면이면 새로고침해야 보여요" : "👁 " + nick + " 님의 게임은 관전중"; }).catch(() => {}); };
-      poll(); watchOn.poll = setInterval(poll, 300);
+      watchOn = { id, nick, bar, tx, cur: null, prev: null, poll: 0, raf: 0, last: performance.now(), buf: [], clock: null, t0: performance.now(), gaps: [], gotAt: 0, lag: 900 };
+      const poll1 = () => call("gameWatch", token, id).then((sn) => { if (!watchOn) return; if (sn && sn.s && (!watchOn.cur || sn.at !== watchOn.cur.at)) { watchOn.prev = watchOn.cur; watchOn.cur = { at: sn.at, t: performance.now(), S: sn.s }; const B0 = watchOn.buf, tt = sn.s.tt != null ? sn.s.tt : sn.at; if (!B0.length || tt > B0[B0.length - 1].tt) { if (B0.length && tt < B0[B0.length - 1].tt - 5000) B0.length = 0; B0.push({ tt, S: sn.s }); if (B0.length > 30) B0.shift(); /* 도착 간격을 보고 여유를 정함 — 늦게 오는 망이면 더 늦게 재생해 안 멈춤(0.9~3초) */ const nw = performance.now(), W3 = watchOn; if (W3.gotAt) { W3.gaps.push(nw - W3.gotAt); if (W3.gaps.length > 12) W3.gaps.shift(); W3.lag = Math.max(900, Math.min(3000, Math.max(...W3.gaps) * 1.3 + 250)); } W3.gotAt = nw; } tx.textContent = "👁 " + nick + " 님의 게임은 관전중"; /* 2026-10-28 "이렇게만 해라, 작대기는 없애라" */ } else if (!sn) tx.textContent = performance.now() - watchOn.t0 > 9000 ? "👁 " + nick + " 님 화면을 기다리는 중 ㆍ 상대가 옛 화면이면 새로고침해야 보여요" : "👁 " + nick + " 님의 게임은 관전중"; }).catch(() => {});
+      const poll = () => { if (!watchOn) return; poll1().finally(() => { if (watchOn) watchOn.poll = setTimeout(poll, 250); }); }; /* 답이 오면 다음을 보냄 — 0.3초마다 겹쳐 보내 쌓이던 것(2026-10-30 「관전 버퍼링」) */
+      poll();
       const tick = (ts) => { if (!watchOn) return; const W2 = watchOn, dt = Math.min(0.05, (ts - W2.last) / 1000); W2.last = ts; s.t += dt;
         /* 받은 상태를 모아 0.8초 늦게 재생 — 그 사이를 이어 그려서 안 끊김(늦게 오면 천천히 · 많이 밀리면 따라잡음) */
-        const BF = W2.buf; if (BF.length && BF[BF.length - 1].S.tt != null) { const late = BF[BF.length - 1].tt - 800;
+        const BF = W2.buf; if (BF.length && BF[BF.length - 1].S.tt != null) { const late = BF[BF.length - 1].tt - W2.lag;
           if (W2.clock == null || Math.abs(late - W2.clock) > 4000) W2.clock = late; else W2.clock += dt * 1000 * Math.max(0.6, Math.min(1.5, 1 + (late - W2.clock) / 1500));
           let i = BF.findIndex((x) => x.tt > W2.clock); if (i < 0) i = BF.length - 1; const A = BF[Math.max(0, i - 1)], Bn = BF[i], P2 = A.S, C2 = Bn.S, k = Bn.tt > A.tt ? Math.max(0, Math.min(1, (W2.clock - A.tt) / (Bn.tt - A.tt))) : 1, L = (a, b) => a + (b - a) * k, el2 = Math.max(0, (W2.clock - A.tt) / 1000);
           s.x = L(P2.x, C2.x); s.y = L(P2.y, C2.y); s.hp = C2.hp; s.max = C2.max; s.stage = C2.stage; s.lv = C2.lv; s.kills = C2.kills; s.aim = P2.aim; s.moving = !!(P2.mv || C2.mv); s.walk = (s.walk || 0) + (s.moving ? dt * 9 : 0);
@@ -6891,7 +6893,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
         draw(); W2.raf = requestAnimationFrame(tick); };
       watchOn.raf = requestAnimationFrame(tick);
     }
-    function watchStop(quiet) { if (!watchOn) return; clearInterval(watchOn.poll); cancelAnimationFrame(watchOn.raf); watchOn.bar.remove(); watchOn = null; s = null; if (!quiet) lobby(); }
+    function watchStop(quiet) { if (!watchOn) return; clearTimeout(watchOn.poll); cancelAnimationFrame(watchOn.raf); watchOn.bar.remove(); watchOn = null; s = null; if (!quiet) lobby(); }
     /* 운영자만 — 오른쪽에 지금 게임하는 사람(2026-10-28 "게임 진행 중인 사람들은 나만 우측 화면에 볼 수 있게") */
     let lobLiveMin = matchMedia("(max-width: 760px)").matches; // 휴대폰은 접어 둠(누르면 펼침)
     /* 우편함(2026-10-28 "운영자가 모든 유저에게 우편으로 선물") — 받기 · 모두 받기 */
