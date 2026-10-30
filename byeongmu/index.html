@@ -2068,7 +2068,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610300217";
+  const BUILD = "202610300225";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -4421,7 +4421,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     ];
     /* 진화 — 무기 Lv 5 + 짝 보조를 가지면 레벨업 카드에 「진화」 가 나옴(한 번). 무기는 레벨 +3 만큼 세지고, 구슬 · 고리는 +3 */
     const EVO = [["kunai", "spd", "그림자 쿠나이"], ["orbs", "max", "물방울 결계"], ["homing", "cool", "쌍둥이 드론"], ["fire", "catalyst", "용암 웅덩이"], ["thunder", "core", "천둥 폭풍"], ["aura", "magnet", "소용돌이 고리"], ["mj_star", "spd", "회오리 부메랑"], ["je_storm", "core", "거대 드릴"]];
-    EVO.forEach(([w, p, n]) => UPS.push({ k: "evo_" + w, evo: w, n, max: 1, pair: p, d: UPS.find((u) => u.k === w).n + " Lv 5 → 진화 ㆍ 모습이 바뀌고 판 끝까지 훨씬 세져요", ok: () => (s.up[w] || 0) >= 5, /* 2026-10-29 부장님 "스킬 Lv 5 찍으면 탕탕특공대처럼 계속 유지되는 업그레이드" — 짝 보조 없이 Lv 5 만 */ /* 탕탕특공대처럼 무기 별 5개 + 짝 보조를 가지면 카드로(2026-10-28) */
+    EVO.forEach(([w, p, n]) => UPS.push({ k: "evo_" + w, evo: w, n, max: 1, pair: p, get d() { const q = UPS.find((u) => u.k === p); return UPS.find((u) => u.k === w).n + " Lv 5 + " + (q ? q.n : "") + " → 진화 ㆍ 모습이 바뀌고 판 끝까지 훨씬 세져요"; }, ok: () => (s.up[w] || 0) >= 5 && (s.up[p] || 0) >= 1, /* 2026-10-30 부장님 「1번으로」 — 짝 보조가 다시 있어야 함(카드 ⇄ 표시 · 무기 진화와 같게). 10-29 엔 Lv 5 만이었음 */ /* 탕탕특공대처럼 무기 별 5개 + 짝 보조를 가지면 카드로(2026-10-28) */
       f: () => { s.evo[w] = 1; if (w === "orbs") s.orbs += 3; if (w === "aura") s.aura += 3; } }));
     /* 무기 진화 — 무기 Lv 5 + 짝 보조 Lv 1 이상(ChatGPT 기획) */
     UPS.push({ k: "evo_wpn", evo: "wpn", max: 1, get n() { return (WEVO[wcode()] || {}).n || "무기 진화"; }, get pair() { return (WEVO[wcode()] || {}).pair; }, get d() { const p = UPS.find((x) => x.k === (WEVO[wcode()] || {}).pair); return "무기 Lv 5 + " + (p ? p.n : "") + " → 진화 ㆍ 발사체가 바뀌고 훨씬 세져요"; },
