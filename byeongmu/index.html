@@ -1169,6 +1169,28 @@ body.game-full { overflow: hidden; }
 .gskill small { display: block; font-size: 10px; font-weight: 700; color: var(--muted); }
 .gskill.ready { border-color: var(--gold); box-shadow: 0 0 12px rgba(214,176,98,.6); }
 @media (max-width: 480px) { .gskill { width: 56px; height: 56px; } }
+/* 수달 카드 결투(2026-10-30 ChatGPT 시안 18) — 위: 상대 정보 · 마법/함정 2 · 몬스터 3 / 가운데 띠: 턴 · 턴 끝 · 남은 시간 / 내 몬스터 3 · 마법/함정 2 · 내 정보 · 설명 · 손패 */
+.cg-board { position: fixed; inset: 0; z-index: 8500; display: grid; grid-template-rows: auto auto auto auto auto auto auto auto auto 1fr; gap: 4px; padding: calc(6px + env(safe-area-inset-top, 0px)) 8px calc(4px + env(safe-area-inset-bottom, 0px)); background: url(img/lb/cg-bg.webp?v=1) center / cover no-repeat, linear-gradient(#5a3a1e, #3a2412); font-family: "Jua", sans-serif; color: #fff; overflow: hidden; user-select: none; -webkit-user-select: none; max-width: 560px; margin: 0 auto; box-shadow: 0 0 0 100vmax rgba(12,9,6,.94); } /* PC 넓은 화면 — 판 바깥을 어둡게 덮음 */
+.cg-info { position: relative; display: flex; align-items: center; gap: 6px; height: 46px; padding: 0 12px 0 54px; background: url(img/lb/cg-bar-foe.webp?v=1) center / 100% 100% no-repeat; font-size: 15px; } .cg-info.me { background-image: url(img/lb/cg-bar-me.webp?v=1); }
+.cg-face { position: absolute; left: 3.6%; top: 50%; width: 36px; height: 36px; transform: translate(-6%, -50%); border-radius: 50%; object-fit: cover; }
+.cg-info span { display: inline-flex; align-items: center; gap: 2px; } .cg-info span img { width: 18px; height: 18px; object-fit: contain; } .cg-info .cg-cnt img { width: 13px; height: 18px; }
+.cg-info .cg-nm { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .cg-info span { white-space: nowrap; font-size: 14px; } .cg-lp b { font-size: 17px; }
+.cg-row { display: grid; gap: 8px; justify-content: center; } .cg-row.mon { grid-template-columns: repeat(3, minmax(0, 96px)); } .cg-row.st { grid-template-columns: repeat(2, minmax(0, 72px)); }
+.cg-slot { aspect-ratio: 318 / 440; display: grid; place-items: center; position: relative; padding: 5%; background: url(img/lb/cg-slot-m.webp?v=1) center / 100% 100% no-repeat; } .cg-slot.st { background-image: url(img/lb/cg-slot-r.webp?v=1); } .cg-slot.st.s0 { background-image: url(img/lb/cg-slot-s.webp?v=1); } /* 칸 받침(ChatGPT 시안 18) — 마법/함정 칸은 왼쪽 초록 · 오른쪽 보라 */
+.cg-slot.drop { border-radius: 10px; box-shadow: 0 0 0 2px #7dff8a, 0 0 14px rgba(125,255,138,.9); cursor: pointer; }
+.cg-card { position: relative; width: 100%; aspect-ratio: 312 / 440; cursor: pointer; transition: transform .15s; container-type: inline-size; filter: drop-shadow(0 2px 3px rgba(0,0,0,.55)); }
+.cg-win { position: absolute; left: 9%; top: 7%; width: 82%; height: 64%; border-radius: 8%; background: radial-gradient(#5a4a3a, #2a1e14); } .cg-card.t-s .cg-win { background: radial-gradient(#3a6a40, #142a18); } .cg-card.t-r .cg-win { background: radial-gradient(#5a3a7a, #24143a); }
+.cg-art { position: absolute; left: 12%; top: 11%; width: 76%; height: 56%; object-fit: contain; } .cg-fr { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.cg-cost { position: absolute; left: 1%; top: 1%; width: 27%; aspect-ratio: 1; display: grid; place-items: center; font-size: 17cqw; color: #fff; text-shadow: 0 1px 2px #001a5a, 0 0 2px #001a5a; }
+.cg-name { position: absolute; left: 14%; right: 14%; top: 72%; height: 9%; display: grid; place-items: center; font-size: 11cqw; line-height: 1; white-space: nowrap; overflow: hidden; color: #5a3410; }
+.cg-a, .cg-h { position: absolute; top: 84%; height: 12%; display: grid; place-items: center; font-style: normal; font-size: 15cqw; color: #fff; text-shadow: 0 1px 2px #000, 0 0 3px #000; } .cg-a { left: 26%; width: 22%; } .cg-h { left: 70%; width: 26%; top: 82%; } .cg-h.hurt { color: #ffd0c8; }
+.cg-card.def { transform: rotate(90deg) scale(.82); } .cg-card.can { box-shadow: 0 0 10px 2px rgba(255,215,106,.9); } .cg-card.sel { box-shadow: 0 0 14px 3px #7dff8a; transform: translateY(-6px); } .cg-card.def.sel { transform: rotate(90deg) scale(.82) translateX(-6px); } .cg-card.set { filter: brightness(.75); }
+.cg-mid { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 6px; padding: 0 16%; height: 50px; background: url(img/lb/cg-bar-mid.webp?v=1) center / 100% 100% no-repeat; } /* 가운데 나무 띠 */ .cg-turn { font-size: 14px; white-space: nowrap; color: #ffd76a; text-shadow: 0 1px 2px #000; } .cg-time { text-align: right; font-size: 13px; white-space: nowrap; text-shadow: 0 1px 2px #000; }
+.cg-end { width: 150px; height: 47px; border: 0; background: url(img/lb/cg-btn.webp?v=1) center / 100% 100% no-repeat; color: #fff; font: inherit; font-size: 19px; text-shadow: 0 1px 2px #003a80, 0 0 3px #003a80; cursor: pointer; } /* 턴 끝 단추(ChatGPT 조각) */ .cg-end:disabled { filter: grayscale(.8) brightness(.7); cursor: default; }
+.cg-tip { min-height: 34px; padding: 4px 10px; border-radius: 10px; background: rgba(0,0,0,.45); font-size: 12px; line-height: 1.35; } .cg-tip b { color: #ffd76a; margin-right: 6px; }
+.cg-act { display: flex; gap: 8px; justify-content: center; min-height: 0; } .cg-act:empty { display: none; } .cg-act .duel-btn { padding: 7px 14px; font-size: 14px; }
+.cg-hand { display: flex; justify-content: center; align-items: flex-end; padding: 0 6px 4px; min-height: 0; } .cg-hand .cg-card { width: min(23vw, 104px); flex: 0 0 auto; margin: 0 -6px; transform: rotate(calc(var(--i) * 4deg)) translateY(calc(var(--i) * var(--i) * 2px)); } .cg-hand .cg-card.sel { transform: translateY(-16px) scale(1.08); z-index: 2; }
+.cg-pop { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); z-index: 5; padding: 2px 8px; border-radius: 999px; background: rgba(200,30,20,.9); color: #fff; font-style: normal; font-size: 15px; white-space: nowrap; pointer-events: none; animation: cgPop 1.1s ease-out forwards; } .cg-pop.good { background: rgba(30,150,60,.9); } @keyframes cgPop { from { opacity: 1; margin-top: 0; } to { opacity: 0; margin-top: -30px; } }
 .game-over { position: absolute; inset: 0; display: flex; padding: 16px; background: rgba(5,4,3,.82); overflow-y: auto; scrollbar-width: none; } /* 오른쪽 스크롤바는 숨김(휠 · 손가락으로는 내려감) — 2026-10-27 */
 .game-over::-webkit-scrollbar { display: none; }
 .game-over[hidden] { display: none; }
@@ -2067,7 +2089,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610300618";
+  const BUILD = "202610300651";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -6742,6 +6764,10 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
         a1.append(el("small", null, "6단 다 하면"), el("b", null, "💰 " + (M.base * M.waves * (M.waves + 1) / 2).toLocaleString())); a2.append(el("small", null, "내 최고"), el("b", null, (M.best || 0) + "단")); two.append(a1, a2);
         const gb = el("button", "dn-go"); gb.type = "button"; gb.append(el("span", null, "도전"), el("i", null, "남은 " + M.left)); gb.disabled = lobBusy || !M.left; gb.onclick = () => lobStart(0, false, 0, true);
         inf.append(b1, two, gb); c.append(el("h3", null, "골드 광산"), el("p", "dn-d", "잔몹만 나와요 ㆍ 20초마다 단이 오르고 골드가 쌓여요(2분)"), art("art-mine"), inf); out.push(c); } /* 골드 광산(2026-10-29) */
+      { const Q = P.card || { left: 5, n: 5, win: 0, lose: 0, gold: [2000, 500] }, c = el("div", "dn-card cardduel"), inf = el("div", "dn-info"), b1 = el("div", "dn-box"), two = el("div", "dn-two"), a1 = el("div", "dn-box"), a2 = el("div", "dn-box");
+        b1.append(el("small", null, "오늘 남은 보상"), el("b", "dn-big", Q.left + " / " + Q.n)); a1.append(el("small", null, "사람을 이기면"), el("b", null, "💰 " + (Q.gold || [2000])[0].toLocaleString())); /* 카드는 설명에 — 같이 쓰면 칸을 넘쳤음 */ a2.append(el("small", null, "내 전적"), el("b", null, (Q.win || 0) + "승 " + (Q.lose || 0) + "패")); two.append(a1, a2);
+        const gb = el("button", "dn-go"); gb.type = "button"; gb.append(el("span", null, "결투"), el("i", null, "1대1")); gb.disabled = lobBusy; gb.onclick = cgFind;
+        inf.append(b1, two, gb); c.append(el("h3", null, "수달 카드 결투"), el("p", "dn-d", "몬스터 · 마법 · 함정 카드로 1대1 결투 ㆍ 사람을 이기면 골드와 새 카드!"), art("art-cardduel"), inf); out.push(c); } /* 수달 카드 결투(2026-10-30) */
 
       { const wi = raidWeek(), RB = raidBoard, c = el("div", "dn-card raid"), inf = el("div", "dn-info"), left = Math.max(0, Math.ceil((Date.now() + 9 * 3600e3 + 3 * 864e5) / 6048e5) * 6048e5 - 9 * 3600e3 - 3 * 864e5 - Date.now());
         if (!RB && !raidLoading && !P.free) { raidLoading = true; call("gameRaidBoard", token).then((r) => { raidLoading = false; raidBoard = r; if (lobTab === "dun") lobDraw(); }).catch(() => { raidLoading = false; }); }
@@ -7103,6 +7129,194 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     function raidDmg() { const B = s.raidB; return B ? Math.max(0, Math.round(B.full - B.hp)) : 0; }
     /* 골드 광산(2026-10-29 부장님) — 던전 · 하루 2번 · 잔몹만 · 20초마다 1단(6단 = 2분) · 단이 오를 때마다 골드가 쌓임 · 쓰러지거나 2분이면 끝.
        골드는 창구가 다시 셈(기본 × 단, 기본 = 30 + 깬 장 × 6). 단이 오를수록 잡몹이 많고 셈(s.stage = 단) */
+    /* ── 수달 카드 결투(2026-10-30 부장님 「유희왕카드처럼」 — 정통 카드 대결 느낌만 따르고 규칙 · 카드 · 이름은 수달단 것) ──
+       생명 20 · 덱 20 · 손 4장으로 시작 · 매 턴 1장 · 물방울 기력(턴마다 +1, 최대 8) · 몬스터 3칸 · 마법/함정 2칸.
+       몬스터는 공격 태세(앞면) 또는 수비 태세(뒷면으로 깔기). 내 몬스터는 마주 보는 칸을 때리고, 비어 있으면 상대 생명을 바로.
+       공격 태세끼리 싸우면 서로 때리고, 남는 피해는 상대 생명으로(관통). 수비 태세는 맞받아치지 않음 · 남는 피해도 안 넘어감.
+       함정은 뒷면으로 깔아 두면 상대가 소환 · 공격 · 마법할 때 저절로 발동. 사람 대결은 양쪽 화면이 같은 행동을 주고받아 같은 판을 만듦(섞기는 같은 씨앗) */
+    const CG = { lp: 20, hand: 4, maxMana: 8, deck: 20 };
+    const CARDS = {
+      // 몬스터 — 수달
+      o1: { t: "m", n: "수달 신병", c: 1, a: 1, h: 2, pic: "otter-front" },
+      o2: { t: "m", n: "기사 수달", c: 3, a: 2, h: 5, pic: "sk-knight", d: "수비 태세면 받는 피해 −1", guard: 1 },
+      o3: { t: "m", n: "닌자 수달", c: 2, a: 3, h: 1, pic: "sk-ninja", d: "소환한 턴에도 공격", haste: 1 },
+      o4: { t: "m", n: "왕 수달", c: 5, a: 4, h: 6, pic: "sk-king", d: "소환하면 내 몬스터 모두 공격 +1", rally: 1 },
+      // 몬스터 — 잡귀
+      m1: { t: "m", n: "버섯 잡귀", c: 1, a: 1, h: 3, pic: "mon-1" },
+      m2: { t: "m", n: "모래 전갈", c: 2, a: 3, h: 2, pic: "mon-2" },
+      m3: { t: "m", n: "눈보라 설인", c: 3, a: 2, h: 5, pic: "mon-3" },
+      m4: { t: "m", n: "용암 도마뱀", c: 3, a: 4, h: 2, pic: "mon-4", d: "소환하면 마주 보는 상대 몬스터에 1 피해", burn: 1 },
+      m5: { t: "m", n: "독두꺼비", c: 2, a: 2, h: 3, pic: "mon-5", d: "때린 몬스터는 다음 턴 공격 못 함", poison: 1 },
+      m6: { t: "m", n: "해골 검사", c: 2, a: 3, h: 1, pic: "mon-6" },
+      m7: { t: "m", n: "얼음 박쥐", c: 1, a: 2, h: 1, pic: "mon-7", d: "소환한 턴에도 공격", haste: 1 },
+      m8: { t: "m", n: "돌 골렘", c: 4, a: 2, h: 7, pic: "mon-8", d: "수비 태세면 받는 피해 −1", guard: 1 },
+      m9: { t: "m", n: "고블린 전사", c: 3, a: 3, h: 3, pic: "mon-9" },
+      m10: { t: "m", n: "번개 구름 정령", c: 4, a: 4, h: 3, pic: "mon-10", d: "소환하면 상대 생명 2 피해", zap: 2 },
+      // 몬스터 — 대장
+      b1: { t: "m", n: "숲의 수호목", c: 6, a: 4, h: 10, pic: "boss-1", d: "수비 태세면 받는 피해 −1", guard: 1 },
+      b2: { t: "m", n: "황금 전갈왕", c: 6, a: 6, h: 5, pic: "boss-2" },
+      b3: { t: "m", n: "설산의 왕", c: 7, a: 6, h: 8, pic: "boss-3" },
+      b4: { t: "m", n: "화산 드래곤", c: 8, a: 8, h: 8, pic: "boss-4", d: "소환하면 상대 몬스터 모두 2 피해", burnAll: 2 },
+      b5: { t: "m", n: "늪의 대왕 두꺼비", c: 6, a: 5, h: 7, pic: "boss-5", d: "때린 몬스터는 다음 턴 공격 못 함", poison: 1 },
+      b6: { t: "m", n: "해골 군주", c: 7, a: 7, h: 5, pic: "boss-6" },
+      b7: { t: "m", n: "얼음 비룡", c: 8, a: 7, h: 9, pic: "boss-7", d: "소환한 턴에도 공격", haste: 1 },
+      b8: { t: "m", n: "사막 골렘왕", c: 7, a: 5, h: 10, pic: "boss-8", d: "수비 태세면 받는 피해 −1", guard: 1 },
+      b9: { t: "m", n: "도깨비 장군", c: 7, a: 7, h: 7, pic: "boss-9" },
+      b10: { t: "m", n: "뇌운 거인", c: 8, a: 8, h: 7, pic: "boss-10", d: "소환하면 상대 생명 3 피해", zap: 3 },
+      // 마법 — 바로 효과
+      s1: { t: "s", n: "번개 구름", c: 2, pic: "s-thunder", d: "상대 몬스터 하나에 3 피해", hit: 3, tgt: "foe" },
+      s2: { t: "s", n: "화염병", c: 3, pic: "s-fire", d: "상대 몬스터 모두에 1 피해", hitAll: 1 },
+      s3: { t: "s", n: "하트 물병", c: 1, pic: "s-max", d: "내 생명 +4", heal: 4 },
+      s4: { t: "s", n: "물줄기 빔", c: 4, pic: "s-beam", d: "상대 몬스터 하나에 5 피해", hit: 5, tgt: "foe" },
+      s5: { t: "s", n: "모래시계", c: 2, pic: "s-cool", d: "카드 2장 뽑기", draw: 2 },
+      s6: { t: "s", n: "에너지 코어", c: 2, pic: "s-core", d: "내 몬스터 하나 공격 +2", buff: 2, tgt: "mine" },
+      s7: { t: "s", n: "떨어지는 통나무", c: 5, pic: "s-log", d: "상대 몬스터 하나 부수기", kill: 1, tgt: "foe" },
+      s8: { t: "s", n: "해초 도시락", c: 3, pic: "s-kelp", d: "내 몬스터 모두 체력 +2", healAll: 2 },
+      // 함정 — 뒷면으로 깔고 상대가 할 때 저절로
+      r1: { t: "r", n: "조개 지뢰", c: 1, pic: "s-mine", on: "summon", d: "상대가 몬스터를 소환하면 그 몬스터에 3 피해", hit: 3 },
+      r2: { t: "r", n: "결계 반사", c: 3, pic: "s-shell", on: "attack", d: "상대가 공격하면 막고, 공격한 몬스터에 같은 피해", reflect: 1 },
+      r3: { t: "r", n: "물방울 결계", c: 1, pic: "s-orbs", on: "attack", d: "상대 공격 한 번 막기", block: 1 },
+      r4: { t: "r", n: "성게 덫", c: 2, pic: "s-urchin", on: "attack", d: "상대가 공격하면 공격한 몬스터에 2 피해", hit: 2 },
+      r5: { t: "r", n: "회오리 드릴", c: 3, pic: "s-je_storm", on: "spell", d: "상대 마법 하나 무효", counter: 1 },
+      r6: { t: "r", n: "쿠나이 매복", c: 2, pic: "s-kunai", on: "summon", d: "상대가 비용 4 이하 몬스터를 소환하면 부수기", killLow: 4 },
+      r7: { t: "r", n: "확성 소라", c: 1, pic: "s-amp", on: "attack", d: "상대가 공격하면 내 생명 +3", heal: 3 },
+      r8: { t: "r", n: "드론 반격", c: 2, pic: "s-homing", on: "attack", d: "상대가 공격하면 상대 생명 3 피해", zap: 3 },
+    };
+    const CG_STARTER = ["o1", "o1", "m1", "m7", "m2", "m6", "m5", "o3", "m9", "m3", "m4", "o2", "m8", "m10", "b2", "s1", "s3", "s5", "r1", "r3"]; // 기본 덱 20장
+    function cgRng(seed) { let x = (seed >>> 0) || 1; return () => { x ^= x << 13; x >>>= 0; x ^= x >> 17; x ^= x << 5; x >>>= 0; return x / 4294967296; }; }
+    function cgShuffle(a, rnd) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+    function cgNew(decks, seed, first, names) { const rnd = cgRng(seed), uid = { n: 0 };
+      const P = (i) => { const deck = cgShuffle(decks[i], rnd).map((id) => ({ id, u: ++uid.n })); return { name: (names || [])[i] || "", lp: CG.lp, mana: 0, max: 0, deck, hand: deck.splice(0, CG.hand), /* 둘 다 4장 — 1,000판에 먼저 쪽 53%(나중 쪽 5장은 37%로 기울어 안 씀) */ mon: [null, null, null], st: [null, null], grave: [] }; };
+      const G = { p: [P(0), P(1)], cur: first, turn: 0, win: null, log: [] }; cgTurn(G, true); return G; }
+    function cgEv(G, e) { G.log.push(e); }
+    function cgTurn(G, firstTurn) { const P = G.p[G.cur]; G.turn++; P.max = Math.min(CG.maxMana, P.max + 1); P.mana = P.max; P.mon.forEach((m) => { if (m) { m.sick = false; m.done = false; m.moved = false; if (m.stun > 0) m.stun--; } });
+      if (!firstTurn) { const c = P.deck.shift(); if (c) { P.hand.push(c); cgEv(G, { k: "draw", s: G.cur }); } else { P.lp -= 2; cgEv(G, { k: "tired", s: G.cur }); cgDead(G); } } }
+    function cgDead(G) { [0, 1].forEach((i) => { if (G.p[i].lp <= 0 && G.win == null) G.win = 1 - i; }); }
+    function cgHurtMon(G, side, lane, n, why) { const m = G.p[side].mon[lane]; if (!m) return; if (m.pos === "def" && CARDS[m.id].guard) n = Math.max(0, n - 1); m.hp -= n; if (m.down) { m.down = false; cgEv(G, { k: "flip", s: side, l: lane }); } cgEv(G, { k: "hit", s: side, l: lane, n, why }); if (m.hp <= 0) { G.p[side].mon[lane] = null; G.p[side].grave.push(m.id); cgEv(G, { k: "die", s: side, l: lane, id: m.id }); } }
+    function cgHurtLp(G, side, n, why) { G.p[side].lp -= n; cgEv(G, { k: "lp", s: side, n: -n, why }); cgDead(G); }
+    /* 상대 함정 — on: summon · attack · spell. 깔린 차례로 하나만 발동(그 함정은 무덤으로) */
+    function cgTrap(G, side, on, ctx) { const D = G.p[1 - side]; for (let i = 0; i < 2; i++) { const t = D.st[i]; if (!t) continue; const C = CARDS[t.id]; if (C.t !== "r" || C.on !== on) continue;
+        if (C.killLow && ctx.cost > C.killLow) continue;
+        D.st[i] = null; D.grave.push(t.id); cgEv(G, { k: "trap", s: 1 - side, i, id: t.id }); const r = { stop: false };
+        if (on === "summon") { if (C.hit) cgHurtMon(G, side, ctx.lane, C.hit, t.id); if (C.killLow) cgHurtMon(G, side, ctx.lane, 999, t.id); }
+        if (on === "attack") { const am = G.p[side].mon[ctx.lane]; if (C.block) r.stop = true; if (C.reflect && am) { r.stop = true; cgHurtMon(G, side, ctx.lane, am.a, t.id); } if (C.hit) cgHurtMon(G, side, ctx.lane, C.hit, t.id); if (C.heal) { D.lp += C.heal; cgEv(G, { k: "lp", s: 1 - side, n: C.heal, why: t.id }); } if (C.zap) cgHurtLp(G, side, C.zap, t.id); }
+        if (on === "spell" && C.counter) r.stop = true;
+        return r; }
+      return { stop: false }; }
+    /* 행동 하나 — 맞으면 true. a = { k: "mon", h(손 몇째), l(칸), down } · { k: "trap", h, i } · { k: "spell", h, tl(대상 칸) } · { k: "atk", l } · { k: "pos", l } · { k: "end" } */
+    function cgCan(G, side, a) { if (G.win != null || G.cur !== side) return false; const P = G.p[side], O = G.p[1 - side];
+      if (a.k === "end") return true;
+      if (a.k === "mon" || a.k === "trap" || a.k === "spell") { const c = P.hand[a.h]; if (!c) return false; const C = CARDS[c.id]; if (C.c > P.mana) return false;
+        if (a.k === "mon") return C.t === "m" && a.l >= 0 && a.l < 3 && !P.mon[a.l];
+        if (a.k === "trap") return C.t === "r" && a.i >= 0 && a.i < 2 && !P.st[a.i];
+        if (C.t !== "s") return false; if (C.tgt === "foe") return !!O.mon[a.tl]; if (C.tgt === "mine") return !!P.mon[a.tl]; return true; }
+      if (a.k === "atk") { const m = P.mon[a.l]; return !!m && m.pos === "atk" && !m.down && !m.sick && !m.done && !(m.stun > 0) && G.turn > 1; }
+      if (a.k === "pos") { const m = P.mon[a.l]; return !!m && !m.sick && !m.moved && !m.done; }
+      return false; }
+    function cgDo(G, side, a) { if (!cgCan(G, side, a)) return false; const P = G.p[side], O = G.p[1 - side];
+      if (a.k === "end") { cgEv(G, { k: "end", s: side }); G.cur = 1 - side; cgTurn(G); return true; }
+      if (a.k === "mon" || a.k === "trap" || a.k === "spell") { const c = P.hand.splice(a.h, 1)[0], C = CARDS[c.id]; P.mana -= C.c;
+        if (a.k === "trap") { P.st[a.i] = { id: c.id, u: c.u }; cgEv(G, { k: "set", s: side, i: a.i }); return true; }
+        if (a.k === "mon") { const m = { id: c.id, u: c.u, a: C.a, hp: C.h, max: C.h, pos: a.down ? "def" : "atk", down: !!a.down, sick: !C.haste, done: false }; P.mon[a.l] = m; cgEv(G, { k: "summon", s: side, l: a.l, id: a.down ? null : c.id, down: !!a.down });
+          cgTrap(G, side, "summon", { lane: a.l, cost: C.c }); const mm = P.mon[a.l];
+          if (mm && !mm.down) { if (C.rally) P.mon.forEach((x) => { if (x) x.a += 1; }); if (C.burn) cgHurtMon(G, 1 - side, a.l, C.burn, c.id); if (C.burnAll) [0, 1, 2].forEach((l) => cgHurtMon(G, 1 - side, l, C.burnAll, c.id)); if (C.zap) cgHurtLp(G, 1 - side, C.zap, c.id); }
+          return true; }
+        cgEv(G, { k: "spell", s: side, id: c.id, tl: a.tl }); P.grave.push(c.id); if (cgTrap(G, side, "spell", {}).stop) return true;
+        if (C.hit) cgHurtMon(G, 1 - side, a.tl, C.hit, c.id); if (C.kill) cgHurtMon(G, 1 - side, a.tl, 999, c.id); if (C.hitAll) [0, 1, 2].forEach((l) => cgHurtMon(G, 1 - side, l, C.hitAll, c.id));
+        if (C.heal) { P.lp += C.heal; cgEv(G, { k: "lp", s: side, n: C.heal, why: c.id }); } if (C.draw) for (let i = 0; i < C.draw; i++) { const d = P.deck.shift(); if (d) { P.hand.push(d); cgEv(G, { k: "draw", s: side }); } }
+        if (C.buff && P.mon[a.tl]) { P.mon[a.tl].a += C.buff; cgEv(G, { k: "buff", s: side, l: a.tl, n: C.buff }); } if (C.healAll) P.mon.forEach((m, l) => { if (m) { m.hp += C.healAll; m.max += C.healAll; cgEv(G, { k: "heal", s: side, l, n: C.healAll }); } });
+        return true; }
+      if (a.k === "pos") { const m = P.mon[a.l]; m.moved = true; if (m.down) { m.down = false; m.pos = "atk"; } else m.pos = m.pos === "atk" ? "def" : "atk"; cgEv(G, { k: "pos", s: side, l: a.l, pos: m.pos }); return true; }
+      if (a.k === "atk") { const m = P.mon[a.l]; m.done = true; cgEv(G, { k: "atk", s: side, l: a.l }); if (cgTrap(G, side, "attack", { lane: a.l }).stop) return true; const am = P.mon[a.l]; if (!am) return true; const d = O.mon[a.l];
+        if (!d) { cgHurtLp(G, 1 - side, am.a, am.id); return true; }
+        if (d.down) { d.down = false; cgEv(G, { k: "flip", s: 1 - side, l: a.l }); }
+        const before = d.hp, defAtk = d.pos === "atk", back = d.a, defId = d.id; cgHurtMon(G, 1 - side, a.l, am.a, am.id);
+        if (CARDS[am.id].poison && O.mon[a.l]) O.mon[a.l].stun = 2;
+        if (defAtk) { if (back > 0) cgHurtMon(G, side, a.l, back, defId); if (!O.mon[a.l] && am.a > before) cgHurtLp(G, 1 - side, am.a - before, am.id); }
+        return true; }
+      return false; }
+    /* 컴퓨터 — 한 턴 동안 할 행동을 하나씩(쉬운 욕심쟁이): 큰 몬스터부터 빈 칸에(마주 보는 상대가 세면 수비로 깔기) · 함정 깔기 · 이득이면 마법 · 이길 만하면 공격 · 끝 */
+    function cgAI(G, side) { const P = G.p[side], O = G.p[1 - side], val = (m) => (m ? m.a + m.hp : 0);
+      const hand = P.hand.map((c, h) => ({ h, C: CARDS[c.id] })).filter((x) => x.C.c <= P.mana).sort((x, y) => y.C.c - x.C.c);
+      for (const x of hand) { if (x.C.t !== "m") continue; const lanes = [0, 1, 2].filter((l) => !P.mon[l]).sort((l1, l2) => val(O.mon[l2]) - val(O.mon[l1])); if (!lanes.length) break; const l = lanes[0], f = O.mon[l]; return { k: "mon", h: x.h, l, down: !!(f && !f.down && f.a >= x.C.h && x.C.a < f.hp) }; }
+      for (const x of hand) { if (x.C.t === "s") { if (x.C.tgt === "foe") { let best = -1, bv = 0; O.mon.forEach((m, l) => { if (m && (x.C.kill || m.hp <= x.C.hit) && val(m) > bv) { bv = val(m); best = l; } }); if (best >= 0) return { k: "spell", h: x.h, tl: best }; continue; }
+          if (x.C.tgt === "mine") { const l = P.mon.findIndex((m) => m && !m.down); if (l >= 0) return { k: "spell", h: x.h, tl: l }; continue; }
+          if (x.C.hitAll && O.mon.filter((m) => m && m.hp <= x.C.hitAll).length >= 1) return { k: "spell", h: x.h }; if (x.C.heal && P.lp <= 14) return { k: "spell", h: x.h }; if (x.C.draw && P.hand.length <= 3) return { k: "spell", h: x.h }; if (x.C.healAll && P.mon.filter(Boolean).length >= 2) return { k: "spell", h: x.h }; }
+        if (x.C.t === "r") { const i = P.st.findIndex((t) => !t); if (i >= 0) return { k: "trap", h: x.h, i }; } }
+      for (let l = 0; l < 3; l++) { const m = P.mon[l]; if (!m) continue; if (m.down && !m.sick && !m.moved && !O.mon[l]) return { k: "pos", l }; const f = O.mon[l]; if (!cgCan(G, side, { k: "atk", l })) continue;
+        if (!f || f.down || m.a >= f.hp || (f.pos === "def" && m.a > 0 && m.hp > 1) || (f.pos === "atk" && f.a < m.hp)) return { k: "atk", l }; }
+      return { k: "end" }; }
+    /* ── 카드 결투 화면 ── 화면 전체를 덮는 창(#cgBoard). 판이 바뀔 때마다 엔진 상태(G)로 다시 그림. 컴퓨터는 0.7초마다 한 행동, 사람 대결은 행동을 주고받음 */
+    let CGS = null; // { G, me, mode: "ai" | "pvp", ws, sel, seen(기록 어디까지 보였나), foe, turnT, done }
+    const CG_TURN_SEC = 45, CGI = (n) => LBI(n);
+    function cgFind() { if (lobFree() || !token) { lobErr = "로그인해야 결투할 수 있어요"; lobDraw(); return; } goFull(); cgClose();
+      const ov = el("div", "duel-find"), tm = el("small", null, "0:00"), row = el("div", "duel-row"), ai = el("button", "duel-btn green", "컴퓨터와 결투"), cn = el("button", "duel-btn", "취소"); ai.type = cn.type = "button";
+      row.append(ai, cn); ov.append(el("i", "duel-spin"), el("b", null, "결투 상대를 찾는 중…"), tm, el("small", null, "30초 안에 상대가 없으면 컴퓨터와 결투해요(이기면 골드 500)"), row); document.body.appendChild(ov);
+      const t0 = Date.now(), iv = setInterval(() => { const e = Math.floor((Date.now() - t0) / 1000); tm.textContent = mmss(e); if (e >= 30) vsAi(); }, 250);
+      const stop = () => { clearInterval(iv); ov.remove(); }, vsAi = () => { stop(); cgWsClose(); cgStart({ mode: "ai", foe: "컴퓨터 수달", seed: Math.floor(Math.random() * 1e9), first: Math.random() < 0.5 ? 0 : 1, you: 0, decks: [CG_STARTER, CG_STARTER] }); };
+      ai.onclick = vsAi; cn.onclick = () => { stop(); cgWsClose(); };
+      try { const TQ = /[?&]bmctest=1/.test(location.search), ws = new WebSocket(((TQ && localStorage.getItem("bmc-duel-ws")) || API.replace(/^http/, "ws")) + "/duel?token=" + encodeURIComponent((TQ && localStorage.getItem("bmc-duel-tok")) || token)); cgWs = ws; const box = { decks: [null, null] };
+        ws.onmessage = (ev) => { let o; try { o = JSON.parse(ev.data); } catch (e) { return; }
+          if (o.t === "start") { stop(); Object.assign(box, o); box.decks[o.you] = CG_STARTER; ws.send(JSON.stringify({ t: "deck", d: CG_STARTER })); if (box.decks[1 - o.you]) cgStart(Object.assign({ mode: "pvp" }, box)); }
+          else if (o.t === "deck") { if (box.you == null) return; box.decks[1 - box.you] = o.d; if (!CGS) cgStart(Object.assign({ mode: "pvp" }, box)); }
+          else if (o.t === "act" && CGS && CGS.mode === "pvp") { cgDo(CGS.G, 1 - CGS.me, o.a); cgDraw(); }
+          else if (o.t === "end" && CGS) cgEnd(o.res, o.why, o.reward); };
+        ws.onclose = () => { if (cgWs === ws) cgWs = null; if (CGS && CGS.mode === "pvp" && !CGS.done) cgEnd("win", "left", null); }; } catch (e) {} }
+    let cgWs = null;
+    function cgWsClose() { const w = cgWs; cgWs = null; if (w) try { w.close(); } catch (e) {} }
+    function cgSend(o) { if (cgWs && cgWs.readyState === 1) try { cgWs.send(JSON.stringify(o)); } catch (e) {} }
+    function cgClose() { const b = $("cgBoard"); if (b) b.remove(); CGS = null; }
+    function cgStart(o) { cgClose(); const names = [0, 1].map((i) => (i === o.you ? (me && me.gameId) || "나" : o.foe));
+      CGS = { G: cgNew(o.decks, o.seed, o.first, names), me: o.you, mode: o.mode, foe: o.foe, sel: null, seen: 0, turnT: Date.now(), done: false };
+      const B = el("div", "cg-board"); B.id = "cgBoard"; document.body.appendChild(B); $("gLobby").hidden = true; cgDraw(); cgTick(); }
+    function cgTick() { const S = CGS; if (!S || S.done) return; const G = S.G;
+      if (G.win != null) { cgFinish(); return; }
+      if (S.mode === "ai" && G.cur !== S.me) { if (!S.aiAt) S.aiAt = Date.now() + 800; if (Date.now() >= S.aiAt) { S.aiAt = Date.now() + 700; const a = cgAI(G, G.cur); if (!cgDo(G, G.cur, a)) cgDo(G, G.cur, { k: "end" }); if (G.cur === S.me) S.aiAt = 0; cgDraw(); } }
+      if (G.cur === S.me && S.mode === "pvp" && Date.now() - S.turnT > CG_TURN_SEC * 1000) cgMy({ k: "end" }); // 45초 넘으면 저절로 턴 끝
+      { const tt = document.querySelector("#cgBoard .cg-time"); if (tt) tt.textContent = "턴 " + Math.ceil(G.turn / 2) + (G.cur === S.me && S.mode === "pvp" ? " ㆍ ⏱ " + Math.max(0, Math.ceil(CG_TURN_SEC - (Date.now() - S.turnT) / 1000)) : ""); }
+      setTimeout(cgTick, 120); }
+    function cgMy(a) { const S = CGS; if (!S || S.done) return false; const ok = cgDo(S.G, S.me, a); if (ok && S.mode === "pvp") cgSend({ t: "act", a }); S.sel = null; if (a.k === "end" && ok) S.turnT = Date.now(); cgDraw(); return ok; }
+    function cgFinish() { const S = CGS; if (S.done || S.fin) return; S.fin = true; const win = S.G.win === S.me;
+      if (S.mode === "pvp") { if (!win) cgSend({ t: "lose" }); setTimeout(() => { if (CGS === S && !S.done) cgEnd(win ? "win" : "lose", "lp", null); }, 6000); return; }
+      call("gameCardAi", token, win ? 1 : 0).then((r) => cgEnd(win ? "win" : "lose", "lp", r)).catch(() => cgEnd(win ? "win" : "lose", "lp", null)); }
+    function cgEnd(res, why, reward) { const S = CGS; if (!S || S.done) return; S.done = true; cgWsClose(); setTimeout(() => { if (CGS === S) cgClose(); }, 50);
+      $("gameView").hidden = false; $("gLobby").hidden = true; const W1 = res === "win";
+      const V = rsShow({ win: W1, top: "던전", name: "수달 카드 결투", big: W1 ? "승리!" : res === "draw" ? "무승부" : "패배", stars: W1 ? 3 : 0, wait: S.mode === "ai" ? "컴퓨터 결투" : "사람 결투", stats: [["rs-time", "턴", String(S.G.turn)], ["rs-ghost", "상대", S.foe], ["lv", "내 생명", String(Math.max(0, S.G.p[S.me].lp))]], btns: [["로비로", "blue", () => { lobTab = "dun"; lobby(); }], ["다시 결투", "green", () => { lobTab = "dun"; lobby(); setTimeout(cgFind, 300); }]] });
+      const T = {}; if (reward && reward.gold) T.gold = reward.gold; rsTiles(T, V.grid); V.note.textContent = why === "left" ? (W1 ? "상대가 나갔어요" : "결투를 나갔어요") : !W1 ? "다음엔 이길 거예요" + (reward ? " ㆍ 남은 보상 " + reward.left + "판" : "") : reward ? (reward.card ? "새 카드 「" + CARDS[reward.card].n + "」 ㆍ " : "") + (reward.gold ? "남은 보상 " + reward.left + "판" : "오늘 보상 5판을 다 했어요") : "승리!"; /* 진 판은 보상 0 — 「5판을 다 했어요」로 잘못 나왔음 */
+      if (token) call("gameProfile", token).then((x) => { LP = x; LP.got = Date.now(); }).catch(() => {}); }
+    /* 카드 한 장 그리기 — 틀 그림(cg-f-m · s · r) 위에 그림 · 비용 · 이름 · 공격 · 체력을 글자로 */
+    function cgCard(id, o) { o = o || {}; const C = CARDS[id], d = el("div", "cg-card t-" + (o.back ? "back" : C.t) + (o.cls ? " " + o.cls : ""));
+      const fr = el("img", "cg-fr"); fr.alt = ""; fr.src = CGI(o.back ? "cg-back" : "cg-f-" + C.t); if (o.back) { d.appendChild(fr); return d; } const art = el("img", "cg-art"); art.src = CGI(C.pic); art.alt = ""; d.append(el("i", "cg-win"), art, fr, el("b", "cg-cost", String(C.c)), el("span", "cg-name", C.n)); /* 그림 칸 → 그림 → 틀(ChatGPT 시안 18) → 글자 */
+      if (C.t === "m") d.append(el("i", "cg-a", String(o.a != null ? o.a : C.a)), el("i", "cg-h" + (o.hp != null && o.hp < (o.max || C.h) ? " hurt" : ""), String(o.hp != null ? o.hp : C.h)));
+      return d; }
+    function cgDraw() { const S = CGS, B = $("cgBoard"); if (!S || !B) return; const G = S.G, me = S.me, P = G.p[me], O = G.p[1 - me], my = G.cur === me && G.win == null;
+      const sel = S.sel, selC = sel && sel.k === "hand" ? CARDS[P.hand[sel.h].id] : null;
+      const ic = (n, v, cls) => { const s = el("span", cls), i = el("img"); i.src = CGI(n); i.alt = ""; s.append(i, el("b", null, v)); return s; };
+      const info = (Q, side) => { const w = el("div", "cg-info " + side), f = el("img", "cg-face"); f.alt = ""; f.src = CGI(side === "me" ? (me ? faceOf(me.id) : "pf-1") : S.mode === "ai" ? "pf-3" : "pf-2"); w.append(f, el("b", "cg-nm", Q.name), ic("ii-heart", String(Math.max(0, Q.lp)), "cg-lp"), ic("s-orbs", Q.mana + "/" + Q.max, "cg-mana"), ic("cg-back", Q.hand.length + "·" + Q.deck.length, "cg-cnt")); return w; }; /* 띠 · 얼굴 · 아이콘(ChatGPT 조각 · 이모지 대신 그림) */
+      const monRow = (Q, side) => { const r = el("div", "cg-row mon " + side); Q.mon.forEach((m, l) => { const slot = el("div", "cg-slot");
+          if (m) { const c = m.down ? cgCard(m.id, { back: true }) : cgCard(m.id, { a: m.a, hp: m.hp, max: m.max }); if (m.pos === "def") c.classList.add("def"); if (side === "me" && my && (cgCan(G, me, { k: "atk", l }) || cgCan(G, me, { k: "pos", l }))) c.classList.add("can"); if (sel && sel.k === "mon" && sel.l === l && side === "me") c.classList.add("sel"); slot.appendChild(c); }
+          if (side === "me" && selC && selC.t === "m" && !m) slot.classList.add("drop");
+          if (selC && selC.t === "s" && ((selC.tgt === "foe" && side === "foe" && m) || (selC.tgt === "mine" && side === "me" && m))) slot.classList.add("drop");
+          slot.onclick = () => cgTapMon(side, l); r.appendChild(slot); }); return r; };
+      const stRow = (Q, side) => { const r = el("div", "cg-row st " + side); Q.st.forEach((t, i) => { const slot = el("div", "cg-slot st s" + i); if (t) slot.appendChild(side === "me" ? cgCard(t.id, { cls: "set" }) : cgCard(t.id, { back: true })); if (side === "me" && selC && selC.t === "r" && !t) slot.classList.add("drop"); slot.onclick = () => { if (side === "me" && selC && selC.t === "r" && !t) cgMy({ k: "trap", h: sel.h, i }); }; r.appendChild(slot); }); return r; };
+      const mid = el("div", "cg-mid"), end = el("button", "cg-end", "턴 끝"); end.type = "button"; end.disabled = !my; end.onclick = () => cgMy({ k: "end" }); mid.append(el("b", "cg-turn", my ? "내 턴" : "상대 턴"), end, el("span", "cg-time")); /* 시안 18 — 왼쪽 턴 · 가운데 턴 끝 · 오른쪽 시간 */
+      const hand = el("div", "cg-hand"); P.hand.forEach((c, h) => { const C = CARDS[c.id], d = cgCard(c.id); if (my && C.c <= P.mana) d.classList.add("can"); if (sel && sel.k === "hand" && sel.h === h) d.classList.add("sel"); d.style.setProperty("--i", h - (P.hand.length - 1) / 2); d.onclick = () => cgTapHand(h); hand.appendChild(d); });
+      const tip = el("div", "cg-tip"); { let C = null; if (selC) C = selC; else if (sel && sel.k === "mon" && P.mon[sel.l]) C = CARDS[P.mon[sel.l].id]; if (C) { tip.append(el("b", null, C.n), el("span", null, (C.t === "m" ? "공격 " + C.a + " ㆍ 체력 " + C.h + (C.d ? " ㆍ " : "") : "") + (C.d || ""))); } else tip.textContent = my ? "카드를 눌러 내거나, 내 몬스터를 눌러 공격하세요" : "상대가 생각하는 중…"; }
+      const act = el("div", "cg-act"); if (sel && sel.k === "pick") { const a1 = el("button", "duel-btn green", "공격 태세"), a2 = el("button", "duel-btn", "뒷면 수비"); a1.onclick = () => cgMy({ k: "mon", h: sel.h, l: sel.l }); a2.onclick = () => cgMy({ k: "mon", h: sel.h, l: sel.l, down: true }); act.append(a1, a2); }
+      else if (sel && sel.k === "mon") { const l = sel.l; if (cgCan(G, me, { k: "atk", l })) { const b = el("button", "duel-btn green", O.mon[l] ? "공격!" : "생명 직격!"); b.onclick = () => cgMy({ k: "atk", l }); act.appendChild(b); } if (cgCan(G, me, { k: "pos", l })) { const b = el("button", "duel-btn", P.mon[l].down ? "앞면으로" : P.mon[l].pos === "atk" ? "수비 태세로" : "공격 태세로"); b.onclick = () => cgMy({ k: "pos", l }); act.appendChild(b); } }
+      else if (selC && selC.t === "s" && !selC.tgt) { const b = el("button", "duel-btn green", "「" + selC.n + "」 쓰기"); b.onclick = () => cgMy({ k: "spell", h: sel.h }); act.appendChild(b); }
+      B.replaceChildren(info(O, "foe"), stRow(O, "foe"), monRow(O, "foe"), mid, monRow(P, "me"), stRow(P, "me"), info(P, "me"), tip, act, hand);
+      cgFx(); }
+    function cgTapHand(h) { const S = CGS; if (!S || S.G.cur !== S.me) return; S.sel = S.sel && S.sel.k === "hand" && S.sel.h === h ? null : { k: "hand", h }; cgDraw(); }
+    function cgTapMon(side, l) { const S = CGS; if (!S) return; const G = S.G, sel = S.sel, P = G.p[S.me];
+      if (sel && sel.k === "hand") { const C = CARDS[P.hand[sel.h].id]; if (C.t === "m" && side === "me" && !P.mon[l]) { S.sel = { k: "pick", h: sel.h, l }; cgDraw(); return; } if (C.t === "s" && C.tgt && ((C.tgt === "foe" && side === "foe") || (C.tgt === "mine" && side === "me"))) { cgMy({ k: "spell", h: sel.h, tl: l }); return; } }
+      if (side === "me" && P.mon[l] && G.cur === S.me) { S.sel = sel && sel.k === "mon" && sel.l === l ? null : { k: "mon", l }; cgDraw(); return; }
+      S.sel = null; cgDraw(); }
+    /* 효과 — 새 기록(피해 숫자 · 함정 발동 · 생명)만 칸 위에 떠오르게 */
+    function cgFx() { const S = CGS, B = $("cgBoard"); if (!S || !B) return; const L = S.G.log; for (; S.seen < L.length; S.seen++) { const e = L[S.seen], mine = e.s === S.me;
+        const at = e.k === "hit" || e.k === "die" || e.k === "heal" || e.k === "buff" ? B.querySelectorAll(".cg-row.mon." + (mine ? "me" : "foe") + " .cg-slot")[e.l] : e.k === "lp" ? B.querySelector(".cg-info." + (mine ? "me" : "foe") + " .cg-lp") : e.k === "trap" ? B.querySelectorAll(".cg-row.st." + (mine ? "me" : "foe") + " .cg-slot")[e.i] : null;
+        if (!at) continue; const txt = e.k === "hit" ? "−" + e.n : e.k === "die" ? "💥" : e.k === "lp" ? (e.n > 0 ? "+" + e.n : String(e.n)) : e.k === "heal" ? "+" + e.n : e.k === "buff" ? "⚔+" + e.n : e.k === "trap" ? "함정! " + CARDS[e.id].n : ""; if (!txt) continue;
+        const f = el("i", "cg-pop " + (e.k === "lp" && e.n > 0 || e.k === "heal" || e.k === "buff" ? "good" : "")); f.textContent = txt; at.style.position = "relative"; at.appendChild(f); setTimeout(() => f.remove(), 1100); } }
     const MINE = { sec: 20, waves: 6 };
     function mineStart() { s.mine = true; s.mineT = 0; s.mineW = 0; s.mineG = 0; s.stage = 1; s.boxT = 1e9; s.spawn = 0; msg("골드 광산 ㆍ 2분 동안 버티면 단마다 골드!"); hud(); }
     function mineStep(dt) {
@@ -7149,7 +7363,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     function autoLabel() { const b = $("gAuto"); if (!b) return; b.textContent = autoSk ? "🤖 자동 켬" : "🤖 자동"; b.setAttribute("aria-pressed", String(autoSk)); }
     function autoCast() { if (!autoSk || !s || !s.skills) return; const near = s.foes.some((f) => (f.x - s.x) ** 2 + (f.y - s.y) ** 2 < 330 * 330); if (!near) return; s.skills.forEach((k) => { if (!(s.cd[k] > 0)) cast(k); }); }
     autoLabel();
-    if (/[?&]bmctest=1/.test(location.search)) window.__bmcGame = { get s() { return s; }, hud: () => hud(), elMul: () => elMul(), /* 2026-10-29 전투 HUD 넘침 시험 */ otRig: (n, sc) => otRig(bgImg(n), BGF[n].idle0, sc), get LP() { return LP; }, mapc: () => [MAPC.cy, Object.keys(TINTC).length], lobby: lobby, mapIdx: () => mapIdx, running: () => running, size: () => size(), draw: draw, setHero: (k) => { heroKey = k; }, lobStart: lobStart, setTab: (k) => { lobTab = k; lobDraw(); }, setCh: (c) => { lobTab = "go"; lobCh = c; lobDraw(); }, chapterClear: chapterClear, begin: begin, step: step, spawnBoss: spawnBoss, take: take, cast: cast, startStage: startStage, stageLen: stageLen, W: () => W, H: () => H, UPS: UPS, SK: SK, TEST_MUL: TEST_MUL, openBox: openBox, useItem: useItem, dash: dash, spawn: spawn, bullet: bullet, hazard: hazard, showPicks: showPicks, tutStart: tutStart, tutSkip: tutSkip, tutNeed: tutNeed, watchStart: (id, n) => watchStart(id, n), watch: () => watchOn };
+    if (/[?&]bmctest=1/.test(location.search)) window.__bmcGame = { get s() { return s; }, hud: () => hud(), elMul: () => elMul(), /* 2026-10-29 전투 HUD 넘침 시험 */ otRig: (n, sc) => otRig(bgImg(n), BGF[n].idle0, sc), get LP() { return LP; }, mapc: () => [MAPC.cy, Object.keys(TINTC).length], lobby: lobby, mapIdx: () => mapIdx, running: () => running, size: () => size(), draw: draw, setHero: (k) => { heroKey = k; }, lobStart: lobStart, setTab: (k) => { lobTab = k; lobDraw(); }, setCh: (c) => { lobTab = "go"; lobCh = c; lobDraw(); }, chapterClear: chapterClear, begin: begin, step: step, spawnBoss: spawnBoss, take: take, cast: cast, startStage: startStage, stageLen: stageLen, W: () => W, H: () => H, UPS: UPS, SK: SK, TEST_MUL: TEST_MUL, openBox: openBox, useItem: useItem, dash: dash, spawn: spawn, bullet: bullet, hazard: hazard, showPicks: showPicks, tutStart: tutStart, tutSkip: tutSkip, tutNeed: tutNeed, watchStart: (id, n) => watchStart(id, n), watch: () => watchOn, cg: () => CGS, cgStart: (o) => cgStart(o), cgMy: (a) => cgMy(a), cgAI: (G, sd) => cgAI(G, sd), CARDS: CARDS, CG_STARTER: CG_STARTER };
     return {
       /* 다른 메뉴로 가면 멈춘다. 처음 들어오면(또는 다른 사람이 들어오면) 시작 안내 */
       render() {
