@@ -2068,7 +2068,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610300238";
+  const BUILD = "202610300328";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -4398,6 +4398,13 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
       mj_shadow: { n: "그림자 질주", cd: (l) => 14 - l },
       mj_poison: { n: "독 안개", cd: (l) => 11 - l },
       mj_star: { n: "부메랑", cd: (l) => 3.2 - l * 0.2 },
+      /* 새 공격 스킬 6가지(2026-10-30 부장님 「탕탕특공대처럼 14개」 — 장르 틀만 따르고 이름 · 모습은 수달단식, 그림은 ChatGPT) */
+      pebble: { n: "튕기는 조약돌", cd: (l) => 3 - l * 0.2 },
+      log: { n: "떨어지는 통나무", cd: (l) => 2.8 - l * 0.16 },
+      urchin: { n: "굴러가는 성게", cd: (l) => 6.5 - l * 0.4 },
+      mine: { n: "조개 지뢰", cd: (l) => 2.2 - l * 0.12 },
+      beam: { n: "물줄기 빔", cd: (l) => 3.6 - l * 0.2 },
+      tail: { n: "꼬리 베기", cd: (l) => 1.4 - l * 0.08 },
     };
     const UPS = [
       /* 수달단 레벨업 — 탕탕특공대처럼 다시(2026-10-28 "스킬도 탕탕특공대 비슷하게, 지금 스킬 다 없애고"). 공격 무기는 모두 저절로 나감(단추 없음) · 공격 6가지 · 보조 6가지까지 · 다 Lv 5.
@@ -4410,6 +4417,12 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
       { k: "aura", n: "물결 고리", max: 5, atk: true, d: "내 몸 둘레 물결 고리 ㆍ 안에 들어온 몬스터가 계속 다쳐요", up: "고리 넓게 · 초당 피해 +6", f: () => { s.aura++; } },
       { k: "mj_star", n: "부메랑", max: 5, skill: true, d: "3초마다 가까운 몬스터 쪽으로 부메랑 ㆍ 꿰뚫고 돌아와요", up: "2레벨마다 부메랑 +1개 · 피해 +16 · 더 자주" },
       { k: "je_storm", n: "회전 드릴", max: 5, skill: true, d: "5초마다 드릴 발사 ㆍ 화면 끝에 튕기며 몬스터를 꿰뚫어요", up: "더 오래 · 더 크게 · 피해 +10" },
+      { k: "pebble", n: "튕기는 조약돌", max: 5, skill: true, d: "3초마다 조약돌 ㆍ 몬스터 사이를 4번 튕겨요", up: "튕김 +1 · 피해 +14 · 더 자주" },
+      { k: "log", n: "떨어지는 통나무", max: 5, skill: true, d: "3초마다 몬스터 위로 통나무가 떨어져요 ㆍ 크게 다치고 밀려나요", up: "피해 +30 · 넓게 · 더 자주" },
+      { k: "urchin", n: "굴러가는 성게", max: 5, skill: true, d: "6초마다 가시 성게가 4초 동안 굴러다녀요 ㆍ 닿으면 계속 다쳐요", up: "더 크게 · 피해 +8 · 더 자주" },
+      { k: "mine", n: "조개 지뢰", max: 5, skill: true, d: "2초마다 내 자리에 조개 지뢰 ㆍ 몬스터가 밟으면 터져요", up: "폭발 넓게 · 피해 +25 · 더 자주" },
+      { k: "beam", n: "물줄기 빔", max: 5, skill: true, d: "3.5초마다 가까운 몬스터 쪽으로 꿰뚫는 물줄기", up: "더 길고 굵게 · 피해 +18 · 더 자주" },
+      { k: "tail", n: "꼬리 베기", max: 5, skill: true, d: "1.3초마다 앞쪽 반원을 꼬리로 베어요 ㆍ 가까운 몬스터를 밀어내요", up: "넓게 · 피해 +10 · 더 자주" },
       /* 장착 무기 카드(2026-10-29 「빠른 장전」 · 「단단한 탄환」 을 합침) — Lv1 로 시작, 레벨마다 발사체가 바뀜(WLV), Lv5 + 짝 보조면 진화 */
       { k: "wpn", wcard: true, max: 5, get n() { return ((WPN[Object.keys(WCODE).find((k) => WCODE[k] === wcode())] || {}).n) || "기본 총"; }, get d() { return wDesc(Math.min(5, (s.up.wpn || 1) + 1)); }, get up() { return wDesc(Math.min(5, (s.up.wpn || 1) + 1)); }, f: () => { wApply(); } },
       { k: "catalyst", n: "화염 촉매", max: 5, d: "화상 · 불바닥 피해 +15% ㆍ 레벨마다 +10%", f: () => { s.burnMul = 1.05 + 0.1 * s.up.catalyst; } },
@@ -4418,9 +4431,13 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
       { k: "spd", n: "날쌘 신발", max: 5, d: "내 이동 속도 +10%", f: () => { s.spd *= 1.1; } },
       { k: "magnet", n: "조개 자석", max: 5, d: "경험치 구슬 끌어오는 거리 +40%", f: () => { s.magnet *= 1.4; } },
       { k: "cool", n: "모래시계", max: 5, d: "자동 무기가 8% 더 자주 나가요 ㆍ 평타에는 안 들어가요", f: () => { s.cool *= 0.92; }, ok: () => s.skills.length > 0 },
+      /* 새 보조 3가지(2026-10-30) — 새 공격 스킬의 진화 짝 */
+      { k: "amp", n: "확성 소라", max: 5, d: "스킬 공격 범위 +10% ㆍ 레벨마다 +10%", f: () => { s.ampK = 1 + 0.1 * s.up.amp; } },
+      { k: "shell", n: "조개 갑옷", max: 5, d: "받는 피해 −6% ㆍ 레벨마다 −6%", f: () => { s.shellK = 0.06 * s.up.shell; } },
+      { k: "kelp", n: "해초 도시락", max: 5, d: "초당 최대 체력의 0.5% 회복 ㆍ 레벨마다 +0.5%" },
     ];
     /* 진화 — 무기 Lv 5 + 짝 보조를 가지면 레벨업 카드에 「진화」 가 나옴(한 번). 무기는 레벨 +3 만큼 세지고, 구슬 · 고리는 +3 */
-    const EVO = [["kunai", "spd", "그림자 쿠나이"], ["orbs", "max", "물방울 결계"], ["homing", "cool", "쌍둥이 드론"], ["fire", "catalyst", "용암 웅덩이"], ["thunder", "core", "천둥 폭풍"], ["aura", "magnet", "소용돌이 고리"], ["mj_star", "spd", "회오리 부메랑"], ["je_storm", "core", "거대 드릴"]];
+    const EVO = [["kunai", "spd", "그림자 쿠나이"], ["orbs", "max", "물방울 결계"], ["homing", "cool", "쌍둥이 드론"], ["fire", "catalyst", "용암 웅덩이"], ["thunder", "core", "천둥 폭풍"], ["aura", "magnet", "소용돌이 고리"], ["mj_star", "spd", "회오리 부메랑"], ["pebble", "magnet", "물수제비 폭풍"], ["log", "max", "거대 통나무"], ["urchin", "amp", "성게 떼"], ["mine", "shell", "연쇄 조개 폭탄"], ["beam", "cool", "고압 물줄기"], ["tail", "kelp", "회오리 꼬리"], ["je_storm", "core", "거대드릴"]];
     EVO.forEach(([w, p, n]) => UPS.push({ k: "evo_" + w, evo: w, n, max: 1, pair: p, get d() { const q = UPS.find((u) => u.k === p); return UPS.find((u) => u.k === w).n + " Lv 5 + " + (q ? q.n : "") + " → 진화 ㆍ 모습이 바뀌고 판 끝까지 훨씬 세져요"; }, ok: () => (s.up[w] || 0) >= 5 && (s.up[p] || 0) >= 1, /* 2026-10-30 부장님 「1번으로」 — 짝 보조가 다시 있어야 함(카드 ⇄ 표시 · 무기 진화와 같게). 10-29 엔 Lv 5 만이었음 */ /* 탕탕특공대처럼 무기 별 5개 + 짝 보조를 가지면 카드로(2026-10-28) */
       f: () => { s.evo[w] = 1; if (w === "orbs") s.orbs += 3; if (w === "aura") s.aura += 3; } }));
     /* 무기 진화 — 무기 Lv 5 + 짝 보조 Lv 1 이상(ChatGPT 기획) */
@@ -4430,6 +4447,9 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
       if (L.bn) t.push("튕김 " + L.bn); if (L.boom) t.push("폭발"); if (L.pierce && L.pierce < 99) t.push("관통 " + L.pierce); if (L.push) t.push("밀어냄"); if (L.slow) t.push("냉기 " + Math.round(L.slow * 100) + "%"); if (L.pull) t.push("끌어당김"); if (L.burnT) t.push("화상"); if (L.home) t.push("유도");
       return "Lv " + lv + " ㆍ " + t.join(" · ") + (e ? " ㆍ " + EL_N[e] + " 속성" : ""); }
     const UP_ATK = (u) => u.skill || u.atk, UP_MAX_ATK = 6; // 공격 스킬은 한 판에 6가지까지
+    /* 보조도 한 판에 6가지까지(2026-10-30 보조 9가지로 늘며 — 레벨업 화면 보조 칸이 6칸) */
+    const UP_SUP = (u) => !UP_ATK(u) && !u.evo && !u.wcard, UP_MAX_SUP = 6;
+    function upShut(u) { if (s.up[u.k]) return false; if (UP_ATK(u)) return UPS.filter((x) => UP_ATK(x) && s.up[x.k]).length >= UP_MAX_ATK; if (UP_SUP(u)) return UPS.filter((x) => UP_SUP(x) && s.up[x.k]).length >= UP_MAX_SUP; return false; }
     let speed = 1;
     /* 게임을 시작할 때는 늘 1배속 · 2 · 3배속은 판 안에서 직접(2026-10-28) */
     let ZM = 1, W = 0, H = 0, DPR = 1, s = null, raf = 0, last = 0, running = false, shown = "", stick = null;
@@ -4553,9 +4573,9 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
       const go = el("button", "ps-go", "▶ 계속하기"), quit = el("button", "ps-quit", "⏏ 그만하기"); go.type = quit.type = "button"; go.onclick = resume; quit.onclick = end; const row = el("div", "ps-row"); row.append(go, quit);
       const pn = el("div", "ps-pn"); pn.append(el("div", "ps-rib", "일시정지"), tiles, el("div", "ps-skh", "보유 스킬"), sk, tg, row); panel([pn]); $("gameOver").classList.add("ps");
     }
-    function canPick() { const nAtk = UPS.filter((u) => UP_ATK(u) && s.up[u.k]).length; return UPS.some((u) => (s.up[u.k] || 0) < u.max && (!u.ok || u.ok()) && !(UP_ATK(u) && !s.up[u.k] && nAtk >= UP_MAX_ATK)); } // 고를 카드가 남았나(2026-10-28 "59레벨에 스킬을 못 배워 진행이 안 된다")
+    function canPick() { return UPS.some((u) => (s.up[u.k] || 0) < u.max && (!u.ok || u.ok()) && !upShut(u)); } // 고를 카드가 남았나(2026-10-28 "59레벨에 스킬을 못 배워 진행이 안 된다")
     function showPicks(title) {
-      const nAtk = UPS.filter((u) => UP_ATK(u) && s.up[u.k]).length, pool = UPS.filter((u) => (s.up[u.k] || 0) < u.max && (!u.ok || u.ok()) && !(UP_ATK(u) && !s.up[u.k] && nAtk >= UP_MAX_ATK)), picks = []; // 공격 스킬은 6가지까지 // 캐릭터 스킬은 내 캐릭터 것만 (2026-10-27)
+      const pool = UPS.filter((u) => (s.up[u.k] || 0) < u.max && (!u.ok || u.ok()) && !upShut(u)), picks = []; // 공격 스킬은 6가지까지 // 캐릭터 스킬은 내 캐릭터 것만 (2026-10-27)
       while (picks.length < 3 && pool.length) picks.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
       /* Lv 2 · 4 · 7 에는 아직 없는 스킬을 하나 꼭 보여 준다 — 스킬을 못 만나고 끝나지 않게 */
       if ([2, 4, 7, 10, 13, 16].includes(s.lv) && !picks.some((u) => u.skill && !s.up[u.k])) {
@@ -4568,7 +4588,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
         const have = s.up[u.k] || 0, b = el("button"); b.type = "button";
         const tt = el("b", null, u.n), st = el("i", "pk-st"); /* 별 5칸을 카드 아래에 ㆍ 이번에 오를 별은 깜빡(2026-10-28 탕탕특공대 레벨업 화면처럼) */
         for (let i = 0; i < (u.evo ? 1 : u.max); i++) st.appendChild(el("u", i < have ? "on" : i === have ? "nw" : "", "★")); if (u.evo) { tt.appendChild(el("em", "pk-new evo", "진화")); } else if (!have) tt.appendChild(el("em", "pk-new", "NEW"));
-        b.classList.add(u.evo ? "pk-evo" : UP_ATK(u) ? "pk-atk" : "pk-sup"); const ty = u.evo ? ["진화", "evo"] : UP_ATK(u) ? ["자동 무기", "atk"] : u.k === "wpn" ? ["장착 무기", "basic"] : u.k === "core" || u.k === "catalyst" ? ["무기 보조", "basic"] : u.k === "cool" ? ["무기 보조", "atk2"] : u.k === "max" ? ["체력", "hp"] : ["몸 강화", "body"]; if (!u.evo) tt.appendChild(el("em", "pk-type t-" + ty[1], ty[0])); // 2026-10-28 "스킬인지 평타 기반인지 알 수가 없어"
+        b.classList.add(u.evo ? "pk-evo" : UP_ATK(u) ? "pk-atk" : "pk-sup"); const ty = u.evo ? ["진화", "evo"] : UP_ATK(u) ? ["자동 무기", "atk"] : u.k === "wpn" ? ["장착 무기", "basic"] : u.k === "core" || u.k === "catalyst" ? ["무기 보조", "basic"] : u.k === "cool" || u.k === "amp" ? ["무기 보조", "atk2"] : u.k === "max" ? ["체력", "hp"] : ["몸 강화", "body"]; if (!u.evo) tt.appendChild(el("em", "pk-type t-" + ty[1], ty[0])); // 2026-10-28 "스킬인지 평타 기반인지 알 수가 없어"
         { const E = []; UPS.filter((x) => x.evo && !s.up[x.k] && (x.evo === u.k || x.pair === u.k)); if (E.length) { const pr = el("span", "pk-pair"); E.slice(0, 2).forEach((x) => { const o = x.evo === u.k ? x.pair : x.evo, c = el("b", s.up[o] ? "on" : ""); c.appendChild(icon(o)); pr.appendChild(c); }); st.appendChild(pr); } } /* 진화 짝 — 가진 짝은 밝게(탕탕특공대처럼) */
         b.append(icon(u.evo || u.k), tt, el("span", null, have && u.up ? u.up : u.d), st); // 탕탕특공대처럼 — 별로 레벨 · 새 것은 NEW
         b.onclick = () => take(u); box.appendChild(b);
@@ -4591,7 +4611,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
       s.up[u.k] = (s.up[u.k] || 0) + 1;
       if (u.evo) { msg("★ 진화 「" + u.n + "」 완성!"); s.fx.push({ x: s.x, y: s.y, r: 90, c: "#ffd23a", life: 0.6 }, { spr: "levelup", x: s.x, y: s.y + 22, size: 200, base: true, add: true, life: 1, dur: 1 }); SND.clear(); } // 진화 카드를 고르면(무기 별 5개 + 짝 보조)
       if (u.f) u.f();
-      if (u.skill && s.up[u.k] === 1) { s.skills.push(u.k); s.cd[u.k] = 0; }
+      if (u.skill && s.up[u.k] === 1) { s.skills.push(u.k); s.cd[u.k] = 0; const FXP = { pebble: "fx-pebble", log: "fx-log", urchin: "fx-urchin", mine: "s-mine", beam: "fx-beam", tail: "fx-tail" }[u.k]; if (FXP) lbImg(FXP); } // 새 스킬 효과 그림은 배울 때 미리 받음 — 처음 쓸 때 받으면 첫 몇 번은 그림 없이 지나감(2026-10-30)
       s.ward = Math.max(s.ward, 1.5);
       s.foes.forEach((f) => { const dx = f.x - s.x, dy = f.y - s.y, L = Math.hypot(dx, dy) || 1; if (L < 110 && f.k !== "boss") { f.x += dx / L * (110 - L); f.y += dy / L * (110 - L); } });
       renderSkills();
@@ -4967,6 +4987,8 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
       if (k === "kh_dash" || k === "mj_shadow") return s.hitFx > 0 || near(Math.min(s.range, 200));
       if (k === "ds_bell") return s.hitFx > 0 || near(40);
       if (k === "thunder" || k === "homing" || k === "hr_bolt" || k === "kunai" || k === "je_storm" || k === "mj_star") return s.foes.some((f) => Math.abs(f.x - s.x) < W / 2 && Math.abs(f.y - s.y) < H / 2);
+      if (k === "tail") return near(130);
+      if (k === "pebble" || k === "log" || k === "urchin" || k === "mine" || k === "beam") return s.foes.some((f) => Math.abs(f.x - s.x) < W / 2 && Math.abs(f.y - s.y) < H / 2);
       if (k === "ward") return s.hitFx > 0 || near(40);
       return near(s.range); // 회오리 · 얼음 폭발 · 불바다 — 조준 동그라미 안에 몬스터가 있으면
     }
@@ -4988,7 +5010,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
       /* 깎이는 피해는 모두 합쳐 한꺼번에 최대 체력 25%, 그 뒤 초당 40% 까지 — "76단에서 갑자기 죽는다" (2026-10-27). 76단은 잡귀 150 마리가 한꺼번에 나와 0.8초 만에
          26 마리가 붙고(마리당 초당 147~330) 체력 400 이 0.2초에 0 이 됐다. 몬스터 세기 · 수는 그대로, 둘러싸여도 2초쯤 버텨 빠져나갈 틈 */
       const room = s.max * ((s.painK || 0)[0] || PAIN) - (s.pain || 0); if (room <= 0) return true; n = Math.min(n, room); s.pain = (s.pain || 0) + n;
-      n *= 1 - (s.defR || 0); // 장비 방어력
+      n *= 1 - (s.defR || 0); n *= 1 - (s.shellK || 0); /* 조개 갑옷(2026-10-30) */ // 장비 방어력
       s.hp -= n; s.hurt = 0.15; s.hitFx = Math.max(s.hitFx, fx || 0.35); s.calm = 2;
       return true;
     }
@@ -4996,6 +5018,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
       if (!running || !k || !s.up[k] || s.cd[k] > 0) return;
       const l = s.up[k] + (s.evo && s.evo[k] ? 3 : 0);
       s.cd[k] = SK[k].cd(l) * s.cool;
+      if (NSK[k]) return NSK[k](l);
       if (HSKF[k]) { s.castT = 0.3; return heroCast(k, l); }
       if (k === "thunder") {
         s.foes.filter((f) => Math.abs(f.x - s.x) < W / 2 + 20 && Math.abs(f.y - s.y) < H / 2 + 20)
@@ -5027,7 +5050,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     function auraRad() { return 70 + s.aura * 24; } // 물결 고리 — 레벨마다 넓게(Lv 5 약 3m)
     function droneR(l) { return 240 + 50 * l; }
     function droneAt() { const face = Math.cos(s.aim || 0) < 0 ? -1 : 1, t = s.t || 0; s.drone = s.drone || { x: s.x, y: s.y, kick: 0 }; const D = s.drone, tx = s.x - face * 46 + Math.cos(t * 1.7) * 10, ty = s.y - 58 + Math.sin(t * 2.3) * 7; D.tx = tx; D.ty = ty; return D; }
-    function fly(k, P, o) { s.tors.push(Object.assign({ x: s.x + Math.cos(P.a) * 20, y: s.y + Math.sin(P.a) * 20, a: P.a, spr: k, hit: [] }, o, { full: o.life })); }
+    function fly(k, P, o) { const am = s.ampK || 1; if (am !== 1) o = Object.assign({}, o, { R: (o.R || 0) * am, size: o.size && o.size * am }); s.tors.push(Object.assign({ x: s.x + Math.cos(P.a) * 20, y: s.y + Math.sin(P.a) * 20, a: P.a, spr: k, hit: [] }, o, { full: o.life })); }
     function blast(x, y, R, dmg, slow) { s.foes.forEach((f) => { if ((f.x - x) ** 2 + (f.y - y) ** 2 < (R + f.r) ** 2) { hurt(f, dmg, true); if (slow) f.slow = Math.max(f.slow || 0, slow * (f.k === "boss" ? 0.5 : 1)); } }); }
     function rush(P, len, dmg) { // 돌진 — 0.3초 동안 앞으로(그동안 안 맞음), 지나갈 길의 몬스터를 벤다
       const x1 = s.x + Math.cos(P.a) * len, y1 = s.y + Math.sin(P.a) * len;
@@ -5035,6 +5058,28 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
       s.dashX = Math.cos(P.a); s.dashY = Math.sin(P.a); s.dashT = len / 900;
       return [x1, y1];
     }
+    /* 새 공격 스킬 6가지(2026-10-30) — l 은 레벨(진화하면 +3). 진화 모습: 조약돌 갈라짐 · 통나무 2개 크게 · 성게 3마리 · 지뢰 연쇄 · 물줄기 3갈래 · 꼬리 한 바퀴 */
+    const byNear = (x, y) => (p, q) => ((p.x - x) ** 2 + (p.y - y) ** 2) - ((q.x - x) ** 2 + (q.y - y) ** 2);
+    const NSK = {
+      pebble: (l) => { const ev = !!(s.evo && s.evo.pebble), n = 1 + Math.floor(l / 3); for (let i = 0; i < n; i++) { const P = aimAt(200); fly("pebble", { a: P.a + i * 0.5 }, { v: 560, R: 16, dmg: 22 + 14 * l, life: 3, chain: 3 + Math.min(5, l), split: ev ? 3 : 0, size: 46, ph: i }); } },
+      log: (l) => { const ev = !!(s.evo && s.evo.log), am = s.ampK || 1, T = s.foes.filter((f) => f.hp > 0 && (f.x - s.x) ** 2 + (f.y - s.y) ** 2 < 330 * 330).sort(byNear(s.x, s.y)); for (let i = 0; i < (ev ? 2 : 1); i++) { const f = T[Math.floor(Math.random() * Math.min(4, T.length))], P = f ? { x: f.x, y: f.y } : aimAt(140); (s.drops = s.drops || []).push({ x: P.x + (i ? (Math.random() - 0.5) * 140 : 0), y: P.y + (i ? (Math.random() - 0.5) * 100 : 0), t: 0.45, full: 0.45, R: (60 + 8 * l) * (ev ? 1.4 : 1) * am, dmg: (50 + 30 * l) * (ev ? 1.5 : 1), push: ev ? 130 : 70, size: (ev ? 150 : 110) * am }); } },
+      urchin: (l) => { const ev = !!(s.evo && s.evo.urchin); for (let i = 0; i < (ev ? 3 : 1); i++) fly("urchin", { a: Math.random() * Math.PI * 2 }, { v: 240, R: 28 + 3 * l, dmg: 14 + 8 * l, life: 4, bounce: true, rehit: 0.4, size: 70 + 6 * l, ph: i * 2 }); },
+      mine: (l) => { const ev = !!(s.evo && s.evo.mine), M = (s.mines = s.mines || []); M.push({ x: s.x, y: s.y, arm: 0.5, life: 14, R: (70 + 8 * l) * (s.ampK || 1), dmg: 45 + 25 * l, chain: ev }); if (M.length > (ev ? 14 : 8)) M.shift(); },
+      beam: (l) => { const ev = !!(s.evo && s.evo.beam), P = aimAt(200), n = ev ? 3 : 1, len = (360 + 30 * l) * (ev ? 1.25 : 1) * (s.ampK || 1), w = (20 + 3 * l) * (ev ? 1.6 : 1);
+        for (let i = 0; i < n; i++) { const a = P.a + (i - (n - 1) / 2) * 0.35, c = Math.cos(a), sn = Math.sin(a); s.foes.forEach((f) => { const dx = f.x - s.x, dy = f.y - s.y, u = dx * c + dy * sn; if (u < 0 || u > len) return; if (Math.abs(-dx * sn + dy * c) < w / 2 + f.r) hurt(f, 30 + 18 * l, true); }); (s.beams = s.beams || []).push({ a, len, w, life: 0.35, full: 0.35 }); } },
+      tail: (l) => { const ev = !!(s.evo && s.evo.tail), P = aimAt(100), R = (90 + 8 * l) * (ev ? 1.25 : 1) * (s.ampK || 1);
+        s.foes.forEach((f) => { const dx = f.x - s.x, dy = f.y - s.y, d = Math.hypot(dx, dy); if (d > R + f.r) return; const da = Math.abs(((Math.atan2(dy, dx) - P.a) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI); if (!ev && da > Math.PI / 2 + 0.2) return; hurt(f, 18 + 10 * l, true); if (f.k !== "boss" && d > 1) { f.x += dx / d * 18; f.y += dy / d * 18; } });
+        (s.slashes = s.slashes || []).push({ a: P.a, R, full: ev, life: 0.25, dur: 0.25 }); },
+    };
+    /* 조약돌 — 맞힌 뒤 가장 가까운 안 맞힌 몬스터 쪽으로 꺾음. 진화하면 맞을 때 하나가 더 갈라져 나감(3번까지) */
+    function hop(t, f) {
+      if (t.split > 0 && s.tors.length < 120) { t.split--; s.tors.push(Object.assign({}, t, { hit: t.hit.slice(), split: 0, a: t.a + 0.9, x: f.x, y: f.y })); }
+      if (t.chain-- <= 0) { t.life = 0; return; }
+      t.x = f.x; t.y = f.y; const n = s.foes.filter((o) => o.hp > 0 && !t.hit.includes(o)).sort(byNear(t.x, t.y))[0];
+      if (n && (n.x - t.x) ** 2 + (n.y - t.y) ** 2 < 340 * 340) t.a = Math.atan2(n.y - t.y, n.x - t.x); else t.life = Math.min(t.life, 0.4);
+    }
+    function mineBoom(m) { m.boom = true; blast(m.x, m.y, m.R, m.dmg); s.fx.push({ boom: true, spr: "smoke", x: m.x, y: m.y, r: m.R / 2, c: "#ffb347", size: m.R * 2.4, life: 0.5, dur: 0.5 }, { spr: "quake", x: m.x, y: m.y, size: m.R * 2.2, life: 0.4, dur: 0.4 });
+      if (m.chain) s.mines.forEach((o) => { if (!o.boom && o.fuse == null && (o.x - m.x) ** 2 + (o.y - m.y) ** 2 < (m.R * 1.6) ** 2) { o.fuse = 0.15; o.arm = 0; } }); }
     function heroCast(k, l) {
       if (k === "kh_wave") fly(k, aimAt(200), { v: 460, R: 50 + 10 * l, dmg: 40 + 25 * l, life: 0.9, eat: true, size: 120 + 16 * l });
       else if (k === "kh_ring") s.ring = { t: 3 + 0.5 * l, R: 90 + 10 * l, dmg: 15 + 10 * l };
@@ -5366,12 +5411,18 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
         if (t.boom && !t.boomed) { if (t.life <= 0 || s.foes.some((f) => (f.x - t.x) ** 2 + (f.y - t.y) ** 2 < (t.R + f.r) ** 2)) { t.boomed = true; t.life = 0; blast(t.x, t.y, t.boom.R, t.boom.dmg); s.fx.push({ spr: t.boom.spr, x: t.x, y: t.y + t.boom.R * 0.5, size: t.boom.R * 2, base: true, add: true, life: 0.4, dur: 0.4 }, { x: t.x, y: t.y, r: t.boom.R / 2.2, c: "#9cc8ff", life: 0.3 }); } return; }
         s.foes.forEach((f) => {
           if ((f.x - t.x) ** 2 + (f.y - t.y) ** 2 > (t.R + f.r) ** 2) return;
-          if (!t.hit.includes(f)) { t.hit.push(f); hurt(f, t.dmg, true); }
+          if (!t.hit.includes(f)) { t.hit.push(f); hurt(f, t.dmg, true); if (t.chain != null) hop(t, f); }
           if ((t.carry || !t.spr) && f.k !== "boss") { f.x += Math.cos(t.a) * v * dt; f.y += Math.sin(t.a) * v * dt; }
         });
         if (t.eat || !t.spr) s.ebs = s.ebs.filter((b) => (b.x - t.x) ** 2 + (b.y - t.y) ** 2 > t.R * t.R);
       });
       s.tors = s.tors.filter((t) => t.life > 0);
+      /* 새 스킬(2026-10-30) — 통나무는 0.45초 뒤 떨어져 밀어냄 · 지뢰는 0.5초 뒤부터 밟으면 터짐(연쇄는 0.15초 차례로) */
+      if (s.drops) { s.drops.forEach((d) => { d.t -= dt; if (d.t <= 0 && !d.done) { d.done = true; s.foes.forEach((f) => { const dx = f.x - d.x, dy = f.y - d.y, L = Math.hypot(dx, dy) || 1; if (L < d.R + f.r) { hurt(f, d.dmg, true); if (f.k !== "boss") { f.x += dx / L * d.push; f.y += dy / L * d.push; } } }); s.fx.push({ spr: "quake", x: d.x, y: d.y, size: d.R * 2.2, life: 0.4, dur: 0.4 }); s.hitFx = Math.max(s.hitFx, 0.12); } }); s.drops = s.drops.filter((d) => d.t > -0.35); }
+      if (s.mines) { s.mines.forEach((m) => { m.life -= dt; m.arm -= dt; if (m.boom || m.arm > 0) return; if (m.fuse != null) { if ((m.fuse -= dt) <= 0) mineBoom(m); return; } if (s.foes.some((f) => (f.x - m.x) ** 2 + (f.y - m.y) ** 2 < (24 + f.r) ** 2)) mineBoom(m); }); s.mines = s.mines.filter((m) => !m.boom && m.life > 0); }
+      if (s.beams) s.beams = s.beams.filter((b) => (b.life -= dt) > 0);
+      if (s.slashes) s.slashes = s.slashes.filter((b) => (b.life -= dt) > 0);
+      if (s.up.kelp && s.hp > 0) s.hp = Math.min(s.max, s.hp + s.max * 0.005 * s.up.kelp * dt); // 해초 도시락
       /* 화염검 진 — 몸 둘레 R 안 몬스터를 0.4초마다 · 금강 기운 — 몸 둘레 R 안 계속 · 그림자 질주 숨음 */
       if (s.ring && (s.ring.t -= dt) <= 0) s.ring = null;
       if (s.ring) s.foes.forEach((f) => { if ((f.rc = (f.rc || 0) - dt) <= 0 && (f.x - s.x) ** 2 + (f.y - s.y) ** 2 < (s.ring.R + f.r) ** 2) { f.rc = 0.4; hurt(f, s.ring.dmg, true); } });
@@ -6053,6 +6104,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
         }
         s.tors.forEach((t) => { // 회오리 — 날아가는 그림
           const x = t.x + ox, y = t.y + oy, a = Math.min(1, t.life / 0.3);
+          { const SG = { pebble: "fx-pebble", urchin: "fx-urchin" }[t.spr]; if (SG) { const I = lbImg(SG), sz = t.size || 50; g.save(); g.translate(x, y); g.rotate(s.t * (t.spr === "urchin" ? 5 : 12) + (t.ph || 0)); g.globalAlpha = Math.min(1, t.life / 0.2); if (I) g.drawImage(I, -sz / 2, -sz * I.height / I.width / 2, sz, sz * I.height / I.width); else { g.fillStyle = t.spr === "urchin" ? "#7b3fc4" : "#8a8f99"; g.beginPath(); g.arc(0, 0, sz / 3, 0, Math.PI * 2); g.fill(); } g.restore(); return; } } /* 새 스킬 그림(2026-10-30 ChatGPT) */
           if (t.spr === "arrow" && fxvDraw("fxv-kunai", (s.t * 3 + (t.ph || 0)) % 1, x, y, 150, 0, t.back ? 1 : Math.min(1, t.life / 0.2))) return; // 쿠나이 = 빙글 도는 표창 영상
           { const NF = { arrow: "fx-kunai", mj_star: "fx-rang", je_storm: "fx-drill" }[t.spr], I = NF && lbImg(NF); if (I) { const fw = I.width / 4, fr = Math.floor((s.t + (t.ph || 0)) * 14) % 4, sz = t.spr === "arrow" ? 46 : t.size || 100, h = sz * I.height / fw; g.save(); g.translate(x, y); g.rotate(t.a); g.globalAlpha = t.back ? 1 : Math.min(1, t.life / 0.2); g.drawImage(I, fr * fw, 0, fw, I.height, -sz / 2, -h / 2, sz, h); g.restore(); return; } } /* 날아가는 스킬 영상 */
           if (t.spr === "arrow") { g.save(); g.translate(x, y); g.scale(1.6, 1.6); shotArt("arrow", 0, 0, t.a, 1); g.restore(); return; }
@@ -6062,6 +6114,10 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
           if (fxOk) fxDraw("whirl", Math.floor(s.t * 12) % 4, x, y + t.R * 0.8, t.R * 2.2, { base: true, alpha: a });
           else { g.strokeStyle = "#f6e2a4"; g.lineWidth = 3; g.beginPath(); g.arc(x, y, t.R * 0.6, s.t * 9, s.t * 9 + 4.5); g.stroke(); g.lineWidth = 1; }
         });
+        if (s.mines) s.mines.forEach((m) => { const I = lbImg("s-mine"), x = m.x + ox, y = m.y + oy, sz = 40; g.globalAlpha = m.arm > 0 ? 0.6 : 1; if (I) g.drawImage(I, x - sz / 2, y - sz * I.height / I.width / 2, sz, sz * I.height / I.width); g.globalAlpha = 1; if (m.arm <= 0 && (m.fuse != null || Math.sin(s.t * 10 + m.x) > 0.3)) { g.fillStyle = "rgba(255,60,40,.6)"; g.beginPath(); g.arc(x, y - 3, 6, 0, Math.PI * 2); g.fill(); } }); // 조개 지뢰 — 켜지면 빨간 불이 깜빡
+        if (s.drops) s.drops.forEach((d) => { const x = d.x + ox, y = d.y + oy, k = Math.max(0, d.t / d.full); g.fillStyle = "rgba(0,0,0," + (0.35 * (1 - k)).toFixed(2) + ")"; g.beginPath(); g.ellipse(x, y, d.R * 0.6 * (1 - k * 0.5), d.R * 0.25 * (1 - k * 0.5), 0, 0, Math.PI * 2); g.fill(); if (d.t > 0) { const I = lbImg("fx-log"); if (I) { const w = d.size, h = w * I.height / I.width; g.drawImage(I, x - w / 2, y - h + 14 - k * 260, w, h); } } }); // 떨어지는 통나무 — 그림자가 커지며 내려옴
+        if (s.beams) s.beams.forEach((b) => { const I = lbImg("fx-beam"); g.save(); g.translate(hx, hy); g.rotate(b.a); g.globalAlpha = Math.min(1, b.life / 0.12); if (I) g.drawImage(I, 8, -b.w * 0.9, b.len, b.w * 1.8); else { g.fillStyle = "rgba(120,200,255,.8)"; g.fillRect(8, -b.w / 2, b.len, b.w); } g.restore(); }); // 물줄기 빔
+        if (s.slashes) s.slashes.forEach((b) => { const I = lbImg("fx-tail"), k = 1 - b.life / b.dur; if (!I) return; g.save(); g.translate(hx, hy); g.rotate(b.a + (b.full ? k * Math.PI * 2 : (k - 0.5) * 1.6)); g.globalAlpha = Math.min(1, b.life / 0.1); const w = b.R * 2.1, h = w * I.height / I.width; g.drawImage(I, -w * 0.15, -h / 2, w, h); g.restore(); }); // 꼬리 베기
         if (s.ring) { const R = s.ring.R, a = Math.min(1, s.ring.t / 0.4); fxDraw("kh_ring", 0, hx, hy, R * 2.3, { rot: s.t * 4, alpha: a }); } // 화염검 진 — 돈다
         if (s.gaura) { const R = s.gaura.R, a = Math.min(1, s.gaura.t / 0.4); g.beginPath(); g.arc(hx, hy, R, 0, Math.PI * 2); g.fillStyle = "rgba(255,210,90," + (0.1 * a).toFixed(2) + ")"; g.fill(); g.strokeStyle = "rgba(255,210,90," + (0.5 * a).toFixed(2) + ")"; g.lineWidth = 2; g.stroke(); g.lineWidth = 1; fxDraw("ds_aura", 0, hx, hy + 12, R * 2.2, { alpha: 0.8 * a }); } // 금강 기운
         if (s.ward && s.wardR) { // 결계 스킬 — 지름 2m(Lv 1) → 6m(Lv 5)
@@ -6880,6 +6936,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
         /* 받은 상태를 모아 0.8초 늦게 재생 — 그 사이를 이어 그려서 안 끊김(늦게 오면 천천히 · 많이 밀리면 따라잡음) */
         const BF = W2.buf; if (BF.length && BF[BF.length - 1].S.tt != null) { const late = BF[BF.length - 1].tt - W2.lag;
           if (W2.clock == null || Math.abs(late - W2.clock) > 4000) W2.clock = late; else W2.clock += dt * 1000 * Math.max(0.6, Math.min(1.5, 1 + (late - W2.clock) / 1500));
+          if (W2.clock > BF[BF.length - 1].tt) W2.clock = BF[BF.length - 1].tt; /* 받은 것보다 앞서 가지 않음 — 하는 사람이 레벨업 카드를 고르는 동안(게임 시간 멈춤) 재생 시계만 흘러 앞서 나가, 그 뒤로 늘 끝에서 재생하다 멈췄다 98px 튀었음(2026-10-30 부장님 관전 영상) */
           let i = BF.findIndex((x) => x.tt > W2.clock); if (i < 0) i = BF.length - 1; const A = BF[Math.max(0, i - 1)], Bn = BF[i], P2 = A.S, C2 = Bn.S, k = Bn.tt > A.tt ? Math.max(0, Math.min(1, (W2.clock - A.tt) / (Bn.tt - A.tt))) : 1, L = (a, b) => a + (b - a) * k, el2 = Math.max(0, (W2.clock - A.tt) / 1000);
           s.x = L(P2.x, C2.x); s.y = L(P2.y, C2.y); s.hp = C2.hp; s.max = C2.max; s.stage = C2.stage; s.lv = C2.lv; s.kills = C2.kills; s.aim = P2.aim; s.moving = !!(P2.mv || C2.mv); s.walk = (s.walk || 0) + (s.moving ? dt * 9 : 0);
           s.shotT = Math.max(0, P2.shotT - el2); s.shotC = P2.shotC; s.hurt = P2.hurt ? 0.1 : 0; heroKey = C2.wpn || heroKey; setMap(C2.map || 1); s.skin = C2.skin || "basic"; s.gearOn = !!C2.gearOn; s.orbs = C2.orbs || 0; s.orbA = (s.orbA || 0) + dt * 3; s.aura = C2.aura || 0; s.range = C2.range || AIM_R;
