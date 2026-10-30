@@ -1181,7 +1181,27 @@ body.game-full { overflow: hidden; }
 .ak-give { padding: 4px 10px; border-radius: 999px; border: 1px solid #ffd76a; background: rgba(0,0,0,.35); color: #fff; font: inherit; font-size: 13px; white-space: nowrap; cursor: pointer; } .ak-give.ask { background: #c8302a; }
 .ak-cv { width: 100%; aspect-ratio: 1; border-radius: 12px; touch-action: none; order: 2; box-shadow: 0 6px 18px rgba(0,0,0,.55); } .ak-tip { order: 4; align-self: start; min-height: 2.6em; padding: 6px 10px; border-radius: 10px; background: rgba(0,0,0,.45); font-size: 13px; line-height: 1.35; text-align: center; }
 .ak-ready { display: block; margin: 6px auto 0; padding: 7px 16px; font-size: 14px; }
-.ak-menu .ak-code { width: 120px; padding: 8px 10px; border-radius: 10px; border: 2px solid #ffd76a; background: #fff8e8; color: #3a2410; font: inherit; font-size: 20px; text-align: center; letter-spacing: 4px; text-transform: uppercase; } .ak-msg { min-height: 1.2em; } .ak-big { display: inline-block; margin: 4px 0; font-size: 34px; letter-spacing: 6px; color: #ffd76a; }
+/* 알까기 시작 창(ChatGPT 시안 20) */
+.ak-menu { display: block; overflow-y: auto; padding: calc(10px + env(safe-area-inset-top, 0px)) 10px 16px; background: linear-gradient(rgba(8,14,6,.6), rgba(8,14,6,.75)), url(img/lb/bg-ch1.webp?v=1) center / cover no-repeat, #142010; scrollbar-width: none; } .ak-menu::-webkit-scrollbar { display: none; }
+.akm { position: relative; width: min(100%, 420px); margin: 0 auto; container-type: inline-size; }
+.akm-hd { position: relative; z-index: 2; margin-bottom: -9cqw; } .akm-sign { display: block; width: 100%; } .ak-menu .akm-title { position: absolute; left: 14%; right: 14%; top: 51%; text-align: center; font-family: "Jua", sans-serif; font-size: 10.5cqw; line-height: 1; color: #ffd76a; -webkit-text-stroke: 1.2cqw #5a2a0a; paint-order: stroke fill; text-shadow: 0 .8cqw 0 #3a1a06; white-space: nowrap; }
+.akm-x { position: absolute; right: 0; top: 0; width: 15cqw; height: 15cqw; padding: 0; border: 0; background: none; cursor: pointer; } .akm-x img { width: 100%; height: 100%; }
+.akm-body { position: relative; display: grid; gap: 3cqw; padding: 12cqw 5cqw 6cqw; border: 9cqw solid transparent; border-image: url(img/lb/akm-panel.webp?v=1) 30% fill / 9cqw stretch; margin: 0 -1cqw; }
+.akm-tag { position: relative; justify-self: center; width: 62%; } .akm-tag img { display: block; width: 100%; } .ak-menu .akm-tag b { position: absolute; inset: 0 16%; display: grid; place-items: center; font-family: "Jua", sans-serif; font-size: 4.2cqw; color: #fff4d8; text-shadow: 0 .3cqw 0 #5a2a0a; white-space: nowrap; }
+.akm-kinds { display: grid; grid-template-columns: 1fr 1fr; gap: 3cqw; } .akm-card { position: relative; padding: 0; border: 0; border-radius: 3cqw; background: none; cursor: pointer; transition: transform .12s; } .akm-card.on { transform: translateY(-1cqw); filter: drop-shadow(0 0 2.4cqw rgba(255,215,106,.95)); } .akm-card:not(.on) { filter: brightness(.82); }
+.akm-cimg { display: block; width: 100%; } .akm-cn { position: absolute; left: 18%; right: 18%; bottom: 7%; height: 14%; display: grid; place-items: center; font-family: "Jua", sans-serif; font-size: 4.6cqw; color: #fff4d8; text-shadow: 0 .3cqw 0 #3a1a06; white-space: nowrap; } .akm-chk { position: absolute; right: -2%; top: -3%; width: 22%; display: none; } .akm-card.on .akm-chk { display: block; }
+.akm-help { margin: 0; padding: 2cqw 3cqw; border-radius: 2cqw; background: #f3dfb4; border: .5cqw solid #b8862e; color: #5a3410; font-size: 3.3cqw; line-height: 1.35; text-align: center; }
+.akm-row { display: grid; grid-template-columns: 1fr 1fr; gap: 3cqw; } .akm-btn { position: relative; padding: 0; border: 0; background: none; cursor: pointer; font-family: "Jua", sans-serif; } .akm-bimg { display: block; width: 100%; } .akm-btn span { position: absolute; left: 47%; right: 6%; top: 0; bottom: 8%; display: grid; place-items: center; font-size: 4cqw; color: #fff; text-shadow: 0 .4cqw 0 rgba(0,0,0,.45); white-space: nowrap; } .akm-btn:active { transform: translateY(.6cqw); }
+.ak-menu .akm-btn.blue:not(.small) span { left: 49%; font-size: 3.6cqw; } .ak-menu .akm-btn.small span { left: 6%; right: 6%; font-size: 4.2cqw; } .akm-or { position: relative; } .akm-or img { display: block; width: 100%; } .ak-menu .akm-or b { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); padding: 0 2cqw; font-family: "Jua", sans-serif; font-size: 3cqw; color: #ffd76a; text-shadow: 0 .3cqw 0 #000; }
+.akm-join { display: grid; grid-template-columns: 1fr 30%; gap: 3cqw; align-items: center; padding: 3cqw; border-radius: 3cqw; background: rgba(40,22,8,.55); } .akm-join .akm-tag { grid-column: 1 / -1; width: 80%; }
+.akm-cells { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1cqw; } .akm-cells > img { display: block; } .akm-cellbg { width: 100%; aspect-ratio: 1; }
+.ak-menu .ak-code { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; border: 0; background: none; color: transparent; caret-color: transparent; font-size: 16px; outline: none; z-index: 1; }
+.akm-cell { position: relative; display: block; } .akm-ch { position: absolute; inset: 0; display: grid; place-items: center; font-family: "Jua", sans-serif; font-size: 8cqw; color: #fff4d8; text-shadow: 0 .4cqw 0 #3a1a06; } .akm-ch.cur::after { content: ""; width: .6cqw; height: 6cqw; background: #ffd76a; animation: akBlink 1s steps(2) infinite; } @keyframes akBlink { 50% { opacity: 0; } }
+.akm-codebox { display: grid; gap: 2cqw; } .akm-paper { position: relative; display: grid; place-items: center; } .akm-pbg { display: block; width: 100%; } .akm-paper .ak-big { position: absolute; left: 0; right: 18%; top: 0; bottom: 0; display: grid; place-items: center; font-family: "Jua", sans-serif; font-size: 12cqw; letter-spacing: 3cqw; color: #c8861a; -webkit-text-stroke: .6cqw #5a2a0a; paint-order: stroke fill; }
+.akm-copy { position: absolute; right: 6%; top: 50%; transform: translateY(-50%); width: 12cqw; height: 12cqw; padding: 0; border: 0; background: none; cursor: pointer; } .akm-copy img { width: 100%; height: 100%; object-fit: contain; }
+.akm-wait { display: flex; align-items: center; justify-content: center; gap: 2cqw; padding: 1.6cqw; border-radius: 2cqw; background: rgba(0,0,0,.4); font-family: "Jua", sans-serif; font-size: 4cqw; color: #fff4d8; } .akm-wait img { width: 6cqw; }
+.ak-menu .akm-paper .ak-big { font-size: 12cqw; } .ak-menu .akm-wait span { font-size: 4cqw; }
+.ak-menu .ak-msg { display: block; min-height: 1.2em; text-align: center; font-size: 3.6cqw; color: #ffd76a; }
 .duel-spin { width: 46px; height: 46px; border-radius: 50%; border: 5px solid rgba(255,215,106,.25); border-top-color: #ffd76a; animation: duelSpin 1s linear infinite; } @keyframes duelSpin { to { transform: rotate(360deg); } }
 .game-over { position: absolute; inset: 0; display: flex; padding: 16px; background: rgba(5,4,3,.82); overflow-y: auto; scrollbar-width: none; } /* 오른쪽 스크롤바는 숨김(휠 · 손가락으로는 내려감) — 2026-10-27 */
 .game-over::-webkit-scrollbar { display: none; }
@@ -2081,7 +2101,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610300836";
+  const BUILD = "202610300856";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -7158,18 +7178,28 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     function akWsClose() { const w = akWs; akWs = null; if (w) try { w.close(); } catch (e) {} }
     function akSend(o) { if (akWs && akWs.readyState === 1) try { akWs.send(JSON.stringify(o)); } catch (e) {} }
     /* 시작 창 — 방 만들기(판 고르기 → 코드) · 코드로 들어가기 · 컴퓨터와 연습 */
+    /* 시작 창(2026-10-30 ChatGPT 시안 20 — 「단추만 늘어서 밋밋하다」 다시): 간판 · 판 고르기 카드 2장 · 방 만들기 / 컴퓨터와 연습 · 또는 · 코드 4칸 + 들어가기 · 내 방 초대 코드 상자 */
     function akMenu() { goFull(); akWsClose(); document.querySelector(".duel-find")?.remove(); let kind = "bd";
-      const ov = el("div", "duel-find ak-menu"), h = el("b", null, "수달 알까기"), kinds = el("div", "duel-row"), mk = (k, n) => { const b = el("button", "duel-btn" + (k === kind ? " green" : ""), n); b.type = "button"; b.onclick = () => { kind = k; [...kinds.children].forEach((x) => x.classList.toggle("green", x === b)); }; return b; };
-      kinds.append(mk("bd", "바둑알 판"), mk("jg", "장기알 판")); const help = el("small", null, "바둑알 판 = 같은 수달 알 8개씩 ㆍ 장기알 판 = 대장 · 기사 · 포수 · 병사(크기 · 무게가 달라요) ㆍ 상대 알을 다 떨어뜨리면 이겨요");
-      const r1 = el("div", "duel-row"), mkRoom = el("button", "duel-btn green", "방 만들기"), ai = el("button", "duel-btn", "컴퓨터와 연습"); mkRoom.type = ai.type = "button"; r1.append(mkRoom, ai);
-      const r2 = el("div", "duel-row"), inp = el("input", "ak-code"), join = el("button", "duel-btn", "코드로 들어가기"); inp.placeholder = "초대 코드"; inp.maxLength = 4; inp.autocapitalize = "characters"; join.type = "button"; inp.addEventListener("keydown", (e) => e.stopPropagation()); r2.append(inp, join);
-      const msg = el("small", "ak-msg"), cn = el("button", "duel-btn", "닫기"); cn.type = "button"; cn.onclick = () => { akWsClose(); ov.remove(); };
-      ov.append(h, kinds, help, r1, el("small", null, "ㆍ 또는 친구에게 받은 코드로 ㆍ"), r2, msg, cn); document.body.appendChild(ov);
+      const I = (n, c) => { const m = el("img", c); m.src = AKI(n); m.alt = ""; return m; }, tag = (s) => { const d = el("div", "akm-tag"); d.append(I("akm-tag"), el("b", null, s)); return d; };
+      const ov = el("div", "duel-find ak-menu"), box = el("div", "akm"), hd = el("div", "akm-hd"), x = el("button", "akm-x"); x.type = "button"; x.setAttribute("aria-label", "닫기"); x.appendChild(I("akm-x")); x.onclick = () => { akWsClose(); ov.remove(); };
+      hd.append(I("akm-sign", "akm-sign"), el("b", "akm-title", "수달 알까기"), x);
+      const body = el("div", "akm-body"), kinds = el("div", "akm-kinds"), card = (k, n) => { const b = el("button", "akm-card" + (k === kind ? " on" : "")); b.type = "button"; b.dataset.k = k; b.append(I("akm-" + k, "akm-cimg"), el("span", "akm-cn", n), I("akm-chk", "akm-chk")); b.onclick = () => { kind = k; kinds.querySelectorAll(".akm-card").forEach((c) => c.classList.toggle("on", c === b)); }; return b; };
+      kinds.append(card("bd", "바둑알 판"), card("jg", "장기알 판"));
+      const help = el("p", "akm-help", "바둑알 판 = 같은 수달 알 8개씩(배치는 직접) ㆍ 장기알 판 = 대장 · 기사 · 포수 · 병사");
+      const big = (cls, ic, s) => { const b = el("button", "akm-btn " + cls); b.type = "button"; b.append(I(ic, "akm-bimg"), el("span", null, s)); return b; };
+      const r1 = el("div", "akm-row"), mkRoom = big("green", "akm-b-room", "방 만들기"), ai = big("blue", "akm-b-ai", "컴퓨터와 연습"); r1.append(mkRoom, ai);
+      const or = el("div", "akm-or"); or.append(I("akm-or"), el("b", null, "또는"));
+      const jn = el("div", "akm-join"), inp = el("input", "ak-code"), join = big("blue small", "akm-b-small", "들어가기"); inp.maxLength = 4; inp.autocapitalize = "characters"; inp.spellcheck = false; inp.setAttribute("aria-label", "초대 코드 4자리"); inp.addEventListener("keydown", (e) => e.stopPropagation()); const paint = () => { inp.value = inp.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4); cells.querySelectorAll(".akm-ch").forEach((s, k) => { s.textContent = inp.value[k] || ""; s.classList.toggle("cur", k === Math.min(3, inp.value.length) && document.activeElement === inp); }); }; inp.addEventListener("input", paint); inp.addEventListener("focus", paint); inp.addEventListener("blur", paint);
+      const cells = el("div", "akm-cells"); cells.append(inp); for (let k = 0; k < 4; k++) { const c = el("span", "akm-cell"); c.append(I("akm-cell", "akm-cellbg"), el("b", "akm-ch")); cells.appendChild(c); } /* 칸마다 한 글자 — 입력칸은 투명하게 위에 덮음 */ jn.append(tag("친구에게 받은 코드로 들어오기"), cells, join);
+      const cb = el("div", "akm-codebox"); cb.hidden = true; const msg = el("small", "ak-msg");
+      body.append(tag("판 고르기"), kinds, help, r1, or, jn, cb, msg); box.append(hd, body); ov.appendChild(box); document.body.appendChild(ov);
+      const showCode = (code) => { cb.hidden = false; const pp = el("div", "akm-paper"), cp = el("button", "akm-copy"); cp.type = "button"; cp.setAttribute("aria-label", "코드 복사"); cp.appendChild(I("akm-copy")); cp.onclick = () => { try { navigator.clipboard.writeText(code); msg.textContent = "코드를 복사했어요"; } catch (e) {} };
+        pp.append(I("akm-paper", "akm-pbg")); const big4 = el("b", "ak-big"); big4.textContent = code; pp.append(big4, cp); const w = el("div", "akm-wait"); w.append(I("ii-clock"), el("span", null, "친구를 기다리는 중…")); cb.replaceChildren(tag("내 방 초대 코드"), pp, w); msg.textContent = ""; cb.scrollIntoView({ block: "nearest" }); };
       ai.onclick = () => { ov.remove(); akStart({ mode: "ai", kind, foe: "컴퓨터 수달", you: 0, first: Math.random() < 0.5 ? 0 : 1 }); };
       const open = (q) => { if (lobFree() || !token) { msg.textContent = "로그인해야 친구와 할 수 있어요"; return; } akWsClose(); const TQ = /[?&]bmctest=1/.test(location.search);
         const ws = new WebSocket(((TQ && localStorage.getItem("bmc-duel-ws")) || API.replace(/^http/, "ws")) + "/duel?" + q + "&token=" + encodeURIComponent((TQ && localStorage.getItem("bmc-duel-tok")) || token)); akWs = ws;
         ws.onmessage = (ev) => { let o; try { o = JSON.parse(ev.data); } catch (e) { return; }
-          if (o.t === "code") { msg.innerHTML = ""; msg.append("초대 코드 ", el("b", "ak-big", o.code), el("br"), "친구에게 알려 주세요 ㆍ 들어오면 바로 시작해요"); }
+          if (o.t === "code") showCode(o.code);
           else if (o.t === "err") msg.textContent = o.m;
           else if (o.t === "start") { ov.remove(); akStart({ mode: "pvp", kind: o.kind, foe: o.foe, you: o.you, first: o.first }); }
           else akNet(o); };
@@ -7185,7 +7215,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     function akAutoPlace(G, side) { G.s.forEach((o, i) => { if (o.side !== side || !o.tray) return; for (let k = 0; k < 400; k++) { const x = AK.edge + o.r + 2 + Math.random() * (AK.size - 2 * (AK.edge + o.r + 2)), y = side === 0 ? AK.size / 2 + o.r + 4 + Math.random() * (AK.size / 2 - AK.edge - 2 * o.r - 6) : AK.edge + o.r + 2 + Math.random() * (AK.size / 2 - AK.edge - 2 * o.r - 6); if (akOkSpot(G, i, x, y)) { o.x = x; o.y = y; o.tray = false; return; } } }); }
     function akPlaceStart(S) { const G = S.G; G.phase = "place"; S.placeT0 = performance.now(); S.ready = false; S.foeReady = false; G.s.forEach((o, i) => { if (o.side === S.me) { const k = G.s.filter((q, j) => j < i && q.side === S.me).length, [x, y] = akTray(S.me, k); o.x = x; o.y = y; o.tray = true; } else o.hide = true; });
       if (S.mode === "ai") { G.s.forEach((o) => { if (o.side !== S.me) o.tray = true; }); akAutoPlace(G, 1 - S.me); S.foeReady = true; } }
-    function akReady() { const S = AKS; if (!S || S.ready || S.G.phase !== "place") return; akAutoPlace(S.G, S.me); S.ready = true; if (S.mode === "pvp") akSend({ t: "place", s: S.G.s.filter((o) => o.side === S.me).map((o) => [Math.round(o.x * 10) / 10, Math.round(o.y * 10) / 10]) }); akGoPlay(); akBars(); }
+    function akReady() { const S = AKS; if (!S || S.ready || S.G.phase !== "place") return; akAutoPlace(S.G, S.me); S.ready = true; S.G.s.forEach((o) => { if (o.side === S.me) { o.x = Math.round(o.x * 10) / 10; o.y = Math.round(o.y * 10) / 10; } }); /* 보낼 값 그대로 나도 맞춤 — 반올림으로 1px 어긋났음 */ if (S.mode === "pvp") akSend({ t: "place", s: S.G.s.filter((o) => o.side === S.me).map((o) => [o.x, o.y]) }); akGoPlay(); akBars(); }
     function akGoPlay() { const S = AKS; if (!S || !S.ready || !S.foeReady || S.G.phase !== "place") return; S.G.phase = null; S.G.s.forEach((o) => { o.hide = false; o.tray = false; }); akBars(); }
     function akStart(o) { akClose(); AKS = { G: akNew(o.kind, o.first), me: o.you, mode: o.mode, foe: o.foe, drag: null, pend: null, done: false, aiAt: 0 }; AKS.G.names = [0, 1].map((i) => (i === o.you ? (me && me.gameId) || "나" : o.foe)); if (o.kind === "bd") akPlaceStart(AKS);
       const B = el("div", "ak-board"); B.id = "akBoard"; const top = el("div", "ak-bar foe"), cv = el("canvas", "ak-cv"), bot = el("div", "ak-bar me"), tip = el("div", "ak-tip");
