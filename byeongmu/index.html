@@ -1656,7 +1656,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
 .wd-el { position: absolute; left: 34%; top: 10%; width: 8%; height: auto; filter: drop-shadow(0 .3cqw .3cqw rgba(0,0,0,.6)); }
 /* OX퀴즈장 (2026-10-31 ChatGPT 시안 보관/시안/18-OX퀴즈장.jpg) — 판은 9:16, 안쪽 크기는 모두 cqw(바깥 .oxw 너비) */
 .oxw { container-type: inline-size; width: min(100%, 480px, calc((100dvh - 110px) * 9 / 16)); margin: 0 auto; }
-.oxs { position: relative; aspect-ratio: 9 / 16; overflow: hidden; border-radius: 12px; background: #2a4a1c center / 100% 100% no-repeat; font-family: "Jua", "Noto Sans KR", sans-serif; font-weight: 400; color: #fff; user-select: none; -webkit-user-select: none; touch-action: none; -webkit-tap-highlight-color: transparent; }
+.oxs { position: relative; isolation: isolate; aspect-ratio: 9 / 16; overflow: hidden; border-radius: 12px; background: #2a4a1c center / 100% 100% no-repeat; font-family: "Jua", "Noto Sans KR", sans-serif; font-weight: 400; color: #fff; user-select: none; -webkit-user-select: none; touch-action: none; -webkit-tap-highlight-color: transparent; }
 .oxs img { -webkit-user-drag: none; pointer-events: none; }
 .ox-help { max-width: 480px; margin: 10px auto 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
 .ox-flag { position: absolute; top: 22.6%; width: 8cqw; transform: translateX(-50%); }
@@ -1689,7 +1689,51 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
 .ox-board p { margin: -1cqw -6.4cqw; font-size: 4.6cqw; line-height: 1.3; color: #4a2a10; text-align: center; overflow-wrap: anywhere; word-break: keep-all; }
 .ox-board p.long { font-size: 3.8cqw; }
 .ox-board p small { display: block; font-size: 3cqw; color: #7a5530; }
-.ox-num { position: absolute; top: 4.6%; left: 41%; transform: translateX(-50%); padding: 0 2.4cqw; border: 1.8cqw solid transparent; border-image: url(img/lb/9s-plate.webp) 120 210 120 210 fill / 1.8cqw 3.6cqw; font-size: 4.4cqw; line-height: 1.1; color: #ffe9a8; text-shadow: 0 1px 1px #000; white-space: nowrap; }
+.ox-num { position: absolute; top: 2.2%; left: 3%; display: flex; align-items: center; gap: 1.2cqw; padding: 0 2.4cqw 0 1cqw; border: 1.8cqw solid transparent; border-image: url(img/lb/9s-plate.webp) 120 210 120 210 fill / 1.8cqw 3.6cqw; font-size: 4.4cqw; line-height: 1.1; color: #ffe9a8; text-shadow: 0 1px 1px #000; white-space: nowrap; }
+.ox-num img { width: 7.4cqw; height: 7.4cqw; margin: -2.4cqw 0; object-fit: contain; filter: drop-shadow(0 .3cqw .3cqw rgba(0,0,0,.5)); }
+.ox-num img[hidden] { display: none; }
+.ox-pod { position: absolute; left: 50%; top: 29.4%; width: 25cqw; transform: translateX(-50%); }
+.ox-p.host .ox-nm { color: #9fe3ff; }
+.oxw.full { position: fixed; inset: 0; z-index: 50; margin: auto; width: min(100vw, calc(100dvh * 9 / 16)); height: min(100dvh, calc(100vw * 16 / 9)); box-shadow: 0 0 0 100vmax #000; }
+.oxw.full .oxs { border-radius: 0; height: 100%; aspect-ratio: auto; }
+body.ox-full { overflow: hidden; }
+.ox-tp { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2.4cqw; justify-content: center; }
+.ox-tpc { position: relative; aspect-ratio: 292 / 318; padding: 0; border: 0; background: url(img/lb/ox-card.webp) center / 100% 100% no-repeat; font: inherit; color: #4a2a10; cursor: pointer; }
+.ox-tpc > img { position: absolute; left: 50%; top: 24%; width: 36%; height: 36%; object-fit: contain; transform: translate(-50%, -50%); }
+.ox-tpc span { position: absolute; left: 6%; right: 6%; top: 64%; bottom: 14%; display: flex; align-items: center; justify-content: center; gap: .8cqw; font-size: 3.3cqw; white-space: nowrap; }
+.ox-tpc span img { width: 4.6cqw; height: 4.6cqw; }
+.ox-tpc.on { filter: drop-shadow(0 0 1.4cqw rgba(255, 216, 74, .9)); }
+.ox-tpw { grid-column: 1 / -1; display: flex; justify-content: center; gap: 2.4cqw; flex-wrap: wrap; }
+.ox-tpw .ox-tpc { width: calc((100% - 7.2cqw) / 4); }
+.ox-tpbar { display: flex; gap: 3cqw; justify-content: center; margin-top: 4cqw; }
+.ox-tpbar .ox-hb { min-width: 28cqw; font-size: 5cqw; }
+.ox-hb.brown { border-image-source: url(img/lb/wb-orange.webp); }
+.ox-qtabs { display: flex; flex-wrap: wrap; gap: 1.4cqw; justify-content: center; margin-bottom: 2cqw; }
+.ox-qtabs button { padding: 1cqw 2.4cqw; border: 1px solid #8a6a3a; border-radius: 999px; background: rgba(0,0,0,.3); color: #fdf3d2; font: 13px "Noto Sans KR", sans-serif; cursor: pointer; }
+.ox-qtabs button.on { background: #ffd84a; color: #3b2410; }
+.ox-qr select { justify-self: start; padding: .6cqw 1.4cqw; border: 1px solid #8a6a3a; border-radius: 1.4cqw; background: #fbf1d8; color: #3b2410; font: 13px "Noto Sans KR", sans-serif; }
+.ox-p.mk::before { content: ""; position: absolute; left: 50%; bottom: calc(100% + 3.4cqw); width: 10cqw; height: 10cqw; margin-left: -5cqw; filter: drop-shadow(0 0 1.2cqw rgba(255, 220, 90, .9)); background: url(img/lb/ii-pencil.webp) center / contain no-repeat; animation: oxBob .5s ease-in-out infinite alternate; z-index: 3; }
+.ox-board p small.by { color: #8a5a20; }
+.ox-board p b.mkn { font-weight: 400; color: #1f62c9; }
+.ox-mkw { display: grid; gap: 2.6cqw; }
+.ox-mkw .top { display: flex; align-items: center; justify-content: space-between; margin: -3cqw 0 -1cqw; }
+.ox-mkw .top > img { width: 30cqw; height: 24cqw; object-fit: contain; }
+.ox-mkw label { display: flex; align-items: center; gap: 1.4cqw; }
+.ox-mkw label img { width: 5cqw; height: 5cqw; object-fit: contain; }
+.ox-mkw .bar .ox-hb { display: inline-flex; align-items: center; justify-content: center; gap: 1.4cqw; }
+.ox-mkw .bar .ox-hb img { width: 6cqw; height: 6cqw; object-fit: contain; }
+.ox-mkw .tm { position: relative; width: 19cqw; aspect-ratio: 355 / 388; display: grid; place-items: center; padding-top: 2.6cqw; box-sizing: border-box; background: url(img/lb/ox-timer.webp) center / 100% 100% no-repeat; font-size: 6.4cqw; color: #fff; text-shadow: 0 .4cqw 0 #13204a; z-index: 2; }
+.ox-mkw textarea, .ox-mkw input { box-sizing: border-box; width: 100%; padding: .6cqw 2cqw; border: 2.4cqw solid transparent; border-image: url(img/lb/ox-bubble.webp) 60 fill / 2.4cqw stretch; background: none; font: 4cqw/1.35 "Jua", "Noto Sans KR", sans-serif; color: #3b2410; resize: none; outline: none; }
+.ox-mkw label { font-size: 3.6cqw; color: #6b4318; margin-bottom: -1.4cqw; }
+.ox-mkw .oxab { display: grid; grid-template-columns: 1fr 1fr; gap: 3cqw; }
+.ox-mkw .oxab button { height: 21cqw; padding: 0; border: 0; border-radius: 4cqw; background: none; cursor: pointer; }
+.ox-mkw .oxab img { width: 100%; height: 100%; object-fit: contain; filter: saturate(.35) brightness(.9); transition: transform .15s, filter .15s; }
+.ox-mkw .oxab button.on img { filter: drop-shadow(0 0 2.4cqw rgba(255, 226, 110, 1)); transform: scale(1.06); }
+.ox-mkw .bar { display: flex; gap: 3cqw; justify-content: center; }
+.ox-mkw .bar .ox-hb { flex: 1; font-size: 4.6cqw; }
+.ox-mkw .err { min-height: 4cqw; margin: -1cqw 0; text-align: center; font-size: 3.4cqw; color: #c0392b; }
+.ox-gate { position: absolute; left: 50.4%; top: 33%; height: 35.5%; width: 5.4cqw; transform: translateX(-50%); background: url(img/lb/ox-gate.webp) center top / 100% auto repeat-y; transform-origin: 50% 100%; animation: oxGate .45s cubic-bezier(.3, 1.5, .5, 1) both; filter: drop-shadow(0 .6cqw .6cqw rgba(0,0,0,.45)); }
+@keyframes oxGate { from { transform: translateX(-50%) scaleY(0); } }
 .ox-timer { position: absolute; top: 8.4%; right: 2.5%; width: 19cqw; aspect-ratio: 355 / 388; box-sizing: border-box; padding-top: 3.4cqw; display: grid; place-items: center; }
 .ox-timer img { position: absolute; inset: 0; width: 100%; height: 100%; }
 .ox-timer.red img { filter: hue-rotate(150deg) saturate(1.3); }
@@ -1697,7 +1741,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
 .ox-timer.red b { text-shadow: 0 .4cqw 0 #4a1313, 0 0 1.4cqw rgba(0,0,0,.6); }
 .ox-timer.tick b { animation: oxTick .35s ease-out; }
 @keyframes oxTick { from { transform: scale(1.35); } }
-.ox-live { position: absolute; top: 22.4%; left: 41%; transform: translateX(-50%); display: flex; align-items: center; gap: 1.4cqw; padding: 0 2.6cqw 0 1cqw; border: 1.6cqw solid transparent; border-image: url(img/lb/9s-plate.webp) 120 210 120 210 fill / 1.6cqw 3.4cqw; font-size: 3.6cqw; line-height: 1; color: #fdf3d2; text-shadow: 0 1px 1px #000; white-space: nowrap; }
+.ox-live { position: absolute; top: 22.4%; left: 3%; display: flex; align-items: center; gap: 1.4cqw; padding: 0 2.6cqw 0 1cqw; border: 1.6cqw solid transparent; border-image: url(img/lb/9s-plate.webp) 120 210 120 210 fill / 1.6cqw 3.4cqw; font-size: 3.6cqw; line-height: 1; color: #fdf3d2; text-shadow: 0 1px 1px #000; white-space: nowrap; }
 .ox-live img, .ox-chat img { width: 5.6cqw; height: 5.6cqw; margin: -1.2cqw 0; flex: none; box-sizing: border-box; border-radius: 50%; border: .5cqw solid #6b3a12; background: #f5e2b8; object-fit: cover; object-position: 50% 10%; }
 .ox-live b { color: #ffd84a; font-size: 5cqw; font-weight: 400; }
 .ox-btns { position: absolute; top: 1.2%; right: 2.5%; display: flex; gap: 1.6cqw; }
@@ -1721,9 +1765,15 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
 .ox-chat input::placeholder { color: #a08560; }
 .ox-chat button { flex: none; height: 9cqw; padding: 0 3cqw; border: 2cqw solid transparent; border-image: url(img/lb/wb-blue.webp) 24 52 24 52 fill / 2cqw 4cqw; background: none; font: inherit; font-size: 3.8cqw; line-height: 1; color: #fff; text-shadow: 0 1px 1px #000; cursor: pointer; }
 /* 순위 · 문제 관리 창 — body 에 고정(fixed) */
-.ox-modal { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 16px; background: rgba(0,0,0,.6); }
+.ox-modal { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; padding: 16px; background: rgba(0,0,0,.6); }
 .ox-panel { container-type: inline-size; width: min(100%, 440px); }
-.ox-pin { position: relative; max-height: 80dvh; display: flex; flex-direction: column; box-sizing: border-box; padding: 3cqw 2cqw 2cqw; border: 9cqw solid transparent; border-image: url(img/lb/akm-panel.webp) 30% fill / 9cqw stretch; font-family: "Jua", "Noto Sans KR", sans-serif; color: #fdf3d2; }
+.ox-pin { position: relative; max-height: 80dvh; display: flex; flex-direction: column; box-sizing: border-box; padding: 3cqw 2cqw 2cqw; border: 9cqw solid transparent; border-image: url(img/lb/akm-panel.webp) 30% fill / 9cqw stretch; }
+.ox-pin.paper { margin-top: 8cqw; padding: 9cqw 1cqw 1cqw; border: 7cqw solid transparent; border-image: url(img/lb/ox-panel.webp) 95 fill / 7cqw stretch; color: #4a2a10; }
+.ox-pin.paper h3 { position: absolute; left: 50%; top: -14cqw; transform: translateX(-50%); width: 56cqw; height: 13cqw; margin: 0; display: grid; place-items: center; background: url(img/lb/ox-head.webp) center / 100% 100% no-repeat; color: #fff3c4; }
+.ox-pin.paper .x { top: -12cqw; right: -9cqw; }
+.ox-pin.paper > p { margin: 0 0 3cqw; text-align: center; font-size: 3.8cqw; }
+.ox-pin.paper > p b { color: #c0392b; font-weight: 400; }
+.ox-pin {  font-family: "Jua", "Noto Sans KR", sans-serif; color: #fdf3d2; }
 .ox-pin h3 { margin: -4cqw 0 3cqw; text-align: center; font-weight: 400; font-size: 6cqw; color: #ffe08a; -webkit-text-stroke: .35cqw #4a2408; paint-order: stroke fill; }
 .ox-pin .x { position: absolute; top: -8cqw; right: -8cqw; width: 11cqw; height: 11cqw; padding: 0; border: 0; background: url(img/lb/akm-x.webp) center / 100% 100% no-repeat; cursor: pointer; }
 .ox-rank { list-style: none; margin: 0; padding: 0; overflow: auto; display: grid; gap: 1.6cqw; }
@@ -2099,13 +2149,13 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
         <div class="oxs" id="oxStage">
           <img class="ox-flag o" data-i="ox-o" alt=""><img class="ox-flag x" data-i="ox-x" alt="">
           <img class="ox-mark o" data-i="ox-o" alt=""><img class="ox-mark x" data-i="ox-x" alt="">
-          <img class="ox-glow" id="oxGlow" data-i="ox-glow" alt="" hidden><img class="ox-pit" id="oxPit" data-i="ox-pit" alt="" hidden>
+          <img class="ox-pod" data-i="ox-podium" alt=""><div class="ox-gate" id="oxGate" hidden></div><img class="ox-glow" id="oxGlow" data-i="ox-glow" alt="" hidden><img class="ox-pit" id="oxPit" data-i="ox-pit" alt="" hidden>
           <div class="ox-field" id="oxField"></div>
           <div class="ox-board" id="oxBoard"><p id="oxQ"></p></div>
-          <b class="ox-num" id="oxNum" hidden></b>
+          <b class="ox-num" id="oxNum" hidden><img id="oxTopicI" alt=""><span id="oxNumT"></span></b>
           <div class="ox-timer" id="oxTimer" hidden><img data-i="ox-timer" alt=""><b id="oxSec"></b></div>
           <div class="ox-live"><img data-i="otter-front" alt=""><span id="oxLive"></span></div>
-          <div class="ox-btns"><button type="button" class="ox-ib" id="oxRankB" aria-label="순위"><img data-i="ii-trophy" alt=""><small>순위</small></button><button type="button" class="ox-ib exit" id="oxExit" aria-label="나가기"><img data-i="ox-exit" alt=""><small>나가기</small></button></div>
+          <div class="ox-btns"><button type="button" class="ox-ib" id="oxRankB" aria-label="순위"><img data-i="ii-trophy" alt=""><small>순위</small></button><button type="button" class="ox-ib" id="oxFullB" aria-label="전체화면"><img data-i="ox-full" alt=""><small id="oxFullT">전체화면</small></button><button type="button" class="ox-ib exit" id="oxExit" aria-label="나가기"><img data-i="ox-exit" alt=""><small>나가기</small></button></div>
           <div class="ox-stamp" id="oxStamp" hidden><b id="oxStampT"></b><img id="oxStampI" alt=""></div>
           <p class="ox-rib" id="oxRib" hidden></p>
           <div class="ox-host" id="oxHost" hidden></div>
@@ -2113,7 +2163,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
           <form class="ox-chat" id="oxChat"><img data-i="otter-front" alt=""><input id="oxSay" maxlength="30" placeholder="메시지를 입력하세요..." autocomplete="off" enterkeyhint="send" aria-label="채팅"><button type="submit">보내기</button></form>
         </div>
       </div>
-      <p class="ox-help">마당을 누르면 그쪽으로 걸어가요(PC 는 방향키 · WASD 도). 시계가 0 이 될 때 <b>O 쪽(왼쪽)</b> 이나 <b>X 쪽(오른쪽)</b> 에 서 있으세요 ㆍ 가운데 선 위는 탈락. 틀리면 관중석에서 끝까지 구경해요.</p>
+      <p class="ox-help">진행자(운영자 · 관리자)는 위쪽 단상에 서서 주제를 고르고 시작해요. 마당을 누르면 그쪽으로 걸어가요(PC 는 방향키 · WASD 도). 시계가 0 이 될 때 <b>O 쪽(왼쪽)</b> 이나 <b>X 쪽(오른쪽)</b> 에 서 있으세요 ㆍ 가운데 선 위는 탈락. 틀리면 관중석에서 끝까지 구경해요.</p>
     </section>
     <section id="membersView" hidden>
       <h2 class="section-label"><svg aria-hidden="true"><use href="#i-must"/></svg>가입 신청 <span class="count" id="pendCount"></span></h2>
@@ -2230,7 +2280,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610302352";
+  const BUILD = "202610310029";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -7457,6 +7507,9 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     const OXI = (n) => "img/lb/" + n + ".webp?v=" + BUILD;
     const SK = new Set("angel astro baseball boots chef dino diver farmer fire hoodie ice jacket king knight navy ninja pirate police santa sneakers wizard".split(" "));
     const F = { x0: 0.07, x1: 0.93, y0: 0.36, y1: 0.665 }; // 마당(발 자리) — ox-bg 그림에서 잰 자리
+    const POD = [0.5, 0.313]; // 진행자 단상 위 발 자리(시안 19)
+    const TP = [["상식", "ox-t-sense"], ["넌센스", "ox-t-nons"], ["역사", "ox-t-hist"], ["노래", "ox-t-song"], ["골프", "ox-t-golf"], ["야구", "ox-t-base"], ["축구", "ox-t-soc"]], TPI = Object.fromEntries(TP);
+    let tps = TP.map((t) => t[0]); try { const v = JSON.parse(localStorage.getItem("bmc-ox-tp") || "null"); if (Array.isArray(v) && v.length) tps = v.filter((t) => TPI[t]); } catch (e) {}
     const SPEED = 0.42; // 마당 너비 / 초
     const ROWS = [0.79, 0.845, 0.9]; // 관중석 줄(발 자리)
     const SEATS = []; ROWS.forEach((y) => { for (let k = 0; k < 4; k++) { SEATS.push([0.07 + k * 0.083, y]); SEATS.push([0.93 - k * 0.083, y]); } });
@@ -7468,14 +7521,15 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     const sheet = (s) => (s && SK.has(s) ? "otter-360-" + s : "otter-360");
     const msg = (t, ms) => { const m = $("oxMsg"); clearTimeout(msgT); m.textContent = t || ""; m.hidden = !t; if (t && ms) msgT = setTimeout(() => { m.hidden = true; }, ms); };
     const send = (o) => { if (ws && ws.readyState === 1) try { ws.send(JSON.stringify(o)); } catch (e) {} };
-    const inGame = () => S.ph === "q" || S.ph === "show";
+    const inGame = () => S.ph === "q" || S.ph === "show" || S.ph === "make";
+    let sugs = [], mkBox = null, lim = null; // lim = 가운데가 막혔을 때 내 쪽 끝 [쪽(-1 O · 1 X), 한계]
     const onField = (p) => S.ph === "wait" || (p.d.g && p.d.a) || p.fallTo > performance.now(); // 끝난 뒤(end)에도 탈락자는 관중석
-    const canMove = () => { const p = P.get(myId); return !!p && (S.ph === "wait" || (p.d.g && p.d.a)); };
+    const canMove = () => { const p = P.get(myId); return !!p && !p.d.h && (S.ph === "wait" || (p.d.g && p.d.a)); }; // 진행자는 단상에 서 있음
 
     function put(d) { // 수달 하나 만들기 · 고치기
       let p = P.get(d.id);
       if (!p) { const e = el("div", "ox-p"), b = el("i", "ox-body"), nm = el("b", "ox-nm"); e.append(b, nm); field.appendChild(e); p = { el: e, body: b, nm, x: d.x, y: d.y, tx: d.x, ty: d.y, dir: 0, fallTo: 0, sk: "" }; P.set(d.id, p); }
-      p.d = d; p.nm.textContent = d.n; p.el.classList.toggle("me", d.id === myId);
+      p.d = d; p.nm.textContent = d.n; p.el.classList.toggle("me", d.id === myId); p.el.classList.toggle("host", !!d.h); p.el.classList.toggle("mk", S.ph === "make" && S.mk === d.id);
       const sk = sheet(d.s); if (sk !== p.sk) { p.sk = sk; const t = new Image(); t.onload = () => { p.body.style.backgroundImage = "url(" + t.src + ")"; p.el.style.aspectRatio = (t.naturalWidth / 8 / t.naturalHeight).toFixed(3); p.el.style.height = "auto"; }; t.onerror = () => { if (sk !== "otter-360") { p.sk = ""; put(Object.assign({}, d, { s: "" })); } }; t.src = OXI(sk); }
       if (d.id !== myId) { p.tx = d.x; p.ty = d.y; }
       return p;
@@ -7483,14 +7537,17 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     function say(id, m) { const p = P.get(id); if (!p) return; p.el.querySelector(".ox-say")?.remove(); const b = el("span", "ox-say", m); p.el.appendChild(b); clearTimeout(p.sayT); p.sayT = setTimeout(() => b.remove(), 4500); }
 
     function paint() { // 판 글 · 시계 · 생존자 · 도장 · 무너짐
-      const q = $("oxQ"), ps = [...P.values()], ing = ps.filter((p) => p.d.g), live = ing.filter((p) => p.d.a);
-      $("oxNum").hidden = S.ph === "wait"; $("oxNum").textContent = S.qi + "/" + S.qn;
+      const q = $("oxQ"), ps = [...P.values()].filter((p) => !p.d.h), ing = ps.filter((p) => p.d.g), live = ing.filter((p) => p.d.a);
+      $("oxNum").hidden = S.ph === "wait"; $("oxNumT").textContent = S.qi + "/" + S.qn; $("oxTopicI").hidden = !TPI[S.qt]; if (TPI[S.qt] && $("oxTopicI").dataset.k !== S.qt) { $("oxTopicI").dataset.k = S.qt; img($("oxTopicI"), TPI[S.qt]); }
       q.replaceChildren(); q.classList.remove("long");
-      if (S.ph === "wait") { q.append(host ? "「시작」 을 누르면 문제가 나와요" : "진행자가 시작하면 문제가 나와요", el("small", null, "마당을 눌러 움직여 보세요")); }
+      if (S.ph === "wait") { q.append(host ? "「시작」 을 누르면 문제가 나와요" : "진행자가 시작하면 문제가 나와요", el("small", null, host ? "주제 " + tps.join(" · ") : "마당을 눌러 움직여 보세요")); }
       else if (S.ph === "end") { q.append(S.win && S.win.length ? "우승을 축하해요!" : "이번 판은 우승자가 없어요", el("small", null, "잠시 뒤 다음 판을 기다려요")); }
-      else { q.textContent = S.q || ""; q.classList.toggle("long", (S.q || "").length > 26); }
+      else if (S.ph === "make") { if (S.mk === myId) q.append("문제를 내 주세요!"); else q.append(el("b", "mkn", S.mkn || "출제자"), " 님이 문제를 내는 중…"); q.append(el("small", "by", S.mk === myId ? "창에 문제와 정답을 적어요" : "잠시 기다려요")); }
+      else { q.append(S.q || ""); if (S.by) q.append(el("small", "by", "출제 ㆍ " + S.by)); q.classList.toggle("long", (S.q || "").length > 26); }
       $("oxLive").replaceChildren(...(inGame() || S.ph === "end" ? ["생존자 ", el("b", null, String(live.length)), " / " + ing.length] : ["참가자 ", el("b", null, String(ps.length)), "명"]));
       $("oxTimer").hidden = !inGame(); $("oxTimer").classList.toggle("red", S.ph === "show");
+      for (const p of P.values()) p.el.classList.toggle("mk", S.ph === "make" && S.mk === p.d.id);
+      if (S.ph === "make" && S.mk === myId) makeOpen(); else makeClose();
       const st = $("oxStamp"), rib = $("oxRib"), glow = $("oxGlow"), pit = $("oxPit");
       if (phSeen !== S.ph + S.qi) { // 바뀔 때만 다시 그림(연출이 처음부터 다시 돌게)
         phSeen = S.ph + S.qi; st.hidden = rib.hidden = glow.hidden = pit.hidden = true;
@@ -7506,7 +7563,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
       const h = $("oxHost"); h.hidden = !host; if (!host) return;
       const b = (t, c, f) => { const x = btn("ox-hb " + (c || ""), t, f); return x; };
       if (S.ph === "wait") { const v = el("span", "ox-hn", "문제 " + n + "개");
-        h.replaceChildren(b("−", "sm", () => { n = Math.max(1, n - 5 || 1); hostBar(); }), v, b("+", "sm", () => { n = Math.min(50, n + 5); hostBar(); }), b("시작", "", () => send({ t: "start", n })), b("문제 관리", "blue", quizEdit)); }
+        h.replaceChildren(b("주제 " + tps.length, "brown", topics), b("−", "sm", () => { n = Math.max(1, n - 5 || 1); hostBar(); }), v, b("+", "sm", () => { n = Math.min(50, n + 5); hostBar(); }), b("시작", "", () => send({ t: "start", n, tp: tps })), b("문제 관리", "blue", quizEdit)); }
       else if (inGame()) h.replaceChildren(b("그만하기", "blue", () => send({ t: "stop" })));
       else h.replaceChildren();
     }
@@ -7519,17 +7576,17 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
         const WF = F.x1 - F.x0, HF = (F.y1 - F.y0) * 16 / 9;
         let vx = (keys.r ? 1 : 0) - (keys.l ? 1 : 0), vy = (keys.d ? 1 : 0) - (keys.u ? 1 : 0), far = Infinity;
         if (vx || vy) tgt = null; else if (tgt) { vx = (tgt[0] - mine.x) * WF; vy = (tgt[1] - mine.y) * HF; far = Math.hypot(vx, vy); if (far < 0.004) { tgt = null; vx = vy = 0; } }
-        const L = Math.hypot(vx, vy); if (L) { const step = Math.min(far, SPEED * WF * dt); mine.x = Math.min(1, Math.max(0, mine.x + vx / L * step / WF)); mine.y = Math.min(1, Math.max(0, mine.y + vy / L * step / HF)); }
+        const L = Math.hypot(vx, vy); if (L) { const step = Math.min(far, SPEED * WF * dt); mine.x = Math.min(1, Math.max(0, mine.x + vx / L * step / WF)); if (lim && S.ph === "q") mine.x = lim[0] < 0 ? Math.min(mine.x, lim[1]) : Math.max(mine.x, lim[1]); mine.y = Math.min(1, Math.max(0, mine.y + vy / L * step / HF)); }
         mine.tx = mine.x; mine.ty = mine.y;
         if (now - sentAt > 100 && (Math.abs(mine.x - sx) > 0.002 || Math.abs(mine.y - sy) > 0.002)) { sentAt = now; sx = mine.x; sy = mine.y; send({ t: "mv", x: +mine.x.toFixed(3), y: +mine.y.toFixed(3) }); }
       }
       let seat = 0;
       for (const [id, p] of P) {
-        const f = onField(p);
+        const f = p.d.h || onField(p);
         if (id !== myId && f) { const k = Math.min(1, dt * 10); p.x += (p.tx - p.x) * k; p.y += (p.ty - p.y) * k; }
         const mvx = p.x - (p.lx ?? p.x), mvy = p.y - (p.ly ?? p.y), moving = f && Math.hypot(mvx, mvy) > 0.0006; p.lx = p.x; p.ly = p.y;
         if (moving) { p.dir = Math.abs(mvx) * 1.8 > Math.abs(mvy) ? (mvx > 0 ? 2 : 6) : mvy < 0 ? 4 : 0; p.still = now; } else if (now - (p.still || 0) > 600) p.dir = 0;
-        let X, Y; if (f) { X = F.x0 + p.x * (F.x1 - F.x0); Y = F.y0 + p.y * (F.y1 - F.y0); } else { const s = SEATS[seat % SEATS.length], r = Math.floor(seat / SEATS.length); seat++; X = s[0] + r * 0.03; Y = s[1] - r * 0.012; }
+        let X, Y; if (p.d.h) { X = POD[0]; Y = POD[1]; } else if (f) { X = F.x0 + p.x * (F.x1 - F.x0); Y = F.y0 + p.y * (F.y1 - F.y0); } else { const s = SEATS[seat % SEATS.length], r = Math.floor(seat / SEATS.length); seat++; X = s[0] + r * 0.03; Y = s[1] - r * 0.012; }
         const key = X.toFixed(4) + Y.toFixed(4) + p.dir + f + moving;
         if (key !== p.key) { p.key = key; p.el.style.left = X * 100 + "%"; p.el.style.top = Y * 100 + "%"; p.el.style.zIndex = Math.round(Y * 1000); p.body.style.backgroundPosition = (p.dir / 7) * 100 + "% 0"; p.el.classList.toggle("walk", moving); p.el.classList.toggle("sit", !f); }
         if (p.fallTo && p.fallTo <= now) { p.fallTo = 0; p.el.classList.remove("fall"); }
@@ -7540,7 +7597,8 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     function onMsg(o) {
       if (o.t === "st") {
         if (o.you) { myId = o.you; host = !!o.host; }
-        const was = S.ph; S = { ph: o.ph, qi: o.qi, qn: o.qn, q: o.q, ans: o.ans, e: o.e, win: o.win, allOut: o.allOut, until: o.left ? Date.now() + o.left : 0 };
+        const was = S.ph; if (o.ph !== "q" || o.qi !== S.qi) { lim = null; $("oxGate").hidden = true; }
+        S = { ph: o.ph, qi: o.qi, qn: o.qn, q: o.q, qt: o.qt, by: o.by, mk: o.mk, mkn: o.mkn, ans: o.ans, e: o.e, win: o.win, allOut: o.allOut, until: o.left ? Date.now() + o.left : 0 };
         const ids = new Set(o.ps.map((d) => d.id)); for (const [id, p] of P) if (!ids.has(id)) { p.el.remove(); P.delete(id); }
         o.ps.forEach((d) => { const p = put(d); if (d.id === myId && (o.you || (was !== "wait" && o.ph === "wait"))) { p.x = p.tx = d.x; p.y = p.ty = d.y; } });
         (o.out || []).forEach((id) => { const p = P.get(id); if (p) { p.fallTo = performance.now() + 2100; p.el.classList.add("fall"); } });
@@ -7552,7 +7610,9 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
       else if (o.t === "in") { put(o.p); paint(); }
       else if (o.t === "out") { const p = P.get(o.id); if (p) { p.el.remove(); P.delete(o.id); paint(); } }
       else if (o.t === "say") say(o.id, o.m);
-      else if (o.t === "err") msg(o.m, 3000);
+      else if (o.t === "sug") { sugs = o.list || []; }
+      else if (o.t === "lock") { lim = o.s ? [o.s, o.b] : null; $("oxGate").hidden = false; if (o.s) msg("가운데가 막혔어요! 이제 못 건너가요", 1600); }
+      else if (o.t === "err") { if (mkBox) mkBox.querySelector(".err").textContent = o.m; else msg(o.m, 3000); }
     }
     function open() {
       if (ws || view !== "ox") return;
@@ -7563,7 +7623,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
       w.onmessage = (ev) => { let o; try { o = JSON.parse(ev.data); } catch (e) { return; } onMsg(o); };
       w.onclose = (ev) => { if (ws !== w) return; ws = null; if (ev.code === 4000) { msg("다른 창에서 퀴즈장에 들어와서 이 창은 나왔어요"); return; } if (view === "ox" && retry < 8) { msg("다시 연결하는 중…"); setTimeout(open, 1500 * ++retry); } };
     }
-    function close() { const w = ws; ws = null; if (w) try { w.close(); } catch (e) {} for (const p of P.values()) p.el.remove(); P.clear(); S = { ph: "wait" }; phSeen = ""; tgt = null; cancelAnimationFrame(raf); raf = 0; }
+    function close() { makeClose(); const w = ws; ws = null; if (w) try { w.close(); } catch (e) {} for (const p of P.values()) p.el.remove(); P.clear(); S = { ph: "wait" }; phSeen = ""; tgt = null; cancelAnimationFrame(raf); raf = 0; }
 
     // 누르면 걸어가기 — 단추 · 채팅칸은 빼고
     const aim = (e) => { const r = stage.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height; if (y < 0.27 || y > 0.72) return; tgt = [Math.min(1, Math.max(0, (x - F.x0) / (F.x1 - F.x0))), Math.min(1, Math.max(0, (y - F.y0) / (F.y1 - F.y0)))]; };
@@ -7578,6 +7638,34 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     $("oxSay").addEventListener("keydown", (e) => e.stopPropagation());
     $("oxExit").onclick = () => goHome();
     $("oxRankB").onclick = rank;
+    // 전체화면(2026-10-31) — 되는 브라우저는 진짜 전체화면, 아이폰 사파리처럼 안 되는 곳은 판만 화면에 꽉 차게
+    const full = (on) => { $("oxWrap").classList.toggle("full", on); document.body.classList.toggle("ox-full", on); $("oxFullT").textContent = on ? "작게" : "전체화면"; };
+    $("oxFullB").onclick = () => { const on = !$("oxWrap").classList.contains("full"); full(on); try { if (on && !document.fullscreenElement) document.documentElement.requestFullscreen?.()?.catch(() => {}); else if (!on && document.fullscreenElement) document.exitFullscreen?.(); } catch (e) {} };
+    document.addEventListener("fullscreenchange", () => { if (!document.fullscreenElement && $("oxWrap").classList.contains("full")) full(false); });
+    function makeOpen() { // 문제 내기 창(출제자만) — 문제 · 정답 O/X · 해설(선택) · 추천 문제 · 문제 내기
+      if (mkBox && mkBox.isConnected && mkBox.dataset.qi === String(S.qi)) return; makeClose();
+      const inn = modal("문제 내기"); inn.classList.add("paper"); inn.querySelector(".x").remove(); mkBox = inn; inn.dataset.qi = S.qi; inn.closest(".ox-modal").onclick = null;
+      const w = el("div", "ox-mkw"), tm = el("b", "tm"), ta = el("textarea"), ab = el("div", "oxab"), ex = el("input"), er = el("p", "err"), bar = el("div", "bar"); let ans = "", tp = "", si = 0;
+      ta.rows = 2; ta.maxLength = 100; ta.placeholder = "문제를 적어 주세요 (예: 수달은 물에서 잠을 잔다)"; ex.maxLength = 100; ex.placeholder = "해설(안 적어도 돼요)"; ta.oninput = () => { tp = ""; };
+      const pick = (a) => { ans = a; ab.querySelectorAll("button").forEach((b) => b.classList.toggle("on", b.dataset.a === a)); };
+      ["O", "X"].forEach((a) => { const b = btn("", null, () => pick(a)); b.dataset.a = a; b.setAttribute("aria-label", "정답 " + a); b.appendChild(img(el("img"), a === "O" ? "ox-bo" : "ox-bx")); ab.appendChild(b); });
+      const sug = btn("ox-hb brown", null, () => { if (!sugs.length) { er.textContent = "추천할 문제가 없어요"; return; } const q = sugs[si++ % sugs.length]; ta.value = q.q; ex.value = q.e || ""; pick(q.a); tp = q.t; er.textContent = ""; });
+      const go = btn("ox-hb", null, () => { if (!ta.value.trim()) { er.textContent = "문제를 적어 주세요"; return; } if (!ans) { er.textContent = "정답 O · X 를 골라 주세요"; return; } go.disabled = true; send({ t: "ask", q: ta.value.trim(), a: ans, e: ex.value.trim(), tp }); setTimeout(() => { go.disabled = false; }, 1500); });
+      sug.append(img(el("img"), "ox-dice"), "추천 문제"); go.append(img(el("img"), "ii-pencil"), "문제 내기");
+      const lab = (ic, t) => { const l = el("label"); l.append(img(el("img"), ic), t); return l; }, top = el("div", "top"); top.append(img(el("img"), "ox-mascot"), tm);
+      bar.append(sug, go); w.append(top, lab("ox-t-sense", "문제 입력 (최대 2줄)"), ta, lab("ox-o", "정답 선택"), ab, lab("ii-chat", "해설 입력 (선택)"), ex, er, bar); inn.append(w);
+      const tick = () => { if (!tm.isConnected) return; tm.textContent = Math.max(0, Math.ceil((S.until - Date.now()) / 1000)); setTimeout(tick, 250); }; tick(); setTimeout(() => ta.focus(), 50);
+    }
+    function makeClose() { if (mkBox) { mkBox.closest(".ox-modal")?.remove(); mkBox = null; } }
+    function topics() { // 주제 고르기(시안 19) — 여러 개 · 모두 · 확인
+      const inn = modal("주제 선택"), sel = new Set(tps), cards = {}; inn.classList.add("paper");
+      const tip = el("p"); tip.append("이번 OX퀴즈에서 낼 주제를 골라 주세요"); inn.appendChild(tip);
+      const card = ([t, ic]) => { const c = btn("ox-tpc", null, () => { sel.has(t) ? sel.delete(t) : sel.add(t); mark(); }), lab = el("span"), ck = el("img"); c.append(img(el("img"), ic), lab); lab.append(ck, t); c.setAttribute("aria-label", t); cards[t] = [c, ck]; return c; };
+      const mark = () => TP.forEach(([t]) => { const [c, ck] = cards[t]; c.classList.toggle("on", sel.has(t)); c.setAttribute("aria-pressed", String(sel.has(t))); const k = sel.has(t) ? "ox-chk1" : "ox-chk0"; if (ck.dataset.k !== k) { ck.dataset.k = k; img(ck, k); } });
+      const grid = el("div", "ox-tp"), row2 = el("div", "ox-tpw"); TP.slice(0, 4).forEach((x) => grid.appendChild(card(x))); TP.slice(4).forEach((x) => row2.appendChild(card(x))); grid.appendChild(row2); inn.appendChild(grid);
+      const bar = el("div", "ox-tpbar"), all = btn("ox-hb brown", "모두", () => { if (sel.size === TP.length) sel.clear(); else TP.forEach(([t]) => sel.add(t)); mark(); }), ok = btn("ox-hb", "확인", () => { if (!sel.size) { tip.replaceChildren(el("b", null, "주제를 하나 이상 골라 주세요")); return; } tps = TP.map((t) => t[0]).filter((t) => sel.has(t)); try { localStorage.setItem("bmc-ox-tp", JSON.stringify(tps)); } catch (e) {} inn.closest(".ox-modal").remove(); paint(); });
+      bar.append(all, ok); inn.appendChild(bar); mark();
+    }
 
     function modal(title) { const ov = el("div", "ox-modal"), pn = el("div", "ox-panel"), inn = el("div", "ox-pin"), x = btn("x", null, () => ov.remove()); x.setAttribute("aria-label", "닫기"); inn.append(x, el("h3", null, title)); pn.appendChild(inn); ov.appendChild(pn); ov.onclick = (e) => { if (e.target === ov) ov.remove(); }; document.body.appendChild(ov); return inn; }
     async function rank() {
@@ -7589,15 +7677,16 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     async function quizEdit() { // 진행자만 — 문제 · 정답 · 해설
       const inn = modal("문제 관리"), box = el("div", "ox-qs"), bar = el("div", "ox-qbar"), info = el("small", null, "불러오는 중…"); inn.append(box, bar); bar.appendChild(info);
       let list; try { list = await memberCall("oxQuizList", token); } catch (e) { info.textContent = errMsg(e); return; }
-      const row = (q) => { const r = el("div", "ox-qr"), ta = el("textarea"), ab = el("div", "ab"), ex = el("input"), del = btn("del", "지우기", () => { r.remove(); count(); });
+      let only = ""; const tabs = el("div", "ox-qtabs"); inn.insertBefore(tabs, box); const drawTabs = () => { tabs.replaceChildren(...["", ...TP.map((t) => t[0])].map((t) => { const b = btn(t === only ? "on" : "", (t || "모두") + " " + [...box.children].filter((r) => !t || r.querySelector("select").value === t).length, () => { only = t; [...box.children].forEach((r) => { r.hidden = !!only && r.querySelector("select").value !== only; }); drawTabs(); }); return b; })); };
+      const row = (q) => { const r = el("div", "ox-qr"), ta = el("textarea"), ab = el("div", "ab"), ex = el("input"), del = btn("del", "지우기", () => { r.remove(); count(); }), tsel = el("select"); TP.forEach(([t]) => tsel.appendChild(el("option", null, t))); tsel.value = TPI[q.t] ? q.t : only || "상식"; tsel.onchange = drawTabs;
         ta.rows = 2; ta.maxLength = 100; ta.placeholder = "문제"; ta.value = q.q || ""; ex.maxLength = 100; ex.placeholder = "해설(정답 공개 때 띠에 나와요)"; ex.value = q.e || ""; r.dataset.id = q.id || ""; r.dataset.a = q.a === "X" ? "X" : "O";
         ["O", "X"].forEach((a) => { const b = btn(r.dataset.a === a ? "on" : "", null, () => { r.dataset.a = a; ab.querySelectorAll("button").forEach((c) => c.classList.toggle("on", c === b)); }); b.setAttribute("aria-label", "정답 " + a); b.appendChild(img(el("img"), a === "O" ? "ox-o" : "ox-x")); ab.appendChild(b); });
-        r.append(ta, ab, del, ex); return r; };
-      const count = () => { info.textContent = "문제 " + box.children.length + "개 ㆍ 판마다 이 중에서 섞어 내요"; };
+        r.append(tsel, del, ta, ab, ex); return r; };
+      const count = () => { info.textContent = "문제 " + box.children.length + "개 ㆍ 판마다 고른 주제에서 섞어 내요"; drawTabs(); };
       list.forEach((q) => box.appendChild(row(q)));
       const add = btn("ox-hb blue", "문제 더하기", () => { const r = row({}); box.prepend(r); box.scrollTop = 0; r.querySelector("textarea").focus(); count(); });
       const save = btn("ox-hb", "저장", async () => { save.disabled = true; info.textContent = "저장하는 중…";
-        try { const out = await memberCall("oxQuizSave", token, [...box.children].map((r) => ({ id: r.dataset.id, q: r.querySelector("textarea").value, a: r.dataset.a, e: r.querySelector("input").value }))); box.replaceChildren(...out.map(row)); count(); info.textContent += " ㆍ 저장했어요"; }
+        try { const out = await memberCall("oxQuizSave", token, [...box.children].map((r) => ({ id: r.dataset.id, t: r.querySelector("select").value, q: r.querySelector("textarea").value, a: r.dataset.a, e: r.querySelector("input").value }))); box.replaceChildren(...out.map(row)); count(); info.textContent += " ㆍ 저장했어요"; }
         catch (e) { info.textContent = errMsg(e); } save.disabled = false; });
       bar.prepend(add, save); count();
     }
