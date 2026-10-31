@@ -1889,6 +1889,7 @@ body.ox-full { overflow: hidden; }
       <h2 class="section-label"><svg aria-hidden="true"><use href="#i-knot"/></svg>문파원</h2>
       <p class="roster-sum" id="rosterCount"></p>
       <p class="pf-sum" id="pfCount"></p>
+      <p class="pf-sum" id="rHidden" hidden></p>
       <div class="my-pf" id="rosterMyPf" hidden><b id="rosterMyPfQ">내 게임은 어디서?</b><div class="pf-btns" id="rosterMyPfBtns"></div><span class="err" id="rosterMyPfErr" role="alert"></span></div>
       <div class="roster-tools" id="rosterTools" hidden><button class="btn ghost" id="pfEditBtn" type="button">PC · 모바일 정하기</button><button class="btn ghost" id="kickBtn" type="button">문파원 내보내기</button><button class="btn ghost" id="rosterEditBtn" type="button">명단 수정</button></div>
       <!-- PC · 모바일 — 관리자 · 문주가 명단 누구나 (고르면 바로 저장) (2026-10-25) -->
@@ -2280,7 +2281,7 @@ body.ox-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202610310029";
+  const BUILD = "202610310650";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -2816,8 +2817,12 @@ body.ox-full { overflow: hidden; }
     return s;
   }
   /* ── 문파원 안내 ── */
+  /* 관리자 · 테스트 계정은 문파원에서 뺀다 — "관리자랑 테스터는 문파원에 넣지말고 너만 볼수있게" (2026-10-31). 관리자 화면에만 따로 한 줄 */
+  const ROSTER_HIDE = ["관리자", "테스트"];
   function renderRoster() {
-    const r = DATA.roster;
+    const R = DATA.roster, vis = (a) => a.filter((n) => !ROSTER_HIDE.includes(n));
+    const r = { leader: R.leader, deputies: vis(R.deputies), members: vis(R.members) };
+    const hid = $("rHidden"); hid.hidden = !canWrite; hid.textContent = canWrite ? "숨긴 계정(관리자만 보임) ㆍ " + ROSTER_HIDE.join(", ") : "";
     /* 홈페이지 가입한 사람 O, 안 한 사람 X — "회원가입 되어잇는사람은 O 안되어잇는 사람은 X로 표시해라" (2026-10-19) */
     const all = (r.leader ? [r.leader] : []).concat(r.deputies, r.members);
     const yes = all.filter((n) => DATA.joined.includes(n)).length;
