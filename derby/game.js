@@ -35,7 +35,7 @@
   const stateAt = (h, t) => { let s = ''; for (const e of plan.ev || []) { if (e[1] > t) break; const d = e[0] === 'b' ? e[4] : e[3] || 0; if (t > e[1] + (d || 0)) continue; if (e[2] === h || (e[0] === 'b' && e[3] === h)) s = e[0]; } return s; };
 
   /* ── 그리기 ── */
-  const cv = $('cv'); let g = cv.getContext('2d'), W = 0, H = 0, camX = 0, dust = [], OFF = false;
+  const cv = $('cv'); let g = cv.getContext('2d'), W = 0, H = 0, camX = 0, dust = [], OFF = false, fx = [], flashes = [], flashUntil = 0, fxWin = null, resAt = 0; // fx 꽃가루 · flashes 카메라 플래시 · resAt 결과 화면 시작(말 감속)
   const fit = () => { if (OFF) return; const r = cv.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1); W = Math.round(r.width * dpr); H = Math.round(r.height * dpr); if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; } };
   function withTarget(c, fn) { const s = [g, W, H, camX, OFF]; g = c.getContext('2d'); W = c.width; H = c.height; OFF = true; try { fn(); } finally { [g, W, H, camX, OFF] = s; } } // 사진 판정처럼 다른 캔버스에 한 장 그릴 때
   const VIEW = 46; // 화면 너비 = 46m
@@ -43,6 +43,9 @@
   function scene(t, mode) { // mode: 'gate' 출발 전 · 'run' · 'end' · 'photo'(결승선을 화면 55% 에)
     fit(); const ppm = W / VIEW;
     const xs = [...Array(N).keys()].map((h) => (mode === 'gate' ? -h * 0.9 / LEN : posAt(h, t)) * LEN); // 출발 전엔 게이트처럼 비스듬히
+    // 결과 화면: 말들이 결승 뒤 천천히 속도를 줄이며 멈춤(다리도 그만큼 움직임) · 1착은 조금 더 길게 달림(2026-11-08 부장님 「도착할 때 발이 안 움직인다」)
+    const endT = mode === 'end' ? (Date.now() - resAt) / 1000 : 0, win = plan && plan.ord ? plan.ord[0] : -1, slow = (h) => Math.exp(-endT / (h === win ? 3.2 : 1.6));
+    if (mode === 'end') for (let h = 0; h < N; h++) xs[h] += 14 * (h === win ? 3.2 : 1.6) * (1 - slow(h));
     const lead = Math.max(...xs), target = mode === 'gate' ? -VIEW * 0.25 : mode === 'photo' ? LEN - VIEW * 0.55 : lead - VIEW * 0.62; // 결승 뒤에도 선두를 따라감(결과 때 빈 주로만 보였음)
     camX = mode === 'run' ? camX + (target - camX) * 0.12 : target; // 선두를 화면 62% 쯤에
     // 하늘 · 관중석(먼 층 · 천천히) — 좌우로 뒤집어 이어 붙임
@@ -57,21 +60,41 @@
     g.fillRect(0, ry - H * 0.034, W, Math.max(2, H * 0.007)); g.fillStyle = 'rgba(0,0,0,.15)'; g.fillRect(0, ry, W, H * 0.004);
     for (const left of [1000, 800, 600, 400, 200]) { const x = (LEN - left - camX) * ppm; if (x < -50 || x > W + 50) continue; const ph = H * 0.13; g.fillStyle = '#c8202b'; g.fillRect(x - W * 0.012, ry - ph, W * 0.024, ph); g.fillStyle = '#fff'; g.fillRect(x - W * 0.01, ry - ph + ph * 0.06, W * 0.02, ph * 0.5); g.fillStyle = '#c8202b'; g.font = `900 ${Math.round(W * 0.012)}px sans-serif`; g.textAlign = 'center'; g.save(); g.translate(x, ry - ph * 0.7); g.fillText(String(left), 0, W * 0.004); g.restore(); }
     { const x = (LEN - camX) * ppm; if (x > -80 && x < W + 80) { g.fillStyle = 'rgba(255,255,255,.85)'; g.fillRect(x - 2, ry, 4, H - ry); g.fillStyle = '#fff'; g.fillRect(x - W * 0.004, ry - H * 0.2, W * 0.008, H * 0.2); g.fillStyle = '#c8202b'; g.beginPath(); g.arc(x, ry - H * 0.2, W * 0.018, 0, 7); g.fill(); g.fillStyle = '#fff'; g.font = `900 ${Math.round(W * 0.012)}px sans-serif`; g.textAlign = 'center'; g.fillText('결승', x, ry - H * 0.2 + W * 0.004); } }
+    // 1착 연출(2026-11-08 부장님 「도착해서 1등 리액션」) — 결승을 넘은 뒤: 발밑 금빛 조명 · 머리 위 「1착」 배지 · 꽃가루 · 관중석 플래시
+    const crossed = !OFF && win >= 0 && (mode === 'end' || (mode === 'run' && plan.fin && t >= plan.fin[win])), wx = (xs[win] - camX) * ppm;
+    if (crossed) { const y = laneY(win), r = H * 0.3 * laneS(win), gl = g.createRadialGradient(wx - r * 0.1, y, 0, wx - r * 0.1, y, r * 1.1); gl.addColorStop(0, 'rgba(255,215,90,.55)'); gl.addColorStop(1, 'rgba(255,215,90,0)'); g.fillStyle = gl; g.beginPath(); g.ellipse(wx - r * 0.1, y, r * 1.1, r * 0.28, 0, 0, 7); g.fill(); }
     // 말 — 먼 쪽(안쪽 레인)부터
     const order = [...Array(N).keys()].sort((a, b) => a - b);
     for (const h of order) {
       const d = h, s = laneS(d), y = laneY(d), x = (xs[h] - camX) * ppm, st = mode === 'run' ? stateAt(h, t) : '';
       if (x < -W * 0.2 || x > W * 1.2) continue;
-      const hh = H * 0.3 * s, run = mode === 'run' && xs[h] < LEN + 4, ph = (xs[h] / 7.2) % 1; // 7.2m 에 한 걸음
-      if (run && Math.random() < 0.6) dust.push({ x: xs[h] - 1.6, y, s, a: 1, vx: -(2 + Math.random() * 3), vy: -(0.5 + Math.random()) });
-      horse(h, x, y, hh, run ? ph : 0, st);
+      const hh = H * 0.3 * s, move = mode === 'run' || (mode === 'end' && slow(h) > 0.03), ph = (xs[h] / 7.2) % 1; // 7.2m 에 한 걸음 — 결승 뒤에도 달린 만큼 다리가 움직임(결승 4m 뒤에 멈추던 것)
+      if (move && Math.random() < (mode === 'end' ? 0.6 * slow(h) : 0.6)) dust.push({ x: xs[h] - 1.6, y, s, a: 1, vx: -(2 + Math.random() * 3), vy: -(0.5 + Math.random()) });
+      horse(h, x, y, hh, move || mode === 'end' ? ph : 0, st);
+    }
+    if (crossed) { // 「1착」 금 배지 — 기수 머리 위에서 들썩
+      const r = H * 0.3 * laneS(win), bx = wx - r * 0.05, by = laneY(win) - r * 1.12 + Math.sin(performance.now() / 180) * r * 0.04, br = r * 0.16;
+      g.fillStyle = '#c8202b'; g.beginPath(); g.moveTo(bx - br * 0.5, by + br * 0.6); g.lineTo(bx - br * 0.9, by + br * 1.7); g.lineTo(bx - br * 0.1, by + br * 1.2); g.fill(); g.beginPath(); g.moveTo(bx + br * 0.5, by + br * 0.6); g.lineTo(bx + br * 0.9, by + br * 1.7); g.lineTo(bx + br * 0.1, by + br * 1.2); g.fill();
+      const bg2 = g.createRadialGradient(bx - br * 0.3, by - br * 0.3, br * 0.1, bx, by, br); bg2.addColorStop(0, '#fff3b0'); bg2.addColorStop(0.5, '#f2c14e'); bg2.addColorStop(1, '#a8741a'); g.fillStyle = bg2; g.beginPath(); g.arc(bx, by, br, 0, 7); g.fill(); g.strokeStyle = '#7a5210'; g.lineWidth = Math.max(1, br * 0.1); g.stroke();
+      g.fillStyle = '#5a3600'; g.font = `900 ${Math.round(br * 0.78)}px sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('1착', bx, by + br * 0.05); g.textBaseline = 'alphabetic';
+      // 꽃가루 — 넘는 순간 한꺼번에, 그 뒤엔 조금씩
+      if (fxWin !== (plan && plan.rn)) { fxWin = plan && plan.rn; for (let k = 0; k < 140; k++) confetti(bx, by); flashUntil = performance.now() + 7000; }
+      if (Math.random() < 0.35) confetti(W * Math.random(), -10, true);
     }
     // 흙 튀김
     if (OFF) return xs; // 사진 판정에는 먼지 없이
     g.fillStyle = '#8a6a3a'; dust = dust.filter((p) => (p.a -= 0.035) > 0); for (const p of dust) { p.x += p.vx * 0.016; p.y += p.vy; g.globalAlpha = p.a * 0.55; g.beginPath(); g.arc((p.x - camX) * ppm, p.y - (1 - p.a) * H * 0.03, H * 0.006 * p.s * (1.5 - p.a), 0, 7); g.fill(); } g.globalAlpha = 1;
     if (dust.length > 400) dust.splice(0, dust.length - 400);
+    // 꽃가루 · 관중석 카메라 플래시(1착 연출)
+    const now = performance.now();
+    if (now < flashUntil && Math.random() < 0.18) flashes.push({ x: W * Math.random(), y: H * (0.18 + Math.random() * 0.3), a: 1, r: H * (0.008 + Math.random() * 0.012) });
+    flashes = flashes.filter((f) => (f.a -= 0.12) > 0); for (const f of flashes) { const fg = g.createRadialGradient(f.x, f.y, 0, f.x, f.y, f.r * 3); fg.addColorStop(0, `rgba(255,255,255,${f.a})`); fg.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = fg; g.beginPath(); g.arc(f.x, f.y, f.r * 3, 0, 7); g.fill(); }
+    fx = fx.filter((p) => p.y < H + 20 && (p.life -= 1) > 0); for (const p of fx) { p.vy += H * 0.0004; p.vx *= 0.985; p.x += p.vx; p.y += p.vy; p.r += p.vr; g.save(); g.translate(p.x, p.y); g.rotate(p.r); g.fillStyle = p.c; g.fillRect(-p.s, -p.s * 0.45, p.s * 2, p.s * 0.9); g.restore(); }
+    if (fx.length > 700) fx.splice(0, fx.length - 700);
     return xs;
   }
+  const CF = ['#f2c14e', '#fff3b0', '#d6303a', '#2a63d6', '#ffffff', '#2a9a4a', '#ef6fae'];
+  function confetti(x, y, rain) { const a = rain ? Math.PI / 2 : -Math.PI / 2 + (Math.random() - 0.5) * 2.2, v = rain ? H * 0.004 : H * (0.008 + Math.random() * 0.014); fx.push({ x, y, vx: Math.cos(a) * v + (rain ? (Math.random() - 0.5) * 2 : 0), vy: Math.sin(a) * v, r: Math.random() * 6, vr: (Math.random() - 0.5) * 0.3, s: H * (0.005 + Math.random() * 0.006), c: CF[Math.floor(Math.random() * CF.length)], life: 260 }); }
   function horse(h, x, y, hh, ph, st) {
     const tilt = st === 'u' ? -0.25 : st === 'b' ? Math.sin(performance.now() / 60) * 0.06 : 0;
     g.save(); g.translate(x, y); g.rotate(tilt);
@@ -103,11 +126,11 @@
   const nm = (h) => (S.card && S.card.horse[h]) || h + 1 + '번';
   function say(t) { $('call').textContent = t; }
   function callsAt(t, xs) { // 서버가 보낸 일 + 남은 거리 → 자막
-    for (const e of plan.ev || []) { if (e[1] > t) break; const k = e.join(); if (callShown.has(k)) continue; callShown.add(k); if (t - e[1] > 1.5) continue;
+    for (const e of plan.ev || []) { if (e[1] > t || callShown.has('w')) break; const k = e.join(); if (callShown.has(k)) continue; // 1착이 들어오면 「1착으로 들어옵니다!」 자막 그대로(뒤 말 일로 덮지 않게) callShown.add(k); if (t - e[1] > 1.5) continue;
       const a = (e[2] + 1) + '번 ' + nm(e[2]); say(e[0] === 'k' ? a + ', 막판 스퍼트!' : e[0] === 't' ? a + ', 힘이 빠지는 모습입니다' : e[0] === 'u' ? a + ', 발을 헛디뎠습니다!' : e[0] === 's' ? a + ', 출발이 늦었습니다!' : e[0] === 'b' ? a + ', ' + (e[3] + 1) + '번과 부딪힙니다!' : a); }
     const lead = Math.max(...xs), left = LEN - lead;
     for (const m of [1000, 600, 400, 200]) { const k = 'd' + m; if (left <= m && !callShown.has(k)) { callShown.add(k); const L = [...Array(N).keys()].sort((a, b) => xs[b] - xs[a]); say(m === 400 ? '마지막 직선! ' + (L[0] + 1) + '번 ' + nm(L[0]) + ' 선두, ' + (L[1] + 1) + '번이 바짝 따라붙습니다!' : m === 200 ? '결승선까지 200m! ' + (L[0] + 1) + '번 ' + nm(L[0]) + ' 앞서 있습니다!' : '잔여 ' + m + 'm, ' + (L[0] + 1) + '번 ' + nm(L[0]) + ' 선두입니다'); } }
-    if (plan.fin && t >= plan.fin[plan.ord[0]] && !callShown.has('w')) { callShown.add('w'); say((plan.ord[0] + 1) + '번 ' + nm(plan.ord[0]) + ' 1착으로 들어옵니다!'); }
+    if (plan.fin && t >= plan.fin[plan.ord[0]] && !callShown.has('w')) { callShown.add('w'); say((plan.ord[0] + 1) + '번 ' + nm(plan.ord[0]) + ' 1착으로 들어옵니다!'); banner('1착! ' + (plan.ord[0] + 1) + '번 ' + nm(plan.ord[0]), '기수 ' + ((S.card && S.card.jockey[plan.ord[0]]) || ''), 2600); } // 1착 띠(1등 연출)
   }
 
   function frame() {
@@ -267,6 +290,7 @@
       if ((o.ph === 'run' || o.ph === 'res') && o.fr) { if (!plan || plan.rn !== o.rn) { plan = { rn: o.rn, fr: o.fr, ev: o.ev, fin: o.fin, ord: o.ord, sty: o.sty }; callShown = new Set(); lastLead = -1; } if (o.ph === 'run') startAt = Date.now() - ((o.rl || 0) + 800 - (o.left || 0)); }
       if (o.ph === 'bet' && (was !== 'bet' || wasRn !== o.rn)) { pick = []; banner('제 ' + o.rn + '경주 걸기 시작!', Math.round((o.left || 60000) / 1000) + '초 안에 걸어 주세요', 2200); } // 운영자가 정한 걸기 시간
       if (o.ph === 'run' && was === 'bet') { say('출발했습니다!'); banner('출발!', '', 1000); }
+      if (o.ph === 'res' && was !== 'res') resAt = Date.now(); // 결과 화면 시작 — 말들이 여기서부터 천천히 멈춤
       if (o.ph === 'res' && was === 'run' && S.me && S.me.my && S.me.my.got) toast('적중! +' + money(S.me.my.got - S.me.my.put) + ' 코인', 4000);
       if (o.op && !S._opSaid) S._opSaid = 1;
       title(); board(); side();
