@@ -148,3 +148,4 @@ button, input { font: inherit; }
 .ppl li small { grid-column: 1 / -1; color: var(--muted); font-size: 11px; }
 .ppl li.zero span { color: #ff8a7a; }
 .ppl .sum { background: none; border-top: 1px solid var(--line); border-radius: 0; margin-top: 2px; }
+.opbar input.bsec { width: 64px; } /* 걸기 시간(초) */
