@@ -128,9 +128,15 @@
   function title() { const ph = S.ph; $('tTitle').textContent = ph === 'idle' ? (S.last ? '제 ' + S.last.rn + '경주 결과 ㆍ 다음 경주를 기다려요' : '다음 경주를 기다려요') : '제 ' + S.rn + '경주 · 잔디 1600m · 출전 8두' + (ph === 'res' ? ' ㆍ 결과' : ''); }
 
   /* ── 아래 판 ── */
+  let held = false; // 입력 칸에 쓰는 중이라 미뤄 둔 다시 그리기
+  $('board').addEventListener('focusout', () => setTimeout(() => { if (held && !typing()) { held = false; board(); } }, 400)); // 칸에서 벗어나면 그때 한 번 — 0.4초 뒤(쓰고 바로 「걸기」 누른 게 단추가 바뀌어 사라지지 않게)
+  const typing = () => { const a = document.activeElement; return !!a && a.tagName === 'INPUT' && $('board').contains(a); };
   function board() {
     const ph = S.ph, key = [ph, S.rn, S.op, S.me && S.me.m, JSON.stringify(S.me && S.me.bs), JSON.stringify(S.rank), ph === 'bet' ? JSON.stringify(S.pool) : ''].join('|');
-    if (key === drawnKey) return; drawnKey = key; const B = $('board'); B.replaceChildren();
+    if (key === drawnKey) return;
+    // 금액 · 운영자 숫자 칸에 쓰는 동안엔 판을 새로 그리지 않음(누가 걸 때마다 다시 그려 휴대폰 키패드가 내려갔음 · 2026-11-08 부장님) — 단계 · 경주 번호가 바뀌면 바로
+    if (typing() && drawnKey.split('|').slice(0, 2).join('|') === [ph, S.rn].join('|')) { held = true; return; }
+    held = false; drawnKey = key; const B = $('board'); B.replaceChildren();
     if (ph === 'bet') { B.append(betView()); }
     else if (ph === 'run') { const g2 = el('div', 'betgrid'); g2.append(slipPan('이번 경주에 건 것'), rankPan()); B.append(g2); }
     else if (ph === 'res') B.append(resView());
