@@ -180,6 +180,7 @@
     if (amt <= 0) return toast('걸 금액을 적어 주세요'); if (amt > left()) return toast('가진 코인보다 많이 걸 수 없어요');
     const next = ((S.me && S.me.bs) || []).map((x) => ({ k: x.k, h: x.h.slice(), a: x.a })), h = tab === 'q' ? [Math.min(...pick), Math.max(...pick)] : pick.slice(), same = next.find((x) => x.k === tab && x.h.join() === h.join());
     if (same) same.a += amt; else next.push({ k: tab, h, a: amt });
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); // 금액 칸에서 확실히 빠져나와야 미뤄 둔 판이 그려짐(기종에 따라 단추를 눌러도 칸에 커서가 남음)
     send({ t: 'bet', bs: next }); pick = []; amt = 0; // 표시는 서버가 받아 준 것(S.me.bs)만 · 금액은 다시 0 부터 쌓기
   }
   function slipList() {
@@ -216,14 +217,23 @@
   }
   /* 오른쪽 칸(2026-11-08 부장님 「돈 다 쓴 사람들은 우측에 관전석」 「운영자는 접속한 사람들 얼마씩 들고 있는지」) */
   let sideKey = '';
+  let giveAmt = 10000, sideHeld = false; // 한 사람 주기 금액(다시 그려도 그대로) · 쓰는 동안 미룬 다시 그리기
+  $('side').addEventListener('focusout', () => setTimeout(() => { const a = document.activeElement; if (sideHeld && !(a && a.tagName === 'INPUT' && $('side').contains(a))) { sideHeld = false; sideKey = ''; side(); } }, 400));
   function side() {
-    const key = JSON.stringify([S.spec, S.ppl, S.me && S.me.n]); if (key === sideKey) return; sideKey = key; const sd = $('side'); sd.replaceChildren();
+    const key = JSON.stringify([S.spec, S.ppl, S.me && S.me.n]); if (key === sideKey) return;
+    { const a = document.activeElement; if (a && a.tagName === 'INPUT' && $('side').contains(a)) { sideHeld = true; return; } } // 금액 칸에 쓰는 중엔 안 그림(키패드 내려감)
+    sideKey = key; const sd = $('side'); sd.replaceChildren();
     const p1 = el('div', 'pan'), h1 = el('h3', null, '관전석'); h1.append(el('small', null, '(코인 0 · ' + (S.spec || []).length + '명)')); p1.append(h1);
     const seats = el('div', 'seats'); (S.spec || []).forEach((n) => { const s = el('div', 'seat' + (S.me && n === S.me.n ? ' me' : '')); s.append(el('i'), el('span', null, n)); s.title = n; seats.append(s); });
     if (!(S.spec || []).length) seats.append(el('p', 'empty', '아직 비어 있어요 ㆍ 코인을 다 쓰면 여기서 구경해요')); p1.append(seats); sd.append(p1);
     if (S.ppl) { // 운영자만
       const p2 = el('div', 'pan'), h2 = el('h3', null, '접속자 코인'); h2.append(el('small', null, '(운영자만 · ' + S.ppl.length + '명)')); p2.append(h2);
-      const ol = el('ol', 'ppl'); S.ppl.forEach((x) => { const li = el('li', x.m <= 0 ? 'zero' : ''); li.append(el('b', null, x.n), el('span', null, money(x.m))); if (x.b) li.append(el('small', null, '이번 판 건 코인 ' + money(x.b))); ol.append(li); });
+      // 한 사람에게만 주기(2026-11-08 부장님 「경기 중에 늦게 온 사람한테 별도로」) — 금액 한 칸 + 줄마다 「+주기」 · 아무 때나 · 더하기만
+      const gv = el('div', 'give1'), gi = el('input'); gi.inputMode = 'numeric'; gi.value = money(giveAmt); gi.setAttribute('aria-label', '한 사람에게 줄 코인');
+      gi.oninput = () => { const v = parseInt(gi.value.replace(/\D/g, ''), 10); giveAmt = isNaN(v) ? 0 : v; gi.value = isNaN(v) ? '' : v.toLocaleString('ko-KR'); };
+      gv.append(el('span', null, '한 사람에게'), gi, el('span', null, '코인')); p2.append(gv);
+      const ol = el('ol', 'ppl'); S.ppl.forEach((x) => { const li = el('li', x.m <= 0 ? 'zero' : ''), gb = el('button', 'g1', '+주기'); gb.type = 'button'; gb.setAttribute('aria-label', x.n + ' 님에게 코인 주기'); gb.onclick = () => { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); if (giveAmt > 0) send({ t: 'giveOne', n: x.n, a: giveAmt }); else toast('줄 코인을 적어 주세요'); }; // 칸에서 빠져나와야 목록이 바로 새로 그려짐
+        li.append(el('b', null, x.n), el('span', null, money(x.m)), gb); if (x.b) li.append(el('small', null, '이번 판 건 코인 ' + money(x.b))); ol.append(li); });
       if (!S.ppl.length) ol.append(el('li', 'empty', '접속한 사람이 없어요'));
       else { const sum = el('li', 'sum'); sum.append(el('b', null, '합계'), el('span', null, money(S.ppl.reduce((a, x) => a + x.m, 0)))); ol.append(sum); }
       p2.append(ol); sd.append(p2);
