@@ -1842,6 +1842,18 @@ body.ox-full { overflow: hidden; }
 .rc-tab.on { background-image: url(img/lb/ui-tabon.webp); color: #fff; -webkit-text-stroke: .35cqw #6b2a00; paint-order: stroke fill; text-shadow: 0 .3cqw 0 #6b2a00; } /* 노란 탭 위 크림 글씨가 흐렸음 */
 .rc-tab em { font-style: normal; color: #ffd84a; } .rc-tab.on em { color: #fff3a0; }
 .rc-tip { margin: 0 0 1cqw; text-align: center; font-size: 3.2cqw; color: #6b3a12; }
+/* 단승 · 판마다 배당(2026-11-08 Crazy Derby 기획서 Phase 1) — 탭 자리는 제목 한 줄 · 수달 칸 아래 배당 · 가장 낮은 배당 「인기」 · 걸기 동안 레인 끝 배당판 */
+.rc-tabs.one { grid-template-columns: 1fr; }
+.rc-tabs.one .rc-tab { display: flex; align-items: center; justify-content: center; gap: 1.6cqw; font-size: 3.6cqw; cursor: default; }
+.rc-tabs.one .rc-tab em { font-size: 2.6cqw; -webkit-text-stroke: 0; text-shadow: 0 1px 1px #6b2a00; }
+.rc-pick .rc-hb { height: 16cqw; }
+.rc-hb .od { position: absolute; left: 0; right: 0; bottom: 0; font-style: normal; font-size: 3cqw; line-height: 1; color: #b8420a; text-align: center; }
+.rc-pick .rc-hb .no { bottom: 3.2cqw; }
+.rc-hb .ord:not(:empty) { background: #e67e22; }
+.rc-od { position: absolute; left: 76%; transform: translateY(-50%); padding: 0 1.6cqw; border: 1cqw solid transparent; border-image: url(img/lb/9s-plate.webp) 120 210 120 210 fill / 1cqw 2cqw; font-size: 2.8cqw; line-height: 1.1; color: #ffd84a; text-shadow: 0 1px 1px #000; white-space: nowrap; z-index: 25; }
+.rc-od[hidden] { display: none; }
+.rc-od.fav { color: #fff; } .rc-od.fav::before { content: "인기 "; color: #ffb36b; font-size: 2.3cqw; }
+.rc-pod .pd em.odw { font-style: normal; font-size: 2.8cqw; color: #b8420a; }
 .rc-pick { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.2cqw 1.6cqw; justify-items: center; margin-bottom: 1.4cqw; }
 .rc-hb { position: relative; width: 12.4cqw; height: 12.6cqw; padding: 0; border: 0; background: none; cursor: pointer; font: inherit; }
 .rc-hb .rc-face { position: absolute; left: 50%; top: 0; width: 10.6cqw; height: 10.6cqw; transform: translateX(-50%); transition: transform .12s, filter .12s; }
@@ -2309,7 +2321,7 @@ body.ox-full { overflow: hidden; }
           <form class="ox-chat" id="rcChat"><img data-i="otter-front" alt=""><input id="rcSay" maxlength="30" placeholder="메시지를 입력하세요..." autocomplete="off" enterkeyhint="send" aria-label="채팅"><button type="submit">보내기</button></form>
         </div>
       </div>
-      <p class="ox-help">운영자가 경주를 열면 <b>참가하기</b>를 눌러요. 모두 같은 돈으로 시작해요. 판마다 30초 안에 수달 8마리 중에 걸어요 ㆍ <b>1등 맞히기 ×7</b> · <b>3등 안 ×2.5</b> · <b>1·2·3등 순서대로 ×150</b> (여러 개 걸 수 있어요). 판마다 최소 금액보다 덜 걸면 모자란 만큼 빠지고, 돈이 0 이 되면 탈락이에요. 마지막 판이 끝나면 <b>돈이 가장 많은 1~3등</b>이 상품을 받아요.</p>
+      <p class="ox-help">운영자가 경주를 열면 <b>참가하기</b>를 눌러요. 모두 같은 돈으로 시작해요. 판마다 수달 8마리의 <b>배당</b>이 새로 정해져요(배당이 낮을수록 잘 달리는 수달). 30초 안에 <b>1등으로 들어올 수달</b>에 걸고(여러 마리에 나눠 걸어도 돼요), 맞히면 <b>건 돈 × 배당</b>을 받아요. 판마다 최소 금액보다 덜 걸면 모자란 만큼 빠지고, 돈이 0 이 되면 탈락이에요. 마지막 판이 끝나면 <b>돈이 가장 많은 1~3등</b>이 상품을 받아요.</p>
     </section>
     <!-- OX퀴즈장 (2026-10-31) — 실시간 OX 서바이벌 · 시안 보관/시안/18-OX퀴즈장.jpg -->
     <section id="oxView" hidden>
@@ -2449,7 +2461,7 @@ body.ox-full { overflow: hidden; }
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202611081004";
+  const BUILD = "202611081058";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -7877,7 +7889,7 @@ body.ox-full { overflow: hidden; }
   const race = (() => {
     const RI = (n) => "img/lb/" + n + ".webp?v=" + BUILD;
     const HS = [["", "고글이"], ["navy", "해군이"], ["king", "임금님"], ["farmer", "농부"], ["wizard", "마법사"], ["chef", "요리사"], ["diver", "잠수부"], ["ninja", "닌자"]]; // 수달 8마리(번호 1~8)
-    const ODD = { w: 7, p: 2.5, t: 150 }, KN = { w: "1등 맞히기", p: "3등 안", t: "순서대로" }, RUN = 30000; // 경주는 30초쯤(서버가 정함 · rl)
+    const RUN = 30000; // 경주는 30초쯤(서버가 정함 · rl) · 걸기는 단승만 · 배당은 판마다 서버가 정해 S.od 로 옴(2026-11-08 Crazy Derby 기획서)
     const T = { y0: 0.2, y1: 0.481, x0: 0.135, x1: 0.885 }; // rc-bg 에서 잰 트랙(레인 위 · 아래 · 출발 · 결승 발 자리)
     const stage = $("rcStage"), track = $("rcTrack"), low = $("rcLow");
     let ws = null, S = { ph: "idle" }, myId = "", host = false, raf = 0, retry = 0, msgT = 0, tab = "w", pick = [], amt = 0, slip = [], drawn = "", lastSec = -1, startAt = 0, plan = null;
@@ -7894,12 +7906,13 @@ body.ox-full { overflow: hidden; }
     const slipSum = () => slip.reduce((a, b) => a + b.a, 0);
 
     // 트랙 — 번호판 · 수달 8마리 · 메달
-    const lanes = HS.map((h, i) => { const y = T.y0 + (T.y1 - T.y0) * (i + 0.5) / 8, pl = el("b", "rc-plate n" + (i + 1), String(i + 1)), o = el("div", "rc-o"), b = el("i", "rc-ob"), md = el("img", "rc-md"); pl.style.top = o.style.top = (y * 100) + "%"; b.style.backgroundImage = "url(" + sheet(h[0]) + ")"; md.alt = ""; md.hidden = true; o.append(b, md); o.style.zIndex = String(10 + i); track.append(pl, o); return { o, b, md, x: T.x0 }; });
+    const lanes = HS.map((h, i) => { const y = T.y0 + (T.y1 - T.y0) * (i + 0.5) / 8, pl = el("b", "rc-plate n" + (i + 1), String(i + 1)), o = el("div", "rc-o"), b = el("i", "rc-ob"), md = el("img", "rc-md"); pl.style.top = o.style.top = (y * 100) + "%"; b.style.backgroundImage = "url(" + sheet(h[0]) + ")"; md.alt = ""; md.hidden = true; o.append(b, md); o.style.zIndex = String(10 + i); const od = el("span", "rc-od"); od.style.top = pl.style.top; od.hidden = true; track.append(pl, o, od); return { o, b, md, od, x: T.x0 }; }); // od = 걸기 동안 레인 끝(빈 트랙)에 이번 판 배당판
     // 서버가 실제로 돌린 경주(워커 race-sim.mjs)를 그대로 다시 그림 — fr: 0.25초마다 자리(×1000) · ev: [종류, 초, 누가, (누구를), 길이]
     // f 넘어짐 · p 밀치기(옆 레인) · b 바나나 던지기 · d 힘내기 → 수달 모양(넘어짐 · 비틀 · 달려듦 · 먼지) + 해설 한 줄
     const KF = 0.25, EVN = { f: (e) => (e[2] + 1) + "번 " + HS[e[2]][1] + " 넘어졌어요!", p: (e) => (e[2] + 1) + "번이 " + (e[3] + 1) + "번을 밀쳤어요!", b: (e) => (e[2] + 1) + "번이 " + (e[3] + 1) + "번에게 바나나를 던졌어요!", d: (e) => (e[2] + 1) + "번 " + HS[e[2]][1] + " 힘내요!" };
-    function mkPlan(o) { return { fr: o.fr || [], ev: o.ev || [], rl: o.rl || RUN, ord: o.ord || [], shown: new Set(), key: (o.ev || []).length + ":" + (o.fr || []).length + ":" + (o.ord || []).join() }; }
-    const posAt = (P, h, t) => { const F = P.fr; if (!F.length) return 0; const u = Math.max(0, t / KF), k = Math.min(F.length - 1, Math.floor(u)), n = Math.min(F.length - 1, k + 1), f = u - k; return (F[k][h] + (F[n][h] - F[k][h]) * f) / 1000; };
+    function mkPlan(o) { return { fr: o.fr || [], ev: o.ev || [], fin: o.fin || [], rl: o.rl || RUN, ord: o.ord || [], shown: new Set(), key: (o.ev || []).length + ":" + (o.fr || []).length + ":" + (o.ord || []).join() }; }
+    // 결승선은 서버가 정한 들어온 시각(fin)에 정확히 넘게 — 0.25초 칸 사이를 직선으로만 이으면 거의 동시 도착 때 화면의 1등이 지급된 1등과 달랐음(2026-11-08 검토 · 2만 판 중 35판)
+    const posAt = (P, h, t) => { const F = P.fr; if (!F.length) return 0; const u = Math.max(0, t / KF), k = Math.min(F.length - 1, Math.floor(u)), n = Math.min(F.length - 1, k + 1), f = u - k; let x = (F[k][h] + (F[n][h] - F[k][h]) * f) / 1000; const T = P.fin[h]; if (T) x = t < T ? Math.min(x, 0.999 - Math.max(0, T - t) * 0.002) : Math.max(x, 1 + (t - T) * 0.01); return x; };
     const stateAt = (P, h, t) => { let s = ""; for (const e of P.ev) { if (e[1] > t) break; const end = e[1] + (e[0] === "p" || e[0] === "b" ? e[4] : e[3]); if (t > end) { if (e[0] === "p" || e[0] === "b") { if (e[2] === h && t < e[1] + 0.45) s = "atk"; } continue; } if (e[2] === h) s = e[0] === "f" ? "fall" : e[0] === "d" ? "dash" : t < e[1] + 0.45 ? "atk" : s; else if ((e[0] === "p" || e[0] === "b") && e[3] === h) s = "hit"; } return s; };
     function fly(e) { // 바나나 — 던진 수달에서 맞은 수달로
       const a = lanes[e[2]].o, b = lanes[e[3]].o, n = el("img", "rc-nana"); n.alt = ""; img(n, "rc-nana"); n.style.left = a.style.left; n.style.top = a.style.top; track.appendChild(n);
@@ -7922,6 +7935,7 @@ body.ox-full { overflow: hidden; }
       $("rcTimer").hidden = !(S.ph === "bet" || S.ph === "run" || S.ph === "res");
       const pz = $("rcPz"); pz.hidden = !(c && c.pz && c.pz.some(Boolean)); if (!pz.hidden) pz.replaceChildren(...c.pz.map((t, i) => { const li = el("li", "k" + (i + 1)); li.append(el("i", null, (i + 1) + "등"), el("span", null, t || "ㆍ")); return li; }));
       $("rcStats").hidden = !on || S.ph === "idle"; if (on && c) { $("rcMoney").textContent = me ? money(me.m - (S.ph === "bet" ? slipSum() : 0)) : "구경"; $("rcMin").textContent = money(c.min); $("rcLive").textContent = live().length + " / " + (S.ps || []).length + "명"; }
+      { const od = S.od || [], fav = od.length ? od.indexOf(Math.min(...od)) : -1; lanes.forEach((L, h) => { const on = S.ph === "bet" && !!od[h]; L.od.hidden = !on; if (on) { L.od.textContent = "×" + od[h]; L.od.classList.toggle("fav", h === fav); } }); }
       lanes.forEach((L, h) => { const k = res3().indexOf(h); L.md.hidden = k < 0; if (k >= 0 && L.md.dataset.k !== String(k)) { L.md.dataset.k = String(k); img(L.md, "rc-m" + (k + 1)); } });
       const key = [S.ph, S.r, S.ph === "bet" ? "" : JSON.stringify(S.ps), host, me ? me.out : "", S.ph === "open" ? (S.ps || []).length : ""].join("|");
       if (S.ph !== "bet" && key === drawn) return; drawn = key;
@@ -7952,43 +7966,44 @@ body.ox-full { overflow: hidden; }
       low.replaceChildren(); low.dataset.r = String(S.r); slip = ((S.mine && S.mine.bs) || []).map((x) => ({ k: x.k, h: x.h.slice(), a: x.a })); pick = []; if (!amt) amt = Math.max(100, (S.cfg && S.cfg.min) || 100);
       const me = meP(), d = el("div", "rc-bet");
       if (!me || me.out) { d.classList.add("watch"); d.append(el("h4", null, me ? "탈락했어요" : "구경 중이에요"), el("p", null, me ? "끝날 때까지 경주를 구경해요" : "이번 경주는 참가 받기가 끝났어요")); if (me) d.append(stamp()); low.append(d, hostBar()); return; }
-      const tabs = el("div", "rc-tabs"); ["w", "p", "t"].forEach((k) => { const b = btn("rc-tab" + (tab === k ? " on" : ""), null, () => { tab = k; pick = []; betSync(); }); b.dataset.k = k; b.append(KN[k] + " ", el("em", null, "×" + ODD[k])); tabs.appendChild(b); });
-      const tip = el("p", "rc-tip"), grid = el("div", "rc-pick");
-      HS.forEach((h, i) => { const b = btn("rc-hb", null, () => { if (tab === "t") { const j = pick.indexOf(i); if (j >= 0) pick.splice(j, 1); else if (pick.length < 3) pick.push(i); } else pick = [i]; betSync(); }); b.dataset.h = i; b.setAttribute("aria-label", (i + 1) + "번 " + h[1]); b.append(face(i), el("b", "no n" + (i + 1), String(i + 1)), el("small", "ord")); grid.appendChild(b); });
+      // 단승만(2026-11-08 Crazy Derby 기획서 · 부장님 「단승만」) — 탭 자리는 제목 한 줄 · 수달마다 이번 판 배당 · 가장 낮은 배당은 「인기」
+      const tabs = el("div", "rc-tabs one"), tb = el("b", "rc-tab on"); tb.append("단승 ㆍ 1등 맞히기 ", el("em", null, "배당은 판마다 달라요")); tabs.appendChild(tb);
+      const tip = el("p", "rc-tip"), grid = el("div", "rc-pick"), od = S.od || [], fav = od.length ? od.indexOf(Math.min(...od)) : -1;
+      HS.forEach((h, i) => { const b = btn("rc-hb", null, () => { pick = [i]; betSync(); }); b.dataset.h = i; b.setAttribute("aria-label", (i + 1) + "번 " + h[1] + (od[i] ? " 배당 " + od[i] + "배" : "")); b.append(face(i), el("b", "no n" + (i + 1), String(i + 1)), el("small", "ord", i === fav ? "인기" : ""), el("em", "od", od[i] ? "×" + od[i] : "")); grid.appendChild(b); });
       const ar = el("div", "rc-amt"), inp = el("input"); inp.type = "text"; inp.inputMode = "numeric"; inp.id = "rcAmt"; inp.setAttribute("aria-label", "걸 금액"); inp.oninput = () => { amt = Math.max(0, parseInt(inp.value.replace(/\D/g, ""), 10) || 0); betSync(true); };
       const coin = img(el("img"), "ii-coin"); coin.alt = "";
       const add = (v) => () => { amt = Math.max(0, amt + v); betSync(); };
       ar.append(coin, inp, btn("rc-pm", "−", add(-100)), btn("rc-pm", "+", add(100)), hb("sm2", "+100", add(100)), hb("sm2", "+1,000", add(1000)), hb("sm2", "전부", () => { amt = Math.max(0, me.m - slipSum()); betSync(); }));
       const go = hb("rc-go", "걸기", () => {
-        const need = tab === "t" ? 3 : 1; if (pick.length !== need) return msg(tab === "t" ? "1 · 2 · 3등 수달을 차례로 골라 주세요" : "수달을 골라 주세요", 1800);
+        if (pick.length !== 1) return msg("수달을 골라 주세요", 1800);
         if (amt <= 0) return msg("걸 금액을 적어 주세요", 1800); if (slipSum() + amt > me.m) return msg("가진 돈보다 많이 걸 수 없어요", 1800);
-        const same = slip.find((x) => x.k === tab && x.h.join() === pick.join()); if (same) same.a += amt; else slip.push({ k: tab, h: pick.slice(), a: amt });
-        send({ t: "bet", bs: slip }); pick = []; betSync();
+        // 고친 사본을 보내고 표시는 서버가 받아 준 것(S.mine)만 — 마감 직후 거절돼도 건 것처럼 보였음(2026-11-08 검토)
+        const next = slip.map((x) => ({ k: x.k, h: x.h.slice(), a: x.a })), same = next.find((x) => x.h[0] === pick[0]); if (same) same.a += amt; else next.push({ k: "w", h: pick.slice(), a: amt });
+        send({ t: "bet", bs: next }); pick = []; betSync();
       });
       const ls = el("div", "rc-slip"); ls.id = "rcSlip";
       d.append(tabs, tip, grid, ar, go, ls); low.append(d, hostBar()); betSync();
     }
     function betSync(typing) {
       const d = low.querySelector(".rc-bet"); if (!d || d.classList.contains("watch")) return; const me = meP(); if (!me) return;
-      d.querySelectorAll(".rc-tab").forEach((b) => b.classList.toggle("on", b.dataset.k === tab));
-      d.querySelector(".rc-tip").textContent = tab === "w" ? "1등으로 들어올 수달을 골라요" : tab === "p" ? "3등 안에 들어올 수달을 골라요" : "1등 · 2등 · 3등 수달을 차례로 골라요 (" + pick.length + "/3)";
-      d.querySelectorAll(".rc-hb").forEach((b) => { const h = +b.dataset.h, j = pick.indexOf(h); b.classList.toggle("on", j >= 0); b.querySelector(".ord").textContent = tab === "t" && j >= 0 ? (j + 1) + "등" : ""; });
+      const od = S.od || []; d.querySelector(".rc-tip").textContent = pick.length && od[pick[0]] ? (pick[0] + 1) + "번 ㆍ 맞히면 건 돈 × " + od[pick[0]] + " 배" : "1등으로 들어올 수달을 골라요 ㆍ 배당이 낮을수록 잘 달려요";
+      d.querySelectorAll(".rc-hb").forEach((b) => { b.classList.toggle("on", pick.includes(+b.dataset.h)); });
       const inp = $("rcAmt"); if (!typing) inp.value = money(amt);
       const ls = $("rcSlip"); ls.replaceChildren(el("h5", null, "내가 건 것"));
       if (!slip.length) ls.appendChild(el("p", "empty", "아직 안 걸었어요 ㆍ 최소 " + money(S.cfg.min) + " 보다 덜 걸면 모자란 만큼 빠져요"));
-      slip.forEach((x, i) => { const r = el("div", "row"), hs = el("span", "hs"); x.h.forEach((h) => hs.append(face(h, "sm"), el("b", null, String(h + 1)))); r.append(el("small", null, KN[x.k]), hs, el("span", "a", money(x.a)), el("em", null, "×" + ODD[x.k]), btn("rc-del", "✕", () => { slip.splice(i, 1); send({ t: "bet", bs: slip }); betSync(); })); ls.appendChild(r); });
+      slip.forEach((x, i) => { const r = el("div", "row"), hs = el("span", "hs"); x.h.forEach((h) => hs.append(face(h, "sm"), el("b", null, String(h + 1)))); r.append(el("small", null, "단승"), hs, el("span", "a", money(x.a)), el("em", null, "×" + ((S.od || [])[x.h[0]] || "")), btn("rc-del", "✕", () => { send({ t: "bet", bs: slip.filter((_, j) => j !== i) }); })); ls.appendChild(r); });
       paintMoney();
     }
     const paintMoney = () => { const me = meP(); if (me) $("rcMoney").textContent = money(me.m - (S.ph === "bet" ? slipSum() : 0)); };
     function runPanel() {
       const d = card("rc-run"), lead = el("div", "rc-lead"), tk = el("div", "rc-tick"); lead.id = "rcLead"; tk.id = "rcTick"; d.append(el("h4", null, "달리는 중!"), lead, tk);
-      const me = meP(), bs = (S.mine && S.mine.bs) || []; if (me && !me.out) { const ls = el("div", "rc-slip"); ls.append(el("h5", null, "내가 건 것")); if (!bs.length) ls.appendChild(el("p", "empty", "이번 판은 안 걸었어요 ㆍ " + money(S.cfg.min) + " 빠져요")); bs.forEach((x) => { const r = el("div", "row"), hs = el("span", "hs"); x.h.forEach((h) => hs.append(face(h, "sm"), el("b", null, String(h + 1)))); r.append(el("small", null, KN[x.k]), hs, el("span", "a", money(x.a)), el("em", null, "×" + ODD[x.k])); ls.appendChild(r); }); d.append(ls); }
+      const me = meP(), bs = (S.mine && S.mine.bs) || []; if (me && !me.out) { const ls = el("div", "rc-slip"); ls.append(el("h5", null, "내가 건 것")); if (!bs.length) ls.appendChild(el("p", "empty", "이번 판은 안 걸었어요 ㆍ " + money(S.cfg.min) + " 빠져요")); bs.forEach((x) => { const r = el("div", "row"), hs = el("span", "hs"); x.h.forEach((h) => hs.append(face(h, "sm"), el("b", null, String(h + 1)))); r.append(el("small", null, "단승"), hs, el("span", "a", money(x.a)), el("em", null, "×" + ((S.od || [])[x.h[0]] || ""))); ls.appendChild(r); }); d.append(ls); }
       d.append(hostBar()); return d;
     }
     // 결과(시안 오른쪽) — 결과 띠 · 1~3등 · 내 결과 · 돈 순위 5
     function resPanel() {
       const L = S.last, d = card("rc-res"), rib = el("div", "rc-rib"); rib.append(el("b", null, "결과")); d.append(rib);
-      const pod = el("div", "rc-pod"); [1, 0, 2].forEach((k) => { const h = L.ord[k], s = el("div", "pd k" + (k + 1)); s.append(el("small", null, (k + 1) + "등"), face(h, "big"), el("b", null, String(h + 1))); pod.appendChild(s); }); d.append(pod);
+      const pod = el("div", "rc-pod"); [1, 0, 2].forEach((k) => { const h = L.ord[k], s = el("div", "pd k" + (k + 1)); s.append(el("small", null, (k + 1) + "등"), face(h, "big"), el("b", null, String(h + 1))); if (!k && L.od) s.append(el("em", "odw", "배당 ×" + L.od[h])); pod.appendChild(s); }); d.append(pod);
       const mr = (L.res || []).find((r) => r.id === myId), me = meP();
       if (mr) { const net = mr.got - mr.put - mr.fee, c = el("div", "rc-my " + (mr.out ? "out" : net > 0 ? "win" : "lose")); c.append(img(el("img", "me"), "otter-front"), el("b", null, mr.out ? "탈락" : net > 0 ? "+" + money(net) + " 적중!" : net < 0 ? money(net) : "본전"), el("small", null, "건 돈 " + money(mr.put) + (mr.fee ? " ㆍ 덜 걸어 빠짐 " + money(mr.fee) : "") + " ㆍ 받은 돈 " + money(mr.got))); if (mr.out) c.append(stamp()); d.append(c); }
       else if (!me) d.append(el("p", "rc-tip", "구경 중이에요"));
