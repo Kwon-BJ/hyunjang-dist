@@ -203,7 +203,7 @@
     x2.drawImage(off, sx, sy, sw, sh, 0, 0, c.width, c.height); x2.fillStyle = 'rgba(255,255,255,.92)'; x2.fillRect(c.width * 0.72 - 1.5, 0, 3, c.height);
   }
   function idleView() {
-    const p = el('div', 'pan idle'); p.append(el('h2', null, '다음 경주를 기다리고 있어요'), el('p', null, '운영자가 경주를 열면 60초 동안 걸 수 있어요 ㆍ 이 화면을 켜 두면 저절로 시작돼요'));
+    const p = el('div', 'pan idle'); p.append(el('h2', null, '다음 경주를 기다리고 있어요'), el('p', null, '운영자가 경주를 열면 정해진 시간(보통 30초 ~ 1분) 동안 걸 수 있어요 ㆍ 이 화면을 켜 두면 저절로 시작돼요'));
     const w = el('div', 'wallet'); w.append(el('span', null, (S.me && S.me.n) + ' 님의 코인'), el('b', null, money(S.me && S.me.m))); p.append(w);
     const g2 = el('div', 'betgrid'); g2.append(p, rankPan()); return g2;
   }
@@ -224,7 +224,11 @@
   }
   function opBar() {
     const b = el('div', 'pan opbar'); b.append(el('b', null, '운영자'));
-    if (S.ph === 'idle') { const n = el('input'); n.type = 'number'; n.min = 1; n.max = 20; n.value = 3; n.setAttribute('aria-label', '연속 경주 수'); const go = el('button', null, '경주 시작'); go.type = 'button'; go.onclick = () => send({ t: 'start', n: +n.value || 1 }); b.append('연속', n, '경주', go); }
+    if (S.ph === 'idle') { const n = el('input'); n.type = 'number'; n.min = 1; n.max = 20; n.value = 3; n.setAttribute('aria-label', '연속 경주 수');
+      // 걸기 시간(2026-11-08 부장님 「1분을 30초로 바꿀 수 있게」) — 10~120초 · 마지막에 쓴 값 기억
+      let s0 = 60; try { s0 = +localStorage.getItem('derby_betsec') || 60; } catch (e) {} const sec = el('input'); sec.type = 'number'; sec.min = 10; sec.max = 120; sec.step = 5; sec.value = s0; sec.className = 'bsec'; sec.setAttribute('aria-label', '걸기 시간(초)');
+      const go = el('button', null, '경주 시작'); go.type = 'button'; go.onclick = () => { const v = Math.max(10, Math.min(120, Math.round(+sec.value || 60))); try { localStorage.setItem('derby_betsec', v); } catch (e) {} send({ t: 'start', n: +n.value || 1, sec: v }); };
+      b.append('연속', n, '경주 ㆍ 걸기', sec, '초', go); }
     else { const s = el('button', 'red', S.ph === 'bet' ? '이번 경주 취소' : '이번 경주 뒤 멈추기'); s.type = 'button'; s.onclick = () => send({ t: 'stop' }); b.append(el('span', null, '남은 연속 경주 ' + (S.seq || 0)), s); }
     // 코인 주기(2026-11-08 부장님 「운영자가 전체 공평하게 10,000원씩」) — 대기 · 걸기 때만 · 접속한 사람 모두에게
     if (S.ph === 'idle' || S.ph === 'bet') {
@@ -244,7 +248,7 @@
     if (o.t === 'st') {
       const was = S.ph, wasRn = S.rn; S = Object.assign({}, o, { until: o.left ? Date.now() + o.left : 0 });
       if ((o.ph === 'run' || o.ph === 'res') && o.fr) { if (!plan || plan.rn !== o.rn) { plan = { rn: o.rn, fr: o.fr, ev: o.ev, fin: o.fin, ord: o.ord, sty: o.sty }; callShown = new Set(); lastLead = -1; } if (o.ph === 'run') startAt = Date.now() - ((o.rl || 0) + 800 - (o.left || 0)); }
-      if (o.ph === 'bet' && (was !== 'bet' || wasRn !== o.rn)) { pick = []; banner('제 ' + o.rn + '경주 걸기 시작!', '60초 안에 걸어 주세요', 2200); }
+      if (o.ph === 'bet' && (was !== 'bet' || wasRn !== o.rn)) { pick = []; banner('제 ' + o.rn + '경주 걸기 시작!', Math.round((o.left || 60000) / 1000) + '초 안에 걸어 주세요', 2200); } // 운영자가 정한 걸기 시간
       if (o.ph === 'run' && was === 'bet') { say('출발했습니다!'); banner('출발!', '', 1000); }
       if (o.ph === 'res' && was === 'run' && S.me && S.me.my && S.me.my.got) toast('적중! +' + money(S.me.my.got - S.me.my.put) + ' 코인', 4000);
       if (o.op && !S._opSaid) S._opSaid = 1;
