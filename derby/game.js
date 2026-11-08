@@ -17,7 +17,7 @@
   if (!/^[A-Za-z0-9_-]{16,40}$/.test(pid)) { const a = new Uint8Array(18); crypto.getRandomValues(a); pid = btoa(String.fromCharCode(...a)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); try { localStorage.setItem('derby_pid', pid); } catch (e) {} }
   let nick = ''; try { nick = localStorage.getItem('derby_nick') || ''; } catch (e) {}
 
-  let ws = null, S = { ph: 'idle' }, retry = 0, opPass = '', plan = null, startAt = 0, drawnKey = '', tab = 'w', pick = [], amt = 1000, calls = [], callShown = new Set(), lastLead = -1;
+  let ws = null, S = { ph: 'idle' }, retry = 0, opPass = '', plan = null, startAt = 0, drawnKey = '', tab = 'w', pick = [], amt = 0, calls = [], callShown = new Set(), lastLead = -1;
 
   /* ── 말 그림 ── img/horse.webp(질주 동작 n칸 가로) + horse.json { n, fw, fh, silk: 마젠타를 바꿀지 } · 없으면 임시 모양 */
   const SP = { ok: false, img: null, n: 1, fw: 0, fh: 0, col: [] };
@@ -159,9 +159,10 @@
     const sel = el('div', 'sel'); sel.append(el('span', null, '선택한 말')); if (!pick.length) sel.append(el('span', null, tab === 'w' ? '출전표에서 1마리를 눌러요' : '출전표에서 2마리를 눌러요')); pick.forEach((h) => sel.append(no(h), el('span', null, nm(h))));
     const am = el('div', 'amt'), mi = el('button', null, '−'), inp = el('input'), pl = el('button', null, '+'); mi.type = pl.type = 'button'; inp.inputMode = 'numeric'; inp.value = money(amt); inp.setAttribute('aria-label', '걸 금액');
     const setA = (v) => { amt = Math.max(0, Math.floor(v)); inp.value = money(amt); ex.replaceChildren(...expectTxt()); };
-    mi.onclick = () => setA(amt - 100); pl.onclick = () => setA(amt + 100); inp.oninput = () => { amt = parseInt(inp.value.replace(/\D/g, ''), 10) || 0; ex.replaceChildren(...expectTxt()); }; inp.onblur = () => { inp.value = money(amt); };
+    mi.onclick = () => setA(amt - 10000); pl.onclick = () => setA(amt + 10000); // ∓ 1만씩 inp.oninput = () => { amt = parseInt(inp.value.replace(/\D/g, ''), 10) || 0; ex.replaceChildren(...expectTxt()); }; inp.onblur = () => { inp.value = money(amt); };
     am.append(mi, inp, pl);
-    const chips = el('div', 'chips'); [[100, '100'], [1000, '1,000'], [5000, '5,000'], [0, '전부']].forEach(([v, t]) => { const b = el('button', null, t); b.type = 'button'; b.onclick = () => setA(v || left()); chips.append(b); });
+    // 금액 단추(2026-11-08 부장님 「숫자 입력이 힘드니 10만 20만 30만 · 20만 누르면 20만, 거기서 10만 누르면 30만」) — 누를 때마다 더함 · 전부 · 0
+    const chips = el('div', 'chips five'); [[100000, '+10만'], [200000, '+20만'], [300000, '+30만'], ['all', '전부'], ['zero', '0']].forEach(([v, t]) => { const b = el('button', v === 'zero' ? 'zero' : null, t); b.type = 'button'; b.onclick = () => setA(v === 'all' ? left() : v === 'zero' ? 0 : Math.min(left(), amt + v)); chips.append(b); });
     const ex = el('div', 'expect'); ex.append(...expectTxt());
     const go = el('button', 'go', '걸기 (베팅)'); go.type = 'button'; go.disabled = !S.me || S.me.m <= 0; go.onclick = placeBet;
     const wal = el('div', 'wallet'); wal.append(el('span', null, '내 코인 잔고'), el('b', null, money(left())));
@@ -179,7 +180,7 @@
     if (amt <= 0) return toast('걸 금액을 적어 주세요'); if (amt > left()) return toast('가진 코인보다 많이 걸 수 없어요');
     const next = ((S.me && S.me.bs) || []).map((x) => ({ k: x.k, h: x.h.slice(), a: x.a })), h = tab === 'q' ? [Math.min(...pick), Math.max(...pick)] : pick.slice(), same = next.find((x) => x.k === tab && x.h.join() === h.join());
     if (same) same.a += amt; else next.push({ k: tab, h, a: amt });
-    send({ t: 'bet', bs: next }); pick = []; // 표시는 서버가 받아 준 것(S.me.bs)만
+    send({ t: 'bet', bs: next }); pick = []; amt = 0; // 표시는 서버가 받아 준 것(S.me.bs)만 · 금액은 다시 0 부터 쌓기
   }
   function slipList() {
     const box = el('div', 'slip'), bs = (S.me && S.me.bs) || []; if (!bs.length) box.append(el('p', 'empty', '아직 안 걸었어요'));
