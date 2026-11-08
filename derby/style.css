@@ -129,3 +129,22 @@ button, input { font: inherit; }
 .modal p { margin: 0; color: var(--muted); font-size: 13px; }
 .modal input { height: 42px; border-radius: 8px; border: 1px solid var(--line); background: #050d22; color: #fff; padding: 0 10px; font-size: 17px; }
 @media (max-width: 560px) { .lrank { width: auto; padding: 3px 4px; } .lrank li { grid-template-columns: 1.1em 2em; } .lrank li span { display: none; } .live-tag { font-size: 10px; } } /* 휴대폰: 순위표는 번호만(중계를 덜 가리게) */
+/* 오른쪽 칸 — 관전석(코인 0) · 접속자 코인(운영자만) (2026-11-08 부장님) */
+.wrap { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 8px; align-items: start; }
+.main { display: grid; gap: 8px; min-width: 0; }
+.side { display: grid; gap: 8px; position: sticky; top: 8px; }
+.side:empty { display: none; }
+@media (max-width: 1000px) { .wrap { grid-template-columns: 1fr; } .side { position: static; } }
+.seats { padding: 8px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.seat { display: grid; justify-items: center; gap: 2px; padding: 6px 2px 4px; border-radius: 6px 6px 3px 3px; background: linear-gradient(180deg, #24418a, #142a5e); border-bottom: 3px solid #0a1638; font-size: 12px; font-weight: 700; min-width: 0; }
+.seat i { width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle at 50% 35%, #f3d3b0 0 38%, #3a5aa8 39%); box-shadow: 0 1px 0 rgba(0,0,0,.4); }
+.seat span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.seat.me span { color: var(--gold); }
+.seats .empty, .ppl .empty { grid-column: 1 / -1; color: var(--muted); font-size: 13px; text-align: center; padding: 6px 0; }
+.ppl { margin: 0; padding: 6px 8px 8px; list-style: none; display: grid; gap: 3px; max-height: 60vh; overflow: auto; }
+.ppl li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 6px; padding: 4px 6px; border-radius: 6px; background: rgba(255,255,255,.04); font-size: 13px; }
+.ppl li b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
+.ppl li span { color: var(--gold); font-weight: 900; font-variant-numeric: tabular-nums; text-align: right; }
+.ppl li small { grid-column: 1 / -1; color: var(--muted); font-size: 11px; }
+.ppl li.zero span { color: #ff8a7a; }
+.ppl .sum { background: none; border-top: 1px solid var(--line); border-radius: 0; margin-top: 2px; }
