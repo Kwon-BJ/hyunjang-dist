@@ -149,3 +149,4 @@ button, input { font: inherit; }
 .ppl li.zero span { color: #ff8a7a; }
 .ppl .sum { background: none; border-top: 1px solid var(--line); border-radius: 0; margin-top: 2px; }
 .opbar input.bsec { width: 64px; } /* 걸기 시간(초) */
+.chips.five { grid-template-columns: repeat(5, 1fr); } .chips button.zero { background: #3a1a22; border-color: #7a2a35; } /* +10만 · +20만 · +30만 · 전부 · 0 (2026-11-08) */
