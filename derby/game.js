@@ -263,6 +263,9 @@
     } else if (o.t === 'say') { const L = $('chatLines'), s = el('span'); s.append(el('b', null, '[' + o.n + ']'), ' ' + o.m + '  '); L.prepend(s); while (L.childElementCount > 6) L.lastChild.remove(); }
     else if (o.t === 'on') S.on = o.on;
     else if (o.t === 'err' || o.t === 'msg' || o.t === 'ok') toast(o.m, 3000);
+    // 닉네임 겹침(2026-11-08 부장님 「중복되는 아이디는 못 하게」) — 서버가 안 받으면 다시 묻고, 받아 주면 그때 저장
+    else if (o.t === 'nickTaken') { if (!document.querySelector('.modal.nick')) { const i = ask('다른 닉네임을 정해 주세요', '「' + o.n + '」 은(는) 이미 다른 사람이 쓰고 있어요 ㆍ 지금은 「' + o.now + '」 으로 보여요 (12자까지)', '', (v) => send({ t: 'nick', n: v.slice(0, 12) })); i.maxLength = 12; i.closest('.modal').classList.add('nick'); } }
+    else if (o.t === 'nickOk') { nick = o.n; try { localStorage.setItem('derby_nick', nick); } catch (e) {} toast('닉네임을 「' + nick + '」 으로 정했어요', 2500); }
     $('onN').textContent = S.on || 0;
   }
   function banner(a, b, ms) { const x = $('banner'); x.replaceChildren(a); if (b) x.append(el('small', null, b)); x.hidden = false; clearTimeout(banner.t); banner.t = setTimeout(() => { x.hidden = true; }, ms); }
@@ -273,7 +276,7 @@
     w.onclose = (e) => { if (ws !== w) return; ws = null; if (e.code === 4000) { toast('다른 창에서 들어와서 이 창은 나왔어요', 6000); return; } if (retry < 20) setTimeout(open, Math.min(10000, 1000 * ++retry)); };
   }
   function ask(titleT, tip, val, ok) { const m = el('div', 'modal'), f = el('form'), i = el('input'), b = el('button', 'go', '확인'); i.value = val || ''; i.maxLength = 30; f.append(el('h3', null, titleT), el('p', null, tip), i, b); m.append(f); document.body.append(m); setTimeout(() => i.focus(), 30); f.onsubmit = (e) => { e.preventDefault(); const v = i.value.trim(); if (!v) return; m.remove(); ok(v); }; m.onclick = (e) => { if (e.target === m && nick) m.remove(); }; return i; }
-  function needNick(then) { ask('닉네임을 정해 주세요', '로그인 없이 이 닉네임으로 코인 순위에 올라가요 (12자까지)', nick, (v) => { nick = v.slice(0, 12); try { localStorage.setItem('derby_nick', nick); } catch (e) {} if (ws) send({ t: 'nick', n: nick }); then && then(); }).maxLength = 12; }
+  function needNick(then) { ask('닉네임을 정해 주세요', '로그인 없이 이 닉네임으로 코인 순위에 올라가요 (12자까지)', nick, (v) => { if (ws) { send({ t: 'nick', n: v.slice(0, 12) }); return; } nick = v.slice(0, 12); try { localStorage.setItem('derby_nick', nick); } catch (e) {} then && then(); }).maxLength = 12; } // 접속 중엔 서버가 받아 줄 때(nickOk) 저장 · 처음엔 들어가면서 서버가 겹침을 봄
   $('nickB').onclick = () => needNick();
   $('opB').onclick = () => { const i = ask('운영자', '운영자 비밀번호를 적어 주세요', '', (v) => { opPass = v; send({ t: 'op', pass: v }); }); i.type = 'password'; };
   $('chatF').onsubmit = (e) => { e.preventDefault(); const v = $('chatI').value.trim(); if (!v) return; send({ t: 'say', m: v }); $('chatI').value = ''; };
