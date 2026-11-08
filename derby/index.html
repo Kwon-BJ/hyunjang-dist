@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1a3a">
+<title>RACE LIVE · 온라인 경마</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%226%22 fill=%22%230b1a3a%22/%3E%3Ctext x=%2216%22 y=%2223%22 font-size=%2218%22 text-anchor=%22middle%22 fill=%22%23f2c14e%22 font-weight=%22900%22%3ER%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css?v=202611081149">
+</head>
+<body>
+<!-- 경마장(2026-11-08) — 시안 보관/시안/01-경마중계.png · 서버는 클라우드플레어 워커 derby-race(서버/) · 로그인 없이 닉네임만 -->
+<div class="app" id="app">
+  <header class="top">
+    <div class="logo"><b>RACE LIVE</b><small>온라인 경마 게임</small></div>
+    <div class="title"><span id="tTitle">경마장에 오신 걸 환영해요</span></div>
+    <div class="clock" id="tClock" hidden><small id="tClockL">걸기 마감까지</small><b id="tClockT">0:00</b></div>
+  </header>
+
+  <!-- 경주 화면(중계) — 걸기 동안에도 출발 대기 장면을 보여 줌 -->
+  <section class="stage" id="stage">
+    <canvas id="cv"></canvas>
+    <div class="live-tag" id="liveTag" hidden>실시간 중계</div>
+    <ol class="lrank" id="lrank" hidden></ol>
+    <div class="lbar" id="lbar" hidden>
+      <svg class="map" id="map" viewBox="0 0 120 50" aria-hidden="true"><rect x="6" y="6" width="108" height="38" rx="19" ry="19" class="trk"/><g id="mapDots"></g></svg>
+      <div class="dist"><span>잔여</span><b id="distT">1600m</b><i id="distG"></i></div>
+      <p class="call" id="call"></p>
+    </div>
+    <div class="banner" id="banner" hidden></div>
+  </section>
+
+  <!-- 걸기 · 대기 · 결과 판 -->
+  <section class="board" id="board"></section>
+
+  <footer class="chat">
+    <span class="chat-l">실시간 채팅</span>
+    <div class="chat-lines" id="chatLines"></div>
+    <form id="chatF"><input id="chatI" maxlength="40" placeholder="응원 한마디…" autocomplete="off" enterkeyhint="send" aria-label="채팅"><button>보내기</button></form>
+    <span class="online">접속자 <b id="onN">0</b>명</span>
+  </footer>
+  <p class="foot">게임 코인은 실제 돈이 아니에요 ㆍ 처음 10,000 코인, 다 쓰면 다음 날 다시 받아요 ㆍ <button type="button" id="opB" class="linkb">운영자</button> ㆍ <button type="button" id="nickB" class="linkb">닉네임 바꾸기</button></p>
+</div>
+<p class="toast" id="toast" hidden></p>
+<script src="game.js?v=202611081149"></script>
+</body>
+</html>
