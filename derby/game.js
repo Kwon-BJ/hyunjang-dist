@@ -159,7 +159,7 @@
     const ex = el('div', 'expect'); ex.append(...expectTxt());
     const go = el('button', 'go', '걸기 (베팅)'); go.type = 'button'; go.disabled = !S.me || S.me.m <= 0; go.onclick = placeBet;
     const wal = el('div', 'wallet'); wal.append(el('span', null, '내 코인 잔고'), el('b', null, money(left())));
-    p2.append(tabs, sel, am, chips, ex, go, wal, slipList()); if (S.me && S.me.m <= 0) p2.append(el('p', 'slip empty', '오늘 코인을 다 썼어요 ㆍ 내일 다시 10,000 을 받아요'));
+    p2.append(tabs, sel, am, chips, ex, go, wal, slipList()); if (S.me && S.me.m <= 0) p2.append(el('p', 'slip empty', '코인이 없어요 ㆍ 운영자가 나눠 줄 때까지 오른쪽 관전석에서 구경해요'));
     g2.append(p2); return g2;
   }
   const betSum = () => ((S.me && S.me.bs) || []).reduce((a, b) => a + b.a, 0);
@@ -207,10 +207,34 @@
     const w = el('div', 'wallet'); w.append(el('span', null, (S.me && S.me.n) + ' 님의 코인'), el('b', null, money(S.me && S.me.m))); p.append(w);
     const g2 = el('div', 'betgrid'); g2.append(p, rankPan()); return g2;
   }
+  /* 오른쪽 칸(2026-11-08 부장님 「돈 다 쓴 사람들은 우측에 관전석」 「운영자는 접속한 사람들 얼마씩 들고 있는지」) */
+  let sideKey = '';
+  function side() {
+    const key = JSON.stringify([S.spec, S.ppl, S.me && S.me.n]); if (key === sideKey) return; sideKey = key; const sd = $('side'); sd.replaceChildren();
+    const p1 = el('div', 'pan'), h1 = el('h3', null, '관전석'); h1.append(el('small', null, '(코인 0 · ' + (S.spec || []).length + '명)')); p1.append(h1);
+    const seats = el('div', 'seats'); (S.spec || []).forEach((n) => { const s = el('div', 'seat' + (S.me && n === S.me.n ? ' me' : '')); s.append(el('i'), el('span', null, n)); s.title = n; seats.append(s); });
+    if (!(S.spec || []).length) seats.append(el('p', 'empty', '아직 비어 있어요 ㆍ 코인을 다 쓰면 여기서 구경해요')); p1.append(seats); sd.append(p1);
+    if (S.ppl) { // 운영자만
+      const p2 = el('div', 'pan'), h2 = el('h3', null, '접속자 코인'); h2.append(el('small', null, '(운영자만 · ' + S.ppl.length + '명)')); p2.append(h2);
+      const ol = el('ol', 'ppl'); S.ppl.forEach((x) => { const li = el('li', x.m <= 0 ? 'zero' : ''); li.append(el('b', null, x.n), el('span', null, money(x.m))); if (x.b) li.append(el('small', null, '이번 판 건 코인 ' + money(x.b))); ol.append(li); });
+      if (!S.ppl.length) ol.append(el('li', 'empty', '접속한 사람이 없어요'));
+      else { const sum = el('li', 'sum'); sum.append(el('b', null, '합계'), el('span', null, money(S.ppl.reduce((a, x) => a + x.m, 0)))); ol.append(sum); }
+      p2.append(ol); sd.append(p2);
+    }
+  }
   function opBar() {
     const b = el('div', 'pan opbar'); b.append(el('b', null, '운영자'));
     if (S.ph === 'idle') { const n = el('input'); n.type = 'number'; n.min = 1; n.max = 20; n.value = 3; n.setAttribute('aria-label', '연속 경주 수'); const go = el('button', null, '경주 시작'); go.type = 'button'; go.onclick = () => send({ t: 'start', n: +n.value || 1 }); b.append('연속', n, '경주', go); }
     else { const s = el('button', 'red', S.ph === 'bet' ? '이번 경주 취소' : '이번 경주 뒤 멈추기'); s.type = 'button'; s.onclick = () => send({ t: 'stop' }); b.append(el('span', null, '남은 연속 경주 ' + (S.seq || 0)), s); }
+    // 코인 주기(2026-11-08 부장님 「운영자가 전체 공평하게 10,000원씩」) — 대기 · 걸기 때만 · 접속한 사람 모두에게
+    if (S.ph === 'idle' || S.ph === 'bet') {
+      const row = el('div', 'opbar'); row.style.cssText = 'border:0;padding:0;width:100%'; const a = el('input'); a.inputMode = 'numeric'; a.value = '10,000'; a.style.width = '90px'; a.setAttribute('aria-label', '줄 코인');
+      a.oninput = () => { const v = parseInt(a.value.replace(/\D/g, ''), 10); a.value = isNaN(v) ? '' : v.toLocaleString('ko-KR'); }; const amt2 = () => parseInt(a.value.replace(/\D/g, ''), 10) || 0;
+      const add = el('button', null, '모두에게 더하기'), set = el('button', null, '모두 맞추기'); add.type = set.type = 'button';
+      add.onclick = () => send({ t: 'give', mode: 'add', a: amt2() }); set.onclick = () => send({ t: 'give', mode: 'set', a: amt2() });
+      row.append('코인', a, add, set); b.append(row);
+    }
+    if (S.ph === 'idle') { const r = el('button', 'red', '코인 순위 초기화'); r.type = 'button'; r.onclick = () => { if (r.dataset.sure) send({ t: 'reset' }); else { r.dataset.sure = '1'; r.textContent = '한 번 더 누르면 모두 0'; setTimeout(() => { if (r.isConnected) { delete r.dataset.sure; r.textContent = '코인 순위 초기화'; } }, 3000); } }; b.append(r); }
     return b;
   }
 
@@ -224,7 +248,7 @@
       if (o.ph === 'run' && was === 'bet') { say('출발했습니다!'); banner('출발!', '', 1000); }
       if (o.ph === 'res' && was === 'run' && S.me && S.me.my && S.me.my.got) toast('적중! +' + money(S.me.my.got - S.me.my.put) + ' 코인', 4000);
       if (o.op && !S._opSaid) S._opSaid = 1;
-      title(); board();
+      title(); board(); side();
     } else if (o.t === 'say') { const L = $('chatLines'), s = el('span'); s.append(el('b', null, '[' + o.n + ']'), ' ' + o.m + '  '); L.prepend(s); while (L.childElementCount > 6) L.lastChild.remove(); }
     else if (o.t === 'on') S.on = o.on;
     else if (o.t === 'err' || o.t === 'msg' || o.t === 'ok') toast(o.m, 3000);
