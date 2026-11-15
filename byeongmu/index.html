@@ -422,7 +422,7 @@ footer .tagline::before, footer .tagline::after { width: clamp(30px, 6vw, 60px);
 .gate b { color: var(--gold-hi); }
 body.locked .gate { display: block; }
 body.locked #menu, body.locked #homeBtn, body.locked #noticeView, body.locked #rosterView,
-body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked #membersView, body.locked #bannerTools { display: none !important; }
+body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked #miniView, body.locked #membersView, body.locked #bannerTools { display: none !important; }
 @media (max-width: 1500px) { body.locked .acct { margin-left: auto; } }
 /* 프로필 사진 */
 .av { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; flex: none; border: 1px solid var(--gold-lo); }
@@ -622,6 +622,12 @@ body.locked #boardView, body.locked #badView, body.locked #gameView, body.locked
 
 /* 연병장 — 수요일 점검 시간에 문파원끼리 한 판 (2026-10-26). 그림은 직접 그린 도형만(게임 공식 그림 · 캐릭터 안 씀) */
 #gameView { display: flex; flex-direction: column; gap: 14px; }
+/* 미니게임 칸 · 수달단 제목의 「미니게임 ›」 (2026-11-15) */
+.mini-list { grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 340px)); }
+.mini-list .cap b { font-size: 17px; }
+.section-label .crumb { background: none; border: 0; padding: 0; font: inherit; color: var(--gold); cursor: pointer; }
+.section-label .crumb:hover { text-decoration: underline; }
+.section-label .crumb-sep { color: var(--muted); font-weight: 400; }
 .game-hint { margin: 0; color: var(--muted); font-size: 13px; }
 .game-box { position: relative; border: 1px solid var(--gold-lo); border-radius: 6px; overflow: hidden; background: #07060a; }
 .game-box canvas { display: block; width: 100%; height: min(80vh, 760px); min-height: 420px; /* 2026-10-27 "화면을 조금 더 키워서" 68vh · 620 → 80vh · 760 */ touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
@@ -1688,7 +1694,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
       <button type="button" class="menu-item" data-go="tactics">전략판</button>
       <button type="button" class="menu-item" data-go="board">자유게시판</button>
       <button type="button" class="menu-item" data-go="bad">비매너 게시판</button>
-      <button type="button" class="menu-item" data-go="game">수달단</button>
+      <button type="button" class="menu-item" data-go="mini">미니게임</button>
       <button type="button" class="menu-item" data-go="members" id="membersMenu" hidden>가입 승인</button>
     </div>
     <div class="acct" id="acct"></div>
@@ -1969,8 +1975,17 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     </section>
 
     <!-- 연병장 — 점검 시간 미니게임. 점수는 이 기기에만 저장(창구 안 씀) (2026-10-26) -->
+    <!-- 미니게임 — 수달단 · 수달피아를 고르는 칸 (2026-11-15 부장님 「미니게임 > 수달단 / 수달피아」) -->
+    <section id="miniView" hidden>
+      <h2 class="section-label"><svg aria-hidden="true"><use href="#i-war"/></svg>미니게임</h2>
+      <div class="album mini-list">
+        <button type="button" class="acard" id="miniOtter"><div class="pic"><img src="img/loading.webp" alt=""></div><div class="cap"><b>수달단</b><span>수달 대원과 함께 잡귀를 물리치는 생존 게임</span></div></button>
+        <button type="button" class="acard" id="miniPia"><div class="pic"><img src="img/mini-sudalpia.webp" alt=""></div><div class="cap"><b>수달피아</b><span>숨은 밍크를 찾는 마피아 게임 · 4~10명</span></div></button>
+      </div>
+    </section>
+
     <section id="gameView" hidden>
-      <h2 class="section-label"><svg aria-hidden="true"><use href="#i-war"/></svg>수달단</h2>
+      <h2 class="section-label"><svg aria-hidden="true"><use href="#i-war"/></svg><button type="button" class="crumb" id="toMini">미니게임</button><span class="crumb-sep">›</span>수달단</h2>
       <div class="globby" id="gLobby" hidden></div>
       <p class="game-hint">화면을 누른 채 끌면 움직이고(PC 는 방향키 · WASD), 총은 <b>바라보는 쪽</b>으로 쏘고, 그쪽 둘레 3m(밝은 동그라미) 안 몬스터는 어느 쪽이든 자동 조준돼요. 단계마다 정해진 시간(1단계 30초 → 7단계부터 60초) 동안만 잡귀가 나오고, 시간이 끝나 남은 잡귀를 다 잡으면 <b>단계 통과 · 30초 휴식</b>(단추로 건너뛸 수 있어요). 2 · 4 · 6 …단계는 시간이 끝나면 <b>맵 가운데에 대장</b> — 잡아야 통과예요(단계는 끝없이). 상자는 조준 동그라미 안에서 공격으로 깨요. 레벨이 오르면 강화나 <b>스킬</b>을 고르고, 스킬은 <b>캐릭터마다 3가지</b>(시작할 때 캐릭터 밑에 보여요) — 배우면 <b>저절로</b> 나가요(오른쪽 아래 단추 · PC 1 ~ 3 으로도), <b>대쉬</b>는 오른쪽 아래 단추(PC 는 스페이스) — 5초마다, 대쉬하는 동안은 안 맞아요. <b>죽을 때까지</b> 버틴 만큼 점수 — 끝나면 순위표에 올라가요!</p>
       <div class="game-box" id="gameBox">
@@ -2118,7 +2133,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202611081339";
+  const BUILD = "202611150138";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -2352,15 +2367,15 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitTopbar);
   function renderMenu() {
     const items = Array.from(document.querySelectorAll(".menu-item"));
-    const key = view === "notice" ? filter : view;
+    const key = view === "notice" ? filter : view === "game" ? "mini" : view; // 수달단은 미니게임 아래(2026-11-15)
     const hit = items.find((b) => b.dataset.go === key);
     items.forEach((b) => { if (b === hit) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   }
   function goHome() { view = "notice"; filter = "전체"; query = ""; $("search").value = ""; render(); window.scrollTo(0, 0); }
-  const VIEW_EL = { roster: "rosterView", tactics: "tacticsView", board: "boardView", bad: "badView", game: "gameView", members: "membersView", auth: "authView" };
+  const VIEW_EL = { roster: "rosterView", tactics: "tacticsView", board: "boardView", bad: "badView", mini: "miniView", game: "gameView", members: "membersView", auth: "authView" };
   /* 보던 칸을 주소 끝(#schedule 등)에 적어 둔다 — F5 를 눌러도 공지사항으로 안 돌아가게 (2026-10-23
      "문파일정은 문파 일정 이런식으로"). 로그인 화면일 때는 안 바꿔서, 로그인하면 보던 칸으로 간다. */
-  const HASH = { "전체": "", "필독": "must", "문파전": "war", "행사": "schedule", "규정": "rules", "일반": "general", roster: "roster", tactics: "tactics", board: "board", bad: "bad", game: "game", members: "members" };
+  const HASH = { "전체": "", "필독": "must", "문파전": "war", "행사": "schedule", "규정": "rules", "일반": "general", roster: "roster", tactics: "tactics", board: "board", bad: "bad", mini: "minigame", game: "game", members: "members" };
   function hashNow() { return view === "notice" ? HASH[filter] || "" : HASH[view] || null; }
   function writeHash() {
     const h = hashNow();
@@ -2402,6 +2417,11 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
   });
   $("homeBtn").onclick = goHome;
   $("brandBtn").onclick = goHome;
+  /* 미니게임 > 수달단 / 수달피아 (2026-11-15) — 수달피아는 따로 만든 웹게임(워커)이라 새 창 */
+  const SUDALPIA_URL = "https://sudaldan-mafia.byeongmu-munpa.workers.dev/";
+  $("miniOtter").onclick = () => go("game", true);
+  $("miniPia").onclick = () => window.open(SUDALPIA_URL, "_blank");
+  $("toMini").onclick = () => go("mini", true);
 
   /* ── 공지사항 ── */
   function sorted() { return DATA.notices.slice().sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || ""))); }
