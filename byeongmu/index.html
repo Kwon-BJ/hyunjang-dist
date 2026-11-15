@@ -1975,12 +1975,13 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
     </section>
 
     <!-- 연병장 — 점검 시간 미니게임. 점수는 이 기기에만 저장(창구 안 씀) (2026-10-26) -->
-    <!-- 미니게임 — 수달단 · 수달피아를 고르는 칸 (2026-11-15 부장님 「미니게임 > 수달단 / 수달피아」) -->
+    <!-- 미니게임 — 수달단 · 수달피아 · 수달즈를 고르는 칸 (2026-11-15 부장님 「미니게임 > 수달단 / 수달피아」 · 수달즈 추가) -->
     <section id="miniView" hidden>
       <h2 class="section-label"><svg aria-hidden="true"><use href="#i-war"/></svg>미니게임</h2>
       <div class="album mini-list">
         <button type="button" class="acard" id="miniOtter"><div class="pic"><img src="img/loading.webp" alt=""></div><div class="cap"><b>수달단</b><span>수달 대원과 함께 잡귀를 물리치는 생존 게임</span></div></button>
         <button type="button" class="acard" id="miniPia"><div class="pic"><img src="img/mini-sudalpia.webp" alt=""></div><div class="cap"><b>수달피아</b><span>숨은 밍크를 찾는 마피아 게임 · 4~10명</span></div></button>
+        <button type="button" class="acard" id="miniZ"><div class="pic"><img src="img/mini-sudalz.webp" alt=""></div><div class="cap"><b>수달즈</b><span>탈것을 타고 섬을 날려 버리는 턴제 포격 · 2~8명</span></div></button>
       </div>
     </section>
 
@@ -2133,7 +2134,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202611150246";
+  const BUILD = "202611150543";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -2419,12 +2420,14 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
   $("brandBtn").onclick = goHome;
   /* 미니게임 > 수달단 / 수달피아 (2026-11-15) — 수달피아는 따로 만든 웹게임(워커)이라 새 창 */
   const SUDALPIA_URL = "https://sudaldan-mafia.byeongmu-munpa.workers.dev/";
+  const SUDALZ_URL = "https://sudalz.byeongmu-munpa.workers.dev/"; /* 수달즈(2026-11-15) — 수달피아와 같은 방식(새 창 · 문파 로그인) */
   $("miniOtter").onclick = () => go("game", true);
   $("miniPia").onclick = () => window.open(SUDALPIA_URL, "_blank");
+  $("miniZ").onclick = () => window.open(SUDALZ_URL, "_blank");
   /* 수달피아 계정 = 병무청 문파 로그인(2026-11-15 부장님 「이름 만들게 하지 말고」) — 수달피아 창이 물어보면(sdm-hello) 그 창에만 로그인 정보를 넘긴다.
      주소에는 안 싣고 수달피아 주소(origin)일 때만 답한다. 수달피아 서버가 이 토큰으로 병무청 me 를 다시 물어 닉네임을 확인한다 */
   window.addEventListener("message", (e) => {
-    if (e.origin !== new URL(SUDALPIA_URL).origin || !e.data || e.data.t !== "sdm-hello" || !token || !me || !e.source) return;
+    if (![new URL(SUDALPIA_URL).origin, new URL(SUDALZ_URL).origin].includes(e.origin) || !e.data || e.data.t !== "sdm-hello" || !token || !me || !e.source) return;
     e.source.postMessage({ t: "sdm-bmc", token: token, name: me.gameId || "" }, e.origin);
   });
   $("toMini").onclick = () => go("mini", true);
