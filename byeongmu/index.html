@@ -2133,7 +2133,7 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
   /* 새 판 알아채기 — 휴대폰(특히 카톡 안 브라우저)이 예전 화면을 붙잡고 있어
      단량님이 [비밀번호] 단추를 못 봤다 (2026-10-19). 열 때마다 올라간 판을 한 번 보고, 다르면 새로 연다.
      BUILD 는 올리기.mjs 가 올릴 때마다 적는다. */
-  const BUILD = "202611150138";
+  const BUILD = "202611150246";
   /* 열어 둔 동안에도 새 판을 본다 — "홈페이지 이용하고 있는 문파원들 새로고침 자동으로, 업데이트 할 때마다" (2026-10-26).
      1분마다 · 다른 앱 보다 돌아올 때. 글을 쓰는 중이거나 게임 중이면 날아가지 않게 위에 띠만 띄우고, 끝나면 그때 새로 연다 */
   let newBuild = "";
@@ -2421,6 +2421,12 @@ img.ii { width: 1.15em !important; height: 1.15em !important; max-width: none !i
   const SUDALPIA_URL = "https://sudaldan-mafia.byeongmu-munpa.workers.dev/";
   $("miniOtter").onclick = () => go("game", true);
   $("miniPia").onclick = () => window.open(SUDALPIA_URL, "_blank");
+  /* 수달피아 계정 = 병무청 문파 로그인(2026-11-15 부장님 「이름 만들게 하지 말고」) — 수달피아 창이 물어보면(sdm-hello) 그 창에만 로그인 정보를 넘긴다.
+     주소에는 안 싣고 수달피아 주소(origin)일 때만 답한다. 수달피아 서버가 이 토큰으로 병무청 me 를 다시 물어 닉네임을 확인한다 */
+  window.addEventListener("message", (e) => {
+    if (e.origin !== new URL(SUDALPIA_URL).origin || !e.data || e.data.t !== "sdm-hello" || !token || !me || !e.source) return;
+    e.source.postMessage({ t: "sdm-bmc", token: token, name: me.gameId || "" }, e.origin);
+  });
   $("toMini").onclick = () => go("mini", true);
 
   /* ── 공지사항 ── */
