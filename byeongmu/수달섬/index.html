@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#2f5d3a">
+<title>수달섬 서바이벌</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&display=swap" media="print" onload="this.media='all'">
+<style>
+/* 수달섬 서바이벌 — 1단계: 섬 걷기 (2026-11-17). 그림은 ChatGPT 시안(기획/그림) → node 기획/그림손질.cjs → img/ */
+:root { --bg: #2f5d3a; --ink: #fff8e8; --shade: rgba(20, 16, 10, .55); }
+html, body { margin: 0; height: 100%; background: var(--bg); overflow: hidden; }
+body { position: fixed; inset: 0; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; font-family: Jua, "Noto Sans KR", sans-serif; color: var(--ink); }
+#cv { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+#joy { position: fixed; width: 132px; height: 132px; margin: -66px 0 0 -66px; pointer-events: none; display: none; z-index: 2; }
+#joy img { position: absolute; display: block; }
+#joyBase { inset: 0; width: 100%; height: 100%; opacity: .8; }
+#joyKnob { width: 56px; height: 56px; left: 38px; top: 38px; }
+#hint { position: fixed; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom)); transform: translateX(-50%); padding: 6px 14px; border-radius: 999px; background: var(--shade); font-size: 14px; white-space: nowrap; pointer-events: none; z-index: 2; }
+#load { position: fixed; inset: 0; display: grid; place-items: center; background: var(--bg); font-size: 22px; z-index: 3; }
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div id="joy"><img id="joyBase" src="img/ui-조이스틱.webp" alt=""><img id="joyKnob" src="img/ui-손잡이.webp" alt=""></div>
+<div id="hint"></div>
+<div id="load">수달섬 불러오는 중…</div>
+<script>
+"use strict";
+const cv = document.getElementById("cv"), ctx = cv.getContext("2d");
+const IMG = {};
+const NAMES = ["수달-앞", "수달-옆", "수달-뒤", "땅-풀", "땅-흙", "땅-돌", "땅-물", "집-주황", "집-초록", "나무-사과", "나무", "울타리", "울타리-모서리", "돌담", "상자", "상자-둘", "건초", "통", "다리", "바위", "꽃"];
+
+// ── 섬(월드) — 좌표 단위는 그림 1px 기준. 수달 키 ≈ 140 ─────────────────────
+const W = 3200, H = 2400, ISLE = { cx: 1600, cy: 1200, rx: 1480, ry: 1080 };
+const STREAM = [[2380, -100], [2330, 400], [2420, 800], [2360, 1180], [2430, 1600], [2370, 2000], [2440, 2500]]; // 개울(위에서 아래로)
+const STREAM_HALF = 85;
+const BRIDGE = { x: 2362, y: 1180, s: 0.82 }; // 다리 가운데 · 크기
+const PLAZA = { x: 1450, y: 1180, r: 250 };
+const PATHS = [[[1450, 1180], [1130, 900]], [[1450, 1180], [1060, 1640]], [[1450, 1180], [1980, 820]], [[1450, 1180], [1960, 1720]], [[1450, 1180], [2362, 1180], [2860, 1080]], [[1450, 1180], [700, 1240]]];
+
+// 조각 종류: s 크기 · fw 발자리 너비(비율) · fd 발자리 깊이(px, 0 이면 안 막힘)
+const KIND = {
+  "집-주황": { s: 1.25, fw: 0.78, fd: 120 }, "집-초록": { s: 1.25, fw: 0.78, fd: 120 },
+  "나무-사과": { s: 0.95, fw: 0.16, fd: 34 }, "나무": { s: 0.95, fw: 0.14, fd: 30 },
+  "울타리": { s: 0.42, fw: 0.95, fd: 22 }, "울타리-모서리": { s: 0.42, fw: 0.95, fd: 34 },
+  "돌담": { s: 0.5, fw: 0.95, fd: 36 }, "상자": { s: 0.3, fw: 0.9, fd: 34 }, "상자-둘": { s: 0.3, fw: 0.9, fd: 34 },
+  "건초": { s: 0.36, fw: 0.9, fd: 38 }, "통": { s: 0.3, fw: 0.8, fd: 28 }, "바위": { s: 0.5, fw: 0.85, fd: 50 }, "꽃": { s: 0.36, fw: 0, fd: 0 },
+};
+// [종류, 발 x, 발 y]
+const PROPS = [
+  ["집-주황", 1130, 860], ["집-초록", 1990, 780], ["집-주황", 1060, 1600], ["집-초록", 1960, 1680], ["집-주황", 2860, 1040],
+  ["나무-사과", 820, 700], ["나무-사과", 1500, 640], ["나무-사과", 1700, 600], ["나무", 600, 1000], ["나무", 560, 1500], ["나무", 760, 1900],
+  ["나무-사과", 1400, 2050], ["나무", 1700, 2100], ["나무", 2150, 2050], ["나무", 2700, 600], ["나무-사과", 2950, 1500], ["나무", 2700, 1850],
+  ["나무", 1250, 380], ["나무", 2050, 360], ["나무", 380, 1250],
+  ["울타리", 1640, 900], ["울타리", 1780, 900], ["울타리-모서리", 1890, 960],
+  ["돌담", 1750, 1420], ["돌담", 1180, 1330], ["돌담", 2650, 1300],
+  ["상자", 1300, 980], ["상자-둘", 1350, 1010], ["건초", 1750, 1110], ["통", 1830, 1130], ["통", 2210, 1500],
+  ["상자", 2620, 1180], ["건초", 2980, 1250], ["상자-둘", 860, 1350], ["통", 900, 1380],
+  ["바위", 2250, 900], ["바위", 2520, 1500], ["바위", 2250, 1950], ["바위", 700, 800],
+  ["꽃", 1560, 980], ["꽃", 1250, 1450], ["꽃", 2100, 1300], ["꽃", 1600, 1850], ["꽃", 950, 1100], ["꽃", 2780, 1330],
+];
+const things = []; // 그릴 것(조각 + 수달), 발 y 로 줄 세움
+const walls = [];  // 막는 상자 {x0,y0,x1,y1}
+
+// ── 수달 ───────────────────────────────────────────────────
+const CELL = 160, FOOT = 150; // 시트 칸 크기 · 발바닥 높이
+const ANIM = { idle: { row: 0, from: 0, n: 2, fps: 2 }, walk: { row: 0, from: 2, n: 4, fps: 8 }, run: { row: 1, from: 0, n: 4, fps: 11 } };
+const me = { x: PLAZA.x, y: PLAZA.y + 40, dir: "앞", flip: false, anim: "idle", t: 0, r: 22, foot: true };
+const WALK = 230, RUN = 400;
+
+// ── 입력 ───────────────────────────────────────────────────
+const keys = new Set();
+const joy = { on: false, id: null, ox: 0, oy: 0, dx: 0, dy: 0 };
+const JOY_R = 58;
+const touchy = matchMedia("(pointer: coarse)").matches;
+addEventListener("keydown", (e) => { keys.add(e.code); if (/^Arrow|Space/.test(e.code)) e.preventDefault(); });
+addEventListener("keyup", (e) => keys.delete(e.code));
+addEventListener("blur", () => keys.clear());
+const joyEl = document.getElementById("joy"), knob = document.getElementById("joyKnob");
+const showJoy = () => { joyEl.style.display = "block"; joyEl.style.left = joy.ox + "px"; joyEl.style.top = joy.oy + "px"; knob.style.transform = `translate(${joy.dx * JOY_R}px, ${joy.dy * JOY_R}px)`; };
+const restJoy = () => { joy.ox = 96; joy.oy = innerHeight - 110; joy.dx = joy.dy = 0; if (touchy) { showJoy(); joyEl.style.opacity = ".55"; } };
+cv.addEventListener("pointerdown", (e) => {
+  if (joy.on || e.clientX > innerWidth * 0.55) return; // 왼쪽 화면을 누르면 그 자리에 조이스틱
+  joy.on = true; joy.id = e.pointerId; joy.ox = e.clientX; joy.oy = e.clientY; joy.dx = joy.dy = 0;
+  cv.setPointerCapture(e.pointerId); joyEl.style.opacity = "1"; showJoy();
+});
+cv.addEventListener("pointermove", (e) => {
+  if (!joy.on || e.pointerId !== joy.id) return;
+  let dx = (e.clientX - joy.ox) / JOY_R, dy = (e.clientY - joy.oy) / JOY_R; const m = Math.hypot(dx, dy);
+  if (m > 1) { dx /= m; dy /= m; }
+  joy.dx = dx; joy.dy = dy; showJoy();
+});
+const joyEnd = (e) => { if (e.pointerId !== joy.id) return; joy.on = false; joy.id = null; restJoy(); };
+cv.addEventListener("pointerup", joyEnd); cv.addEventListener("pointercancel", joyEnd);
+
+// ── 지형 판정 ──────────────────────────────────────────────
+const segDist = (px, py, ax, ay, bx, by) => { const vx = bx - ax, vy = by - ay, t = Math.max(0, Math.min(1, ((px - ax) * vx + (py - ay) * vy) / (vx * vx + vy * vy))); return Math.hypot(px - ax - t * vx, py - ay - t * vy); };
+const inStream = (x, y) => { for (let i = 1; i < STREAM.length; i++) if (segDist(x, y, ...STREAM[i - 1], ...STREAM[i]) < STREAM_HALF) return true; return false; };
+let bridgeBox = null;
+const onBridge = (x, y) => bridgeBox && x > bridgeBox.x0 && x < bridgeBox.x1 && y > bridgeBox.y0 && y < bridgeBox.y1;
+const inIsle = (x, y) => ((x - ISLE.cx) / (ISLE.rx - 70)) ** 2 + ((y - ISLE.cy) / (ISLE.ry - 70)) ** 2 < 1;
+const hitWall = (x, y, r) => walls.some((w) => x + r > w.x0 && x - r < w.x1 && y + r * 0.5 > w.y0 && y - r * 0.5 < w.y1);
+const free = (x, y) => inIsle(x, y) && (!inStream(x, y) || onBridge(x, y)) && !hitWall(x, y, me.r);
+
+// ── 준비 ───────────────────────────────────────────────────
+const pat = {};
+// 무늬 그림의 끝이 안 이어져 이음새가 보임 → 좌우 · 상하로 뒤집은 4장을 붙이면 끝이 이어진다
+function mirror(im) { const n = im.width, c = document.createElement("canvas"); c.width = c.height = n * 2; const g = c.getContext("2d"); for (const [sx, sy] of [[1, 1], [-1, 1], [1, -1], [-1, -1]]) { g.setTransform(sx, 0, 0, sy, sx < 0 ? n * 2 : 0, sy < 0 ? n * 2 : 0); g.drawImage(im, 0, 0); } return c; }
+function build() {
+  for (const n of ["땅-풀", "땅-흙", "땅-돌", "땅-물"]) { const p = ctx.createPattern(mirror(IMG[n]), "repeat"); p.setTransform(new DOMMatrix().scale(300 / 512)); pat[n] = p; }
+  for (const [k, x, y] of PROPS) {
+    const im = IMG[k], kd = KIND[k], w = im.width * kd.s, h = im.height * kd.s;
+    things.push({ img: im, x, y, w, h, prop: true });
+    if (kd.fd) walls.push({ x0: x - (w * kd.fw) / 2, x1: x + (w * kd.fw) / 2, y0: y - kd.fd, y1: y });
+  }
+  const b = IMG["다리"], bw = b.width * BRIDGE.s, bh = b.height * BRIDGE.s;
+  bridgeBox = { x0: BRIDGE.x - bw / 2 - 10, x1: BRIDGE.x + bw / 2 + 10, y0: BRIDGE.y - 46, y1: BRIDGE.y + 40 };
+  things.push(me);
+}
+
+// ── 그리기 ─────────────────────────────────────────────────
+let vw = 0, vh = 0, dpr = 1, scale = 0.6, camX = 0, camY = 0;
+function resize() {
+  dpr = Math.min(2, devicePixelRatio || 1); vw = innerWidth; vh = innerHeight;
+  cv.width = Math.round(vw * dpr); cv.height = Math.round(vh * dpr);
+  scale = Math.max(0.36, Math.min(0.85, Math.min(vw / 1300, vh / 620))); // 휴대폰 가로(844×390)에서 수달 키 ≈ 80px
+  if (!joy.on) restJoy();
+}
+addEventListener("resize", resize);
+
+function drawPath(pts, width) { ctx.beginPath(); ctx.moveTo(...pts[0]); for (const p of pts.slice(1)) ctx.lineTo(...p); ctx.lineWidth = width; ctx.lineCap = ctx.lineJoin = "round"; ctx.stroke(); }
+function drawGround() {
+  ctx.fillStyle = pat["땅-물"]; ctx.fillRect(camX - 50, camY - 50, vw / scale + 100, vh / scale + 100);
+  ctx.fillStyle = pat["땅-흙"]; ctx.beginPath(); ctx.ellipse(ISLE.cx, ISLE.cy, ISLE.rx + 18, ISLE.ry + 18, 0, 0, 7); ctx.fill(); // 바닷가
+  ctx.fillStyle = pat["땅-풀"]; ctx.beginPath(); ctx.ellipse(ISLE.cx, ISLE.cy, ISLE.rx - 30, ISLE.ry - 30, 0, 0, 7); ctx.fill();
+  ctx.strokeStyle = pat["땅-흙"]; for (const p of PATHS) drawPath(p, 120);
+  ctx.save(); ctx.beginPath(); ctx.ellipse(ISLE.cx, ISLE.cy, ISLE.rx - 10, ISLE.ry - 10, 0, 0, 7); ctx.clip();
+  ctx.strokeStyle = pat["땅-흙"]; drawPath(STREAM, STREAM_HALF * 2 + 40); // 개울 둑
+  ctx.strokeStyle = pat["땅-물"]; drawPath(STREAM, STREAM_HALF * 2);
+  ctx.restore();
+  ctx.fillStyle = pat["땅-돌"]; ctx.beginPath(); ctx.arc(PLAZA.x, PLAZA.y, PLAZA.r, 0, 7); ctx.fill();
+  const b = IMG["다리"]; ctx.drawImage(b, BRIDGE.x - (b.width * BRIDGE.s) / 2, BRIDGE.y - (b.height * BRIDGE.s) * 0.62, b.width * BRIDGE.s, b.height * BRIDGE.s);
+}
+function drawOtter(o) {
+  const a = ANIM[o.anim], f = a.from + (Math.floor(o.t * a.fps) % a.n), sheet = IMG["수달-" + o.dir], K = 0.92;
+  ctx.fillStyle = "rgba(30,24,10,.28)"; ctx.beginPath(); ctx.ellipse(o.x, o.y, 34, 11, 0, 0, 7); ctx.fill();
+  ctx.save(); ctx.translate(o.x, o.y); if (o.flip) ctx.scale(-1, 1);
+  ctx.drawImage(sheet, f * CELL, a.row * CELL, CELL, CELL, -80 * K, -FOOT * K, CELL * K, CELL * K);
+  ctx.restore();
+}
+function draw() {
+  ctx.setTransform(dpr * scale, 0, 0, dpr * scale, -camX * dpr * scale, -camY * dpr * scale);
+  drawGround();
+  things.sort((p, q) => p.y - q.y);
+  for (const t of things) {
+    if (!t.prop) { drawOtter(t); continue; }
+    // 수달이 뒤에 숨으면 반투명
+    const hide = t.y > me.y && t.h > 160 && me.x > t.x - t.w / 2 && me.x < t.x + t.w / 2 && me.y > t.y - t.h + 40;
+    if (hide) ctx.globalAlpha = 0.5;
+    ctx.drawImage(t.img, t.x - t.w / 2, t.y - t.h, t.w, t.h);
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ── 움직임 ─────────────────────────────────────────────────
+function step(dt) {
+  let ix = 0, iy = 0;
+  if (keys.has("KeyA") || keys.has("ArrowLeft")) ix--;
+  if (keys.has("KeyD") || keys.has("ArrowRight")) ix++;
+  if (keys.has("KeyW") || keys.has("ArrowUp")) iy--;
+  if (keys.has("KeyS") || keys.has("ArrowDown")) iy++;
+  let run = keys.has("ShiftLeft") || keys.has("ShiftRight");
+  if (joy.on && (joy.dx || joy.dy)) { ix = joy.dx; iy = joy.dy; run = Math.hypot(ix, iy) > 0.8; }
+  const m = Math.hypot(ix, iy);
+  if (m > 0.15) {
+    const sp = (run ? RUN : WALK) * Math.min(1, m) / m;
+    const nx = me.x + ix * sp * dt, ny = me.y + iy * sp * dt;
+    if (free(nx, ny)) { me.x = nx; me.y = ny; } else if (free(nx, me.y)) me.x = nx; else if (free(me.x, ny)) me.y = ny; // 벽을 따라 미끄러짐
+    if (Math.abs(iy) > Math.abs(ix) * 1.1) { me.dir = iy > 0 ? "앞" : "뒤"; me.flip = false; } else { me.dir = "옆"; me.flip = ix < 0; }
+    const an = run ? "run" : "walk"; if (me.anim !== an) { me.anim = an; me.t = 0; }
+  } else if (me.anim !== "idle") { me.anim = "idle"; me.t = 0; }
+  me.t += dt;
+  camX = Math.max(0, Math.min(W - vw / scale, me.x - vw / scale / 2));
+  camY = Math.max(0, Math.min(H - vh / scale, me.y - 70 - vh / scale / 2));
+}
+
+let last = 0;
+function loop(ts) {
+  const dt = Math.min(0.05, (ts - last) / 1000 || 0); last = ts;
+  step(dt); draw();
+  requestAnimationFrame(loop);
+}
+
+// ── 시작 ───────────────────────────────────────────────────
+Promise.all(NAMES.map((n) => new Promise((ok, no) => { const i = new Image(); i.onload = () => { IMG[n] = i; ok(); }; i.onerror = () => no(new Error(n)); i.src = "img/" + n + ".webp"; })))
+  .then(() => {
+    build(); resize();
+    document.getElementById("load").remove();
+    document.getElementById("hint").textContent = touchy ? "왼쪽을 눌러 끌면 걷기 · 끝까지 밀면 달리기" : "WASD · 방향키 걷기 · Shift 달리기";
+    requestAnimationFrame(loop);
+  })
+  .catch((e) => { document.getElementById("load").textContent = "그림을 못 불러왔습니다: " + e.message; });
+window.__수달섬 = { me, walls, free }; // 시험용
+</script>
+</body>
+</html>
