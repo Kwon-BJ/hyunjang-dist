@@ -9,29 +9,74 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&display=swap" media="print" onload="this.media='all'">
 <style>
-/* 수달섬 서바이벌 — 1단계: 섬 걷기 (2026-11-17). 그림은 ChatGPT 시안(기획/그림) → node 기획/그림손질.cjs → img/ */
+/* 수달섬 서바이벌 — 1단계 섬 걷기 · 2단계 총 줍기 · 사격 · 연습 상대 (2026-11-17)
+   그림은 ChatGPT 시안(기획/그림) → node 기획/그림손질.cjs → img/ . 화면 단추 · 틀도 ChatGPT UI 조각(img/ui-*) */
 :root { --bg: #2f5d3a; --ink: #fff8e8; --shade: rgba(20, 16, 10, .55); }
 html, body { margin: 0; height: 100%; background: var(--bg); overflow: hidden; }
 body { position: fixed; inset: 0; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; font-family: Jua, "Noto Sans KR", sans-serif; color: var(--ink); }
 #cv { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+body.pc #cv { cursor: crosshair; }
 #joy { position: fixed; width: 132px; height: 132px; margin: -66px 0 0 -66px; pointer-events: none; display: none; z-index: 2; }
 #joy img { position: absolute; display: block; }
 #joyBase { inset: 0; width: 100%; height: 100%; opacity: .8; }
 #joyKnob { width: 56px; height: 56px; left: 38px; top: 38px; }
-#hint { position: fixed; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom)); transform: translateX(-50%); padding: 6px 14px; border-radius: 999px; background: var(--shade); font-size: 14px; white-space: nowrap; pointer-events: none; z-index: 2; }
-#load { position: fixed; inset: 0; display: grid; place-items: center; background: var(--bg); font-size: 22px; z-index: 3; }
+#hint { position: fixed; left: 50%; top: calc(10px + env(safe-area-inset-top)); transform: translateX(-50%); padding: 6px 14px; border-radius: 999px; background: var(--shade); font-size: 14px; white-space: nowrap; pointer-events: none; z-index: 2; transition: opacity .6s; }
+#load { position: fixed; inset: 0; display: grid; place-items: center; background: var(--bg); font-size: 22px; z-index: 5; }
+.txt { text-shadow: 0 1px 0 #000, 0 0 3px rgba(0, 0, 0, .8); }
+/* 아래 가운데: 체력 · 무기 칸 2 · 탄약 (폭 좁은 휴대폰 세로에서는 위로) */
+#hud { position: fixed; left: 50%; bottom: calc(10px + env(safe-area-inset-bottom)); transform: translateX(-50%); width: 300px; z-index: 3; pointer-events: none; }
+#hp { position: relative; height: 22px; margin: 0 6px 6px; background: url("img/ui-체력틀.webp") center / 100% 100% no-repeat; }
+#hpFill { position: absolute; left: 3%; top: 22%; height: 56%; width: 94%; background: url("img/ui-체력.webp") left center / 100% 100% no-repeat; border-radius: 99px; transition: width .2s; }
+#hpTxt { position: absolute; inset: 0; display: grid; place-items: center; font-size: 13px; }
+#slots { display: flex; gap: 6px; align-items: stretch; }
+.slot { flex: 0 0 92px; height: 50px; display: grid; place-items: center; background: url("img/ui-무기칸.webp") center / 100% 100% no-repeat; pointer-events: auto; cursor: pointer; position: relative; }
+.slot.on { background-image: url("img/ui-무기칸-고름.webp"); }
+.slot img { max-width: 70px; max-height: 32px; display: block; }
+.slot b { position: absolute; left: 7px; top: 3px; font-size: 11px; font-weight: 400; opacity: .8; }
+#ammo { flex: 1; height: 50px; display: flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap; background: url("img/ui-탄약틀.webp") center / 100% 100% no-repeat; font-size: 19px; }
+#ammo small { font-size: 13px; opacity: .85; }
+/* 오른쪽 아래 단추: 사격 · 재장전 · 줍기 (줍기는 총 가까이 있을 때만) */
+.btn { position: fixed; z-index: 3; border: 0; padding: 0; background: center / 100% 100% no-repeat; -webkit-tap-highlight-color: transparent; cursor: pointer; }
+.btn:active { filter: brightness(1.25); transform: scale(.94); }
+#fireBtn { width: 92px; height: 92px; right: calc(18px + env(safe-area-inset-right)); bottom: calc(22px + env(safe-area-inset-bottom)); background-image: url("img/ui-사격.webp"); }
+#reloadBtn { width: 56px; height: 56px; right: calc(118px + env(safe-area-inset-right)); bottom: calc(22px + env(safe-area-inset-bottom)); background-image: url("img/ui-재장전.webp"); }
+#pickBtn { width: 60px; height: 60px; right: calc(34px + env(safe-area-inset-right)); bottom: calc(124px + env(safe-area-inset-bottom)); background-image: url("img/ui-줍기.webp"); display: none; }
+#pickBtn.show { display: block; }
+#pickTxt { position: fixed; z-index: 3; font-size: 15px; padding: 4px 10px; border-radius: 999px; background: var(--shade); pointer-events: none; display: none; transform: translate(-50%, -100%); white-space: nowrap; }
+body.pc #fireBtn, body.pc #reloadBtn { display: none; }
+body.pc #pickBtn { right: auto; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom)); transform: translateX(-50%); }
+body.pc #pickBtn:active { transform: translateX(-50%) scale(.94); }
+@media (max-width: 600px) and (orientation: portrait) {
+  #hud { bottom: auto; top: calc(44px + env(safe-area-inset-top)); width: min(300px, calc(100vw - 24px)); }
+}
 </style>
 </head>
 <body>
 <canvas id="cv"></canvas>
 <div id="joy"><img id="joyBase" src="img/ui-조이스틱.webp" alt=""><img id="joyKnob" src="img/ui-손잡이.webp" alt=""></div>
-<div id="hint"></div>
+<div id="hint" class="txt"></div>
+<div id="hud">
+  <div id="hp"><div id="hpFill"></div><div id="hpTxt" class="txt">100 / 100</div></div>
+  <div id="slots">
+    <div class="slot" data-i="0"><b class="txt">1</b></div>
+    <div class="slot" data-i="1"><b class="txt">2</b></div>
+    <div id="ammo" class="txt">맨손</div>
+  </div>
+</div>
+<button type="button" class="btn" id="fireBtn" aria-label="사격"></button>
+<button type="button" class="btn" id="reloadBtn" aria-label="재장전"></button>
+<button type="button" class="btn" id="pickBtn" aria-label="줍기"></button>
+<div id="pickTxt" class="txt"></div>
 <div id="load">수달섬 불러오는 중…</div>
 <script>
 "use strict";
-const cv = document.getElementById("cv"), ctx = cv.getContext("2d");
+const $ = (id) => document.getElementById(id);
+const cv = $("cv"), ctx = cv.getContext("2d");
 const IMG = {};
-const NAMES = ["수달-앞", "수달-옆", "수달-뒤", "땅-풀", "땅-흙", "땅-돌", "땅-물", "집-주황", "집-초록", "나무-사과", "나무", "울타리", "울타리-모서리", "돌담", "상자", "상자-둘", "건초", "통", "다리", "바위", "꽃"];
+const NAMES = ["수달-앞", "수달-옆", "수달-뒤", "땅-풀", "땅-흙", "땅-돌", "땅-물", "집-주황", "집-초록", "나무-사과", "나무", "울타리", "울타리-모서리", "돌담", "상자", "상자-둘", "건초", "통", "다리", "바위", "꽃",
+  "총-권총", "총-소총", "총-산탄총", "바닥-권총", "바닥-소총", "바닥-산탄총", "탄약-권총", "탄약-소총", "탄약-산탄총", "구급상자", "효과"];
+const rnd = (a, b) => a + Math.random() * (b - a);
+const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 // ── 섬(월드) — 좌표 단위는 그림 1px 기준. 수달 키 ≈ 140 ─────────────────────
 const W = 3200, H = 2400, ISLE = { cx: 1600, cy: 1200, rx: 1480, ry: 1080 };
@@ -41,11 +86,11 @@ const BRIDGE = { x: 2362, y: 1180, s: 0.82 }; // 다리 가운데 · 크기
 const PLAZA = { x: 1450, y: 1180, r: 250 };
 const PATHS = [[[1450, 1180], [1130, 900]], [[1450, 1180], [1060, 1640]], [[1450, 1180], [1980, 820]], [[1450, 1180], [1960, 1720]], [[1450, 1180], [2362, 1180], [2860, 1080]], [[1450, 1180], [700, 1240]]];
 
-// 조각 종류: s 크기 · fw 발자리 너비(비율) · fd 발자리 깊이(px, 0 이면 안 막힘)
+// 조각 종류: s 크기 · fw 발자리 너비(비율) · fd 발자리 깊이(px, 0 이면 안 막힘) · see 총알이 지나감
 const KIND = {
   "집-주황": { s: 1.25, fw: 0.78, fd: 120 }, "집-초록": { s: 1.25, fw: 0.78, fd: 120 },
   "나무-사과": { s: 0.95, fw: 0.16, fd: 34 }, "나무": { s: 0.95, fw: 0.14, fd: 30 },
-  "울타리": { s: 0.42, fw: 0.95, fd: 22 }, "울타리-모서리": { s: 0.42, fw: 0.95, fd: 34 },
+  "울타리": { s: 0.42, fw: 0.95, fd: 22, see: true }, "울타리-모서리": { s: 0.42, fw: 0.95, fd: 34, see: true },
   "돌담": { s: 0.5, fw: 0.95, fd: 36 }, "상자": { s: 0.3, fw: 0.9, fd: 34 }, "상자-둘": { s: 0.3, fw: 0.9, fd: 34 },
   "건초": { s: 0.36, fw: 0.9, fd: 38 }, "통": { s: 0.3, fw: 0.8, fd: 28 }, "바위": { s: 0.5, fw: 0.85, fd: 50 }, "꽃": { s: 0.36, fw: 0, fd: 0 },
 };
@@ -62,39 +107,85 @@ const PROPS = [
   ["바위", 2250, 900], ["바위", 2520, 1500], ["바위", 2250, 1950], ["바위", 700, 800],
   ["꽃", 1560, 980], ["꽃", 1250, 1450], ["꽃", 2100, 1300], ["꽃", 1600, 1850], ["꽃", 950, 1100], ["꽃", 2780, 1330],
 ];
-const things = []; // 그릴 것(조각 + 수달), 발 y 로 줄 세움
-const walls = [];  // 막는 상자 {x0,y0,x1,y1}
+const things = []; // 그릴 것(조각 + 수달들), 발 y 로 줄 세움
+const walls = [];  // 막는 상자 {x0,y0,x1,y1,see}
+const houses = [];
+
+// ── 총 ────────────────────────────────────────────────────
+// dmg 한 발 피해 · rate 초당 발수 · mag 탄창 · range 사거리 · spread 퍼짐(라디안) · pellets 한 번에 나가는 알 · reload 초 · auto 누르고 있으면 연사
+const GUNS = {
+  "권총": { dmg: 24, rate: 3.2, mag: 12, range: 700, spread: 0.035, pellets: 1, reload: 1.2, auto: false, box: 24 },
+  "소총": { dmg: 15, rate: 8.5, mag: 30, range: 950, spread: 0.06, pellets: 1, reload: 1.8, auto: true, box: 60 },
+  "산탄총": { dmg: 11, rate: 1.15, mag: 6, range: 460, spread: 0.26, pellets: 7, reload: 2.2, auto: false, box: 12 },
+};
+const FLOOR_W = { "권총": 60, "소총": 115, "산탄총": 120 }; // 바닥 총 길이(수달 키 140 기준)
+const items = []; // 바닥에 떨어진 것 {kind:'gun'|'ammo'|'med', type, x, y, mag}
+const fxs = [], decals = [], tracers = [];
 
 // ── 수달 ───────────────────────────────────────────────────
 const CELL = 160, FOOT = 150; // 시트 칸 크기 · 발바닥 높이
-const ANIM = { idle: { row: 0, from: 0, n: 2, fps: 2 }, walk: { row: 0, from: 2, n: 4, fps: 8 }, run: { row: 1, from: 0, n: 4, fps: 11 } };
-const me = { x: PLAZA.x, y: PLAZA.y + 40, dir: "앞", flip: false, anim: "idle", t: 0, r: 22, foot: true };
+// 줄: 0 맨손 대기2·걷기4 / 1 맨손 달리기4·줍기2 / 2 총 걷기4·사격2 / 3 재장전2·피격1·쓰러짐3
+const ANIM = {
+  idle: { row: 0, from: 0, n: 2, fps: 2 }, walk: { row: 0, from: 2, n: 4, fps: 8 }, run: { row: 1, from: 0, n: 4, fps: 11 },
+  gidle: { row: 2, from: 5, n: 1, fps: 1 }, gwalk: { row: 2, from: 0, n: 4, fps: 8 }, grun: { row: 2, from: 0, n: 4, fps: 13 }, shoot: { row: 2, from: 4, n: 1, fps: 1 },
+  reload: { row: 3, from: 0, n: 2, fps: 4 }, pick: { row: 1, from: 4, n: 2, fps: 6 }, hit: { row: 3, from: 2, n: 1, fps: 1 }, fall: { row: 3, from: 3, n: 3, fps: 7, hold: true },
+};
+const me = { x: PLAZA.x, y: PLAZA.y + 40, dir: "앞", flip: false, anim: "idle", t: 0, r: 22, hp: 100, me: true,
+  slots: [null, null], cur: 0, ammo: { "권총": 0, "소총": 0, "산탄총": 0 }, cool: 0, reloading: 0, shotT: 0, pickT: 0, faceX: 0, faceY: 1 };
 const WALK = 230, RUN = 400;
+// 연습 상대(가만히 서 있는 수달) — 맞으면 피 · 쓰러지고 3초 뒤 다시 섬
+const dummies = [[1700, 1300], [1250, 1250], [1560, 1030], [2700, 1160]].map(([x, y]) => ({ x, y, hx: x, hy: y, dir: "앞", flip: false, anim: "idle", t: Math.random(), r: 30, hp: 100, dead: 0, hitT: 0, dummy: true }));
 
 // ── 입력 ───────────────────────────────────────────────────
 const keys = new Set();
 const joy = { on: false, id: null, ox: 0, oy: 0, dx: 0, dy: 0 };
 const JOY_R = 58;
 const touchy = matchMedia("(pointer: coarse)").matches;
-addEventListener("keydown", (e) => { keys.add(e.code); if (/^Arrow|Space/.test(e.code)) e.preventDefault(); });
+if (!touchy) document.body.classList.add("pc");
+const mouse = { x: 0, y: 0, in: false, down: false };
+let fireHeld = false, fireTap = false; // 누르고 있음 · 한 번 눌림(단발 총)
+addEventListener("keydown", (e) => {
+  if (e.repeat && !/^Key[WASD]|^Arrow|Shift/.test(e.code)) return;
+  keys.add(e.code); if (/^Arrow|Space/.test(e.code)) e.preventDefault();
+  if (e.code === "KeyE") tryPick();
+  if (e.code === "KeyR") startReload();
+  if (e.code === "Digit1") choose(0);
+  if (e.code === "Digit2") choose(1);
+  if (e.code === "KeyQ") choose(1 - me.cur);
+  if (e.code === "Space") fireTap = true;
+});
 addEventListener("keyup", (e) => keys.delete(e.code));
-addEventListener("blur", () => keys.clear());
-const joyEl = document.getElementById("joy"), knob = document.getElementById("joyKnob");
+addEventListener("blur", () => { keys.clear(); fireHeld = false; mouse.down = false; });
+const joyEl = $("joy"), knob = $("joyKnob");
 const showJoy = () => { joyEl.style.display = "block"; joyEl.style.left = joy.ox + "px"; joyEl.style.top = joy.oy + "px"; knob.style.transform = `translate(${joy.dx * JOY_R}px, ${joy.dy * JOY_R}px)`; };
 const restJoy = () => { joy.ox = 96; joy.oy = innerHeight - 110; joy.dx = joy.dy = 0; if (touchy) { showJoy(); joyEl.style.opacity = ".55"; } };
 cv.addEventListener("pointerdown", (e) => {
-  if (joy.on || e.clientX > innerWidth * 0.55) return; // 왼쪽 화면을 누르면 그 자리에 조이스틱
+  if (e.pointerType === "mouse") { // 마우스: 조준 · 사격
+    if (e.button !== 0) return;
+    mouse.down = true; fireTap = true; mouse.x = e.clientX; mouse.y = e.clientY; mouse.in = true; return;
+  }
+  if (joy.on || e.clientX > innerWidth * 0.55) return; // 손가락: 왼쪽 화면을 누르면 그 자리에 조이스틱
   joy.on = true; joy.id = e.pointerId; joy.ox = e.clientX; joy.oy = e.clientY; joy.dx = joy.dy = 0;
   cv.setPointerCapture(e.pointerId); joyEl.style.opacity = "1"; showJoy();
 });
 cv.addEventListener("pointermove", (e) => {
+  if (e.pointerType === "mouse") { mouse.x = e.clientX; mouse.y = e.clientY; mouse.in = true; return; }
   if (!joy.on || e.pointerId !== joy.id) return;
   let dx = (e.clientX - joy.ox) / JOY_R, dy = (e.clientY - joy.oy) / JOY_R; const m = Math.hypot(dx, dy);
   if (m > 1) { dx /= m; dy /= m; }
   joy.dx = dx; joy.dy = dy; showJoy();
 });
+addEventListener("pointerup", (e) => { if (e.pointerType === "mouse") mouse.down = false; });
 const joyEnd = (e) => { if (e.pointerId !== joy.id) return; joy.on = false; joy.id = null; restJoy(); };
 cv.addEventListener("pointerup", joyEnd); cv.addEventListener("pointercancel", joyEnd);
+cv.addEventListener("contextmenu", (e) => e.preventDefault());
+// 단추
+const fireBtn = $("fireBtn");
+fireBtn.addEventListener("pointerdown", (e) => { e.preventDefault(); fireBtn.setPointerCapture(e.pointerId); fireHeld = true; fireTap = true; });
+for (const ev of ["pointerup", "pointercancel", "lostpointercapture"]) fireBtn.addEventListener(ev, () => { fireHeld = false; });
+$("reloadBtn").addEventListener("pointerdown", (e) => { e.preventDefault(); startReload(); });
+$("pickBtn").addEventListener("pointerdown", (e) => { e.preventDefault(); tryPick(); });
+document.querySelectorAll(".slot").forEach((s) => s.addEventListener("pointerdown", (e) => { e.preventDefault(); choose(+s.dataset.i); }));
 
 // ── 지형 판정 ──────────────────────────────────────────────
 const segDist = (px, py, ax, ay, bx, by) => { const vx = bx - ax, vy = by - ay, t = Math.max(0, Math.min(1, ((px - ax) * vx + (py - ay) * vy) / (vx * vx + vy * vy))); return Math.hypot(px - ax - t * vx, py - ay - t * vy); };
@@ -104,6 +195,21 @@ const onBridge = (x, y) => bridgeBox && x > bridgeBox.x0 && x < bridgeBox.x1 && 
 const inIsle = (x, y) => ((x - ISLE.cx) / (ISLE.rx - 70)) ** 2 + ((y - ISLE.cy) / (ISLE.ry - 70)) ** 2 < 1;
 const hitWall = (x, y, r) => walls.some((w) => x + r > w.x0 && x - r < w.x1 && y + r * 0.5 > w.y0 && y - r * 0.5 < w.y1);
 const free = (x, y) => inIsle(x, y) && (!inStream(x, y) || onBridge(x, y)) && !hitWall(x, y, me.r);
+// 선분이 상자와 만나는 첫 지점(0~1), 없으면 null
+function rayBox(ax, ay, dx, dy, b) {
+  let t0 = 0, t1 = 1;
+  for (const [p, d, lo, hi] of [[ax, dx, b.x0, b.x1], [ay, dy, b.y0, b.y1]]) {
+    if (Math.abs(d) < 1e-9) { if (p < lo || p > hi) return null; continue; }
+    let a = (lo - p) / d, c = (hi - p) / d; if (a > c) [a, c] = [c, a];
+    t0 = Math.max(t0, a); t1 = Math.min(t1, c); if (t0 > t1) return null;
+  }
+  return t0;
+}
+function rayCircle(ax, ay, dx, dy, cx, cy, r) {
+  const fx = ax - cx, fy = ay - cy, a = dx * dx + dy * dy, b = 2 * (fx * dx + fy * dy), c = fx * fx + fy * fy - r * r, D = b * b - 4 * a * c;
+  if (D < 0) return null; const t = (-b - Math.sqrt(D)) / (2 * a); return t >= 0 && t <= 1 ? t : null;
+}
+const clearLine = (ax, ay, bx, by) => !walls.some((w) => !w.see && rayBox(ax, ay, bx - ax, by - ay, w) !== null);
 
 // ── 준비 ───────────────────────────────────────────────────
 const pat = {};
@@ -114,11 +220,99 @@ function build() {
   for (const [k, x, y] of PROPS) {
     const im = IMG[k], kd = KIND[k], w = im.width * kd.s, h = im.height * kd.s;
     things.push({ img: im, x, y, w, h, prop: true });
-    if (kd.fd) walls.push({ x0: x - (w * kd.fw) / 2, x1: x + (w * kd.fw) / 2, y0: y - kd.fd, y1: y });
+    if (kd.fd) walls.push({ x0: x - (w * kd.fw) / 2, x1: x + (w * kd.fw) / 2, y0: y - kd.fd, y1: y, see: !!kd.see });
+    if (k.startsWith("집")) houses.push({ x, y, w });
   }
   const b = IMG["다리"], bw = b.width * BRIDGE.s, bh = b.height * BRIDGE.s;
   bridgeBox = { x0: BRIDGE.x - bw / 2 - 10, x1: BRIDGE.x + bw / 2 + 10, y0: BRIDGE.y - 46, y1: BRIDGE.y + 40 };
-  things.push(me);
+  things.push(me, ...dummies);
+  spawnLoot();
+}
+// 집마다 문 앞에 무작위 총 · 가끔 탄약 상자 · 섬 어딘가에 구급상자
+function spawnLoot() {
+  items.length = 0;
+  for (const h of houses) {
+    const type = pick(Object.keys(GUNS));
+    items.push({ kind: "gun", type, x: h.x + h.w * 0.12, y: h.y + 52, mag: GUNS[type].mag });
+    if (Math.random() < 0.75) items.push({ kind: "ammo", type: pick(Object.keys(GUNS)), x: h.x - h.w * 0.18, y: h.y + 48 });
+  }
+  items.push({ kind: "med", x: 1450, y: 1420 }, { kind: "med", x: 2560, y: 1230 });
+}
+
+// ── 총 다루기 ──────────────────────────────────────────────
+const gun = () => me.slots[me.cur];
+function choose(i) { if (me.slots[i] && me.cur !== i) { me.cur = i; me.reloading = 0; hud(); } }
+let near = null;
+function nearestGun() {
+  let best = null, bd = 85;
+  for (const it of items) if (it.kind === "gun") { const d = Math.hypot(it.x - me.x, it.y - me.y); if (d < bd) { bd = d; best = it; } }
+  return best;
+}
+function tryPick() {
+  const it = nearestGun(); if (!it) return;
+  items.splice(items.indexOf(it), 1);
+  let slot = me.slots.findIndex((s) => !s);
+  if (slot < 0) { slot = me.cur; const old = me.slots[slot]; items.push({ kind: "gun", type: old.type, x: me.x + 30, y: me.y + 18, mag: old.mag }); }
+  me.slots[slot] = { type: it.type, mag: it.mag };
+  me.ammo[it.type] += GUNS[it.type].mag; // 처음 줍는 총에는 탄창 하나 더
+  me.cur = slot; me.reloading = 0; me.pickT = 0.35; hud();
+}
+function startReload() {
+  const g = gun(); if (!g || me.reloading || g.mag >= GUNS[g.type].mag || me.ammo[g.type] <= 0) return;
+  me.reloading = GUNS[g.type].reload; hud();
+}
+function finishReload() {
+  const g = gun(); if (!g) return; const need = GUNS[g.type].mag - g.mag, take = Math.min(need, me.ammo[g.type]);
+  g.mag += take; me.ammo[g.type] -= take; hud();
+}
+// 조준 방향(땅 위 기준): PC 는 마우스, 휴대폰은 가까운 상대를 자동으로
+function aimDir() {
+  if (!touchy && mouse.in) {
+    const wx = camX + mouse.x / scale, wy = camY + mouse.y / scale;
+    const dx = wx - me.x, dy = wy - (me.y - 70); const m = Math.hypot(dx, dy) || 1; return [dx / m, dy / m];
+  }
+  const g = gun(), R = g ? GUNS[g.type].range : 600; let best = null, bd = R;
+  for (const d of dummies) if (!d.dead) { const dist = Math.hypot(d.x - me.x, d.y - me.y); if (dist < bd && clearLine(me.x, me.y, d.x, d.y)) { bd = dist; best = d; } }
+  if (best) { const dx = best.x - me.x, dy = best.y - me.y, m = Math.hypot(dx, dy); return [dx / m, dy / m]; }
+  return [me.faceX, me.faceY];
+}
+function fire() {
+  const g = gun(); if (!g || me.reloading || me.cool > 0) return;
+  if (g.mag <= 0) { startReload(); return; }
+  const G = GUNS[g.type]; g.mag--; me.cool = 1 / G.rate; me.shotT = 0.09;
+  const [ax, ay] = aimDir(); me.faceX = ax; me.faceY = ay; me.aimHold = 0.5;
+  const base = Math.atan2(ay, ax);
+  for (let i = 0; i < G.pellets; i++) {
+    const a = base + rnd(-G.spread, G.spread) * (G.pellets > 1 ? 1 : 0.6), dx = Math.cos(a) * G.range, dy = Math.sin(a) * G.range;
+    let best = 1, hitD = null;
+    for (const w of walls) if (!w.see) { const t = rayBox(me.x, me.y, dx, dy, w); if (t !== null && t > 0.02 && t < best) { best = t; hitD = null; } }
+    for (const d of dummies) if (!d.dead) { const t = rayCircle(me.x, me.y, dx, dy, d.x, d.y, d.r); if (t !== null && t < best) { best = t; hitD = d; } }
+    const hx = me.x + dx * best, hy = me.y + dy * best;
+    tracers.push({ x0: me.x + ax * 46, y0: me.y - 72 + ay * 20, x1: hx, y1: hy - (hitD ? 70 : 40), life: 0.06 });
+    if (hitD) hurt(hitD, G.dmg, hx, hy);
+    else if (best < 1) fxs.push({ row: 1, n: 6, fps: 30, x: hx, y: hy - 40, s: 0.45, t: 0 });
+  }
+  fxs.push({ row: 0, n: 6, fps: 60, x: me.x + ax * 62, y: me.y - 74 + ay * 22, s: 0.5, rot: base, t: 0, top: true });
+  hud();
+}
+function hurt(d, dmg, hx, hy) {
+  d.hp -= dmg; d.hitT = 0.18;
+  fxs.push({ row: 2, n: 6, fps: 26, x: d.x, y: d.y - 70, s: 0.6, t: 0, top: true });
+  if (d.hp <= 0 && !d.dead) {
+    d.dead = 3.2; d.anim = "fall"; d.t = 0;
+    decals.push({ col: Math.floor(Math.random() * 3), x: d.x, y: d.y + 6, s: rnd(0.75, 1) }); if (decals.length > 40) decals.shift();
+  }
+}
+
+// ── 화면 글자판(HUD) ───────────────────────────────────────
+function hud() {
+  const g = gun();
+  $("hpFill").style.width = 94 * me.hp / 100 + "%"; $("hpTxt").textContent = `${me.hp} / 100`;
+  document.querySelectorAll(".slot").forEach((s, i) => {
+    const w = me.slots[i]; s.classList.toggle("on", !!w && i === me.cur);
+    const im = s.querySelector("img"); if (w) { if (!im || im.dataset.t !== w.type) { im && im.remove(); const n = new Image(); n.src = "img/총-" + w.type + ".webp"; n.dataset.t = w.type; n.alt = w.type; s.appendChild(n); } } else if (im) im.remove();
+  });
+  $("ammo").innerHTML = g ? (me.reloading ? "장전 중" : `${g.mag} <small>/ ${me.ammo[g.type]}</small>`) : "맨손";
 }
 
 // ── 그리기 ─────────────────────────────────────────────────
@@ -143,17 +337,42 @@ function drawGround() {
   ctx.restore();
   ctx.fillStyle = pat["땅-돌"]; ctx.beginPath(); ctx.arc(PLAZA.x, PLAZA.y, PLAZA.r, 0, 7); ctx.fill();
   const b = IMG["다리"]; ctx.drawImage(b, BRIDGE.x - (b.width * BRIDGE.s) / 2, BRIDGE.y - (b.height * BRIDGE.s) * 0.62, b.width * BRIDGE.s, b.height * BRIDGE.s);
+  const fx = IMG["효과"]; for (const d of decals) ctx.drawImage(fx, d.col * 128, 3 * 128, 128, 128, d.x - 64 * d.s, d.y - 40 * d.s, 128 * d.s, 128 * d.s * 0.62); // 핏자국(납작하게)
+  const now = performance.now() / 1000;
+  for (const it of items) { // 바닥 물건 — 총은 살짝 떠올랐다 내려앉음
+    const name = it.kind === "gun" ? "바닥-" + it.type : it.kind === "ammo" ? "탄약-" + it.type : "구급상자", im = IMG[name], s = (it.kind === "gun" ? FLOOR_W[it.type] : 58) / im.width, bob = it.kind === "gun" ? Math.sin(now * 3 + it.x) * 3 : 0;
+    ctx.fillStyle = "rgba(30,24,10,.22)"; ctx.beginPath(); ctx.ellipse(it.x, it.y, im.width * s * 0.4, 9, 0, 0, 7); ctx.fill();
+    ctx.drawImage(im, it.x - (im.width * s) / 2, it.y - im.height * s - 4 + bob, im.width * s, im.height * s);
+  }
 }
 function drawOtter(o) {
-  const a = ANIM[o.anim], f = a.from + (Math.floor(o.t * a.fps) % a.n), sheet = IMG["수달-" + o.dir], K = 0.92;
+  const a = ANIM[o.anim], k = Math.floor(o.t * a.fps), f = a.from + (a.hold ? Math.min(k, a.n - 1) : k % a.n), sheet = IMG["수달-" + o.dir], K = 0.92;
+  if (o.dummy && o.dead && o.dead < 0.6) ctx.globalAlpha = o.dead / 0.6;
   ctx.fillStyle = "rgba(30,24,10,.28)"; ctx.beginPath(); ctx.ellipse(o.x, o.y, 34, 11, 0, 0, 7); ctx.fill();
   ctx.save(); ctx.translate(o.x, o.y); if (o.flip) ctx.scale(-1, 1);
+  if (o.hitT > 0) ctx.filter = "brightness(1.3)";
   ctx.drawImage(sheet, f * CELL, a.row * CELL, CELL, CELL, -80 * K, -FOOT * K, CELL * K, CELL * K);
-  ctx.restore();
+  ctx.restore(); ctx.globalAlpha = 1;
+  if (o.dummy && !o.dead) { // 연습 상대 체력
+    const w = 70, x = o.x - w / 2, y = o.y - 152;
+    ctx.fillStyle = "rgba(20,16,10,.7)"; ctx.fillRect(x - 2, y - 2, w + 4, 11);
+    ctx.fillStyle = o.hp > 50 ? "#7cc63b" : o.hp > 25 ? "#e3b23c" : "#d4442f"; ctx.fillRect(x, y, w * o.hp / 100, 7);
+  }
+}
+function drawFx(list, top) {
+  const im = IMG["효과"];
+  for (const f of list) {
+    if (!!f.top !== top) continue;
+    const k = Math.min(f.n - 1, Math.floor(f.t * f.fps)), sz = 128 * f.s * 2;
+    ctx.save(); ctx.translate(f.x, f.y); if (f.rot !== undefined) ctx.rotate(f.rot);
+    ctx.drawImage(im, k * 128, f.row * 128, 128, 128, f.rot !== undefined ? -sz * 0.2 : -sz / 2, -sz / 2, sz, sz);
+    ctx.restore();
+  }
 }
 function draw() {
   ctx.setTransform(dpr * scale, 0, 0, dpr * scale, -camX * dpr * scale, -camY * dpr * scale);
   drawGround();
+  drawFx(fxs, false);
   things.sort((p, q) => p.y - q.y);
   for (const t of things) {
     if (!t.prop) { drawOtter(t); continue; }
@@ -163,6 +382,9 @@ function draw() {
     ctx.drawImage(t.img, t.x - t.w / 2, t.y - t.h, t.w, t.h);
     ctx.globalAlpha = 1;
   }
+  ctx.lineCap = "round";
+  for (const tr of tracers) { ctx.strokeStyle = `rgba(255,236,170,${tr.life / 0.06})`; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(tr.x0, tr.y0); ctx.lineTo(tr.x1, tr.y1); ctx.stroke(); }
+  drawFx(fxs, true);
 }
 
 // ── 움직임 ─────────────────────────────────────────────────
@@ -174,17 +396,50 @@ function step(dt) {
   if (keys.has("KeyS") || keys.has("ArrowDown")) iy++;
   let run = keys.has("ShiftLeft") || keys.has("ShiftRight");
   if (joy.on && (joy.dx || joy.dy)) { ix = joy.dx; iy = joy.dy; run = Math.hypot(ix, iy) > 0.8; }
-  const m = Math.hypot(ix, iy);
-  if (m > 0.15) {
+  const m = Math.hypot(ix, iy), g = gun();
+  me.cool -= dt; me.shotT -= dt; me.pickT -= dt; me.aimHold = (me.aimHold || 0) - dt;
+  if (me.reloading) { me.reloading -= dt; if (me.reloading <= 0) { me.reloading = 0; finishReload(); } }
+  const moving = m > 0.15;
+  if (moving) {
     const sp = (run ? RUN : WALK) * Math.min(1, m) / m;
     const nx = me.x + ix * sp * dt, ny = me.y + iy * sp * dt;
     if (free(nx, ny)) { me.x = nx; me.y = ny; } else if (free(nx, me.y)) me.x = nx; else if (free(me.x, ny)) me.y = ny; // 벽을 따라 미끄러짐
-    if (Math.abs(iy) > Math.abs(ix) * 1.1) { me.dir = iy > 0 ? "앞" : "뒤"; me.flip = false; } else { me.dir = "옆"; me.flip = ix < 0; }
-    const an = run ? "run" : "walk"; if (me.anim !== an) { me.anim = an; me.t = 0; }
-  } else if (me.anim !== "idle") { me.anim = "idle"; me.t = 0; }
+    if (me.aimHold <= 0) { me.faceX = ix / m; me.faceY = iy / m; }
+  }
+  // 바라보는 쪽: 총을 들고 PC 면 마우스 쪽, 쏜 직후면 쏜 쪽, 아니면 걷는 쪽
+  if (g && !touchy && mouse.in) { const [ax, ay] = aimDir(); me.faceX = ax; me.faceY = ay; }
+  if (Math.abs(me.faceY) > Math.abs(me.faceX) * 1.1) { me.dir = me.faceY > 0 ? "앞" : "뒤"; me.flip = false; } else { me.dir = "옆"; me.flip = me.faceX < 0; }
+  // 사격
+  const wantAuto = mouse.down || fireHeld || keys.has("Space");
+  if (g && (fireTap || (GUNS[g.type].auto && wantAuto))) fire();
+  fireTap = false;
+  // 동작
+  const an = me.pickT > 0 ? "pick" : me.reloading ? "reload" : g ? (me.shotT > 0 ? "shoot" : moving ? (run ? "grun" : "gwalk") : "gidle") : moving ? (run ? "run" : "walk") : "idle";
+  if (me.anim !== an) { me.anim = an; me.t = 0; }
   me.t += dt;
+  // 탄약 · 구급상자는 밟으면 줍기
+  for (let i = items.length - 1; i >= 0; i--) {
+    const it = items[i]; if (it.kind === "gun" || Math.hypot(it.x - me.x, it.y - me.y) > 55) continue;
+    if (it.kind === "ammo") me.ammo[it.type] += GUNS[it.type].box;
+    else if (it.kind === "med") { if (me.hp >= 100) continue; me.hp = Math.min(100, me.hp + 50); }
+    items.splice(i, 1); hud();
+  }
+  // 총 가까이 오면 줍기 단추
+  const ng = nearestGun();
+  if (ng !== near) { near = ng; $("pickBtn").classList.toggle("show", !!ng); }
+  // 연습 상대
+  for (const d of dummies) {
+    d.t += dt; d.hitT -= dt;
+    if (d.dead) { d.dead -= dt; if (d.dead <= 0) { d.dead = 0; d.hp = 100; d.anim = "idle"; d.t = 0; } }
+    else d.anim = d.hitT > 0 ? "hit" : "idle";
+  }
+  for (let i = fxs.length - 1; i >= 0; i--) { fxs[i].t += dt; if (fxs[i].t * fxs[i].fps >= fxs[i].n) fxs.splice(i, 1); }
+  for (let i = tracers.length - 1; i >= 0; i--) { tracers[i].life -= dt; if (tracers[i].life <= 0) tracers.splice(i, 1); }
   camX = Math.max(0, Math.min(W - vw / scale, me.x - vw / scale / 2));
   camY = Math.max(0, Math.min(H - vh / scale, me.y - 70 - vh / scale / 2));
+  // 줍기 글씨(PC): 총 위에
+  const pt = $("pickTxt");
+  if (near && !touchy) { pt.style.display = "block"; pt.style.left = (near.x - camX) * scale + "px"; pt.style.top = (me.y - 160 - camY) * scale + "px"; pt.style.left = (me.x - camX) * scale + "px"; pt.textContent = `E 줍기 · ${near.type}`; } else pt.style.display = "none";
 }
 
 let last = 0;
@@ -197,13 +452,14 @@ function loop(ts) {
 // ── 시작 ───────────────────────────────────────────────────
 Promise.all(NAMES.map((n) => new Promise((ok, no) => { const i = new Image(); i.onload = () => { IMG[n] = i; ok(); }; i.onerror = () => no(new Error(n)); i.src = "img/" + n + ".webp"; })))
   .then(() => {
-    build(); resize();
-    document.getElementById("load").remove();
-    document.getElementById("hint").textContent = touchy ? "왼쪽을 눌러 끌면 걷기 · 끝까지 밀면 달리기" : "WASD · 방향키 걷기 · Shift 달리기";
+    build(); resize(); hud();
+    $("load").remove();
+    $("hint").textContent = touchy ? "집 문 앞의 총을 주워 연습 상대를 쏘세요" : "WASD 이동 · Shift 달리기 · E 줍기 · 마우스 조준 · 클릭 사격 · R 재장전 · 1/2 무기";
+    setTimeout(() => { $("hint").style.opacity = "0"; }, 9000);
     requestAnimationFrame(loop);
   })
-  .catch((e) => { document.getElementById("load").textContent = "그림을 못 불러왔습니다: " + e.message; });
-window.__수달섬 = { me, walls, free }; // 시험용
+  .catch((e) => { $("load").textContent = "그림을 못 불러왔습니다: " + e.message; });
+window.__수달섬 = { me, walls, free, items, dummies, houses, GUNS, tryPick, fire, decals, setMouse: (x, y) => { mouse.x = x; mouse.y = y; mouse.in = true; }, cam: () => ({ camX, camY, scale }) }; // 시험용
 </script>
 </body>
 </html>
