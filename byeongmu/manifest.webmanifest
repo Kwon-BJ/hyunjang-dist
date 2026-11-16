@@ -2,7 +2,7 @@
   "id": "./",
   "name": "병무청 문파",
   "short_name": "병무청",
-  "description": "도깨비의 세계 병무청 문파 — 공지 · 문파원 · 게시판 · 연병장",
+  "description": "도깨비의 세계 병무청 문파 — 공지 · 문파원 · 게시판",
   "lang": "ko",
   "start_url": "./",
   "scope": "./",
