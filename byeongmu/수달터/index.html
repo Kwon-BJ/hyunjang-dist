@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>수달터</title>
+<!-- 수달터 — 롱빈터 같은 장르(3D 섬 생활 + PvP)의 병무청 수달 게임 · 2026-11-17 1단계: 3D 섬 걷기
+     three.js(lib/) · 모델은 CC0(Kenney 생존 · Quaternius 농장, 기획/3D원본/출처.md) · 수달 · 나무 · 땅은 코드로 만듦 -->
+<script type="importmap">{ "imports": { "three": "./lib/three.module.min.js" } }</script>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #a9dcf2; touch-action: none; -webkit-user-select: none; user-select: none; }
+  #cv { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  #load { position: fixed; inset: 0; display: grid; place-items: center; background: #a9dcf2; color: #2d4a5a; font: 700 20px system-ui, sans-serif; z-index: 5; }
+  #hint { position: fixed; left: 50%; top: max(12px, env(safe-area-inset-top)); transform: translateX(-50%); padding: 7px 14px; border-radius: 999px;
+          background: rgba(30, 40, 30, .55); color: #fff; font: 600 14px system-ui, sans-serif; white-space: nowrap; transition: opacity .6s; pointer-events: none; z-index: 3; }
+  #hint.off { opacity: 0; }
+  #joy { position: fixed; width: 150px; height: 150px; margin: -75px 0 0 -75px; background: url(img/ui-조이스틱.webp) center / contain no-repeat; display: none; pointer-events: none; z-index: 4; }
+  #knob { position: absolute; left: 50%; top: 50%; width: 64px; height: 64px; margin: -32px 0 0 -32px; background: url(img/ui-손잡이.webp) center / contain no-repeat; }
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div id="load">수달터 불러오는 중…</div>
+<div id="hint"></div>
+<div id="joy"><div id="knob"></div></div>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from './lib/loaders/GLTFLoader.js';
+import { mergeGeometries } from './lib/utils/BufferGeometryUtils.js';
+
+// ───────── 판 ─────────
+const cv = document.getElementById('cv');
+const touchy = matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0;
+const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, touchy ? 1.5 : 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xa9dcf2);
+scene.fog = new THREE.Fog(0xbfe4f4, 70, 150);
+const camera = new THREE.PerspectiveCamera(38, 1, 0.5, 400);
+scene.add(new THREE.HemisphereLight(0xcfeaff, 0x6f8f4a, 1.15));
+const sun = new THREE.DirectionalLight(0xfff0d2, 2.5);
+sun.castShadow = true;
+sun.shadow.mapSize.set(touchy ? 1024 : 2048, touchy ? 1024 : 2048);
+Object.assign(sun.shadow.camera, { left: -22, right: 22, top: 22, bottom: -22, near: 1, far: 80 });
+sun.shadow.bias = -0.0005; sun.shadow.normalBias = 0.03;
+scene.add(sun, sun.target);
+
+// ───────── 섬 모양 (x 동쪽 · z 남쪽 · 높이 y) ─────────
+const SEA_Y = -0.35;
+const islandR = (a) => 62 + 3 * Math.sin(3 * a) + 2 * Math.sin(5 * a + 1);
+const RW = 3; // 개울 반폭
+const riverX = (z) => 24 + 4 * Math.sin(z * 0.06);
+const BRIDGE = { x: 24, half: 5, w: 1.3, y: 0.3 };
+const POND = { x: -28, z: 18, r: 6 };
+const PLAZA = { x: 0, z: 0, r: 6 };
+const PATHS = [[0, 0, 19, 0], [29, 0, 38, -10], [0, 0, -18, -15], [0, 0, 0, 44], [0, 0, -6, 30], [-6, 30, -20, 22]];
+const sstep = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+const segDist = (px, pz, [ax, az, bx, bz]) => { const dx = bx - ax, dz = bz - az, t = Math.max(0, Math.min(1, ((px - ax) * dx + (pz - az) * dz) / (dx * dx + dz * dz))); return Math.hypot(px - ax - t * dx, pz - az - t * dz); };
+const pathDist = (x, z) => Math.min(Math.hypot(x - PLAZA.x, z - PLAZA.z) - PLAZA.r + 1.6, ...PATHS.map((s) => segDist(x, z, s)));
+function height(x, z) {
+  const d = Math.hypot(x, z), R = islandR(Math.atan2(z, x));
+  let h = -0.9 * sstep(R - 6, R + 3, d);
+  const rv = Math.abs(x - riverX(z));
+  h = Math.min(h, -0.8 * sstep(RW + 1.5, RW, rv));
+  const pd = Math.hypot(x - POND.x, z - POND.z);
+  h = Math.min(h, -0.8 * sstep(POND.r + 1.5, POND.r, pd));
+  return h;
+}
+const onBridge = (x, z) => Math.abs(x - BRIDGE.x) < BRIDGE.half && Math.abs(z) < BRIDGE.w;
+const groundY = (x, z) => (onBridge(x, z) ? Math.max(BRIDGE.y, height(x, z)) : height(x, z));
+
+// 값 잡음
+const hash = (x, z) => { const s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); };
+function noise(x, z) {
+  const xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi, u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
+  const a = hash(xi, zi), b = hash(xi + 1, zi), c = hash(xi, zi + 1), d = hash(xi + 1, zi + 1);
+  return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+}
+let seed = 20261117;
+const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
+
+// ───────── 땅 ─────────
+{
+  const C = (h) => new THREE.Color(h);
+  const G1 = C(0x7cbf4a), G2 = C(0x9ccf5c), G3 = C(0x6aa83f), DIRT = C(0xd6b27c), DIRT2 = C(0xc49a62), SAND = C(0xecdcaa), WET = C(0xbfae80), BANK = C(0xd8c897);
+  const geo = new THREE.PlaneGeometry(150, 150, 300, 300); geo.rotateX(-Math.PI / 2);
+  const pos = geo.attributes.position, col = new Float32Array(pos.count * 3), c = new THREE.Color();
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i), z = pos.getZ(i), h = height(x, z);
+    pos.setY(i, h);
+    const n = noise(x * 0.12, z * 0.12), n2 = noise(x * 0.5 + 40, z * 0.5);
+    c.copy(G1).lerp(G2, sstep(0.35, 0.75, n)).lerp(G3, 0.35 * sstep(0.6, 0.9, n2));
+    const pd = pathDist(x, z);
+    c.lerp(DIRT.clone().lerp(DIRT2, n2 * 0.6), sstep(1.9, 1.2, pd));
+    const d = Math.hypot(x, z), R = islandR(Math.atan2(z, x));
+    c.lerp(SAND, sstep(R - 9.5, R - 7, d));
+    const bank = Math.max(sstep(RW + 1.9, RW + 0.7, Math.abs(x - riverX(z))), sstep(POND.r + 1.9, POND.r + 0.7, Math.hypot(x - POND.x, z - POND.z)));
+    c.lerp(BANK, bank * 0.85);
+    c.lerp(WET, sstep(-0.15, -0.4, h));
+    col.set([c.r, c.g, c.b], i * 3);
+  }
+  geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  geo.computeVertexNormals();
+  // 잔무늬(풀결) — 회색 점무늬를 곱한다
+  const tc = document.createElement('canvas'); tc.width = tc.height = 128; const tx = tc.getContext('2d');
+  tx.fillStyle = '#fff'; tx.fillRect(0, 0, 128, 128);
+  for (let i = 0; i < 900; i++) { const g = 200 + Math.floor(rnd() * 55); tx.fillStyle = `rgb(${g},${g},${g})`; tx.fillRect(rnd() * 128, rnd() * 128, 1 + rnd() * 2, 2 + rnd() * 3); }
+  const tex = new THREE.CanvasTexture(tc); tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(70, 70); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
+  const ground = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, map: tex, roughness: 1 }));
+  ground.receiveShadow = true; scene.add(ground);
+  const sea = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), new THREE.MeshStandardMaterial({ color: 0x4fb8d0, roughness: 0.2, metalness: 0.05, transparent: true, opacity: 0.82 }));
+  sea.rotation.x = -Math.PI / 2; sea.position.y = SEA_Y; sea.receiveShadow = true; scene.add(sea);
+}
+
+// ───────── 막힘 ─────────
+const circles = [], boxes = [];
+function free(x, z, r = 0.32) {
+  if (!onBridge(x, z) && height(x, z) < -0.18) return false;
+  for (const c of circles) if ((x - c.x) ** 2 + (z - c.z) ** 2 < (c.r + r) ** 2) return false;
+  for (const b of boxes) if (x > b.x0 - r && x < b.x1 + r && z > b.z0 - r && z < b.z1 + r) return false;
+  return true;
+}
+const keepOut = [{ x: 0, z: 0, r: 10 }, { x: -19, z: -17, r: 10 }, { x: 41, z: -10, r: 13 }, { x: 44, z: 14, r: 7 }, { x: 0, z: 50, r: 6 }];
+const clearSpot = (x, z, gap) => {
+  const d = Math.hypot(x, z), R = islandR(Math.atan2(z, x));
+  if (d > R - 10 || height(x, z) < 0 || pathDist(x, z) < gap) return false;
+  if (Math.abs(x - riverX(z)) < RW + 2.5 || Math.hypot(x - POND.x, z - POND.z) < POND.r + 2.5) return false;
+  return !keepOut.some((k) => Math.hypot(x - k.x, z - k.z) < k.r);
+};
+
+// ───────── 나무 · 바위 · 꽃 · 풀 (같은 모양은 한 번에 그림) ─────────
+const paint = (g, hex) => { const c = new THREE.Color(hex), n = g.attributes.position.count, a = new Float32Array(n * 3); for (let i = 0; i < n; i++) a.set([c.r, c.g, c.b], i * 3); g.setAttribute('color', new THREE.BufferAttribute(a, 3)); return g; };
+const part = (g, hex, x = 0, y = 0, z = 0, sx = 1, sy = 1, sz = 1) => { g.scale(sx, sy, sz); g.translate(x, y, z); return paint(g, hex); };
+const strip = (g) => { if (g.index) g = g.toNonIndexed(); g.deleteAttribute('uv'); return g; }; // 공은 색인 없음 · 원기둥은 있음 → 모두 없앰
+const TREE_KINDS = {
+  round: mergeGeometries([
+    part(new THREE.CylinderGeometry(0.17, 0.26, 1.5, 7), 0x8a5a36, 0, 0.75, 0),
+    part(new THREE.IcosahedronGeometry(1.15, 2), 0x5fae45, 0, 2.15, 0, 1, 0.92, 1),
+    part(new THREE.IcosahedronGeometry(0.75, 2), 0x6fbd4f, 0.55, 2.55, 0.3),
+    part(new THREE.IcosahedronGeometry(0.7, 2), 0x56a03e, -0.5, 2.5, -0.25),
+  ].map(strip)),
+  fruit: mergeGeometries([
+    part(new THREE.CylinderGeometry(0.17, 0.26, 1.4, 7), 0x8a5a36, 0, 0.7, 0),
+    part(new THREE.IcosahedronGeometry(1.2, 2), 0x63b247, 0, 2.05, 0, 1, 0.9, 1),
+    ...[[0.8, 2.0, 0.75], [-0.85, 2.1, 0.55], [0.2, 1.7, 1.08], [-0.3, 2.6, 0.9], [0.95, 2.5, -0.3], [-0.7, 1.75, -0.8]].map(([x, y, z]) => part(new THREE.IcosahedronGeometry(0.14, 1), 0xd8432f, x, y, z)),
+  ].map(strip)),
+  pine: mergeGeometries([
+    part(new THREE.CylinderGeometry(0.14, 0.2, 1.0, 6), 0x7a4f30, 0, 0.5, 0),
+    part(new THREE.ConeGeometry(1.15, 1.5, 8), 0x3f8a46, 0, 1.55, 0),
+    part(new THREE.ConeGeometry(0.9, 1.3, 8), 0x479a4d, 0, 2.3, 0),
+    part(new THREE.ConeGeometry(0.6, 1.1, 8), 0x51a655, 0, 3.0, 0),
+  ].map(strip)),
+};
+const ROCK = paint(new THREE.DodecahedronGeometry(1, 0), 0xa4a49a);
+const TUFT = mergeGeometries([0, 1, 2].map((i) => { const g = new THREE.ConeGeometry(0.05, 0.38, 3); g.rotateZ((i - 1) * 0.35); g.translate((i - 1) * 0.07, 0.17, 0); return strip(paint(g, 0x5d9e3a)); }));
+const FLOWER = new THREE.IcosahedronGeometry(0.12, 0); FLOWER.translate(0, 0.14, 0);
+const natMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9 });
+const rockMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, flatShading: true });
+function scatter(geo, mat, n, gap, place, shadow = true) {
+  const im = new THREE.InstancedMesh(geo, mat, n), m = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler();
+  let k = 0;
+  for (let tries = 0; k < n && tries < n * 60; tries++) {
+    const x = (rnd() - 0.5) * 130, z = (rnd() - 0.5) * 130;
+    const r = place(x, z, k); if (!r) continue;
+    const px = r.x ?? x, pz = r.z ?? z;
+    e.set(r.rx || 0, rnd() * Math.PI * 2, r.rz || 0); q.setFromEuler(e);
+    m.compose(new THREE.Vector3(px, height(px, pz) + (r.y || 0), pz), q, new THREE.Vector3(r.sx ?? r.s, r.sy ?? r.s, r.sz ?? r.s));
+    im.setMatrixAt(k, m); if (r.color) im.setColorAt(k, r.color); k++;
+  }
+  im.count = k; im.castShadow = shadow; im.receiveShadow = true; scene.add(im); return im;
+}
+const treeSpots = [];
+const treeOk = (x, z, gap) => clearSpot(x, z, 3.2) && treeSpots.every((t) => Math.hypot(t.x - x, t.z - z) > gap);
+for (const [kind, n] of [['round', 95], ['pine', 40], ['fruit', 16]]) {
+  scatter(TREE_KINDS[kind], natMat, n, 0, (x, z) => {
+    if (!treeOk(x, z, 3.4)) return null;
+    if (kind === 'pine' && Math.hypot(x, z) < 38) return null; // 소나무는 바깥쪽
+    const s = 0.85 + rnd() * 0.4; treeSpots.push({ x, z }); circles.push({ x, z, r: 0.32 * s }); return { s };
+  });
+}
+scatter(ROCK, rockMat, 26, 0, (x, z) => {
+  if (!clearSpot(x, z, 2.5) || !treeSpots.every((t) => Math.hypot(t.x - x, t.z - z) > 2.5)) return null;
+  const s = 0.45 + rnd() * 0.6; circles.push({ x, z, r: s * 0.95 }); return { s, sy: s * 0.62, sz: s * 0.85, y: 0.05 };
+});
+const FLOWER_COLORS = [0xffffff, 0xf7a6c4, 0xffd84d, 0xb98cf0, 0xff8a65].map((h) => new THREE.Color(h));
+const flowerSpots = Array.from({ length: 34 }, () => ({ x: (rnd() - 0.5) * 110, z: (rnd() - 0.5) * 110, c: FLOWER_COLORS[Math.floor(rnd() * 5)] }));
+scatter(FLOWER, new THREE.MeshStandardMaterial({ roughness: 0.8 }), 520, 0, (x, z, k) => {
+  const f = flowerSpots[k % flowerSpots.length], fx = f.x + (rnd() - 0.5) * 5, fz = f.z + (rnd() - 0.5) * 5;
+  if (!clearSpot(fx, fz, 1.6)) return null;
+  return { s: 0.8 + rnd() * 0.5, color: f.c, x: fx, z: fz };
+}, false);
+scatter(TUFT, natMat, 1400, 0, (x, z) => (clearSpot(x, z, 1.5) || (height(x, z) >= 0 && pathDist(x, z) > 1.6 && Math.hypot(x, z) < 50 && rnd() < 0.3) ? { s: 0.8 + rnd() * 0.7 } : null), false);
+
+// ───────── 다리 (나무 판) ─────────
+{
+  const wood = new THREE.MeshStandardMaterial({ color: 0xa8743f, roughness: 0.9 }), dark = new THREE.MeshStandardMaterial({ color: 0x7d5230, roughness: 0.9 });
+  const add = (g, m, x, y, z) => { const o = new THREE.Mesh(g, m); o.position.set(x, y, z); o.castShadow = o.receiveShadow = true; scene.add(o); };
+  for (let i = 0; i < 17; i++) add(new THREE.BoxGeometry(0.52, 0.14, 3.1), i % 2 ? wood : dark, BRIDGE.x - BRIDGE.half + 0.3 + i * 0.59, BRIDGE.y - 0.07, 0);
+  for (const s of [-1, 1]) {
+    add(new THREE.BoxGeometry(BRIDGE.half * 2, 0.1, 0.12), wood, BRIDGE.x, BRIDGE.y + 0.75, s * 1.5);
+    for (let i = 0; i <= 5; i++) add(new THREE.BoxGeometry(0.16, 1.0, 0.16), dark, BRIDGE.x - BRIDGE.half + 0.2 + i * (BRIDGE.half * 2 - 0.4) / 5, BRIDGE.y + 0.3, s * 1.5);
+  }
+}
+
+// ───────── 모델 (CC0) ─────────
+const PROPS = [
+  // 이름, x, z, 돌림(도), 높이, 막힘
+  ['텐트', -22, -20, 20, 1.7, 'c'], ['텐트', -15.5, -21.5, -15, 1.7, 'c'], ['모닥불', -19, -15.5, 0, 0.75, 'c'], ['침낭', -21.5, -13.5, 70, 0.22, ''],
+  ['작업대', -13.5, -14.5, -90, 1.0, 'c'], ['모루', -12.8, -17.2, -60, 0.9, 'c'], ['보관함', -24.5, -15.5, 90, 0.75, 'c'], ['통', -25.5, -18, 0, 0.95, 'c'], ['상자', -26, -19.6, 25, 0.7, 'c'],
+  ['표지판', 3, -3.5, -20, 1.7, 'c'],
+  ['헛간', 41, -17, 0, 5.2, 'b'], ['닭장', 34, -6.5, 30, 2.0, 'c'], ['사일로', 48, -12, 0, 8, 'c'], ['풍차', 44, 14, -30, 10, 'c'],
+  ['낚시대', -22.6, 14.5, 120, 1.1, 'c'], ['통', 33, -11, 0, 0.95, 'c'], ['상자', 36.5, -16.5, 10, 0.7, 'c'],
+];
+const FENCES = [[34, -21, 0], [40, -21, 0], [46, -21, 0], [50.5, -17.5, 90], [50.5, -7, 90]];
+const loader = new GLTFLoader();
+const cache = {};
+const loadModel = (name) => (cache[name] ||= loader.loadAsync(`models/${encodeURIComponent(name)}.glb`).then((g) => g.scene));
+function placeModel(src, x, z, rotDeg, h, block) {
+  const o = src.clone(true), b = new THREE.Box3().setFromObject(o), sz = b.getSize(new THREE.Vector3()), s = h / sz.y;
+  const inner = new THREE.Group(); inner.add(o); o.position.set(-(b.min.x + sz.x / 2), -b.min.y, -(b.min.z + sz.z / 2));
+  const g = new THREE.Group(); g.add(inner); g.scale.setScalar(s); g.rotation.y = rotDeg * Math.PI / 180; g.position.set(x, Math.max(0, height(x, z)), z);
+  g.traverse((m) => { if (m.isMesh) { m.castShadow = m.receiveShadow = true; } });
+  scene.add(g);
+  const a = rotDeg * Math.PI / 180, wx = Math.abs(Math.cos(a)) * sz.x * s + Math.abs(Math.sin(a)) * sz.z * s, wz = Math.abs(Math.sin(a)) * sz.x * s + Math.abs(Math.cos(a)) * sz.z * s;
+  if (block === 'c') circles.push({ x, z, r: Math.min(wx, wz) * 0.45 });
+  if (block === 'b') boxes.push({ x0: x - wx / 2, x1: x + wx / 2, z0: z - wz / 2, z1: z + wz / 2 });
+  if (block === 'f') boxes.push({ x0: x - wx / 2, x1: x + wx / 2, z0: z - Math.max(wz, 0.3) / 2, z1: z + Math.max(wz, 0.3) / 2 });
+  return g;
+}
+
+// ───────── 수달 (ChatGPT 수달 기본형을 보고 만듦: 갈색 털 · 크림 얼굴 · 파란 후드 · 베이지 바지) ─────────
+const OTTER = { fur: 0x8a5a3b, cream: 0xead2aa, hood: 0x4d6aa6, pants: 0xcdb084, dark: 0x1d1714 };
+function makeOtter(colors = OTTER) {
+  const M = (c) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.85 });
+  const fur = M(colors.fur), cream = M(colors.cream), hood = M(colors.hood), pants = M(colors.pants), dark = M(colors.dark), white = M(0xffffff);
+  const mesh = (g, m, x = 0, y = 0, z = 0, sx = 1, sy = 1, sz = 1) => { const o = new THREE.Mesh(g, m); o.position.set(x, y, z); o.scale.set(sx, sy, sz); o.castShadow = true; return o; };
+  const S = (r) => new THREE.SphereGeometry(r, 18, 14), CAP = (r, l) => new THREE.CapsuleGeometry(r, l, 6, 12);
+  const root = new THREE.Group(), body = new THREE.Group(); root.add(body);
+  const leg = (s) => { const g = new THREE.Group(); g.position.set(s * 0.1, 0.33, 0); g.add(mesh(CAP(0.095, 0.12), pants, 0, -0.12, 0), mesh(S(0.095), fur, 0, -0.29, 0.04, 1, 0.55, 1.45)); body.add(g); return g; };
+  const legL = leg(-1), legR = leg(1);
+  body.add(mesh(S(0.2), pants, 0, 0.36, 0, 1.05, 0.72, 0.92));
+  body.add(mesh(CAP(0.205, 0.2), hood, 0, 0.58, 0, 1.06, 1, 0.9));
+  body.add(mesh(new THREE.TorusGeometry(0.15, 0.065, 8, 18), hood, 0, 0.76, 0, 1, 1, 1).rotateX(Math.PI / 2));
+  body.add(mesh(S(0.15), hood, 0, 0.78, -0.13, 1.1, 0.9, 0.8));
+  body.add(mesh(new THREE.BoxGeometry(0.012, 0.3, 0.02), M(0x3d5588), 0, 0.57, 0.19));
+  for (const s of [-1, 1]) body.add(mesh(new THREE.BoxGeometry(0.1, 0.08, 0.02), M(0x45609a), s * 0.1, 0.45, 0.18));
+  const arm = (s) => { const g = new THREE.Group(); g.position.set(s * 0.23, 0.7, 0); g.rotation.z = s * 0.18; g.add(mesh(CAP(0.075, 0.16), hood, 0, -0.12, 0), mesh(S(0.072), fur, 0, -0.27, 0.01)); body.add(g); return g; };
+  const armL = arm(-1), armR = arm(1);
+  const head = new THREE.Group(); head.position.set(0, 0.97, 0); body.add(head);
+  head.add(mesh(S(0.26), fur, 0, 0, 0, 1, 0.94, 0.95));
+  head.add(mesh(S(0.2), cream, 0, -0.07, 0.1, 1.05, 0.78, 0.8));
+  head.add(mesh(S(0.1), cream, 0, -0.07, 0.21, 1.35, 0.8, 0.85));
+  head.add(mesh(S(0.045), dark, 0, -0.025, 0.295, 1.35, 0.9, 0.8));
+  for (const s of [-1, 1]) {
+    head.add(mesh(S(0.036), dark, s * 0.095, 0.04, 0.22));
+    head.add(mesh(S(0.012), white, s * 0.095 + 0.012, 0.056, 0.252));
+    head.add(mesh(S(0.072), fur, s * 0.2, 0.15, -0.03, 1, 1, 0.7));
+    head.add(mesh(S(0.042), cream, s * 0.2, 0.15, 0.015, 1, 1, 0.5));
+    head.add(mesh(S(0.05), cream, s * 0.1, 0.11, 0.17, 1.3, 0.5, 0.6));
+    const wg = new THREE.BufferGeometry().setFromPoints([0.08, 0, -0.06].flatMap((dy) => [new THREE.Vector3(s * 0.08, -0.06, 0.27), new THREE.Vector3(s * 0.3, -0.06 + dy * 0.8, 0.22)]));
+    head.add(new THREE.LineSegments(wg, new THREE.LineBasicMaterial({ color: 0xf4efe6 })));
+  }
+  const tail = new THREE.Group(); tail.position.set(0, 0.3, -0.13); body.add(tail);
+  let t = tail;
+  for (const [r, l, rx] of [[0.085, 0.16, 0.8], [0.07, 0.15, 0.5], [0.05, 0.13, 0.25]]) { // + 가 뒤쪽 · 땅으로 휘어 눕게
+    const seg = new THREE.Group(); seg.rotation.x = rx; t.add(seg);
+    seg.add(mesh(CAP(r, l), fur, 0, -(l / 2 + r * 0.6), 0));
+    const next = new THREE.Group(); next.position.y = -(l + r * 0.9); seg.add(next); t = next;
+  }
+  root.userData = { body, legL, legR, armL, armR, head, tail };
+  return root;
+}
+function animOtter(o, phase, amt, run, t) {
+  const p = o.userData, sw = Math.sin(phase);
+  p.legL.rotation.x = sw * 0.75 * amt; p.legR.rotation.x = -sw * 0.75 * amt;
+  p.armL.rotation.x = -sw * (run ? 0.9 : 0.55) * amt; p.armR.rotation.x = sw * (run ? 0.9 : 0.55) * amt;
+  p.body.position.y = Math.abs(Math.cos(phase)) * (run ? 0.07 : 0.04) * amt + (1 - amt) * Math.sin(t * 2.2) * 0.008;
+  p.body.rotation.x = (run ? 0.2 : 0.05) * amt;
+  p.head.rotation.x = -(run ? 0.12 : 0.03) * amt + (1 - amt) * Math.sin(t * 1.1) * 0.03;
+  p.head.rotation.z = (1 - amt) * Math.sin(t * 0.7) * 0.05;
+  p.tail.rotation.y = Math.sin(phase * 0.5 + t * (1 - amt) * 1.5) * (0.25 + 0.15 * amt);
+}
+
+// ───────── 나 ─────────
+const me = { x: 2, z: 5, face: 0, speed: 0, phase: 0, run: false, obj: makeOtter() };
+scene.add(me.obj);
+const WALK = 3.4, RUN = 6.4;
+
+// ───────── 입력 ─────────
+const keys = new Set();
+addEventListener('keydown', (e) => { keys.add(e.code); if (e.code.startsWith('Arrow') || e.code === 'Space') e.preventDefault(); });
+addEventListener('keyup', (e) => keys.delete(e.code));
+addEventListener('blur', () => keys.clear());
+const joyEl = document.getElementById('joy'), knob = document.getElementById('knob');
+const joy = { id: null, x0: 0, y0: 0, dx: 0, dy: 0 };
+const JR = 60;
+cv.addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse' || joy.id !== null || e.clientX > innerWidth * 0.55) return;
+  joy.id = e.pointerId; joy.x0 = e.clientX; joy.y0 = e.clientY; joy.dx = joy.dy = 0;
+  joyEl.style.left = e.clientX + 'px'; joyEl.style.top = e.clientY + 'px'; joyEl.style.display = 'block'; knob.style.transform = '';
+  cv.setPointerCapture(e.pointerId); hideHint();
+});
+cv.addEventListener('pointermove', (e) => {
+  if (e.pointerId !== joy.id) return;
+  let dx = e.clientX - joy.x0, dy = e.clientY - joy.y0; const l = Math.hypot(dx, dy); if (l > JR) { dx *= JR / l; dy *= JR / l; }
+  joy.dx = dx / JR; joy.dy = dy / JR; knob.style.transform = `translate(${dx}px, ${dy}px)`;
+});
+const joyEnd = (e) => { if (e.pointerId !== joy.id) return; joy.id = null; joy.dx = joy.dy = 0; joyEl.style.display = 'none'; };
+cv.addEventListener('pointerup', joyEnd); cv.addEventListener('pointercancel', joyEnd);
+const hintEl = document.getElementById('hint');
+hintEl.textContent = touchy ? '왼쪽을 눌러 움직이기 · 끝까지 밀면 달리기' : 'WASD · 방향키 이동 · Shift 달리기';
+let hintTimer = setTimeout(hideHint, 9000);
+function hideHint() { clearTimeout(hintTimer); hintEl.classList.add('off'); }
+
+// ───────── 카메라 ─────────
+let camH = 11.5, camD = 11;
+function resize() {
+  const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); camera.aspect = w / h;
+  const portrait = h > w; camera.fov = portrait ? 50 : 36; camH = portrait ? 8 : 7; camD = portrait ? 9 : 8.6; // 롱빈터처럼 비스듬히(약 40도) · 세로 화면은 조금 멀리
+  camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize); resize();
+const camAt = new THREE.Vector3(me.x, 0, me.z);
+
+// ───────── 돌리기 ─────────
+let last = performance.now(), clock = 0;
+function step(dt) {
+  clock += dt;
+  let mx = 0, mz = 0;
+  if (keys.has('KeyA') || keys.has('ArrowLeft')) mx -= 1;
+  if (keys.has('KeyD') || keys.has('ArrowRight')) mx += 1;
+  if (keys.has('KeyW') || keys.has('ArrowUp')) mz -= 1;
+  if (keys.has('KeyS') || keys.has('ArrowDown')) mz += 1;
+  let mag = Math.hypot(mx, mz), run = keys.has('ShiftLeft') || keys.has('ShiftRight');
+  if (mag) { mx /= mag; mz /= mag; mag = 1; hideHint(); }
+  else if (joy.id !== null) { const l = Math.hypot(joy.dx, joy.dy); if (l > 0.15) { mx = joy.dx / l; mz = joy.dy / l; mag = Math.min(1, l); run = l > 0.8; } }
+  const target = mag ? (run ? RUN : WALK) * (run ? 1 : Math.max(0.45, mag)) : 0;
+  me.speed += (target - me.speed) * Math.min(1, dt * 10);
+  me.run = run && mag > 0;
+  if (mag) {
+    const want = Math.atan2(mx, mz); let d = want - me.face; d = Math.atan2(Math.sin(d), Math.cos(d)); me.face += d * Math.min(1, dt * 12);
+    const vx = mx * me.speed * dt, vz = mz * me.speed * dt;
+    if (free(me.x + vx, me.z + vz)) { me.x += vx; me.z += vz; }
+    else if (free(me.x + vx, me.z)) me.x += vx;
+    else if (free(me.x, me.z + vz)) me.z += vz;
+  }
+  me.phase += dt * me.speed * (me.run ? 2.2 : 2.9);
+  const amt = Math.min(1, me.speed / WALK);
+  me.obj.position.set(me.x, groundY(me.x, me.z), me.z); me.obj.rotation.y = me.face;
+  animOtter(me.obj, me.phase, amt, me.run, clock);
+  // 카메라 · 해
+  const want = new THREE.Vector3(me.x, me.obj.position.y, me.z);
+  if (camAt.distanceTo(want) > 8) camAt.copy(want); else camAt.lerp(want, Math.min(1, dt * 6)); // 멀리 옮겨지면(다시 태어남 등) 바로 따라붙음
+  camera.position.set(camAt.x, camAt.y + camH, camAt.z + camD); camera.lookAt(camAt.x, camAt.y + 0.6, camAt.z);
+  sun.position.set(camAt.x + 14, 26, camAt.z + 9); sun.target.position.copy(camAt);
+}
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  step(dt); renderer.render(scene, camera); requestAnimationFrame(frame);
+}
+
+// ───────── 시작 ─────────
+const srcs = Object.fromEntries(await Promise.all([...new Set([...PROPS.map((p) => p[0]), '울타리'])].map(async (n) => [n, await loadModel(n)])));
+for (const [n, x, z, r, h, b] of PROPS) placeModel(srcs[n], x, z, r, h, b);
+for (const [x, z, r] of FENCES) placeModel(srcs['울타리'], x, z, r, 1.0, 'f');
+document.getElementById('load').remove();
+requestAnimationFrame((t) => { last = t; frame(t); });
+
+window.__수달터 = { me, free, height, circles, boxes, onBridge, BRIDGE, riverX, camera, renderer };
+</script>
+</body>
+</html>
