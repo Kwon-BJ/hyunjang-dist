@@ -13,8 +13,8 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x9fd3ea);
 scene.fog = new THREE.Fog(0xcfe6ef, 55, 130);
 const camera = new THREE.PerspectiveCamera(38, 1, 0.5, 400);
-scene.add(new THREE.HemisphereLight(0xc4e4ff, 0x8a7a4a, 1.05));
-const sun = new THREE.DirectionalLight(0xffe0b0, 2.9);
+scene.add(new THREE.HemisphereLight(0xa9cdf5, 0x7d6c46, 1.0)); // 그늘은 푸르게(4단계)
+const sun = new THREE.DirectionalLight(0xffd59c, 3.05); // 햇빛은 따뜻하게(4단계)
 sun.castShadow = true;
 sun.shadow.mapSize.set(touchy ? 1024 : 2048, touchy ? 1024 : 2048);
 Object.assign(sun.shadow.camera, { left: -20, right: 20, top: 20, bottom: -20, near: 1, far: 90 });
