@@ -24,12 +24,12 @@ requestAnimationFrame((t) => { last = t; frame(t); });
 // 시험용: sim(누를 키, 초) — 화면 속도와 상관없이 1/60초씩 움직여 본다
 const sim = (codes, secs) => { codes.forEach((k) => keys.add(k)); for (let i = 0; i < Math.round(secs * 60); i++) step(1 / 60); codes.forEach((k) => keys.delete(k)); };
 window.__수달섬 = { me, free, height, circles, boxes, onBridge, BRIDGE, riverX, camera, renderer, quality, sim, joy, grass,
-  S, TREES, ROCKS, BUSHES, FLOWERS, HOUSES, SHOP_AT, PLOTS, net, checkGame, save: () => { dirty = true; flush(); }, GAME_BUILD, doAction, findTarget, openWin, closeWin, count, flush,
+  S, TREES, ROCKS, BUSHES, FLOWERS, BERRIES, KEYED, HOUSES, SHOP_AT, PLOTS, net, checkGame, save: () => { dirty = true; flush(); }, GAME_BUILD, doAction, findTarget, openWin, closeWin, count, flush,
   get sacks() { return sacks; }, aim, fireOnce, GUNS, get lastShot() { return lastShot; }, get SAFE() { return SAFE; }, get srv() { return srvOn(); }, testHold, shakeFit, wobbleAngle, TRUNK, SHAKE_T, PAW_R, get newGame() { return newGame; }, get idleT() { return idleT; }, keys, get HOUSE_AT() { return HOUSE_AT; }, get CHEST_AT() { return CHEST_AT; }, get houseBox() { return houseBox; }, get clock() { return clock; } };
 
 // 섬 자료(서버 판정용) — 기획/수달섬-세계뽑기.cjs 가 이것을 워커/src/suseom/world.json 으로 저장한다.
 // 화면과 서버가 같은 섬을 보는지는 sum(나무 · 바위 · 꽃 자리 요약)으로 맞춘다.
-function worldSum(W) { let h = 7; const add = (v) => { h = (h * 31 + Math.round(v * 100)) >>> 0; }; for (const l of [W.trees, W.rocks, W.flowers, W.bushes]) for (const r of l) { add(r.x); add(r.z); } return h.toString(36); }
+function worldSum(W) { let h = 7; const add = (v) => { h = (h * 31 + Math.round(v * 100)) >>> 0; }; for (const l of [W.trees, W.rocks, W.flowers, W.bushes, W.berries || []]) for (const r of l) { add(r.x); add(r.z); } return h.toString(36); }
 window.__수달섬.worldData = () => {
   const r2 = (v) => Math.round(v * 100) / 100;
   const own = new Set([mySet && mySet.circle, mySet && mySet.box].filter(Boolean));
@@ -40,6 +40,7 @@ window.__수달섬.worldData = () => {
     rocks: ROCKS.map((r) => ({ k: r.key, x: r2(r.x), z: r2(r.z), r: r2(r.circle.r) })),
     flowers: FLOWERS.map((r) => ({ k: r.key, x: r2(r.x), z: r2(r.z) })),
     bushes: BUSHES.map((r, i) => ({ k: 'B' + i, x: r2(r.x), z: r2(r.z) })),
+    berries: BERRIES.map((r, i) => ({ k: 'E' + i, x: r2(r.x), z: r2(r.z) })),
     plots: PLOTS.map((p) => ({ x: r2(p.x), z: r2(p.z) })),
     circles: circles.filter((c) => !natural.has(c) && !own.has(c)).map((c) => ({ x: r2(c.x), z: r2(c.z), r: r2(c.r) })), // 모델(텐트 · 모닥불 · 가판대 …)
     boxes: boxes.filter((b) => !own.has(b)).map((b) => ({ x0: r2(b.x0), z0: r2(b.z0), x1: r2(b.x1), z1: r2(b.z1) })), // 헛간 · 울타리
@@ -47,4 +48,4 @@ window.__수달섬.worldData = () => {
   };
   W.sum = worldSum(W); return W;
 };
-window.__수달섬.worldSum = () => worldSum({ trees: TREES, rocks: ROCKS, flowers: FLOWERS, bushes: BUSHES });
+window.__수달섬.worldSum = () => worldSum({ trees: TREES, rocks: ROCKS, flowers: FLOWERS, bushes: BUSHES, berries: BERRIES });
