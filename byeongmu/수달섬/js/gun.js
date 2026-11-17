@@ -34,7 +34,7 @@ const RC = new THREE.Raycaster(), MV = new THREE.Vector2(), PL = new THREE.Plane
 cv.addEventListener('mousemove', (e) => {
   if (!isGun(S.tool)) return;
   MV.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); RC.setFromCamera(MV, camera);
-  PL.constant = -(groundY(me.x, me.z) + 0.6); if (RC.ray.intersectPlane(PL, PT)) { aim.ang = Math.atan2(PT.x - me.x, PT.z - me.z); aim.has = true; }
+  PL.constant = -(groundY(me.x, me.z) + 0.6); if (RC.ray.intersectPlane(PL, PT)) { aim.ang = Math.atan2(PT.x - me.x, PT.z - me.z); aim.dist = Math.hypot(PT.x - me.x, PT.z - me.z); aim.has = true; }
 });
 cv.addEventListener('mousedown', (e) => { if (e.button === 0 && isGun(S.tool)) { aim.firing = true; if (!srvOn()) toast('총은 함께(홈페이지 로그인)일 때만 쏠 수 있어요'); } });
 addEventListener('mouseup', () => { aim.firing = false; });
@@ -56,7 +56,7 @@ function fireOnce(ang) {
   if (aim.reloading > clock) return false; // 장전 중엔 헛불꽃 없이(리뷰 9번)
   if (inSafeC(me.x, me.z)) { if (clock - (aim.safeT || -9) > 1.5) { aim.safeT = clock; toast('안전 구역에서는 쏠 수 없어요'); } return false; }
   if ((S.mag[g] | 0) <= 0) { if (!aim.askedReload) { aim.askedReload = true; toast('탄창이 비었어요 — 장전해요', GUN_INFO[g].ammo); reload(); } return false; }
-  me.face = ang; netSend({ t: 'shoot', ang: +ang.toFixed(3) }); muzzle(me.obj, g); bang(g, 1); aim.shots = (aim.shots || 0) + 1;
+  me.face = ang; netSend({ t: 'shoot', ang: +ang.toFixed(3), ...(aim.dist != null && !aim.touch ? { d: +aim.dist.toFixed(2) } : {}) }); // d: 마우스로 겨눈 거리(땅의 가시덫) muzzle(me.obj, g); bang(g, 1); aim.shots = (aim.shots || 0) + 1;
   return true;
 }
 function gunTick(dt) {
