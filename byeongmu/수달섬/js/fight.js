@@ -65,7 +65,7 @@ function onNetFight(m) {
     else { const o = net.others.get(m.id); if (o) { o.hp = m.hp; updateTagHp(o); } }
   } else if (m.t === 'died') {
     const o = net.others.get(m.id);
-    if (m.id === net.id) { me.dead = true; me.speed = 0; me.actT = 0; layDown(me.obj, true); setMyHp(0); closeWin(); toast(m.byName ? `${m.byName} 님에게 쓰러졌어요 — 3초 뒤 집에서 다시 일어나요` : '쓰러졌어요 — 3초 뒤 집에서 다시 일어나요'); }
+    if (m.id === net.id) { me.dead = true; me.speed = 0; me.actT = 0; layDown(me.obj, true); setMyHp(0); closeWin(); toast(m.byName ? `${m.byName}${/(포탑|가시덫)$/.test(m.byName) ? '에' : ' 님에게'} 쓰러졌어요 — 3초 뒤 집에서 다시 일어나요` : '쓰러졌어요 — 3초 뒤 집에서 다시 일어나요'); }
     else if (o) { o.alive = false; o.hp = 0; updateTagHp(o); layDown(o.obj, true); toast(m.by === net.id ? `${o.name} 님을 쓰러뜨렸어요!` : `${o.name} 님이 쓰러졌어요`); }
   } else if (m.t === 'respawn') {
     if (m.id === net.id) { me.dead = false; me.x = m.x; me.z = m.z; me.speed = 0; layDown(me.obj, false); setMyHp(m.hp); toast('집에서 다시 일어났어요'); }
@@ -73,6 +73,9 @@ function onNetFight(m) {
   } else if (m.t === 'sack') addSack(m.s);
   else if (m.t === 'sackgone') removeSack(m.id);
   else if (m.t === 'shot' || m.t === 'mag' || m.t === 'reloading') onNetGun(m);
+  else if (m.t === 'bite' || m.t === 'fishp' || m.t === 'fish') onNetFish(m);
+  else if (m.t === 'hhp' || m.t === 'raids') onNetHouse(m);
+  else if (m.t === 'trap' || m.t === 'trapgone' || m.t === 'spiked') onNetTrap(m);
   else if (m.t === 'fix') { me.x = m.x; me.z = m.z; me.speed = 0; } // 서버가 되돌린 자리
 }
 // 매 프레임(net.js netTick 이 부름): 안전 구역 드나들기 알림
