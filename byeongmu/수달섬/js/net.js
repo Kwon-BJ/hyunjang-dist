@@ -23,9 +23,8 @@ function adoptInv(inv) {
 function netStatus(text, on) { const el = $('net'); el.querySelector('span').textContent = text; el.classList.toggle('on', !!on); }
 const countNow = () => netStatus(`함께 ${net.others.size + 1}명`, true);
 function applyRes(k, left) { const r = KEYED.get(k); if (!r || !(left > 0)) return; r.down = clock + left; if (r.wood != null) r.wood = 3; if (r.stone != null) r.stone = 3; wobbles.delete(r); hideRec(r); }
-const HOODS = [0x4d6aa6, 0xc0504d, 0x5a9a4a, 0xd9a03a, 0x8a5ab0, 0x3a9aa0, 0xd06a9a, 0x6a6a6a];
 const hashName = (s) => [...String(s)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
-const lookOf = (name) => { const h = hashName(name); return { ...OTTER, hood: HOODS[h % HOODS.length], fur: [0x8a5a3b, 0x7a4e30, 0x9a6844, 0x6e4a32][(h >> 4) % 4] }; };
+const lookOf = (name) => lookFromName(name); // 문파원마다 모자 3종 × 8색(새 수달 · 2026-11-18)
 function addOther(p) {
   removeOther(net.others.get(p.id));
   const obj = makeOtter(lookOf(p.name)); obj.position.set(p.x, groundY(p.x, p.z), p.z); obj.rotation.y = p.f; scene.add(obj);
@@ -43,6 +42,7 @@ function setHouse(name, plot, tier) {
 }
 function onNet(m) {
   if (m.t === 'welcome') {
+    me.obj.userData.setLook(lookOf(m.name)); // 내 모자 · 가방도 이름으로
     if (fishing.st) endFish();
     net.on = true; net.tries = 0; net.id = m.id; net.name = m.name;
     for (const o of [...net.others.values()]) removeOther(o);
