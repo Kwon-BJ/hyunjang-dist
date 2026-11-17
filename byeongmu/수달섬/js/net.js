@@ -6,7 +6,7 @@ const net = { ws: null, on: false, server: false, id: 0, name: '', others: new M
 let keepPos = false; // 새 판으로 다시 열려 있던 자리를 지킬 때 true
 const srvOn = () => net.on && net.server; // 수달섬 서버(가방 · 채집 · 싸움을 서버가 정함)에 붙어 있음
 const KEYED = new Map();
-for (const [list, p] of [[TREES, 'T'], [ROCKS, 'R'], [FLOWERS, 'F'], [BUSHES, 'B'], [BERRIES, 'E']]) list.forEach((r, i) => { r.key = p + i; KEYED.set(r.key, r); });
+for (const [list, p] of [[TREES, 'T'], [ROCKS, 'R'], [FLOWERS, 'F'], [BUSHES, 'B'], [BERRIES, 'E'], [FISH_SPOTS, 'P']]) list.forEach((r, i) => { r.key = p + i; KEYED.set(r.key, r); });
 const netSend = (o) => { if (net.on && net.ws && net.ws.readyState === 1) net.ws.send(JSON.stringify(o)); };
 const netRes = (r) => { if (r.key) netSend({ t: 'res', k: r.key }); }; // 다시 자라는 시간은 워커(REGEN · 접속 인원)가 정해 돌려줌
 // 살림(가방 · 조개 · 보관함 · 집 단계) 서버 저장 — 2026-11-17. 들어올 때 서버 것을 쓰고(다른 기기에서도 같게),
@@ -43,10 +43,13 @@ function setHouse(name, plot, tier) {
 }
 function onNet(m) {
   if (m.t === 'welcome') {
+    if (fishing.st) endFish();
     net.on = true; net.tries = 0; net.id = m.id; net.name = m.name;
     for (const o of [...net.others.values()]) removeOther(o);
     for (const p of m.players) addOther(p);
-    for (const h of m.houses) setHouse(h.name, h.plot, h.tier);
+    for (const h of m.houses) { setHouse(h.name, h.plot, h.tier); applyHouseState(h.name, h); }
+    clearTraps(); for (const t of m.traps || []) addTrap(t); // 함정(8단계)
+    if (m.myHouse) HSTATE.set(m.name, { hp: m.myHouse.hp, max: m.myHouse.max, broken: m.myHouse.broken });
     for (const [k, left] of Object.entries(m.res || {})) applyRes(k, left);
     net.server = !!m.server; if (net.server) { me.x = m.x; me.z = m.z; me.speed = 0; fightWelcome(m); } // 자리는 서버가 정함(마지막 자리 10분 안 · 아니면 집 앞)
     if (m.inv && (net.server || !netPending)) adoptInv(m.inv); else { dirty = true; flush(); } // 서버에 없거나(처음) 끊긴 동안 바뀌었으면 이 기기 것을 올림
@@ -55,7 +58,7 @@ function onNet(m) {
     else { if (mySet) { removeHouseSet(mySet); mySet = null; houseBox = null; CHEST_AT = { x: 1e4, z: 1e4 }; } toast('집터가 다 찼어요 — 부장님께 알려 주세요'); } // 남의 집터에 겹쳐 짓지 않음
     countNow(); toast(`${m.name} 님, 수달섬에 오신 걸 환영해요!`);
   } else if (m.t === 'join') { addOther(m); { const o = net.others.get(m.id); if (o && net.server) { o.hp = m.hp; o.alive = m.alive; updateTagHp(o); if (m.alive === false) layDown(o.obj, true); } } setHouse(m.name, m.plot, m.tier); countNow(); toast(`${m.name} 님이 들어왔어요`); }
-  else if (m.t === 'leave') { const o = net.others.get(m.id); if (o) { toast(`${o.name} 님이 나갔어요`); removeOther(o); } countNow(); }
+  else if (m.t === 'leave') { const fo = fishOf.get(m.id); if (fo) { dropBob(fo.bob); fishOf.delete(m.id); } const o = net.others.get(m.id); if (o) { toast(`${o.name} 님이 나갔어요`); removeOther(o); } countNow(); }
   else if (m.t === 'mv') {
     const o = net.others.get(m.id); if (!o) return;
     Object.assign(o, { tx: m.x, tz: m.z, tf: m.f, s: m.s, r: m.r });
@@ -67,7 +70,8 @@ function onNet(m) {
     if (o.tl !== m.tl) { o.tl = m.tl; for (const t of TOOLS) o.tools[t].visible = m.tl === t; }
   } else if (m.t === 'res') {
     applyRes(m.k, m.left);
-    if (m.by === net.id && m.k[0] !== 'F') toast(m.k[0] === 'T' ? `나무가 쓰러졌어요 — ${Math.round(m.left)}초 뒤 다시 자라요` : `바위를 다 캤어요 — ${Math.round(m.left)}초 뒤 다시 생겨요`); // 내가 없앤 것 — 워커가 정한 시간으로 알림
+    const RES_MSG = { T: '나무가 쓰러졌어요 — N초 뒤 다시 자라요', R: '바위를 다 캤어요 — N초 뒤 다시 생겨요', P: '물고기를 다 잡았어요 — N초 뒤 다시 와요' };
+    if (m.by === net.id && RES_MSG[m.k[0]]) toast(RES_MSG[m.k[0]].replace('N', Math.round(m.left))); // 내가 없앤 것 — 워커가 정한 시간으로 알림
   }
   else if (m.t === 'house') setHouse(m.name, m.plot, m.tier);
   else if (m.t === 'err') netStatus('혼자 놀기 · ' + m.msg);
@@ -81,11 +85,11 @@ function connect() {
   let ws; try { ws = new WebSocket(NET_URL); } catch { netStatus('혼자 놀기 · 섬에 못 붙음'); return; }
   net.ws = ws;
   ws.onopen = () => ws.send(JSON.stringify({ t: 'hi', token, x: me.x, z: me.z, f: me.face, tl: S.tool, tier: S.tier, keep: keepPos }));
-  ws.onmessage = (e) => { let m; try { m = JSON.parse(e.data); } catch { return; } onNet(m); };
+  ws.onmessage = (e) => { let m; try { m = JSON.parse(e.data); } catch { return; } if (m.t === 'mvs') { for (const x of m.l || []) onNet(x); for (const x of m.s || []) onNet(x); return; } onNet(m); }; // mvs: 서버가 0.1초마다 묶어 보낸 움직임 · 총알(9단계)
   ws.onclose = (e) => {
     if (net.ws !== ws) return;
     net.on = false; for (const o of [...net.others.values()]) removeOther(o);
-    if (net.server) { net.server = false; me.dead = false; layDown(me.obj, false); hpBox.hidden = true; for (const id of [...sacks.keys()]) removeSack(id); closeWin(); loadLocal(); } // 끊기면 누운 채 멈추지 않게(리뷰 9번) · 열린 창을 닫고 혼자 놀기 가방으로(3단계 리뷰 3 · 4번)
+    if (net.server) { net.server = false; me.dead = false; layDown(me.obj, false); hpBox.hidden = true; for (const id of [...sacks.keys()]) removeSack(id); closeWin(); loadLocal(); clearTraps(); } // 끊기면 누운 채 멈추지 않게(리뷰 9번) · 열린 창을 닫고 혼자 놀기 가방으로(3단계 리뷰 3 · 4번)
     if (e.code === 4001) return netStatus('혼자 놀기 · 홈페이지에서 다시 로그인해 주세요');
     if (e.code === 4002) return netStatus('다른 창에서 들어와서 이 창은 혼자 놀기');
     netStatus('다시 붙는 중…'); setTimeout(connect, Math.min(30000, 2000 * 2 ** Math.min(4, net.tries++)));
@@ -93,7 +97,7 @@ function connect() {
 }
 const TAGV = new THREE.Vector3();
 function netTick(dt) {
-  fightTick(); gunTick(dt); lookTick(dt);
+  fightTick(); gunTick(dt); lookTick(dt); fishTick(dt); houseTick(dt);
   if (net.on && (net.sendT -= dt) <= 0) { // 움직일 때만 1초에 6번
     const st = `${me.x.toFixed(2)},${me.z.toFixed(2)},${me.face.toFixed(2)},${S.tool},${net.ac}`;
     if (st !== net.last) { net.sendT = 1 / 6; net.last = st; netSend({ t: 'mv', x: +me.x.toFixed(2), z: +me.z.toFixed(2), f: +me.face.toFixed(2), s: +me.speed.toFixed(2), r: me.run ? 1 : 0, ac: net.ac, sw: me.actSwing ? 1 : 0, an: me.actSwing === 'shake' ? 'shake' : me.actSwing ? 'swing' : 'pick', tk: me.actTree, tl: S.tool }); } // an: 동작 이름 · tk: 흔든 나무
@@ -105,8 +109,11 @@ function netTick(dt) {
     if (Math.hypot(o.tx - o.x, o.tz - o.z) < 0.03) o.s *= 1 - Math.min(1, dt * 6); // 멈추면 걸음도 멈춤
     o.phase += dt * o.s * (o.r ? 2.2 : 2.9); o.actT -= dt;
     const y = groundY(o.x, o.z); o.obj.position.set(o.x, y + (o.alive === false ? 0.22 : 0), o.z); o.obj.rotation.y = o.f;
+    const farO = Math.abs(o.x - me.x) > 38 || Math.abs(o.z - me.z) > 38; o.obj.visible = !farO; // 먼 수달은 안 그림(50명 대비 · 9단계) — 미니맵 · 이름표 계산도 건너뜀
+    if (farO) { o.label.style.display = 'none'; continue; }
     animOtter(o.obj, o.phase, Math.min(1, o.s / WALK), !!o.r, clock + o.id, o.actT > 0 ? 1 - o.actT / (o.actDur || ACT_T) : -1, o.sw === 'shake' ? 'shake' : !!o.sw, o.fit);
     gunPose(o.obj, o.tl); // 총을 들었으면 겨누는 팔
+    fishPose(o.obj, fishOf.has(o.id)); // 낚시 중이면 낚싯대를 앞으로
     TAGV.set(o.x, y + 1.45, o.z).project(camera);
     const vis = TAGV.z < 1 && Math.abs(TAGV.x) < 1.1 && Math.abs(TAGV.y) < 1.1;
     o.label.style.display = vis ? '' : 'none';
