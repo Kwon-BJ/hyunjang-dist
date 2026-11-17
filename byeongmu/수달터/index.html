@@ -182,18 +182,18 @@ function height(x, z) {
   h = Math.min(h, -0.8 * sstep(POND.r + 1.5, POND.r, pd));
   return h;
 }
-// 집터: 문파원마다 하나씩(서버가 번호를 정해 줌) — 섬 안쪽 · 물 · 길 · 마을 시설을 피해 9칸 간격, 광장에 가까운 순 40개. 집터는 평평하게
+// 집터: 문파원마다 하나씩(서버가 번호를 정해 줌) — 섬 안쪽 · 물 · 길 · 마을 시설을 피해 8칸 간격, 광장에 가까운 순 64개(2026-11-17 9칸 40개였는데 실제론 33개뿐 · 문파원 50명이라 늘림). 집터는 평평하게
 const KEEP = [{ x: 0, z: 0, r: 10 }, { x: -19, z: -17, r: 10 }, { x: 41, z: -10, r: 13 }, { x: 44, z: 14, r: 7 }, { x: 0, z: 50, r: 6 }, { x: -4.5, z: -5, r: 4 }];
 const PLOTS = (() => {
   const out = [];
-  for (let gz = -56; gz <= 56; gz += 9) for (let gx = -56; gx <= 56; gx += 9) {
-    const x = gx + (Math.abs(Math.round(gz / 9)) % 2 ? 4.5 : 0), z = gz;
-    if (Math.hypot(x, z) > islandR(Math.atan2(z, x)) - 15) continue;
-    if (Math.abs(x - riverX(z)) < RW + 7 || Math.hypot(x - POND.x, z - POND.z) < POND.r + 7 || pathDist(x, z) < 5) continue;
-    if (KEEP.some((k) => Math.hypot(x - k.x, z - k.z) < k.r + 5)) continue;
+  for (let gz = -56; gz <= 56; gz += 8) for (let gx = -56; gx <= 56; gx += 8) {
+    const x = gx + (Math.abs(Math.round(gz / 8)) % 2 ? 4 : 0), z = gz;
+    if (Math.hypot(x, z) > islandR(Math.atan2(z, x)) - 11) continue;
+    if (Math.abs(x - riverX(z)) < RW + 5.5 || Math.hypot(x - POND.x, z - POND.z) < POND.r + 5.5 || pathDist(x, z) < 4.5) continue;
+    if (KEEP.some((k) => Math.hypot(x - k.x, z - k.z) < k.r + 4)) continue;
     out.push({ x, z });
   }
-  return out.sort((a, b) => Math.hypot(a.x, a.z) - Math.hypot(b.x, b.z)).slice(0, 40);
+  return out.sort((a, b) => Math.hypot(a.x, a.z) - Math.hypot(b.x, b.z)).slice(0, 64);
 })();
 FLAT.push(...PLOTS.map((p) => ({ x: p.x, z: p.z, r: 5.5 })));
 const onBridge = (x, z) => Math.abs(x - BRIDGE.x) < BRIDGE.half && Math.abs(z) < BRIDGE.w;
@@ -278,7 +278,7 @@ const isGrass = (x, z) => {
 const circles = [], boxes = [];
 function free(x, z, r = 0.32) {
   if (!onBridge(x, z) && height(x, z) < -0.18) return false;
-  for (const c of circles) if ((x - c.x) ** 2 + (z - c.z) ** 2 < (c.r + r) ** 2) return false;
+  for (const c of circles) if (!c.off && (x - c.x) ** 2 + (z - c.z) ** 2 < (c.r + r) ** 2) return false; // 쓰러진 나무 · 다 캔 바위는 off(예전엔 반지름 -100 → 제곱하면 섬 전체가 막혀 제자리걸음, 2026-11-17)
   for (const b of boxes) if (x > b.x0 - r && x < b.x1 + r && z > b.z0 - r && z < b.z1 + r) return false;
   return true;
 }
@@ -685,7 +685,8 @@ const fit = (a, n) => { a.length = Math.min(a.length, n); while (a.length < n) a
 S.tier = Math.max(0, Math.min(HOUSES.length - 1, S.tier | 0)); fit(S.bag, BAG_N); fit(S.chest, HOUSES[S.tier].chest);
 S.plot = Math.max(0, Math.min(PLOTS.length - 1, S.plot | 0));
 let dirty = false;
-const flush = () => { if (!dirty) return; dirty = false; try { localStorage.setItem(SAVE_KEY, JSON.stringify({ money: S.money, bag: S.bag, chest: S.chest, tier: S.tier, tool: S.tool, plot: S.plot })); } catch { /* 저장 공간 없음 */ } };
+let onSaved = null; // 여럿이 함께일 때 서버에도 저장(아래 「여럿이 함께」에서 채움)
+const flush = () => { if (!dirty) return; dirty = false; try { localStorage.setItem(SAVE_KEY, JSON.stringify({ money: S.money, bag: S.bag, chest: S.chest, tier: S.tier, tool: S.tool, plot: S.plot })); } catch { /* 저장 공간 없음 */ } if (onSaved) onSaved(); };
 setInterval(flush, 2000); addEventListener('pagehide', () => { dirty = true; flush(); });
 
 const winEl = $('win'), bodyEl = $('winBody'), frameEl = $('frame'), toastsEl = $('toasts');
@@ -722,8 +723,8 @@ function cycleTool() {
 
 // 채집 대상 숨기기 · 되살리기 · 흔들기
 const ZERO = new THREE.Matrix4().makeScale(0, 0, 0);
-function hideRec(r) { r.im.setMatrixAt(r.i, ZERO); r.im.instanceMatrix.needsUpdate = true; if (r.circle) { r.r0 ??= r.circle.r; r.circle.r = -100; } }
-function showRec(r) { r.im.setMatrixAt(r.i, r.m); r.im.instanceMatrix.needsUpdate = true; if (r.circle && r.r0 != null) r.circle.r = r.r0; }
+function hideRec(r) { r.im.setMatrixAt(r.i, ZERO); r.im.instanceMatrix.needsUpdate = true; if (r.circle) r.circle.off = true; }
+function showRec(r) { r.im.setMatrixAt(r.i, r.m); r.im.instanceMatrix.needsUpdate = true; if (r.circle) r.circle.off = false; }
 const wobbles = new Map(), WM = new THREE.Matrix4(), WR = new THREE.Matrix4();
 const wobble = (r) => wobbles.set(r, 0.6);
 
@@ -883,12 +884,22 @@ function nudgeFree() {
 }
 
 // ───────── 여럿이 함께 (2026-11-17) — 홈페이지에서 로그인했으면 섬 방(워커 SudalterIsland)에 붙는다 ─────────
-const NET_URL = new URLSearchParams(location.search).get('net') || 'wss://byeongmu.byeongmu-munpa.workers.dev/sudalter';
+// ?net= 은 이 PC 시험(localhost)에서만 — 실서버에서 받아 주면 꾸민 링크로 로그인 열쇠가 남의 서버로 갈 수 있음(2026-11-17 점검 때 막음)
+const NET_URL = (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && new URLSearchParams(location.search).get('net')) || 'wss://byeongmu.byeongmu-munpa.workers.dev/sudalter';
 const net = { ws: null, on: false, id: 0, name: '', others: new Map(), houses: new Map(), tries: 0, sendT: 0, last: '', ac: 0 };
 const KEYED = new Map();
 for (const [list, p] of [[TREES, 'T'], [ROCKS, 'R'], [FLOWERS, 'F']]) list.forEach((r, i) => { r.key = p + i; KEYED.set(r.key, r); });
 const netSend = (o) => { if (net.on && net.ws && net.ws.readyState === 1) net.ws.send(JSON.stringify(o)); };
 const netRes = (r, secs) => { if (r.key) netSend({ t: 'res', k: r.key, secs }); };
+// 살림(가방 · 조개 · 보관함 · 집 단계) 서버 저장 — 2026-11-17. 들어올 때 서버 것을 쓰고(다른 기기에서도 같게),
+// 끊겨 있는 동안 바뀐 게 있으면(netPending) 그때는 이 기기 것을 올린다
+let netPending = false;
+onSaved = () => { if (net.on) netSend({ t: 'save', inv: { money: S.money, bag: S.bag, chest: S.chest, tier: S.tier, tool: S.tool } }); else netPending = true; };
+function adoptInv(inv) {
+  S.money = inv.money; S.tier = Math.max(0, Math.min(3, inv.tier | 0)); S.tool = inv.tool || null;
+  S.bag = fit(inv.bag.slice(), BAG_N); S.chest = fit(inv.chest.slice(), HOUSES[S.tier].chest);
+  buildHouse(false); changed();
+}
 function netStatus(text, on) { const el = $('net'); el.querySelector('span').textContent = text; el.classList.toggle('on', !!on); }
 const countNow = () => netStatus(`함께 ${net.others.size + 1}명`, true);
 function applyRes(k, left) { const r = KEYED.get(k); if (!r || !(left > 0)) return; r.down = clock + left; if (r.wood != null) r.wood = 3; if (r.stone != null) r.stone = 3; wobbles.delete(r); hideRec(r); }
@@ -917,7 +928,10 @@ function onNet(m) {
     for (const p of m.players) addOther(p);
     for (const h of m.houses) setHouse(h.name, h.plot, h.tier);
     for (const [k, left] of Object.entries(m.res || {})) applyRes(k, left);
-    if (m.plot >= 0 && m.plot < PLOTS.length && m.plot !== S.plot) { S.plot = m.plot; dirty = true; buildHouse(true); }
+    if (m.inv && !netPending) adoptInv(m.inv); else { dirty = true; flush(); } // 서버에 없거나(처음) 끊긴 동안 바뀌었으면 이 기기 것을 올림
+    netPending = false;
+    if (m.plot >= 0 && m.plot < PLOTS.length) { if (m.plot !== S.plot) { S.plot = m.plot; dirty = true; buildHouse(true); } }
+    else { if (mySet) { removeHouseSet(mySet); mySet = null; houseBox = null; CHEST_AT = { x: 1e4, z: 1e4 }; } toast('집터가 다 찼어요 — 부장님께 알려 주세요'); } // 남의 집터에 겹쳐 짓지 않음
     countNow(); toast(`${m.name} 님, 수달터에 오신 걸 환영해요!`);
   } else if (m.t === 'join') { addOther(m); setHouse(m.name, m.plot, m.tier); countNow(); toast(`${m.name} 님이 들어왔어요`); }
   else if (m.t === 'leave') { const o = net.others.get(m.id); if (o) { toast(`${o.name} 님이 나갔어요`); removeOther(o); } countNow(); }
@@ -975,7 +989,7 @@ function heldModel(src) {
 // ───────── 새 판 저절로 받기 (2026-11-17 「새로고침 안 해도 자동 업데이트」) ─────────
 // GAME_BUILD 는 올리기.mjs 가 게임 파일이 바뀐 때만 적는다. 1분마다 · 다른 앱에서 돌아올 때 build.txt 를 보고,
 // 새 판이면 멈춰 있을 때(창 닫힘 · 안 움직임 · 조이스틱 안 누름) 1.5초 뒤 새로 연다 — 가방은 저장, 자리는 그대로
-const GAME_BUILD = "202611171106";
+const GAME_BUILD = "202611171155";
 let newGame = '', idleT = 0;
 async function checkGame() {
   if (GAME_BUILD === 'dev' || newGame) return;
@@ -1060,7 +1074,7 @@ requestAnimationFrame((t) => { last = t; frame(t); });
 // 시험용: sim(누를 키, 초) — 화면 속도와 상관없이 1/60초씩 움직여 본다
 const sim = (codes, secs) => { codes.forEach((k) => keys.add(k)); for (let i = 0; i < Math.round(secs * 60); i++) step(1 / 60); codes.forEach((k) => keys.delete(k)); };
 window.__수달터 = { me, free, height, circles, boxes, onBridge, BRIDGE, riverX, camera, renderer, quality, sim, joy, grass,
-  S, TREES, ROCKS, BUSHES, FLOWERS, HOUSES, SHOP_AT, PLOTS, net, checkGame, GAME_BUILD, doAction, findTarget, openWin, closeWin, count, flush,
+  S, TREES, ROCKS, BUSHES, FLOWERS, HOUSES, SHOP_AT, PLOTS, net, checkGame, save: () => { dirty = true; flush(); }, GAME_BUILD, doAction, findTarget, openWin, closeWin, count, flush,
   get newGame() { return newGame; }, get idleT() { return idleT; }, keys, get HOUSE_AT() { return HOUSE_AT; }, get CHEST_AT() { return CHEST_AT; }, get houseBox() { return houseBox; }, get clock() { return clock; } };
 </script>
 </body>
