@@ -34,12 +34,12 @@ function trapTargets(see) {
   if (!srvOn()) return;
   if (TRAP_ITEMS.includes(S.tool) && HOUSE_AT) {
     const x = me.x + Math.sin(me.face) * 1.3, z = me.z + Math.cos(me.face) * 1.3;
-    if (Math.hypot(x - HOUSE_AT.x, z - HOUSE_AT.z) < 6 && !inSafeC(x, z)) { PLACE_AT.x = x; PLACE_AT.z = z; see('place', PLACE_AT, x, z, 1.5, 0.3); }
+    if (Math.hypot(x - HOUSE_AT.x, z - HOUSE_AT.z) < 6 && !inSafeC(x, z)) { PLACE_AT.x = x; PLACE_AT.z = z; see('place', PLACE_AT, x, z, 1.5, 1.0); } // 함정을 들었으면 꽃 · 풀보다 놓기가 먼저(2026-11-18 시험에서 드러남)
   }
   for (const t of traps.values()) {
     const mine = t.owner === net.name;
     if (mine && t.kind === 'turret') see('tload', t, t.x, t.z, 1.6, 0.2);
-    else if (!mine && t.kind === 'turret' && !inSafeC(me.x, me.z)) see('trap', t, t.x, t.z, 1.6, 0.4); // 남의 가시덫은 대상으로 안 잡음(자리가 드러나지 않게)
+    else if (!mine && !inSafeC(me.x, me.z)) see('trap', t, t.x, t.z, t.kind === 'turret' ? 1.6 : 1.1, 0.4); // 남의 가시덫도 바로 앞(1.1칸)이면 부수기(요청 3)
   }
 }
 const trapLabel = (t) => (t.type === 'place' ? `${S.tool} 놓기` : t.type === 'tload' ? `탄약 넣기 (${t.rec.ammo})` : t.type === 'trap' ? (t.rec.kind === 'turret' ? '포탑 부수기' : '덫 부수기') : null);
