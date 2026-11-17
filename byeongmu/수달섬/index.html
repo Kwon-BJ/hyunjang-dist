@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>수달섬</title>
+<!-- 수달섬 — 롱빈터 같은 장르(3D 섬 생활 + PvP)의 병무청 수달 게임
+     2026-11-17 1단계: 3D 섬 걷기 · 화면 품질(흔들리는 풀 · 잎 덩어리 나무 · 물결 · 언덕 · 햇빛 · 색 보정 · 미니어처 흐림)
+     three.js(lib/) · 모델은 CC0(Kenney 생존 · Quaternius 농장, 기획/3D원본/출처.md) · 수달 · 나무 · 땅 · 물은 코드로 만듦
+     ?hq=1 — 느려도 품질을 낮추지 않음(시험 사진용) -->
+<script type="importmap">{ "imports": { "three": "./lib/three.module.min.js", "three/addons/": "./lib/addons/" } }</script>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #9fd3ea; touch-action: none; -webkit-user-select: none; user-select: none; }
+  #cv { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+  .ui button { touch-action: manipulation; }
+  /* 미니맵 — 틀은 ChatGPT 조각(ui-미니맵틀) · 누르면 크게 (2026-11-17 「상점 위치를 몰라 못 찾겠다」) */
+  #mini { position: fixed; left: max(10px, env(safe-area-inset-left)); top: max(46px, calc(env(safe-area-inset-top) + 36px)); width: 118px; height: 118px; border-radius: 50%; z-index: 3; cursor: pointer;
+          box-shadow: 0 3px 10px rgba(40, 30, 10, .35); -webkit-tap-highlight-color: transparent; }
+  #mini canvas { width: 100%; height: 100%; display: block; border-radius: 50%; }
+  #mini::after { content: ''; position: absolute; inset: -4%; background: url(img/ui-미니맵틀.webp) center / contain no-repeat; pointer-events: none; }
+  @media (min-width: 900px) and (min-height: 600px) { #mini { width: 150px; height: 150px; } }
+  #mini.big { left: 50%; top: 50%; width: min(88vw, 88vh); height: min(88vw, 88vh); transform: translate(-50%, -50%); z-index: 8; }
+  body.winopen #mini { visibility: hidden; }
+  #load { position: fixed; inset: 0; display: grid; place-items: center; background: #9fd3ea; color: #2d4a5a; font: 700 20px system-ui, sans-serif; z-index: 5; }
+  #hint { position: fixed; left: 50%; top: max(176px, calc(env(safe-area-inset-top) + 166px)); transform: translateX(-50%); padding: 7px 14px; border-radius: 999px;
+          background: rgba(30, 40, 30, .55); color: #fff; font: 600 14px system-ui, sans-serif; white-space: nowrap; transition: opacity .6s; pointer-events: none; z-index: 3; }
+  #hint.off { opacity: 0; }
+  #joy { position: fixed; width: 150px; height: 150px; margin: -75px 0 0 -75px; background: url(img/ui-조이스틱.webp) center / contain no-repeat; display: none; pointer-events: none; z-index: 4; }
+  #knob { position: absolute; left: 50%; top: 50%; width: 64px; height: 64px; margin: -32px 0 0 -32px; background: url(img/ui-손잡이.webp) center / contain no-repeat; }
+  /* ── 살림 화면 — ChatGPT 시안(기획/그림/수달섬-01-살림창시안.png) · 조각(02) · 아이콘(03) ── */
+  .ui, .ui button { font: 800 16px/1.2 system-ui, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; color: #5a3a1c; }
+  .ui button { border: 0; padding: 0; background-color: transparent; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .ic { display: inline-block; background: center / contain no-repeat; flex: none; }
+  #money { position: fixed; top: max(10px, env(safe-area-inset-top)); right: max(10px, env(safe-area-inset-right)); height: 46px; min-width: 128px; box-sizing: border-box; padding: 0 20px 0 54px;
+           background: url(img/ui-돈판.webp) center / 100% 100% no-repeat; color: #fff4dc; display: flex; align-items: center; justify-content: flex-end; font-size: 21px; z-index: 3; }
+  #money .ic { position: absolute; left: 4px; top: -3px; width: 50px; height: 50px; background-image: url(img/i-조개.webp); }
+  #btns { position: fixed; right: max(12px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom)); display: flex; align-items: center; gap: 8px; z-index: 3; }
+  .rb { position: relative; width: 66px; height: 66px; background: url(img/ui-원-작은.webp) center / contain no-repeat !important; }
+  .rb .ic { position: absolute; inset: 14px; }
+  #actBtn { height: 70px; min-width: 176px; box-sizing: border-box; padding: 0 22px 0 14px; background: url(img/ui-탭-고름.webp) center / 100% 100% no-repeat !important; display: flex; align-items: center; gap: 6px; font-size: 20px; white-space: nowrap; }
+  #actBtn .ic { width: 46px; height: 46px; background-image: url(img/i-손.webp); }
+  #actBtn.off { filter: saturate(0.35) brightness(0.95); }
+  #net { position: fixed; left: max(10px, env(safe-area-inset-left)); top: max(10px, env(safe-area-inset-top)); display: flex; align-items: center; gap: 6px; max-width: calc(100vw - 170px); padding: 5px 12px 5px 9px; border-radius: 999px;
+         background: rgba(255, 246, 225, .9); box-shadow: 0 2px 6px rgba(60, 40, 10, .2); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; z-index: 3; pointer-events: none; }
+  #net i { width: 9px; height: 9px; border-radius: 50%; background: #b9a58a; flex: none; } #net.on i { background: #5bb84a; box-shadow: 0 0 0 3px rgba(91, 184, 74, .25); }
+  #net span { overflow: hidden; text-overflow: ellipsis; }
+  body.winopen #net, body.winopen .tag { visibility: hidden; }
+  /* 체력(밤샘 1단계) — 틀 · 채움은 ChatGPT 조각 */
+  #hpBox { position: fixed; right: max(10px, env(safe-area-inset-right)); top: max(62px, calc(env(safe-area-inset-top) + 52px)); width: 128px; height: 26px; background: url(img/ui-체력틀.webp) center / 100% 100% no-repeat; z-index: 3; }
+  #hpBox .fill { position: absolute; left: 11px; top: 7px; height: 12px; background: url(img/ui-체력.webp) left center / 100% 100% no-repeat; border-radius: 6px; transition: width .2s; }
+  #hpBox b { position: absolute; inset: 0; display: grid; place-items: center; font-size: 12px; color: #fff; text-shadow: 0 1px 2px #000; }
+  #hpBox.low .fill { filter: hue-rotate(-80deg) saturate(1.6); }
+  body.winopen #hpBox { visibility: hidden; }
+  #hurt { position: fixed; inset: 0; pointer-events: none; z-index: 2; box-shadow: inset 0 0 90px 30px rgba(220, 30, 20, .55); opacity: 0; }
+  #hurt.on { animation: hurt .5s ease-out; } @keyframes hurt { from { opacity: 1; } to { opacity: 0; } }
+  .tag i { display: block; height: 4px; margin: 2px 0 0; border-radius: 2px; background: #e8453c; }
+  /* 총(밤샘 2단계) — 탄약틀 · 장전 · 조준 막대는 ChatGPT 조각 */
+  #ammoBox { position: fixed; right: max(10px, env(safe-area-inset-right)); top: max(92px, calc(env(safe-area-inset-top) + 82px)); width: 128px; height: 36px; background: url(img/ui-탄약틀.webp) center / 100% 100% no-repeat; display: flex; align-items: center; gap: 4px; padding: 0 10px 0 6px; box-sizing: border-box; z-index: 3; }
+  #ammoBox .ic { width: 44px; height: 26px; } #ammoBox b { flex: 1; text-align: right; color: #fff4dc; font-size: 14px; white-space: nowrap; text-shadow: 0 1px 2px #000; }
+  #ammoBox[hidden], #aimPad[hidden], #reloadBtn[hidden] { display: none; } /* display 가 hidden 을 덮지 않게(리뷰 6번) */
+  #reloadBtn.float { position: fixed; z-index: 3; right: calc(max(18px, env(safe-area-inset-right)) + 140px); bottom: calc(max(12px, env(safe-area-inset-bottom)) + 117px); } /* 가로: 조준 막대 왼쪽 */
+  @media (orientation: portrait) { #reloadBtn.float { right: calc(max(18px, env(safe-area-inset-right)) + 33px); bottom: calc(max(12px, env(safe-area-inset-bottom)) + 224px); } } /* 세로: 조준 막대 위 */
+  body.winopen #reloadBtn.float { visibility: hidden; }
+  #reloadBtn { width: 66px; height: 66px; border: 0; padding: 0; background: url(img/ui-재장전.webp) center / contain no-repeat; cursor: pointer; }
+  #aimPad { position: fixed; right: max(18px, env(safe-area-inset-right)); bottom: calc(max(12px, env(safe-area-inset-bottom)) + 84px); width: 132px; height: 132px; background: url(img/ui-조이스틱.webp) center / contain no-repeat; z-index: 3; touch-action: none; opacity: .92; }
+  #aimPad i { position: absolute; left: 50%; top: 50%; width: 56px; height: 56px; margin: -28px 0 0 -28px; background: url(img/ui-손잡이.webp) center / contain no-repeat; filter: hue-rotate(-30deg) saturate(1.6); pointer-events: none; }
+  #hitmark { position: fixed; left: 50%; top: 45%; transform: translate(-50%, -50%); color: #ff3b2f; font: 900 34px system-ui; text-shadow: 0 0 4px #fff; opacity: 0; pointer-events: none; z-index: 4; }
+  #hitmark.on { animation: hitm .35s ease-out; } @keyframes hitm { from { opacity: 1; transform: translate(-50%, -50%) scale(1.3); } to { opacity: 0; transform: translate(-50%, -50%) scale(1); } }
+  body.winopen #ammoBox, body.winopen #aimPad { visibility: hidden; }
+  .tag { position: fixed; left: 0; top: 0; padding: 2px 9px; border-radius: 999px; background: rgba(45, 32, 18, .6); color: #fff; font: 700 12px system-ui, sans-serif; white-space: nowrap; pointer-events: none; z-index: 2; }
+  #toasts { position: fixed; left: 50%; top: max(176px, calc(env(safe-area-inset-top) + 166px)); transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 4px; pointer-events: none; z-index: 7; }
+  #toasts div { display: flex; align-items: center; gap: 6px; padding: 4px 14px 4px 8px; border-radius: 999px; background: rgba(255, 246, 225, .94); box-shadow: 0 2px 6px rgba(60, 40, 10, .25); white-space: nowrap; animation: toast 2.2s forwards; }
+  #toasts .ic { width: 30px; height: 30px; }
+  @keyframes toast { 0% { opacity: 0; transform: translateY(8px); } 10%, 75% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(-10px); } }
+  #win { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(30, 40, 20, .28); z-index: 6; padding-top: 34px; box-sizing: border-box; }
+  #win[hidden] { display: none; }
+  body.winopen #money, body.winopen #btns { visibility: hidden; } /* 창이 열리면 겹치지 않게 숨김(상점 창엔 「내 조개」가 따로 있음) */
+  #winMsg { position: absolute; left: 0; right: 0; bottom: -29px; text-align: center; color: #fff4dc; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 0 #4a2a10; pointer-events: none; } /* 창이 열려 있을 땐 알림을 아래 나무 테두리 위에 한 줄로 */
+  .frame { position: relative; box-sizing: border-box; width: min(430px, calc(100vw - 24px)); max-height: calc(100vh - 46px); border: 34px solid transparent; border-image: url(img/ui-창.webp) 70 fill / 34px stretch;
+           padding: 18px 2px 2px; display: flex; flex-direction: column; }
+  .frame.wide { width: min(760px, calc(100vw - 24px)); }
+  .ribbon { position: absolute; top: -58px; left: 50%; transform: translateX(-50%); width: 236px; height: 66px; background: url(img/ui-리본.webp) center / 100% 100% no-repeat;
+            display: flex; align-items: center; justify-content: center; gap: 6px; color: #fff4dc; font-size: 23px; text-shadow: 0 2px 0 #5a3416; }
+  .ribbon .ic { width: 42px; height: 42px; }
+  #winX { position: absolute; top: -52px; right: -36px; width: 46px; height: 46px; background: url(img/ui-닫기.webp) center / contain no-repeat !important; }
+  #winBody { overflow: auto; min-height: 0; }
+  .grid { --s: clamp(44px, calc((100vh - 230px) / 4), 66px); display: grid; grid-template-columns: repeat(4, var(--s)); gap: 6px; justify-content: center; }
+  .slot { position: relative; width: var(--s); height: var(--s); background: url(img/ui-칸.webp) center / 100% 100% no-repeat !important; }
+  .slot.sel { background-image: url(img/ui-칸-고름.webp) !important; }
+  .slot .ic { position: absolute; inset: 13%; }
+  .slot b { position: absolute; right: 5px; bottom: 2px; font-size: 15px; color: #4a2e14; text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 2px #fff; }
+  .slot.hold::after { content: '손'; position: absolute; left: 4px; top: 3px; font-size: 11px; padding: 0 4px; border-radius: 6px; background: #6aa83a; color: #fff; }
+  .foot { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 10px; }
+  .bbtn { height: 44px; min-width: 150px; box-sizing: border-box; padding: 0 16px; background: url(img/ui-갈색단추.webp) center / 100% 100% no-repeat !important; color: #fff4dc !important; display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 17px; white-space: nowrap; }
+  .bbtn .ic { width: 26px; height: 26px; }
+  .gbtn { height: 58px; min-width: 230px; background: url(img/ui-초록단추.webp) center / 100% 100% no-repeat !important; color: #fff !important; font-size: 23px; text-shadow: 0 2px 0 #2d5c0e; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+  .gbtn .ic { width: 34px; height: 34px; }
+  .bbtn:disabled, .gbtn:disabled { filter: grayscale(0.85) opacity(0.6); cursor: default; }
+  .tabs { display: flex; justify-content: center; margin-bottom: 8px; }
+  .tab { width: 132px; height: 42px; background: url(img/ui-탭.webp) center / 100% 100% no-repeat !important; font-size: 18px; }
+  .tab.on { background-image: url(img/ui-탭-고름.webp) !important; }
+  .row { display: flex; align-items: center; gap: 8px; height: 52px; padding: 0 10px 0 8px; background: url(img/ui-줄.webp) center / 100% 100% no-repeat; margin-bottom: 6px; }
+  .row > .ic { width: 40px; height: 40px; }
+  .row .nm { flex: 1; font-size: 17px; white-space: nowrap; } .row .nm small { font-size: 13px; color: #8a6a44; margin-left: 4px; }
+  .pr { display: inline-flex; align-items: center; gap: 3px; font-size: 17px; min-width: 64px; } .pr .ic { width: 24px; height: 24px; background-image: url(img/i-조개.webp); }
+  .row .bbtn { height: 38px; min-width: 78px; font-size: 16px; }
+  .row .nm small.pk { display: block; margin: 1px 0 0; font-size: 12px; line-height: 1.1; } .row .nm:has(.pk) { line-height: 1.15; } /* 탄약 묶음 수는 이름 아래 줄(세로 390 넘침 막음) */
+  .mat-row { height: auto; min-height: 52px; flex-wrap: wrap; padding: 7px 10px 8px 8px; row-gap: 4px; }
+  .mat-line { flex-basis: 100%; display: flex; justify-content: flex-end; align-items: center; gap: 10px; }
+  .qty { display: inline-flex; align-items: center; gap: 4px; } .qty .bbtn { min-width: 34px; width: 34px; height: 32px; padding: 0; font-size: 18px; } .qty b { min-width: 30px; text-align: center; font-size: 16px; }
+  .mat-line > .bbtn { min-width: 92px; height: 34px; }
+  #sellAll { padding: 0 26px; font-size: 16px; height: 40px; } .foot.bulk { margin: 0 0 8px; } /* 나무판 그림 양끝이 투명이라 글씨가 삐져나오지 않게 */
+  .mine { height: 44px; margin: 4px auto 0; width: min(300px, 100%); background: url(img/ui-돈판.webp) center / 100% 100% no-repeat; color: #fff4dc; display: flex; align-items: center; justify-content: center; gap: 12px; font-size: 17px; }
+  .mine .pr { color: #fff4dc; }
+  .empty { text-align: center; padding: 18px 0; color: #8a6a44; }
+  .up { display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .up figure { margin: 0; text-align: center; } .up figure .ic { display: block; width: 116px; height: clamp(64px, calc(100vh - 330px), 100px); margin: 0 auto; }
+  .up figcaption { display: inline-block; margin-top: 2px; padding: 4px 14px; background: url(img/ui-탭.webp) center / 100% 100% no-repeat; font-size: 15px; white-space: nowrap; }
+  .arrow { font-size: 30px; color: #8a5a2c; }
+  .mats { display: flex; gap: 6px; justify-content: center; margin: 10px 0 6px; }
+  .mat { width: 104px; height: 70px; background: url(img/ui-재료칸.webp) center / 100% 100% no-repeat; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 15px; white-space: nowrap; }
+  .mat .ic { width: 34px; height: 34px; } .mat.lack b { color: #c0392b; }
+  .two { display: flex; gap: 18px; justify-content: center; align-items: flex-start; flex-wrap: wrap; }
+  .two h4 { margin: 0 0 6px; text-align: center; font-size: 16px; }
+  .chestgrid { max-height: calc(100vh - 170px); overflow: auto; }
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div id="load">수달섬 불러오는 중…</div>
+<div id="hint"></div>
+<div id="joy"><div id="knob"></div></div>
+<div class="ui" id="money"><i class="ic"></i><span id="moneyN">0</span></div>
+<div class="ui" id="btns">
+  <button type="button" class="rb" id="bagBtn" aria-label="가방"><i class="ic" style="background-image:url(img/i-가방.webp)"></i></button>
+  <button type="button" class="rb" id="toolBtn" aria-label="손에 든 도구"><i class="ic" id="toolIc" style="background-image:url(img/i-손.webp)"></i></button>
+  <button type="button" id="actBtn"><i class="ic"></i><span id="actTxt">줍기/쓰기</span></button>
+</div>
+<div class="ui" id="toasts"></div>
+<div class="ui" id="net"><i></i><span>혼자 놀기</span></div>
+<div class="ui" id="mini" role="button" aria-label="섬 지도 (누르면 크게)"><canvas id="miniCv" width="300" height="300"></canvas></div>
+<script>
+  // 옛 휴대폰(iOS 16.4 아래 등)에서 게임이 못 열리면 「불러오는 중」에 멈춰 있지 않고 까닭을 보여 줌 — 부장님께 사진으로 받기 쉽게
+  addEventListener('error', function (e) { var l = document.getElementById('load'); if (l && l.textContent.indexOf('못 열') < 0) l.textContent = '수달섬을 못 열었어요: ' + (e.message || '알 수 없음') + ' — 이 화면을 찍어 보내 주세요'; });
+  setTimeout(function () { var l = document.getElementById('load'); if (l && l.textContent.indexOf('못 열') < 0) l.textContent = '아직 불러오는 중… 계속 이러면 이 화면을 찍어 보내 주세요 (' + navigator.userAgent.replace(/^Mozilla\/5\.0 /, '').slice(0, 90) + ')'; }, 25000);
+</script>
+<div class="ui" id="win" hidden><div class="frame" id="frame"><div class="ribbon"><i class="ic" id="winIc"></i><span id="winTitle"></span></div><button type="button" id="winX" aria-label="닫기"></button><div id="winBody"></div><div id="winMsg"></div></div></div>
+<script type="module">
+const GAME_BUILD = "202611171640"; // 올리기.mjs 가 게임 파일이 바뀐 때만 적는다
+window.GAME_BUILD = GAME_BUILD;
+import('./js/boot.js?v=' + GAME_BUILD).catch((e) => { const l = document.getElementById('load'); if (l) l.textContent = '수달섬을 못 열었어요: ' + e.message; });
+</script>
+</body>
+</html>
