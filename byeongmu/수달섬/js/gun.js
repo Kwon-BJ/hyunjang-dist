@@ -5,8 +5,8 @@ const GUNS = ['권총', '소총', '산탄총'];
 const GUN_INFO = { 권총: { rate: 3, mag: 12, ammo: '권총탄', snd: 1700, len: 0.42 }, 소총: { rate: 8, mag: 30, ammo: '소총탄', snd: 2400, len: 0.75 }, 산탄총: { rate: 1.2, mag: 6, ammo: '산탄', snd: 900, len: 0.7 } }; // 서버 config 와 같게(그리기 · 소리용)
 const PACK = { 권총탄: 12, 소총탄: 30, 산탄: 6 };
 Object.assign(ITEMS, { 권총: { buy: 6000, tool: true }, 소총: { buy: 14000, tool: true }, 산탄총: { buy: 9000, tool: true }, 권총탄: { buy: 300 }, 소총탄: { buy: 700 }, 산탄: { buy: 400 } }); // 서버 config buy 와 같게(3단계 — 30분 채집 ≈ 권총)
-const BUY_ALL = ['도끼', '곡괭이', '권총', '소총', '산탄총', '권총탄', '소총탄', '산탄'];
-const buyList = () => (srvOn() ? BUY_ALL : TOOLS); // 총 · 탄약은 함께일 때만 판다
+const BUY_ALL = ['도끼', '곡괭이', '낚싯대', '권총', '소총', '산탄총', '권총탄', '소총탄', '산탄', '포탑', '가시덫'];
+const buyList = () => (srvOn() ? BUY_ALL : ['도끼', '곡괭이']); // 총 · 탄약 · 낚싯대는 함께일 때만 판다 // 총 · 탄약은 함께일 때만 판다
 const isGun = (t) => GUNS.includes(t);
 S.mag = {};
 const aim = { ang: 0, firing: false, has: false, cd: 0, at: 0 }; // 조준 방향 · 쏘는 중
@@ -122,12 +122,13 @@ function ding() { const a = audio(); if (!a) return; const o = a.createOscillato
 // ── 서버 말: shot · mag · reloading ──
 function onNetGun(m) {
   if (m.t === 'shot') {
+    if (m.tid) turretShot(m); // 포탑이 쏨(8단계)
     const mine = m.id === net.id, o = mine ? null : net.others.get(m.id), obj = mine ? me.obj : o && o.obj;
     if (obj && GUN_INFO[m.g]) { if (!mine) { muzzle(obj, m.g); bang(m.g, Math.max(0, 1 - Math.hypot(o.x - me.x, o.z - me.z) / 40)); } }
     const y = groundY(m.ox, m.oz) + 0.68;
     for (const [x, z, who] of m.ends) { tracer(m.ox, y, m.oz, x, z); if (who !== 0) puff(x, y, z, who > 0); }
     if (mine && m.ends.some((e) => e[2] > 0)) { hitMark.classList.remove('on'); void hitMark.offsetWidth; hitMark.classList.add('on'); ding(); }
-    lastShot = m;
+    if (!m.tid) lastShot = m; // 포탑 총알은 시험용 기록에 안 남김
   } else if (m.t === 'mag') { S.mag[m.g] = m.n; aim.askedReload = false; if (m.empty) { toast('탄창이 비었어요 — 장전해요', GUN_INFO[m.g] && GUN_INFO[m.g].ammo); reload(); } refreshGunHud(); }
   else if (m.t === 'reloading') { aim.reloading = clock + m.ms / 1000; aim.askedReload = false; refreshGunHud(); }
 }
