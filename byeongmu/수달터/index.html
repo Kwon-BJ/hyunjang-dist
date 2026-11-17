@@ -644,7 +644,7 @@ function step(dt) {
   me.phase += dt * me.speed * (me.run ? 2.2 : 2.9);
   const amt = Math.min(1, me.speed / WALK);
   me.obj.position.set(me.x, groundY(me.x, me.z), me.z); me.obj.rotation.y = me.face;
-  life(dt); netTick(dt); if (typeof drawMini === 'function') drawMini(dt);
+  life(dt); netTick(dt); newGameTick(dt); if (typeof drawMini === 'function') drawMini(dt);
   animOtter(me.obj, me.phase, amt, me.run, clock, me.actT > 0 ? 1 - me.actT / ACT_T : -1, me.actSwing);
   const want = new THREE.Vector3(me.x, me.obj.position.y, me.z);
   if (camAt.distanceTo(want) > 8) camAt.copy(want); else camAt.lerp(want, Math.min(1, dt * 6)); // 멀리 옮겨지면(다시 태어남 등) 바로 따라붙음
@@ -972,6 +972,31 @@ function heldModel(src) {
   const g = new THREE.Group(); g.add(inner); g.rotation.x = Math.PI / 2; g.traverse((m) => { if (m.isMesh) m.castShadow = true; }); return g;
 }
 
+// ───────── 새 판 저절로 받기 (2026-11-17 「새로고침 안 해도 자동 업데이트」) ─────────
+// GAME_BUILD 는 올리기.mjs 가 게임 파일이 바뀐 때만 적는다. 1분마다 · 다른 앱에서 돌아올 때 build.txt 를 보고,
+// 새 판이면 멈춰 있을 때(창 닫힘 · 안 움직임 · 조이스틱 안 누름) 1.5초 뒤 새로 연다 — 가방은 저장, 자리는 그대로
+const GAME_BUILD = "202611171106";
+let newGame = '', idleT = 0;
+async function checkGame() {
+  if (GAME_BUILD === 'dev' || newGame) return;
+  try {
+    const b = (await (await fetch('build.txt?v=' + Date.now(), { cache: 'no-store' })).text()).trim().split(/\s+/)[0];
+    if (/^\d{12}$/.test(b) && b !== GAME_BUILD && sessionStorage.getItem('sudalter-reloaded') !== b) { newGame = b; toast('새 판이 나왔어요 — 잠깐 멈추면 새로 열어요'); }
+  } catch { /* 못 보면 지금 판으로 */ }
+}
+function newGameTick(dt) {
+  if (!newGame) return;
+  const idle = winEl.hidden && joy.id === null && !keys.size && me.speed < 0.05 && me.actT <= 0;
+  idleT = idle ? idleT + dt : 0;
+  if (idleT < 1.5) return;
+  const b = newGame; newGame = '';
+  try { sessionStorage.setItem('sudalter-reloaded', b); sessionStorage.setItem('sudalter-pos', JSON.stringify({ x: me.x, z: me.z, f: me.face, t: Date.now() })); } catch { /* */ }
+  dirty = true; flush();
+  const q = new URLSearchParams(location.search); q.set('v', b); location.replace(location.pathname + '?' + q);
+}
+setInterval(checkGame, 60000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) checkGame(); });
+
 // ───────── 시작 ─────────
 const srcs = Object.fromEntries(await Promise.all([...new Set([...PROPS.map((p) => p[0]), '울타리', '보관함', '오두막', '나무집', '큰집', '도끼', '곡괭이'])].map(async (n) => [n, await loadModel(n)])));
 for (const [n, x, z, r, h, b] of PROPS) placeModel(srcs[n], x, z, r, h, b);
@@ -1020,6 +1045,10 @@ function drawMini(dt) {
 miniEl.addEventListener('click', () => { miniEl.classList.toggle('big'); miniT = 0; });
 
 buildHouse(true);
+try { // 새 판으로 새로 열린 거면 있던 자리로
+  const p = JSON.parse(sessionStorage.getItem('sudalter-pos') || 'null'); sessionStorage.removeItem('sudalter-pos');
+  if (p && Date.now() - p.t < 120000 && Number.isFinite(p.x)) { me.x = p.x; me.z = p.z; me.face = p.f; nudgeFree(); }
+} catch { /* */ }
 for (const t of TOOLS) { held[t] = heldModel(srcs[t]); me.obj.userData.hold.add(held[t]); }
 connect();
 npc = makeOtter({ fur: 0x7d5236, cream: 0xecd6b0, hood: 0x5a9a4a, pants: 0xb89a6a, dark: 0x1d1714 });
@@ -1031,8 +1060,8 @@ requestAnimationFrame((t) => { last = t; frame(t); });
 // 시험용: sim(누를 키, 초) — 화면 속도와 상관없이 1/60초씩 움직여 본다
 const sim = (codes, secs) => { codes.forEach((k) => keys.add(k)); for (let i = 0; i < Math.round(secs * 60); i++) step(1 / 60); codes.forEach((k) => keys.delete(k)); };
 window.__수달터 = { me, free, height, circles, boxes, onBridge, BRIDGE, riverX, camera, renderer, quality, sim, joy, grass,
-  S, TREES, ROCKS, BUSHES, FLOWERS, HOUSES, SHOP_AT, PLOTS, net, doAction, findTarget, openWin, closeWin, count, flush,
-  get HOUSE_AT() { return HOUSE_AT; }, get CHEST_AT() { return CHEST_AT; }, get houseBox() { return houseBox; }, get clock() { return clock; } };
+  S, TREES, ROCKS, BUSHES, FLOWERS, HOUSES, SHOP_AT, PLOTS, net, checkGame, GAME_BUILD, doAction, findTarget, openWin, closeWin, count, flush,
+  get newGame() { return newGame; }, get idleT() { return idleT; }, keys, get HOUSE_AT() { return HOUSE_AT; }, get CHEST_AT() { return CHEST_AT; }, get houseBox() { return houseBox; }, get clock() { return clock; } };
 </script>
 </body>
 </html>
