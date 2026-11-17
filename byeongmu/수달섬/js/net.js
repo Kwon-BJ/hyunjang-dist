@@ -6,7 +6,7 @@ const net = { ws: null, on: false, server: false, id: 0, name: '', others: new M
 let keepPos = false; // 새 판으로 다시 열려 있던 자리를 지킬 때 true
 const srvOn = () => net.on && net.server; // 수달섬 서버(가방 · 채집 · 싸움을 서버가 정함)에 붙어 있음
 const KEYED = new Map();
-for (const [list, p] of [[TREES, 'T'], [ROCKS, 'R'], [FLOWERS, 'F'], [BUSHES, 'B']]) list.forEach((r, i) => { r.key = p + i; KEYED.set(r.key, r); });
+for (const [list, p] of [[TREES, 'T'], [ROCKS, 'R'], [FLOWERS, 'F'], [BUSHES, 'B'], [BERRIES, 'E']]) list.forEach((r, i) => { r.key = p + i; KEYED.set(r.key, r); });
 const netSend = (o) => { if (net.on && net.ws && net.ws.readyState === 1) net.ws.send(JSON.stringify(o)); };
 const netRes = (r) => { if (r.key) netSend({ t: 'res', k: r.key }); }; // 다시 자라는 시간은 워커(REGEN · 접속 인원)가 정해 돌려줌
 // 살림(가방 · 조개 · 보관함 · 집 단계) 서버 저장 — 2026-11-17. 들어올 때 서버 것을 쓰고(다른 기기에서도 같게),
@@ -93,7 +93,7 @@ function connect() {
 }
 const TAGV = new THREE.Vector3();
 function netTick(dt) {
-  fightTick(); gunTick(dt);
+  fightTick(); gunTick(dt); lookTick(dt);
   if (net.on && (net.sendT -= dt) <= 0) { // 움직일 때만 1초에 6번
     const st = `${me.x.toFixed(2)},${me.z.toFixed(2)},${me.face.toFixed(2)},${S.tool},${net.ac}`;
     if (st !== net.last) { net.sendT = 1 / 6; net.last = st; netSend({ t: 'mv', x: +me.x.toFixed(2), z: +me.z.toFixed(2), f: +me.face.toFixed(2), s: +me.speed.toFixed(2), r: me.run ? 1 : 0, ac: net.ac, sw: me.actSwing ? 1 : 0, an: me.actSwing === 'shake' ? 'shake' : me.actSwing ? 'swing' : 'pick', tk: me.actTree, tl: S.tool }); } // an: 동작 이름 · tk: 흔든 나무
