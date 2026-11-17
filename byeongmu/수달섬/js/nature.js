@@ -65,7 +65,7 @@ const BLADE = (() => { // 풀잎 하나: 아래 진한 초록 → 끝 연두
   g.setAttribute('position', new THREE.BufferAttribute(new Float32Array([-w, 0, 0, w, 0, 0, -w * 0.7, h * 0.4, 0, w * 0.7, h * 0.4, 0, -w * 0.35, h * 0.75, 0, w * 0.35, h * 0.75, 0, 0, h, 0.02]), 3));
   g.setIndex([0, 1, 2, 2, 1, 3, 2, 3, 4, 4, 3, 5, 4, 5, 6]);
   g.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(21).map((_, i) => (i % 3 === 1 ? 1 : 0)), 3));
-  const A = new THREE.Color(0x5c9a36), B = new THREE.Color(0xb4e070), col = []; for (const y of [0, 0, 0.4, 0.4, 0.75, 0.75, 1]) { const c = A.clone().lerp(B, y); col.push(c.r, c.g, c.b); }
+  const A = new THREE.Color(0x74ac46), B = new THREE.Color(0xa9d466), col = []; for (const y of [0, 0, 0.4, 0.4, 0.75, 0.75, 1]) { const c = A.clone().lerp(B, y); col.push(c.r, c.g, c.b); }
   g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(col), 3)); return g;
 })();
 const FLOWER = mergeGeometries([
@@ -116,6 +116,17 @@ BUSHES.push(...scatter(TREE_KINDS.bush, bushMat, 70, (x, z) => {
   const circle = { x, z, r: 0.45 }; treeSpots.push({ x, z }); circles.push(circle);
   return { s: 0.8 + rnd() * 0.5, color: new THREE.Color(BUSH_TINT[Math.floor(rnd() * 4)]), circle };
 }).userData.recs.map((r) => Object.assign(r, { next: 0 })));
+// ── 열매 덤불(밤샘 5단계): 덤불 셋 중 하나쯤에 빨간 열매 송이 — 따면 사라졌다가 다시 열림(BERRIES · 서버 키 E) ──
+const BERRIES = [];
+{
+  const parts = [];
+  for (let j = 0; j < 7; j++) { const a = j / 7 * Math.PI * 2 + 0.4, y = 0.32 + (j % 3) * 0.13, rr = 0.47 - (j % 3) * 0.08; const g = new THREE.SphereGeometry(0.09, 7, 5); g.translate(Math.cos(a) * rr, y, Math.sin(a) * rr); const c = new THREE.Color(j % 2 ? 0xd2232f : 0xe84a3c), col = []; for (let v = 0; v < g.attributes.position.count; v++) col.push(c.r, c.g, c.b); g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); parts.push(g); }
+  const BERRY = mergeGeometries(parts), mat = new THREE.MeshLambertMaterial({ vertexColors: true });
+  const pick = BUSHES.filter((b, i) => hash(i * 1.7 + 3, 11.3) < 0.36);
+  const im = new THREE.InstancedMesh(BERRY, mat, Math.max(1, pick.length)), m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), v = new THREE.Vector3();
+  pick.forEach((b, i) => { b.m.decompose(v, q, s); m.compose(v, q, s); im.setMatrixAt(i, m); BERRIES.push({ im, i, x: b.x, z: b.z, s: b.s, m: m.clone(), circle: null, bush: b, down: 0 }); });
+  im.count = pick.length; im.castShadow = true; scene.add(im);
+}
 // 바위 24개 (2026-11-17 부장님 — 집터 56개로 늘린 뒤 clearSpot(집터 6칸 금지)에 걸려 7개뿐이었음)
 // 바위는 따로: 집 · 보관함 자리만 피하고(집터 가운데 5칸 · 보관함 2.2칸) 모래 가장자리까지 허용
 const rockSpots = [];
@@ -147,7 +158,7 @@ scatter(PEBBLE, plainMat, 420, (x, z, k) => { // 길가 자갈
   if (height(px, pz) < -0.1 || pathDist(px, pz) < 1.25) return null; // 광장 · 다른 길 한가운데는 빼고 가장자리만
   return { s: 0.6 + rnd() * 0.9, sy: 0.5, x: px, z: pz, y: 0.02 };
 }, { shadow: false });
-const GRASS_N = touchy ? 45000 : 80000;
+const GRASS_N = touchy ? 28000 : 52000; // 4단계: 줄임(휴대폰 성능)
 const grass = scatter(BLADE, grassMat, GRASS_N, (x, z) => {
   if (rnd() > 0.25 + 0.75 * noise(x * 0.13 + 9, z * 0.13)) return null;
   if (!isGrass(x, z)) return null;
