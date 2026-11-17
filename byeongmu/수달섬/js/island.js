@@ -34,9 +34,10 @@ function height(x, z) {
 const KEEP = [{ x: 0, z: 0, r: 10 }, { x: -19, z: -17, r: 10 }, { x: 41, z: -10, r: 13 }, { x: 44, z: 14, r: 7 }, { x: 0, z: 50, r: 6 }, { x: -4.5, z: -5, r: 4 }];
 const PLOTS = (() => {
   const out = [];
-  for (let gz = -56; gz <= 56; gz += 8) for (let gx = -56; gx <= 56; gx += 8) {
-    const x = gx + (Math.abs(Math.round(gz / 8)) % 2 ? 4 : 0), z = gz;
-    if (Math.hypot(x, z) > islandR(Math.atan2(z, x)) - 11) continue;
+  const SP = 9; // 집터 간격(2026-11-18 부장님 — 집마다 함정 자리 8곳 이상: 8 → 9 · 가장자리 여유 11 → 8 로 56곳 유지)
+  for (let gz = -54; gz <= 54; gz += SP) for (let gx = -54; gx <= 54; gx += SP) {
+    const x = gx + (Math.abs(Math.round(gz / SP)) % 2 ? SP / 2 : 0), z = gz;
+    if (Math.hypot(x, z) > islandR(Math.atan2(z, x)) - 8) continue;
     if (Math.abs(x - riverX(z)) < RW + 5.5 || Math.hypot(x - POND.x, z - POND.z) < POND.r + 5.5 || pathDist(x, z) < 4.5) continue;
     if (KEEP.some((k) => Math.hypot(x - k.x, z - k.z) < k.r + 4)) continue;
     out.push({ x, z });
