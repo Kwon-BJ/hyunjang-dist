@@ -31,7 +31,7 @@ function drawMini(dt) {
   const [hx, hz] = mp(HOUSE_AT.x, HOUSE_AT.z), hi = iconImg(HOUSES[S.tier].model); if (hi.complete) mg.drawImage(hi, hx - I / 2, hz - I / 2, I, I);
   if (big) { mapLabel('상점', sx, sz + I / 2 + 15); mapLabel('내 집', hx, hz + I / 2 + 15); for (const h of net.houses.values()) { const [x, z] = mp(PLOTS[h.plot].x, PLOTS[h.plot].z); } }
   for (const o of net.others.values()) {
-    const [x, z] = mp(o.x, o.z); mg.beginPath(); mg.arc(x, z, big ? 4 : 6, 0, 7); mg.fillStyle = '#' + lookOf(o.name).hood.toString(16).padStart(6, '0'); mg.fill(); mg.lineWidth = 2; mg.strokeStyle = '#fff'; mg.stroke();
+    const [x, z] = mp(o.x, o.z); mg.beginPath(); mg.arc(x, z, big ? 4 : 6, 0, 7); mg.fillStyle = '#' + lookOf(o.name).color.toString(16).padStart(6, '0'); mg.fill(); mg.lineWidth = 2; mg.strokeStyle = '#fff'; mg.stroke();
     if (big) { mg.font = '700 11px system-ui, sans-serif'; mg.fillStyle = '#2a1a0a'; mg.textAlign = 'center'; mg.fillText(o.name, x, z - 7); }
   }
   const [mx, mz] = mp(me.x, me.z), k = big ? 0.8 : 1.4;
