@@ -73,6 +73,7 @@ function step(dt) {
   life(dt); netTick(dt); newGameTick(dt); if (typeof drawMini === 'function') drawMini(dt);
   animOtter(me.obj, me.phase, amt, me.run, clock, me.actT > 0 ? 1 - me.actT / me.actDur : -1, me.actSwing, me.fit);
   if (typeof gunPose === 'function') gunPose(me.obj, S.tool); // 총을 들었으면 겨누는 팔
+  if (typeof fishPose === 'function') fishPose(me.obj, !!fishing.st); // 낚시 중
   const want = new THREE.Vector3(me.x, me.obj.position.y, me.z);
   if (camAt.distanceTo(want) > 8) camAt.copy(want); else camAt.lerp(want, Math.min(1, dt * 6)); // 멀리 옮겨지면(다시 태어남 등) 바로 따라붙음
   camera.position.set(camAt.x, camAt.y + camH, camAt.z + camD); camera.lookAt(camAt.x, camAt.y + 0.6, camAt.z);
