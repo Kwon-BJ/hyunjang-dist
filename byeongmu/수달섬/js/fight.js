@@ -58,7 +58,7 @@ function fightAction(t) {
   me.actSwing = S.tool === '도끼'; netSend({ t: 'hit', id: t.rec.id });
 }
 function onNetFight(m) {
-  if (m.t === 'got') { for (const [id, n] of m.items || []) toast(`+${n.toLocaleString()} ${id}`, id); }
+  if (m.t === 'got') { for (const [id, n] of m.items || []) if ((id === '열매' || id === '나뭇가지') && shaking() && m.k === me.actTree) dropFromTree(me.actTree, id, n); for (const [id, n] of m.items || []) toast(`+${n.toLocaleString()} ${id}`, id); }
   else if (m.t === 'msg') toast(m.text, m.icon);
   else if (m.t === 'hp') {
     if (m.id === net.id) { const lost = me.hp - m.hp; setMyHp(m.hp); if (lost > 0) flashHurt(); }
