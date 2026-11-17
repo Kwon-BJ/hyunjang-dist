@@ -67,6 +67,20 @@
   #hitmark { position: fixed; left: 50%; top: 45%; transform: translate(-50%, -50%); color: #ff3b2f; font: 900 34px system-ui; text-shadow: 0 0 4px #fff; opacity: 0; pointer-events: none; z-index: 4; }
   #hitmark.on { animation: hitm .35s ease-out; } @keyframes hitm { from { opacity: 1; transform: translate(-50%, -50%) scale(1.3); } to { opacity: 0; transform: translate(-50%, -50%) scale(1); } }
   body.winopen #ammoBox, body.winopen #aimPad { visibility: hidden; }
+  /* 낚시 연타 막대(6단계) — 체력틀 · 체력 조각 재사용 */
+  #fishGauge { position: fixed; left: 50%; top: 30%; transform: translateX(-50%); width: min(300px, 76vw); text-align: center; z-index: 4; pointer-events: none; }
+  #fishGauge[hidden] { display: none; }
+  #fishGauge b { display: block; color: #fff4dc; font-size: 20px; text-shadow: 0 2px 3px #000; margin-bottom: 4px; animation: fishb .4s ease-in-out infinite alternate; }
+  #fishGauge .bar { height: 28px; background: url(img/ui-체력틀.webp) center / 100% 100% no-repeat; padding: 6px 11px; box-sizing: border-box; }
+  #fishGauge i { display: block; height: 100%; width: 0; background: url(img/ui-체력.webp) left center / 100% 100% no-repeat; filter: hue-rotate(160deg) saturate(1.3); transition: width .08s; }
+  @keyframes fishb { from { transform: scale(1); } to { transform: scale(1.08); } }
+  /* 집 내구도 · 습격 기록(7단계) — 체력 조각 재사용 */
+  .htag { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .htag i { display: block; width: 90px; height: 9px; background: rgba(0,0,0,.45); border-radius: 5px; overflow: hidden; }
+  .htag b { display: block; height: 100%; background: #ffb43c; }
+  .hdur { margin: 0 0 8px; } .hdur b { display: block; font-size: 15px; margin-bottom: 4px; } .hdur.broken b { color: #c0392b; }
+  .hdur i { display: block; height: 14px; background: rgba(60,40,20,.25); border-radius: 7px; overflow: hidden; } .hdur em { display: block; height: 100%; background: #e9a23b; }
+  .row.raid { height: auto; min-height: 52px; padding: 6px 12px; } .row.raid .nm { white-space: normal; font-size: 15px; line-height: 1.3; } .row.raid small { white-space: nowrap; color: #8a6a44; }
   .tag { position: fixed; left: 0; top: 0; padding: 2px 9px; border-radius: 999px; background: rgba(45, 32, 18, .6); color: #fff; font: 700 12px system-ui, sans-serif; white-space: nowrap; pointer-events: none; z-index: 2; }
   #toasts { position: fixed; left: 50%; top: max(176px, calc(env(safe-area-inset-top) + 166px)); transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 4px; pointer-events: none; z-index: 7; }
   #toasts div { display: flex; align-items: center; gap: 6px; padding: 4px 14px 4px 8px; border-radius: 999px; background: rgba(255, 246, 225, .94); box-shadow: 0 2px 6px rgba(60, 40, 10, .25); white-space: nowrap; animation: toast 2.2s forwards; }
@@ -146,7 +160,7 @@
 </script>
 <div class="ui" id="win" hidden><div class="frame" id="frame"><div class="ribbon"><i class="ic" id="winIc"></i><span id="winTitle"></span></div><button type="button" id="winX" aria-label="닫기"></button><div id="winBody"></div><div id="winMsg"></div></div></div>
 <script type="module">
-const GAME_BUILD = "202611171747"; // 올리기.mjs 가 게임 파일이 바뀐 때만 적는다
+const GAME_BUILD = "202611172017"; // 올리기.mjs 가 게임 파일이 바뀐 때만 적는다
 window.GAME_BUILD = GAME_BUILD;
 import('./js/boot.js?v=' + GAME_BUILD).catch((e) => { const l = document.getElementById('load'); if (l) l.textContent = '수달섬을 못 열었어요: ' + e.message; });
 </script>
