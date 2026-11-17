@@ -13,7 +13,7 @@ try { // 새 판으로 새로 열린 거면 있던 자리로
 } catch { /* */ }
 for (const t of TOOLS) { held[t] = heldModel(srcs[t]); me.obj.userData.hold.add(held[t]); }
 connect();
-npc = makeOtter({ fur: 0x7d5236, cream: 0xecd6b0, hood: 0x5a9a4a, pants: 0xb89a6a, dark: 0x1d1714 });
+npc = makeOtter({ hat: 'cap', color: 0x8cc463 }); // 가게 주인: 연두 야구모자
 npc.position.set(-4.5, height(-4.5, -5.9), -5.9); scene.add(npc);
 changed(); dirty = false;
 document.getElementById('load').remove();
