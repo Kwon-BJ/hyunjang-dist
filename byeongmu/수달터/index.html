@@ -18,6 +18,68 @@
   #hint.off { opacity: 0; }
   #joy { position: fixed; width: 150px; height: 150px; margin: -75px 0 0 -75px; background: url(img/ui-조이스틱.webp) center / contain no-repeat; display: none; pointer-events: none; z-index: 4; }
   #knob { position: absolute; left: 50%; top: 50%; width: 64px; height: 64px; margin: -32px 0 0 -32px; background: url(img/ui-손잡이.webp) center / contain no-repeat; }
+  /* ── 살림 화면 — ChatGPT 시안(기획/그림/수달터-01-살림창시안.png) · 조각(02) · 아이콘(03) ── */
+  .ui, .ui button { font: 800 16px/1.2 system-ui, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; color: #5a3a1c; }
+  .ui button { border: 0; padding: 0; background-color: transparent; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .ic { display: inline-block; background: center / contain no-repeat; flex: none; }
+  #money { position: fixed; top: max(10px, env(safe-area-inset-top)); right: max(10px, env(safe-area-inset-right)); height: 46px; min-width: 128px; box-sizing: border-box; padding: 0 20px 0 54px;
+           background: url(img/ui-돈판.webp) center / 100% 100% no-repeat; color: #fff4dc; display: flex; align-items: center; justify-content: flex-end; font-size: 21px; z-index: 3; }
+  #money .ic { position: absolute; left: 4px; top: -3px; width: 50px; height: 50px; background-image: url(img/i-조개.webp); }
+  #btns { position: fixed; right: max(12px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom)); display: flex; align-items: center; gap: 8px; z-index: 3; }
+  .rb { position: relative; width: 66px; height: 66px; background: url(img/ui-원-작은.webp) center / contain no-repeat !important; }
+  .rb .ic { position: absolute; inset: 14px; }
+  #actBtn { height: 70px; min-width: 176px; box-sizing: border-box; padding: 0 22px 0 14px; background: url(img/ui-탭-고름.webp) center / 100% 100% no-repeat !important; display: flex; align-items: center; gap: 6px; font-size: 20px; white-space: nowrap; }
+  #actBtn .ic { width: 46px; height: 46px; background-image: url(img/i-손.webp); }
+  #actBtn.off { filter: saturate(0.35) brightness(0.95); }
+  #toasts { position: fixed; left: 50%; top: max(62px, calc(env(safe-area-inset-top) + 52px)); transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 4px; pointer-events: none; z-index: 7; }
+  #toasts div { display: flex; align-items: center; gap: 6px; padding: 4px 14px 4px 8px; border-radius: 999px; background: rgba(255, 246, 225, .94); box-shadow: 0 2px 6px rgba(60, 40, 10, .25); white-space: nowrap; animation: toast 2.2s forwards; }
+  #toasts .ic { width: 30px; height: 30px; }
+  @keyframes toast { 0% { opacity: 0; transform: translateY(8px); } 10%, 75% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(-10px); } }
+  #win { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(30, 40, 20, .28); z-index: 6; padding-top: 34px; box-sizing: border-box; }
+  #win[hidden] { display: none; }
+  body.winopen #money, body.winopen #btns { visibility: hidden; } /* 창이 열리면 겹치지 않게 숨김(상점 창엔 「내 조개」가 따로 있음) */
+  #winMsg { position: absolute; left: 0; right: 0; bottom: -29px; text-align: center; color: #fff4dc; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 0 #4a2a10; pointer-events: none; } /* 창이 열려 있을 땐 알림을 아래 나무 테두리 위에 한 줄로 */
+  .frame { position: relative; box-sizing: border-box; width: min(430px, calc(100vw - 24px)); max-height: calc(100vh - 46px); border: 34px solid transparent; border-image: url(img/ui-창.webp) 70 fill / 34px stretch;
+           padding: 18px 2px 2px; display: flex; flex-direction: column; }
+  .frame.wide { width: min(760px, calc(100vw - 24px)); }
+  .ribbon { position: absolute; top: -58px; left: 50%; transform: translateX(-50%); width: 236px; height: 66px; background: url(img/ui-리본.webp) center / 100% 100% no-repeat;
+            display: flex; align-items: center; justify-content: center; gap: 6px; color: #fff4dc; font-size: 23px; text-shadow: 0 2px 0 #5a3416; }
+  .ribbon .ic { width: 42px; height: 42px; }
+  #winX { position: absolute; top: -52px; right: -36px; width: 46px; height: 46px; background: url(img/ui-닫기.webp) center / contain no-repeat !important; }
+  #winBody { overflow: auto; min-height: 0; }
+  .grid { --s: clamp(44px, calc((100vh - 230px) / 4), 66px); display: grid; grid-template-columns: repeat(4, var(--s)); gap: 6px; justify-content: center; }
+  .slot { position: relative; width: var(--s); height: var(--s); background: url(img/ui-칸.webp) center / 100% 100% no-repeat !important; }
+  .slot.sel { background-image: url(img/ui-칸-고름.webp) !important; }
+  .slot .ic { position: absolute; inset: 13%; }
+  .slot b { position: absolute; right: 5px; bottom: 2px; font-size: 15px; color: #4a2e14; text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 2px #fff; }
+  .slot.hold::after { content: '손'; position: absolute; left: 4px; top: 3px; font-size: 11px; padding: 0 4px; border-radius: 6px; background: #6aa83a; color: #fff; }
+  .foot { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 10px; }
+  .bbtn { height: 44px; min-width: 150px; box-sizing: border-box; padding: 0 16px; background: url(img/ui-갈색단추.webp) center / 100% 100% no-repeat !important; color: #fff4dc !important; display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 17px; white-space: nowrap; }
+  .bbtn .ic { width: 26px; height: 26px; }
+  .gbtn { height: 58px; min-width: 230px; background: url(img/ui-초록단추.webp) center / 100% 100% no-repeat !important; color: #fff !important; font-size: 23px; text-shadow: 0 2px 0 #2d5c0e; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+  .gbtn .ic { width: 34px; height: 34px; }
+  .bbtn:disabled, .gbtn:disabled { filter: grayscale(0.85) opacity(0.6); cursor: default; }
+  .tabs { display: flex; justify-content: center; margin-bottom: 8px; }
+  .tab { width: 132px; height: 42px; background: url(img/ui-탭.webp) center / 100% 100% no-repeat !important; font-size: 18px; }
+  .tab.on { background-image: url(img/ui-탭-고름.webp) !important; }
+  .row { display: flex; align-items: center; gap: 8px; height: 52px; padding: 0 10px 0 8px; background: url(img/ui-줄.webp) center / 100% 100% no-repeat; margin-bottom: 6px; }
+  .row > .ic { width: 40px; height: 40px; }
+  .row .nm { flex: 1; font-size: 17px; white-space: nowrap; } .row .nm small { font-size: 13px; color: #8a6a44; margin-left: 4px; }
+  .pr { display: inline-flex; align-items: center; gap: 3px; font-size: 17px; min-width: 64px; } .pr .ic { width: 24px; height: 24px; background-image: url(img/i-조개.webp); }
+  .row .bbtn { height: 38px; min-width: 78px; font-size: 16px; }
+  .mine { height: 44px; margin: 4px auto 0; width: min(300px, 100%); background: url(img/ui-돈판.webp) center / 100% 100% no-repeat; color: #fff4dc; display: flex; align-items: center; justify-content: center; gap: 12px; font-size: 17px; }
+  .mine .pr { color: #fff4dc; }
+  .empty { text-align: center; padding: 18px 0; color: #8a6a44; }
+  .up { display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .up figure { margin: 0; text-align: center; } .up figure .ic { display: block; width: 116px; height: clamp(64px, calc(100vh - 330px), 100px); margin: 0 auto; }
+  .up figcaption { display: inline-block; margin-top: 2px; padding: 4px 14px; background: url(img/ui-탭.webp) center / 100% 100% no-repeat; font-size: 15px; white-space: nowrap; }
+  .arrow { font-size: 30px; color: #8a5a2c; }
+  .mats { display: flex; gap: 6px; justify-content: center; margin: 10px 0 6px; }
+  .mat { width: 104px; height: 70px; background: url(img/ui-재료칸.webp) center / 100% 100% no-repeat; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 15px; white-space: nowrap; }
+  .mat .ic { width: 34px; height: 34px; } .mat.lack b { color: #c0392b; }
+  .two { display: flex; gap: 18px; justify-content: center; align-items: flex-start; flex-wrap: wrap; }
+  .two h4 { margin: 0 0 6px; text-align: center; font-size: 16px; }
+  .chestgrid { max-height: calc(100vh - 170px); overflow: auto; }
 </style>
 </head>
 <body>
@@ -25,6 +87,14 @@
 <div id="load">수달터 불러오는 중…</div>
 <div id="hint"></div>
 <div id="joy"><div id="knob"></div></div>
+<div class="ui" id="money"><i class="ic"></i><span id="moneyN">0</span></div>
+<div class="ui" id="btns">
+  <button type="button" class="rb" id="bagBtn" aria-label="가방"><i class="ic" style="background-image:url(img/i-가방.webp)"></i></button>
+  <button type="button" class="rb" id="toolBtn" aria-label="손에 든 도구"><i class="ic" id="toolIc" style="background-image:url(img/i-손.webp)"></i></button>
+  <button type="button" id="actBtn"><i class="ic"></i><span id="actTxt">줍기/쓰기</span></button>
+</div>
+<div class="ui" id="toasts"></div>
+<div class="ui" id="win" hidden><div class="frame" id="frame"><div class="ribbon"><i class="ic" id="winIc"></i><span id="winTitle"></span></div><button type="button" id="winX" aria-label="닫기"></button><div id="winBody"></div><div id="winMsg"></div></div></div>
 <script type="module">
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -268,49 +338,54 @@ const plainMat = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading
 function scatter(geo, mat, n, place, { shadow = true, area = 130 } = {}) {
   const im = new THREE.InstancedMesh(geo, mat, n), m = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), v = new THREE.Vector3(), s = new THREE.Vector3();
   let k = 0;
+  const recs = []; // 채집용: 자리 · 원래 모양 · 막힘
   for (let tries = 0; k < n && tries < n * 40; tries++) {
     const x = (rnd() - 0.5) * area, z = (rnd() - 0.5) * area;
     const r = place(x, z, k); if (!r) continue;
     const px = r.x ?? x, pz = r.z ?? z;
     e.set(r.rx || 0, rnd() * Math.PI * 2, r.rz || 0); q.setFromEuler(e);
     m.compose(v.set(px, height(px, pz) + (r.y || 0), pz), q, s.set(r.sx ?? r.s, r.sy ?? r.s, r.sz ?? r.s));
-    im.setMatrixAt(k, m); if (r.color) im.setColorAt(k, r.color); k++;
+    im.setMatrixAt(k, m); if (r.color) im.setColorAt(k, r.color);
+    recs.push({ im, i: k, x: px, z: pz, s: r.s, m: m.clone(), circle: r.circle || null });
+    k++;
   }
-  im.count = k; im.castShadow = shadow; im.receiveShadow = true; scene.add(im); return im;
+  im.count = k; im.castShadow = shadow; im.receiveShadow = true; im.userData.recs = recs; scene.add(im); return im;
 }
 const tint = (base, vary) => new THREE.Color(base).offsetHSL((rnd() - 0.5) * vary, (rnd() - 0.5) * vary, (rnd() - 0.5) * vary);
 const treeSpots = [];
 const spotOk = (x, z, gap) => treeSpots.every((t) => Math.hypot(t.x - x, t.z - z) > gap);
+const TREES = [], BUSHES = [], ROCKS = [], FLOWERS = []; // 채집 대상
 for (const [kind, n] of [['round', 55], ['round2', 40], ['pine', 42], ['fruit', 16]]) {
-  scatter(TREE_KINDS[kind], treeMat, n, (x, z) => {
+  const im = scatter(TREE_KINDS[kind], treeMat, n, (x, z) => {
     if (!clearSpot(x, z, 3.2) || !spotOk(x, z, 3.4)) return null;
     if (kind === 'pine' && Math.hypot(x, z) < 36) return null; // 소나무는 바깥쪽
     if (kind !== 'pine' && noise(x * 0.05 + 3, z * 0.05) < 0.3 && rnd() < 0.6) return null; // 숲이 뭉치게
-    const s = 0.85 + rnd() * 0.4; treeSpots.push({ x, z }); circles.push({ x, z, r: 0.32 * s });
-    return { s, color: tint(0xffffff, 0.08) };
+    const s = 0.85 + rnd() * 0.4, circle = { x, z, r: 0.32 * s }; treeSpots.push({ x, z }); circles.push(circle);
+    return { s, color: tint(0xffffff, 0.08), circle };
   });
+  for (const r of im.userData.recs) TREES.push(Object.assign(r, { kind, wood: 3, next: 0, down: 0 }));
 }
 const BUSH_TINT = [0xffffff, 0xffc6dc, 0xfff1a8, 0xe3d0ff];
-scatter(TREE_KINDS.bush, bushMat, 70, (x, z) => {
+BUSHES.push(...scatter(TREE_KINDS.bush, bushMat, 70, (x, z) => {
   if (!clearSpot(x, z, 2.2) || !spotOk(x, z, 1.8)) return null;
-  treeSpots.push({ x, z }); circles.push({ x, z, r: 0.45 });
-  return { s: 0.8 + rnd() * 0.5, color: new THREE.Color(BUSH_TINT[Math.floor(rnd() * 4)]) };
-});
-scatter(ROCK, rockMat, 30, (x, z) => {
+  const circle = { x, z, r: 0.45 }; treeSpots.push({ x, z }); circles.push(circle);
+  return { s: 0.8 + rnd() * 0.5, color: new THREE.Color(BUSH_TINT[Math.floor(rnd() * 4)]), circle };
+}).userData.recs.map((r) => Object.assign(r, { next: 0 })));
+ROCKS.push(...scatter(ROCK, rockMat, 30, (x, z) => {
   if (!clearSpot(x, z, 2.5) || !spotOk(x, z, 2.5)) return null;
-  const s = 0.45 + rnd() * 0.65; circles.push({ x, z, r: s * 0.95 }); return { s, sy: s * 0.62, sz: s * 0.85, y: 0.05 };
-});
+  const s = 0.45 + rnd() * 0.65, circle = { x, z, r: s * 0.95 }; circles.push(circle); return { s, sy: s * 0.62, sz: s * 0.85, y: 0.05, circle };
+}).userData.recs.map((r) => Object.assign(r, { stone: 3, down: 0 })));
 const FLOWER_COLORS = [0xffffff, 0xff9fc4, 0xffe066, 0xc39af5, 0xff8a65, 0x9fd4ff];
 const flowerSpots = Array.from({ length: 40 }, () => ({ x: (rnd() - 0.5) * 110, z: (rnd() - 0.5) * 110, c: FLOWER_COLORS[Math.floor(rnd() * FLOWER_COLORS.length)] }));
-scatter(FLOWER, flowerMat, 900, (x, z, k) => {
+FLOWERS.push(...scatter(FLOWER, flowerMat, 900, (x, z, k) => {
   const f = flowerSpots[k % flowerSpots.length], a = rnd() * 6.28, rr = Math.sqrt(rnd()) * 3.2, fx = f.x + Math.cos(a) * rr, fz = f.z + Math.sin(a) * rr;
   if (!isGrass(fx, fz)) return null;
   return { s: 0.9 + rnd() * 0.5, color: new THREE.Color(f.c), x: fx, z: fz };
-}, { shadow: false });
+}, { shadow: false }).userData.recs.map((r) => Object.assign(r, { down: 0 })));
 scatter(PEBBLE, plainMat, 420, (x, z, k) => { // 길가 자갈
   const sgi = PATHS[k % PATHS.length], t = rnd(), side = rnd() < 0.5 ? -1 : 1, dx = sgi[2] - sgi[0], dz = sgi[3] - sgi[1], l = Math.hypot(dx, dz);
   const off = side * (1.35 + rnd() * 0.6), px = sgi[0] + dx * t - dz / l * off, pz = sgi[1] + dz * t + dx / l * off;
-  if (height(px, pz) < -0.1) return null;
+  if (height(px, pz) < -0.1 || pathDist(px, pz) < 1.25) return null; // 광장 · 다른 길 한가운데는 빼고 가장자리만
   return { s: 0.6 + rnd() * 0.9, sy: 0.5, x: px, z: pz, y: 0.02 };
 }, { shadow: false });
 const GRASS_N = touchy ? 45000 : 80000;
@@ -334,7 +409,8 @@ const grass = scatter(BLADE, grassMat, GRASS_N, (x, z) => {
 // ───────── 모델 (CC0) ─────────
 const PROPS = [
   // 이름, x, z, 돌림(도), 높이, 막힘
-  ['텐트', -22, -20, 20, 1.7, 'c'], ['텐트', -15.5, -21.5, -15, 1.7, 'c'], ['모닥불', -19, -15.5, 0, 0.75, 'c'], ['침낭', -21.5, -13.5, 70, 0.22, ''],
+  ['텐트', -12, -21.5, -15, 1.7, 'c'], ['모닥불', -19, -15.5, 0, 0.75, 'c'], ['침낭', -21.5, -13.5, 70, 0.22, ''], // 내 집 자리(-20, -23)는 비워 둠
+  ['가판대', -4.5, -5.2, 0, 2.6, 'c'], ['수레', -8.2, -3.6, 60, 1.5, 'c'],
   ['작업대', -13.5, -14.5, -90, 1.0, 'c'], ['모루', -12.8, -17.2, -60, 0.9, 'c'], ['보관함', -24.5, -15.5, 90, 0.75, 'c'], ['통', -25.5, -18, 0, 0.95, 'c'], ['상자', -26, -19.6, 25, 0.7, 'c'],
   ['표지판', 3, -3.5, -20, 1.7, 'c'],
   ['헛간', 41, -17, 0, 5.2, 'b'], ['닭장', 34, -6.5, 30, 2.0, 'c'], ['사일로', 48, -12, 0, 8, 'c'], ['풍차', 44, 14, -30, 10, 'c'],
@@ -375,6 +451,7 @@ function makeOtter(colors = OTTER) {
   for (const s of [-1, 1]) body.add(mesh(new THREE.BoxGeometry(0.1, 0.08, 0.02), M(0x45609a), s * 0.1, 0.45, 0.18));
   const arm = (s) => { const g = new THREE.Group(); g.position.set(s * 0.23, 0.7, 0); g.rotation.z = s * 0.18; g.add(mesh(CAP(0.075, 0.16), hood, 0, -0.12, 0), mesh(S(0.072), fur, 0, -0.27, 0.01)); body.add(g); return g; };
   const armL = arm(-1), armR = arm(1);
+  const hold = new THREE.Group(); hold.position.set(0, -0.29, 0.03); armR.add(hold); // 손에 든 도구 자리
   const head = new THREE.Group(); head.position.set(0, 0.97, 0); body.add(head);
   head.add(mesh(S(0.26), fur, 0, 0, 0, 1, 0.94, 0.95));
   head.add(mesh(S(0.2), cream, 0, -0.07, 0.1, 1.05, 0.78, 0.8));
@@ -397,22 +474,27 @@ function makeOtter(colors = OTTER) {
     seg.add(mesh(CAP(r, l), fur, 0, -(l / 2 + r * 0.6), 0));
     const next = new THREE.Group(); next.position.y = -(l + r * 0.9); seg.add(next); t = next;
   }
-  root.userData = { body, legL, legR, armL, armR, head, tail };
+  root.userData = { body, legL, legR, armL, armR, head, tail, hold };
   return root;
 }
-function animOtter(o, phase, amt, run, t) {
+// act: 0~1 진행(없으면 -1) · swing: 도구 휘두르기 / 아니면 손으로 줍기(허리 숙임)
+function animOtter(o, phase, amt, run, t, act = -1, swing = false) {
   const p = o.userData, sw = Math.sin(phase);
   p.legL.rotation.x = sw * 0.75 * amt; p.legR.rotation.x = -sw * 0.75 * amt;
   p.armL.rotation.x = -sw * (run ? 0.9 : 0.55) * amt; p.armR.rotation.x = sw * (run ? 0.9 : 0.55) * amt;
   p.body.position.y = Math.abs(Math.cos(phase)) * (run ? 0.07 : 0.04) * amt + (1 - amt) * Math.sin(t * 2.2) * 0.008;
   p.body.rotation.x = (run ? 0.2 : 0.05) * amt;
+  if (act >= 0) {
+    if (swing) { p.armR.rotation.x = act < 0.4 ? -2.5 * (act / 0.4) : -2.5 + 2.0 * ((act - 0.4) / 0.6); p.body.rotation.x = act < 0.4 ? -0.08 : 0.15 * Math.sin(((act - 0.4) / 0.6) * Math.PI); }
+    else { const k = Math.sin(act * Math.PI); p.body.rotation.x = 0.55 * k; p.armR.rotation.x = p.armL.rotation.x = -1.1 * k; }
+  }
   p.head.rotation.x = -(run ? 0.12 : 0.03) * amt + (1 - amt) * Math.sin(t * 1.1) * 0.03;
   p.head.rotation.z = (1 - amt) * Math.sin(t * 0.7) * 0.05;
   p.tail.rotation.y = Math.sin(phase * 0.5 + t * (1 - amt) * 1.5) * (0.25 + 0.15 * amt);
 }
 
 // ───────── 나 ─────────
-const me = { x: 2, z: 5, face: 0, speed: 0, phase: 0, run: false, obj: makeOtter() };
+const me = { x: 2, z: 5, face: 0, speed: 0, phase: 0, run: false, actT: 0, actSwing: false, obj: makeOtter() };
 scene.add(me.obj);
 const WALK = 3.4, RUN = 6.4;
 
@@ -438,7 +520,7 @@ cv.addEventListener('pointermove', (e) => {
 const joyEnd = (e) => { if (e.pointerId !== joy.id) return; joy.id = null; joy.dx = joy.dy = 0; joyEl.style.display = 'none'; };
 cv.addEventListener('pointerup', joyEnd); cv.addEventListener('pointercancel', joyEnd);
 const hintEl = document.getElementById('hint');
-hintEl.textContent = touchy ? '왼쪽을 눌러 움직이기 · 끝까지 밀면 달리기' : 'WASD · 방향키 이동 · Shift 달리기';
+hintEl.textContent = touchy ? '왼쪽을 눌러 움직이기 · 오른쪽 단추로 줍기/쓰기' : 'WASD 이동 · Shift 달리기 · E 줍기/쓰기 · Q 도구 · B 가방';
 let hintTimer = setTimeout(hideHint, 9000);
 function hideHint() { clearTimeout(hintTimer); hintEl.classList.add('off'); }
 
@@ -493,7 +575,8 @@ function step(dt) {
   if (keys.has('KeyW') || keys.has('ArrowUp')) mz -= 1;
   if (keys.has('KeyS') || keys.has('ArrowDown')) mz += 1;
   let mag = Math.hypot(mx, mz), run = keys.has('ShiftLeft') || keys.has('ShiftRight');
-  if (mag) { mx /= mag; mz /= mag; mag = 1; hideHint(); }
+  if (!winEl.hidden) mag = 0; // 창이 열려 있으면 멈춤
+  else if (mag) { mx /= mag; mz /= mag; mag = 1; hideHint(); }
   else if (joy.id !== null) { const l = Math.hypot(joy.dx, joy.dy); if (l > 0.15) { mx = joy.dx / l; mz = joy.dy / l; mag = Math.min(1, l); run = l > 0.8; } }
   const target = mag ? (run ? RUN : WALK) * (run ? 1 : Math.max(0.45, mag)) : 0;
   me.speed += (target - me.speed) * Math.min(1, dt * 10);
@@ -508,7 +591,8 @@ function step(dt) {
   me.phase += dt * me.speed * (me.run ? 2.2 : 2.9);
   const amt = Math.min(1, me.speed / WALK);
   me.obj.position.set(me.x, groundY(me.x, me.z), me.z); me.obj.rotation.y = me.face;
-  animOtter(me.obj, me.phase, amt, me.run, clock);
+  life(dt);
+  animOtter(me.obj, me.phase, amt, me.run, clock, me.actT > 0 ? 1 - me.actT / ACT_T : -1, me.actSwing);
   const want = new THREE.Vector3(me.x, me.obj.position.y, me.z);
   if (camAt.distanceTo(want) > 8) camAt.copy(want); else camAt.lerp(want, Math.min(1, dt * 6)); // 멀리 옮겨지면(다시 태어남 등) 바로 따라붙음
   camera.position.set(camAt.x, camAt.y + camH, camAt.z + camD); camera.lookAt(camAt.x, camAt.y + 0.6, camAt.z);
@@ -527,16 +611,227 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 
+// ───────── 살림: 가방 · 조개 · 채집 · 상점 · 집 · 보관함 · 저장 (2026-11-17 · 창은 ChatGPT 시안대로) ─────────
+const $ = (id) => document.getElementById(id);
+const ITEMS = { 열매: { sell: 15 }, 나뭇가지: { sell: 5 }, 꽃: { sell: 10 }, 풀: { sell: 3 }, 나무: { sell: 12 }, 돌: { sell: 14 }, 도끼: { buy: 300, tool: true }, 곡괭이: { buy: 400, tool: true } };
+const SELLABLE = ['열매', '나뭇가지', '꽃', '풀', '나무', '돌'], TOOLS = ['도끼', '곡괭이'];
+const ic = (id) => `url(img/i-${id.replace(/ /g, '')}.webp)`;
+const BAG_N = 16, STACK = 30, ACT_T = 0.45;
+const HOUSES = [
+  { name: '텐트', model: '텐트', h: 1.9, chest: 8 },
+  { name: '오두막', model: '오두막', h: 3.4, chest: 16, cost: { 나무: 30, 돌: 10, 조개: 500 } },
+  { name: '나무집', model: '나무집', h: 4.6, chest: 24, cost: { 나무: 60, 돌: 40, 조개: 2000 } },
+  { name: '큰 집', model: '큰집', h: 5.6, chest: 32, cost: { 나무: 120, 돌: 100, 조개: 6000 } },
+];
+const HOUSE_AT = { x: -20, z: -23 }, SHOP_AT = { x: -4.5, z: -3.4 }, CHEST_AT = { x: -24.5, z: -15.5 };
+const SAVE_KEY = 'sudalter-v1';
+const S = { money: 100, bag: [], chest: [], tier: 0, tool: null };
+try { const d = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); if (d && Array.isArray(d.bag)) Object.assign(S, d); } catch { /* 저장 못 읽으면 새로 시작 */ }
+const fit = (a, n) => { a.length = Math.min(a.length, n); while (a.length < n) a.push(null); return a; };
+S.tier = Math.max(0, Math.min(HOUSES.length - 1, S.tier | 0)); fit(S.bag, BAG_N); fit(S.chest, HOUSES[S.tier].chest);
+let dirty = false;
+const flush = () => { if (!dirty) return; dirty = false; try { localStorage.setItem(SAVE_KEY, JSON.stringify({ money: S.money, bag: S.bag, chest: S.chest, tier: S.tier, tool: S.tool })); } catch { /* 저장 공간 없음 */ } };
+setInterval(flush, 2000); addEventListener('pagehide', () => { dirty = true; flush(); });
+
+const winEl = $('win'), bodyEl = $('winBody'), frameEl = $('frame'), toastsEl = $('toasts');
+let msgTimer = 0;
+function toast(text, id) {
+  if (!winEl.hidden) { const m = $('winMsg'); m.textContent = text; clearTimeout(msgTimer); msgTimer = setTimeout(() => { m.textContent = ''; }, 2600); return; }
+  const d = document.createElement('div'); d.innerHTML = (id ? `<i class="ic" style="background-image:${ic(id)}"></i>` : '') + '<span></span>'; d.lastChild.textContent = text;
+  toastsEl.prepend(d); setTimeout(() => d.remove(), 2200); while (toastsEl.children.length > 4) toastsEl.lastChild.remove();
+}
+const count = (id, box = S.bag) => box.reduce((n, s) => n + (s && s.id === id ? s.n : 0), 0);
+function put(box, id, n) { // 넣고 남은 수를 돌려줌
+  const cap = ITEMS[id].tool ? 1 : STACK;
+  for (const s of box) if (n && s && s.id === id && s.n < cap) { const k = Math.min(n, cap - s.n); s.n += k; n -= k; }
+  for (let i = 0; n && i < box.length; i++) if (!box[i]) { const k = Math.min(n, cap); box[i] = { id, n: k }; n -= k; }
+  return n;
+}
+function take(id, n, box = S.bag) {
+  if (count(id, box) < n) return false;
+  for (let i = box.length - 1; n && i >= 0; i--) { const s = box[i]; if (s && s.id === id) { const k = Math.min(n, s.n); s.n -= k; n -= k; if (!s.n) box[i] = null; } }
+  return true;
+}
+function changed() { dirty = true; if (S.tool && !count(S.tool)) S.tool = null; setHeld(); refreshHud(); if (!winEl.hidden) render(); }
+function gain(id, n = 1) { const left = put(S.bag, id, n), got = n - left; if (got) toast(`+${got} ${id}`, id); if (left) toast('가방이 가득 찼어요', '가방'); changed(); return got; }
+function refreshHud() { $('moneyN').textContent = S.money.toLocaleString(); $('toolIc').style.backgroundImage = S.tool ? ic(S.tool) : ic('손'); }
+
+// 손에 든 도구 (모델은 시작할 때 붙임)
+const held = {};
+function setHeld() { for (const t of TOOLS) if (held[t]) held[t].visible = S.tool === t; }
+function cycleTool() {
+  const opts = [null, ...TOOLS.filter((t) => count(t))];
+  if (opts.length === 1) { toast('도구가 없어요 — 상점에서 살 수 있어요', '손'); return; }
+  S.tool = opts[(opts.indexOf(S.tool) + 1) % opts.length]; toast(S.tool ? `${S.tool}를 들었어요` : '맨손이에요', S.tool || '손'); changed();
+}
+
+// 채집 대상 숨기기 · 되살리기 · 흔들기
+const ZERO = new THREE.Matrix4().makeScale(0, 0, 0);
+function hideRec(r) { r.im.setMatrixAt(r.i, ZERO); r.im.instanceMatrix.needsUpdate = true; if (r.circle) { r.r0 ??= r.circle.r; r.circle.r = -100; } }
+function showRec(r) { r.im.setMatrixAt(r.i, r.m); r.im.instanceMatrix.needsUpdate = true; if (r.circle && r.r0 != null) r.circle.r = r.r0; }
+const wobbles = new Map(), WM = new THREE.Matrix4(), WR = new THREE.Matrix4();
+const wobble = (r) => wobbles.set(r, 0.6);
+
+// 앞에 있는 것 찾기
+let target = null, tgtT = 0;
+function findTarget() {
+  const fx = me.x + Math.sin(me.face) * 0.6, fz = me.z + Math.cos(me.face) * 0.6;
+  let best = null, bd = 1e9;
+  const see = (type, rec, x, z, reach) => { const d = Math.hypot(x - fx, z - fz); if (d < reach && d < bd) { bd = d; best = { type, rec, x, z }; } };
+  if (houseBox) { const b = houseBox, cx = Math.max(b.x0, Math.min(b.x1, me.x)), cz = Math.max(b.z0, Math.min(b.z1, me.z)); if (Math.hypot(me.x - cx, me.z - cz) < 1.3) { bd = 0.5; best = { type: 'house', x: cx, z: cz }; } }
+  see('shop', null, SHOP_AT.x, SHOP_AT.z, 2.0);
+  see('chest', null, CHEST_AT.x, CHEST_AT.z, 1.7);
+  for (const r of FLOWERS) if (!r.down) see('flower', r, r.x, r.z, 0.9);
+  for (const r of BUSHES) see('bush', r, r.x, r.z, 1.3);
+  for (const r of TREES) if (!r.down) see('tree', r, r.x, r.z, 1.35);
+  for (const r of ROCKS) if (!r.down) see('rock', r, r.x, r.z, 0.95 + r.circle.r);
+  return best;
+}
+const labelOf = (t) => !t ? '줍기/쓰기' : { shop: '가게 열기', chest: '보관함', house: '집 올리기', flower: '꽃 꺾기', bush: '풀 뜯기' }[t.type]
+  || (t.type === 'tree' ? (S.tool === '도끼' ? '나무 베기' : '나무 흔들기') : S.tool === '곡괭이' ? '돌 캐기' : '곡괭이 필요');
+
+let actCool = 0;
+function doAction() {
+  if (!winEl.hidden || actCool > 0) return;
+  const t = target = findTarget();
+  if (!t) { toast('가까이에 할 수 있는 것이 없어요'); return; }
+  actCool = 0.4; me.face = Math.atan2(t.x - me.x, t.z - me.z);
+  const r = t.rec;
+  if (t.type === 'shop') return openWin('shop');
+  if (t.type === 'house') return openWin('house');
+  if (t.type === 'chest') return openWin('chest');
+  me.actT = ACT_T; me.actSwing = (t.type === 'tree' && S.tool === '도끼') || (t.type === 'rock' && S.tool === '곡괭이');
+  if (t.type === 'flower') { r.down = clock + 120; hideRec(r); gain('꽃'); }
+  else if (t.type === 'bush') { wobble(r); if (clock < r.next) toast('아직 풀이 덜 자랐어요', '풀'); else { r.next = clock + 60; gain('풀', 2); } }
+  else if (t.type === 'tree') {
+    wobble(r);
+    if (S.tool === '도끼') { gain('나무'); if (--r.wood <= 0) { r.wood = 3; r.down = clock + 180; hideRec(r); wobbles.delete(r); toast('나무가 쓰러졌어요 — 3분 뒤 다시 자라요'); } }
+    else if (clock < r.next) toast('흔들어도 아무것도 안 떨어져요');
+    else { r.next = clock + 45; if (r.kind === 'fruit') gain('열매', 1 + (rnd() < 0.5 ? 1 : 0)); gain('나뭇가지'); }
+  } else if (t.type === 'rock') {
+    if (S.tool !== '곡괭이') { toast('곡괭이가 있어야 캘 수 있어요', '곡괭이'); me.actT = 0; return; }
+    gain('돌'); if (--r.stone <= 0) { r.stone = 3; r.down = clock + 150; hideRec(r); toast('바위를 다 캤어요 — 2분 반 뒤 다시 생겨요'); }
+  }
+}
+let regrowT = 0;
+function life(dt) {
+  actCool -= dt; me.actT -= dt;
+  for (const [r, t] of wobbles) {
+    const left = t - dt; if (left <= 0) { wobbles.delete(r); r.im.setMatrixAt(r.i, r.m); r.im.instanceMatrix.needsUpdate = true; continue; }
+    wobbles.set(r, left); WM.copy(r.m).multiply(WR.makeRotationZ(Math.sin(left * 30) * 0.06 * left)); r.im.setMatrixAt(r.i, WM); r.im.instanceMatrix.needsUpdate = true;
+  }
+  if ((regrowT -= dt) <= 0) {
+    regrowT = 1;
+    for (const r of [...TREES, ...ROCKS, ...FLOWERS]) if (r.down && clock > r.down && Math.hypot(r.x - me.x, r.z - me.z) > 3) { r.down = 0; showRec(r); }
+  }
+  if ((tgtT -= dt) <= 0) {
+    tgtT = 0.12; target = winEl.hidden ? findTarget() : null;
+    const L = labelOf(target); if ($('actTxt').textContent !== L) $('actTxt').textContent = L; $('actBtn').classList.toggle('off', !target);
+  }
+  if (npc) animOtter(npc, 0, 0, false, clock + 3);
+}
+
+// 창
+let view = null, sel = -1, tab = 'sell', trashArm = 0;
+function openWin(v) { view = v; sel = -1; trashArm = 0; winEl.hidden = false; document.body.classList.add('winopen'); toastsEl.textContent = ''; $('winMsg').textContent = ''; hideHint(); render(); }
+function closeWin() { winEl.hidden = true; view = null; document.body.classList.remove('winopen'); }
+$('winX').onclick = closeWin;
+winEl.addEventListener('pointerdown', (e) => { if (e.target === winEl) closeWin(); });
+const slotsHtml = (box, kind) => box.map((s, i) => `<button type="button" class="slot${kind === 'bag' && sel === i ? ' sel' : ''}${s && s.id === S.tool ? ' hold' : ''}" data-box="${kind}" data-i="${i}">${s ? `<i class="ic" style="background-image:${ic(s.id)}"></i>${ITEMS[s.id].tool ? '' : `<b>${s.n}</b>`}` : ''}</button>`).join('');
+const price = (n) => `<span class="pr"><i class="ic"></i>${n.toLocaleString()}</span>`;
+function render() {
+  frameEl.classList.toggle('wide', view === 'chest');
+  const H = HOUSES[S.tier];
+  const [title, tic] = { bag: ['가방', '가방'], shop: ['수달 상점', '조개'], house: ['집 올리기', H.model], chest: ['보관함', H.model] }[view];
+  $('winTitle').textContent = title; $('winIc').style.backgroundImage = ic(tic);
+  let h = '';
+  if (view === 'bag') {
+    const s = S.bag[sel];
+    h = `<div class="grid">${slotsHtml(S.bag, 'bag')}</div><div class="foot"><button type="button" class="bbtn" id="trash" ${s ? '' : 'disabled'}><i class="ic" style="background-image:${ic('쓰레기통')}"></i>${trashArm ? '한 번 더 누르면 버려요' : '버리기'}</button></div>`;
+  } else if (view === 'shop') {
+    h = `<div class="tabs"><button type="button" class="tab${tab === 'sell' ? ' on' : ''}" data-tab="sell">팔기</button><button type="button" class="tab${tab === 'buy' ? ' on' : ''}" data-tab="buy">사기</button></div>`;
+    if (tab === 'sell') {
+      const list = SELLABLE.filter((id) => count(id));
+      h += list.length ? list.map((id) => `<div class="row"><i class="ic" style="background-image:${ic(id)}"></i><span class="nm">${id}<small>×${count(id)}</small></span>${price(ITEMS[id].sell)}<button type="button" class="bbtn" data-sell="${id}">팔기</button></div>`).join('')
+        : '<div class="empty">팔 물건이 없어요. 섬에서 모아 오세요!</div>';
+    } else {
+      h += TOOLS.map((id) => { const have = count(id) > 0, cost = ITEMS[id].buy; return `<div class="row"><i class="ic" style="background-image:${ic(id)}"></i><span class="nm">${id}</span>${price(cost)}<button type="button" class="bbtn" data-buy="${id}" ${have || S.money < cost ? 'disabled' : ''}>${have ? '있음' : '사기'}</button></div>`; }).join('');
+    }
+    h += `<div class="mine">내 조개 ${price(S.money)}</div>`;
+  } else if (view === 'house') {
+    const N = HOUSES[S.tier + 1];
+    if (!N) h = `<div class="up"><figure><i class="ic" style="background-image:${ic(H.model)}"></i><figcaption>지금 ${H.name}</figcaption></figure></div><div class="empty">가장 큰 집이에요! 보관함 ${H.chest}칸</div>`;
+    else {
+      const need = Object.entries(N.cost), have = (k) => (k === '조개' ? S.money : count(k)), okAll = need.every(([k, v]) => have(k) >= v);
+      h = `<div class="up"><figure><i class="ic" style="background-image:${ic(H.model)}"></i><figcaption>지금 ${H.name}</figcaption></figure><span class="arrow">➜</span><figure><i class="ic" style="background-image:${ic(N.model)}"></i><figcaption>다음 ${N.name}</figcaption></figure></div>
+        <div class="mats">${need.map(([k, v]) => `<div class="mat${have(k) >= v ? '' : ' lack'}"><i class="ic" style="background-image:${ic(k)}"></i><b>${k} ${Math.min(have(k), v).toLocaleString()}/${v.toLocaleString()}</b></div>`).join('')}</div>
+        <div class="foot"><button type="button" class="gbtn" id="upBtn" ${okAll ? '' : 'disabled'}><i class="ic" style="background-image:${ic(N.model)}"></i>올리기</button></div>`;
+    }
+  } else if (view === 'chest') {
+    h = `<div class="two"><div><h4>가방 (누르면 보관함으로)</h4><div class="grid">${slotsHtml(S.bag, 'bagc')}</div></div><div><h4>보관함 ${S.chest.length}칸 (누르면 가방으로)</h4><div class="grid chestgrid">${slotsHtml(S.chest, 'chest')}</div></div></div>`;
+  }
+  bodyEl.innerHTML = h;
+}
+bodyEl.addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b || b.disabled) return;
+  if (b.dataset.tab) { tab = b.dataset.tab; return render(); }
+  if (b.dataset.box === 'bag') { const i = +b.dataset.i, s = S.bag[i]; sel = i; trashArm = 0; if (s && ITEMS[s.id].tool) { S.tool = S.tool === s.id ? null : s.id; toast(S.tool ? `${S.tool}를 들었어요` : '맨손이에요', S.tool || '손'); return changed(); } return render(); }
+  if (b.dataset.box === 'bagc' || b.dataset.box === 'chest') { // 한 묶음 통째로 옮김
+    const from = b.dataset.box === 'chest' ? S.chest : S.bag, to = from === S.chest ? S.bag : S.chest, i = +b.dataset.i, s = from[i]; if (!s) return;
+    const left = put(to, s.id, s.n); if (left === s.n) toast(to === S.chest ? '보관함이 가득 찼어요' : '가방이 가득 찼어요'); if (left) s.n = left; else from[i] = null; return changed();
+  }
+  if (b.id === 'trash') { if (!trashArm) { trashArm = 1; render(); setTimeout(() => { if (trashArm && view === 'bag') { trashArm = 0; render(); } }, 2500); return; } const s = S.bag[sel]; S.bag[sel] = null; trashArm = 0; if (s) toast(`${s.id} 버렸어요`, '쓰레기통'); return changed(); }
+  if (b.dataset.sell) { const id = b.dataset.sell, n = count(id), got = n * ITEMS[id].sell; take(id, n); S.money += got; toast(`${id} ${n}개 팔아 +${got.toLocaleString()} 조개`, '조개'); return changed(); }
+  if (b.dataset.buy) { const id = b.dataset.buy, cost = ITEMS[id].buy; if (S.money < cost) return; if (put(S.bag, id, 1)) return toast('가방이 가득 찼어요', '가방'); S.money -= cost; S.tool = id; toast(`${id}를 샀어요! 손에 들었어요`, id); return changed(); }
+  if (b.id === 'upBtn') {
+    const N = HOUSES[S.tier + 1]; if (!N) return;
+    for (const [k, v] of Object.entries(N.cost)) if ((k === '조개' ? S.money : count(k)) < v) return;
+    for (const [k, v] of Object.entries(N.cost)) { if (k === '조개') S.money -= v; else take(k, v); }
+    S.tier++; fit(S.chest, N.chest); buildHouse(); toast(`${N.name}으로 올렸어요! 보관함 ${N.chest}칸`, N.model); return changed();
+  }
+});
+$('bagBtn').onclick = () => (winEl.hidden ? openWin('bag') : closeWin());
+$('toolBtn').onclick = cycleTool;
+$('actBtn').onclick = doAction;
+addEventListener('keydown', (e) => {
+  if (e.repeat) return;
+  if (e.code === 'Escape') closeWin();
+  else if (e.code === 'KeyE' || e.code === 'Space') doAction();
+  else if (e.code === 'KeyQ') cycleTool();
+  else if (e.code === 'KeyB' || e.code === 'KeyI') (winEl.hidden ? openWin('bag') : closeWin());
+});
+
+// 내 집 · 상인
+let houseObj = null, houseBox = null, npc = null;
+function buildHouse() {
+  if (houseObj) scene.remove(houseObj);
+  if (houseBox) boxes.splice(boxes.indexOf(houseBox), 1);
+  const H = HOUSES[S.tier];
+  houseObj = placeModel(srcs[H.model], HOUSE_AT.x, HOUSE_AT.z, 0, H.h, 'b'); houseBox = boxes[boxes.length - 1];
+  const b = houseBox; if (me.x > b.x0 - 0.4 && me.x < b.x1 + 0.4 && me.z > b.z0 - 0.4 && me.z < b.z1 + 0.4) me.z = b.z1 + 0.9; // 집이 커져 안에 갇히면 앞으로
+}
+function heldModel(src) {
+  const o = src.clone(true), b = new THREE.Box3().setFromObject(o), sz = b.getSize(new THREE.Vector3()), k = 0.5 / Math.max(sz.x, sz.y, sz.z);
+  const inner = new THREE.Group(); inner.add(o); o.position.set(-(b.min.x + sz.x / 2), -b.min.y - sz.y * 0.2, -(b.min.z + sz.z / 2)); inner.scale.setScalar(k);
+  const g = new THREE.Group(); g.add(inner); g.rotation.x = Math.PI / 2; g.traverse((m) => { if (m.isMesh) m.castShadow = true; }); return g;
+}
+
 // ───────── 시작 ─────────
-const srcs = Object.fromEntries(await Promise.all([...new Set([...PROPS.map((p) => p[0]), '울타리'])].map(async (n) => [n, await loadModel(n)])));
+const srcs = Object.fromEntries(await Promise.all([...new Set([...PROPS.map((p) => p[0]), '울타리', '오두막', '나무집', '큰집', '도끼', '곡괭이'])].map(async (n) => [n, await loadModel(n)])));
 for (const [n, x, z, r, h, b] of PROPS) placeModel(srcs[n], x, z, r, h, b);
 for (const [x, z, r] of FENCES) placeModel(srcs['울타리'], x, z, r, 1.0, 'f');
+buildHouse();
+for (const t of TOOLS) { held[t] = heldModel(srcs[t]); me.obj.userData.hold.add(held[t]); }
+npc = makeOtter({ fur: 0x7d5236, cream: 0xecd6b0, hood: 0x5a9a4a, pants: 0xb89a6a, dark: 0x1d1714 });
+npc.position.set(-4.5, height(-4.5, -5.9), -5.9); scene.add(npc);
+changed(); dirty = false;
 document.getElementById('load').remove();
 requestAnimationFrame((t) => { last = t; frame(t); });
 
 // 시험용: sim(누를 키, 초) — 화면 속도와 상관없이 1/60초씩 움직여 본다
 const sim = (codes, secs) => { codes.forEach((k) => keys.add(k)); for (let i = 0; i < Math.round(secs * 60); i++) step(1 / 60); codes.forEach((k) => keys.delete(k)); };
-window.__수달터 = { me, free, height, circles, boxes, onBridge, BRIDGE, riverX, camera, renderer, quality, sim, joy, grass };
+window.__수달터 = { me, free, height, circles, boxes, onBridge, BRIDGE, riverX, camera, renderer, quality, sim, joy, grass,
+  S, TREES, ROCKS, BUSHES, FLOWERS, HOUSES, HOUSE_AT, SHOP_AT, CHEST_AT, doAction, findTarget, openWin, closeWin, count, flush, get houseBox() { return houseBox; }, get clock() { return clock; } };
 </script>
 </body>
 </html>
