@@ -41,7 +41,7 @@ function makeOtter(colors = OTTER) {
     const next = new THREE.Group(); next.position.y = -(l + r * 0.9); seg.add(next); t = next;
   }
   root.userData = { body, legL, legR, armL, armR, head, tail, hold };
-  return root;
+  return mergeOtterParts(root); // 같은 색 조각을 합침(4단계 · 50명 대비)
 }
 // act: 0~1 진행(없으면 -1) · swing: 도구 휘두르기 / 아니면 손으로 줍기(허리 숙임)
 function animOtter(o, phase, amt, run, t, act = -1, swing = false, fit = null) {
