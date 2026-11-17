@@ -13,6 +13,7 @@ const grade = new ShaderPass({
     void main() { vec4 c = texture2D(tDiffuse, vUv); vec3 col = c.rgb;
       float l = dot(col, vec3(0.299, 0.587, 0.114)); col = mix(vec3(l), col, 1.16);
       col *= vec3(1.035, 1.0, 0.95); col = (col - 0.5) * 1.04 + 0.5;
+      float lu = dot(col, vec3(0.299, 0.587, 0.114)); col += vec3(-0.025, 0.0, 0.045) * (1.0 - smoothstep(0.05, 0.5, lu)) + vec3(0.03, 0.014, -0.025) * smoothstep(0.55, 1.0, lu);
       vec2 d = vUv - 0.5; col *= mix(0.8, 1.0, smoothstep(0.82, 0.32, length(d * vec2(1.0, 0.92))));
       gl_FragColor = vec4(col, c.a); }`,
 });
