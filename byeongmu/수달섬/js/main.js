@@ -45,6 +45,7 @@ window.__수달섬.worldData = () => {
     plots: PLOTS.map((p) => ({ x: r2(p.x), z: r2(p.z) })),
     circles: circles.filter((c) => !natural.has(c) && !own.has(c)).map((c) => ({ x: r2(c.x), z: r2(c.z), r: r2(c.r) })), // 모델(텐트 · 모닥불 · 가판대 …)
     boxes: boxes.filter((b) => !own.has(b)).map((b) => ({ x0: r2(b.x0), z0: r2(b.z0), x1: r2(b.x1), z1: r2(b.z1) })), // 헛간 · 울타리
+    water: (() => { const w = { river: [24, 4, 0.06], rw: RW, pond: { x: POND.x, z: POND.z, r: POND.r }, isle: [62, 3, 2] }; for (const z of [-30, 7, 41]) if (Math.abs(riverX(z) - (w.river[0] + w.river[1] * Math.sin(z * w.river[2]))) > 1e-9) throw new Error('개울 식이 바뀜 — world 물 자료 고쳐야 함'); if (Math.abs(islandR(1) - (62 + 3 * Math.sin(3) + 2 * Math.sin(6))) > 1e-9) throw new Error('섬 둘레 식이 바뀜'); return w; })(), // 함정 자리 물 판정(요청 4)
     houseHalf: tierBox, chestOff: [3.6, 3.4], shop: { x: SHOP_AT.x, z: SHOP_AT.z }, plaza: { x: PLAZA.x, z: PLAZA.z, r: PLAZA.r },
   };
   W.sum = worldSum(W); return W;
