@@ -62,6 +62,7 @@ function onNet(m) {
   else if (m.t === 'mv') {
     const o = net.others.get(m.id); if (!o) return;
     Object.assign(o, { tx: m.x, tz: m.z, tf: m.f, s: m.s, r: m.r });
+    if (Number.isFinite(m.hp) && m.hp !== o.hp && o.alive !== false) { o.hp = m.hp; if (typeof updateTagHp === 'function') updateTagHp(o); } // 먼 곳에서 맞은 체력도 맞춤(리뷰 4번)
     if (m.ac !== o.ac) {
       o.ac = m.ac; o.actT = o.actDur = ACT_T; o.sw = m.sw; o.fit = null;
       const tr = m.an === 'shake' && KEYED.get(m.tk);
@@ -109,7 +110,7 @@ function netTick(dt) {
     if (Math.hypot(o.tx - o.x, o.tz - o.z) < 0.03) o.s *= 1 - Math.min(1, dt * 6); // 멈추면 걸음도 멈춤
     o.phase += dt * o.s * (o.r ? 2.2 : 2.9); o.actT -= dt;
     const y = groundY(o.x, o.z); o.obj.position.set(o.x, y + (o.alive === false ? 0.22 : 0), o.z); o.obj.rotation.y = o.f;
-    const farO = Math.abs(o.x - me.x) > 38 || Math.abs(o.z - me.z) > 38; o.obj.visible = !farO; // 먼 수달은 안 그림(50명 대비 · 9단계) — 미니맵 · 이름표 계산도 건너뜀
+    const farO = Math.hypot(o.x - me.x, o.z - me.z) > 38; o.obj.visible = !farO; // 먼 수달은 안 그림(50명 대비 · 9단계 · 서버 45칸 안쪽 동그라미) — 이름표 · 움직임 계산도 건너뜀(미니맵 점은 그대로)
     if (farO) { o.label.style.display = 'none'; continue; }
     animOtter(o.obj, o.phase, Math.min(1, o.s / WALK), !!o.r, clock + o.id, o.actT > 0 ? 1 - o.actT / (o.actDur || ACT_T) : -1, o.sw === 'shake' ? 'shake' : !!o.sw, o.fit);
     gunPose(o.obj, o.tl); // 총을 들었으면 겨누는 팔
