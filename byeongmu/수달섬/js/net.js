@@ -1,0 +1,120 @@
+// 수달섬 — 여럿이 함께(섬 방 연결) (2026-11-17 수달섬 index.html 에서 나눔 · 보통 스크립트: 다른 파일과 맨 위 이름을 함께 씀)
+// ───────── 여럿이 함께 (2026-11-17) — 홈페이지에서 로그인했으면 섬 방(워커 SudalterIsland)에 붙는다 ─────────
+// ?net= 은 이 PC 시험(localhost)에서만 — 실서버에서 받아 주면 꾸민 링크로 로그인 열쇠가 남의 서버로 갈 수 있음(2026-11-17 점검 때 막음)
+const NET_URL = (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && new URLSearchParams(location.search).get('net')) || 'wss://byeongmu.byeongmu-munpa.workers.dev/suseom';
+const net = { ws: null, on: false, server: false, id: 0, name: '', others: new Map(), houses: new Map(), tries: 0, sendT: 0, last: '', ac: 0 };
+let keepPos = false; // 새 판으로 다시 열려 있던 자리를 지킬 때 true
+const srvOn = () => net.on && net.server; // 수달섬 서버(가방 · 채집 · 싸움을 서버가 정함)에 붙어 있음
+const KEYED = new Map();
+for (const [list, p] of [[TREES, 'T'], [ROCKS, 'R'], [FLOWERS, 'F'], [BUSHES, 'B']]) list.forEach((r, i) => { r.key = p + i; KEYED.set(r.key, r); });
+const netSend = (o) => { if (net.on && net.ws && net.ws.readyState === 1) net.ws.send(JSON.stringify(o)); };
+const netRes = (r) => { if (r.key) netSend({ t: 'res', k: r.key }); }; // 다시 자라는 시간은 워커(REGEN · 접속 인원)가 정해 돌려줌
+// 살림(가방 · 조개 · 보관함 · 집 단계) 서버 저장 — 2026-11-17. 들어올 때 서버 것을 쓰고(다른 기기에서도 같게),
+// 끊겨 있는 동안 바뀐 게 있으면(netPending) 그때는 이 기기 것을 올린다
+let netPending = false;
+onSaved = () => { if (net.server) return; if (net.on) netSend({ t: 'save', inv: { money: S.money, bag: S.bag, chest: S.chest, tier: S.tier, tool: S.tool } }); else netPending = true; };
+function adoptInv(inv) {
+  S.mag = inv.mag || {}; S.money = inv.money; S.tier = Math.max(0, Math.min(3, inv.tier | 0)); S.tool = inv.tool || null;
+  S.bag = fit(inv.bag.slice(), BAG_N); S.chest = fit(inv.chest.slice(), HOUSES[S.tier].chest);
+  if (Number.isFinite(inv.hp)) setMyHp(inv.hp);
+  if (!mySet || mySet.tier !== S.tier) buildHouse(false); // 단계가 바뀐 때만 다시 지음
+  changed();
+}
+function netStatus(text, on) { const el = $('net'); el.querySelector('span').textContent = text; el.classList.toggle('on', !!on); }
+const countNow = () => netStatus(`함께 ${net.others.size + 1}명`, true);
+function applyRes(k, left) { const r = KEYED.get(k); if (!r || !(left > 0)) return; r.down = clock + left; if (r.wood != null) r.wood = 3; if (r.stone != null) r.stone = 3; wobbles.delete(r); hideRec(r); }
+const HOODS = [0x4d6aa6, 0xc0504d, 0x5a9a4a, 0xd9a03a, 0x8a5ab0, 0x3a9aa0, 0xd06a9a, 0x6a6a6a];
+const hashName = (s) => [...String(s)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
+const lookOf = (name) => { const h = hashName(name); return { ...OTTER, hood: HOODS[h % HOODS.length], fur: [0x8a5a3b, 0x7a4e30, 0x9a6844, 0x6e4a32][(h >> 4) % 4] }; };
+function addOther(p) {
+  removeOther(net.others.get(p.id));
+  const obj = makeOtter(lookOf(p.name)); obj.position.set(p.x, groundY(p.x, p.z), p.z); obj.rotation.y = p.f; scene.add(obj);
+  const tools = {}; for (const t of TOOLS) { tools[t] = heldModel(srcs[t]); obj.userData.hold.add(tools[t]); tools[t].visible = p.tl === t; }
+  const label = document.createElement('div'); label.className = 'tag'; label.textContent = p.name; document.body.appendChild(label);
+  net.others.set(p.id, { ...p, tx: p.x, tz: p.z, tf: p.f, s: 0, r: 0, phase: 0, actT: 0, sw: 0, ac: 0, obj, tools, label });
+}
+function removeOther(o) { if (!o) return; scene.remove(o.obj); o.label.remove(); net.others.delete(o.id); }
+function setHouse(name, plot, tier) {
+  if (name === net.name || !(plot >= 0 && plot < PLOTS.length)) return;
+  const old = net.houses.get(name);
+  if (old) { if (old.tier === tier && old.plot === plot) return; removeHouseSet(old); }
+  net.houses.set(name, { plot, tier, ...placeHouseSet(PLOTS[plot], Math.max(0, Math.min(3, tier | 0))) });
+  nudgeFree(); // 내 자리 위에 남의 집이 생기면 옆으로 비킴
+}
+function onNet(m) {
+  if (m.t === 'welcome') {
+    net.on = true; net.tries = 0; net.id = m.id; net.name = m.name;
+    for (const o of [...net.others.values()]) removeOther(o);
+    for (const p of m.players) addOther(p);
+    for (const h of m.houses) setHouse(h.name, h.plot, h.tier);
+    for (const [k, left] of Object.entries(m.res || {})) applyRes(k, left);
+    net.server = !!m.server; if (net.server) { me.x = m.x; me.z = m.z; me.speed = 0; fightWelcome(m); } // 자리는 서버가 정함(마지막 자리 10분 안 · 아니면 집 앞)
+    if (m.inv && (net.server || !netPending)) adoptInv(m.inv); else { dirty = true; flush(); } // 서버에 없거나(처음) 끊긴 동안 바뀌었으면 이 기기 것을 올림
+    netPending = false;
+    if (m.plot >= 0 && m.plot < PLOTS.length) { if (m.plot !== S.plot) { S.plot = m.plot; dirty = true; buildHouse(true); } }
+    else { if (mySet) { removeHouseSet(mySet); mySet = null; houseBox = null; CHEST_AT = { x: 1e4, z: 1e4 }; } toast('집터가 다 찼어요 — 부장님께 알려 주세요'); } // 남의 집터에 겹쳐 짓지 않음
+    countNow(); toast(`${m.name} 님, 수달섬에 오신 걸 환영해요!`);
+  } else if (m.t === 'join') { addOther(m); { const o = net.others.get(m.id); if (o && net.server) { o.hp = m.hp; o.alive = m.alive; updateTagHp(o); if (m.alive === false) layDown(o.obj, true); } } setHouse(m.name, m.plot, m.tier); countNow(); toast(`${m.name} 님이 들어왔어요`); }
+  else if (m.t === 'leave') { const o = net.others.get(m.id); if (o) { toast(`${o.name} 님이 나갔어요`); removeOther(o); } countNow(); }
+  else if (m.t === 'mv') {
+    const o = net.others.get(m.id); if (!o) return;
+    Object.assign(o, { tx: m.x, tz: m.z, tf: m.f, s: m.s, r: m.r });
+    if (m.ac !== o.ac) {
+      o.ac = m.ac; o.actT = o.actDur = ACT_T; o.sw = m.sw; o.fit = null;
+      const tr = m.an === 'shake' && KEYED.get(m.tk);
+      if (tr && TRUNK[tr.kind] && !tr.down) { o.sw = 'shake'; o.actT = o.actDur = SHAKE_T; o.fit = shakeFit(tr, m.x, m.z); wobble(tr, SHAKE_AMP); } // 같은 나무를 같은 박자로 흔듦
+    }
+    if (o.tl !== m.tl) { o.tl = m.tl; for (const t of TOOLS) o.tools[t].visible = m.tl === t; }
+  } else if (m.t === 'res') {
+    applyRes(m.k, m.left);
+    if (m.by === net.id && m.k[0] !== 'F') toast(m.k[0] === 'T' ? `나무가 쓰러졌어요 — ${Math.round(m.left)}초 뒤 다시 자라요` : `바위를 다 캤어요 — ${Math.round(m.left)}초 뒤 다시 생겨요`); // 내가 없앤 것 — 워커가 정한 시간으로 알림
+  }
+  else if (m.t === 'house') setHouse(m.name, m.plot, m.tier);
+  else if (m.t === 'err') netStatus('혼자 놀기 · ' + m.msg);
+  else if (m.t === 'inv') { adoptInv(m.inv); aim.reloading = 0; refreshGunHud(); } // 장전이 끝나면 inv 가 옴
+  else onNetFight(m); // got · msg · hp · died · respawn · sack · sackgone · fix (fight.js)
+}
+function connect() {
+  let token = ''; try { token = localStorage.getItem('bmc-token') || ''; } catch { /* 저장소 막힘 */ }
+  if (!token) { netStatus('혼자 놀기 · 홈페이지에서 로그인하면 함께'); return; }
+  netStatus('섬에 붙는 중…');
+  let ws; try { ws = new WebSocket(NET_URL); } catch { netStatus('혼자 놀기 · 섬에 못 붙음'); return; }
+  net.ws = ws;
+  ws.onopen = () => ws.send(JSON.stringify({ t: 'hi', token, x: me.x, z: me.z, f: me.face, tl: S.tool, tier: S.tier, keep: keepPos }));
+  ws.onmessage = (e) => { let m; try { m = JSON.parse(e.data); } catch { return; } onNet(m); };
+  ws.onclose = (e) => {
+    if (net.ws !== ws) return;
+    net.on = false; for (const o of [...net.others.values()]) removeOther(o);
+    if (net.server) { net.server = false; me.dead = false; layDown(me.obj, false); hpBox.hidden = true; for (const id of [...sacks.keys()]) removeSack(id); closeWin(); loadLocal(); } // 끊기면 누운 채 멈추지 않게(리뷰 9번) · 열린 창을 닫고 혼자 놀기 가방으로(3단계 리뷰 3 · 4번)
+    if (e.code === 4001) return netStatus('혼자 놀기 · 홈페이지에서 다시 로그인해 주세요');
+    if (e.code === 4002) return netStatus('다른 창에서 들어와서 이 창은 혼자 놀기');
+    netStatus('다시 붙는 중…'); setTimeout(connect, Math.min(30000, 2000 * 2 ** Math.min(4, net.tries++)));
+  };
+}
+const TAGV = new THREE.Vector3();
+function netTick(dt) {
+  fightTick(); gunTick(dt);
+  if (net.on && (net.sendT -= dt) <= 0) { // 움직일 때만 1초에 6번
+    const st = `${me.x.toFixed(2)},${me.z.toFixed(2)},${me.face.toFixed(2)},${S.tool},${net.ac}`;
+    if (st !== net.last) { net.sendT = 1 / 6; net.last = st; netSend({ t: 'mv', x: +me.x.toFixed(2), z: +me.z.toFixed(2), f: +me.face.toFixed(2), s: +me.speed.toFixed(2), r: me.run ? 1 : 0, ac: net.ac, sw: me.actSwing ? 1 : 0, an: me.actSwing === 'shake' ? 'shake' : me.actSwing ? 'swing' : 'pick', tk: me.actTree, tl: S.tool }); } // an: 동작 이름 · tk: 흔든 나무
+  }
+  const k = Math.min(1, dt * 8);
+  for (const o of net.others.values()) {
+    o.x += (o.tx - o.x) * k; o.z += (o.tz - o.z) * k;
+    let d = o.tf - o.f; d = Math.atan2(Math.sin(d), Math.cos(d)); o.f += d * k;
+    if (Math.hypot(o.tx - o.x, o.tz - o.z) < 0.03) o.s *= 1 - Math.min(1, dt * 6); // 멈추면 걸음도 멈춤
+    o.phase += dt * o.s * (o.r ? 2.2 : 2.9); o.actT -= dt;
+    const y = groundY(o.x, o.z); o.obj.position.set(o.x, y + (o.alive === false ? 0.22 : 0), o.z); o.obj.rotation.y = o.f;
+    animOtter(o.obj, o.phase, Math.min(1, o.s / WALK), !!o.r, clock + o.id, o.actT > 0 ? 1 - o.actT / (o.actDur || ACT_T) : -1, o.sw === 'shake' ? 'shake' : !!o.sw, o.fit);
+    gunPose(o.obj, o.tl); // 총을 들었으면 겨누는 팔
+    TAGV.set(o.x, y + 1.45, o.z).project(camera);
+    const vis = TAGV.z < 1 && Math.abs(TAGV.x) < 1.1 && Math.abs(TAGV.y) < 1.1;
+    o.label.style.display = vis ? '' : 'none';
+    if (vis) o.label.style.transform = `translate(${((TAGV.x + 1) / 2 * innerWidth).toFixed(0)}px, ${((1 - TAGV.y) / 2 * innerHeight).toFixed(0)}px) translate(-50%, -100%)`;
+  }
+}
+function heldModel(src) {
+  const o = src.clone(true), b = new THREE.Box3().setFromObject(o), sz = b.getSize(new THREE.Vector3()), k = 0.5 / Math.max(sz.x, sz.y, sz.z);
+  const inner = new THREE.Group(); inner.add(o); o.position.set(-(b.min.x + sz.x / 2), -b.min.y - sz.y * 0.2, -(b.min.z + sz.z / 2)); inner.scale.setScalar(k);
+  const g = new THREE.Group(); g.add(inner); g.rotation.x = Math.PI / 2; g.traverse((m) => { if (m.isMesh) m.castShadow = true; }); return g;
+}
