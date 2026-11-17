@@ -3,7 +3,7 @@
 const $ = (id) => document.getElementById(id);
 const ITEMS = { 열매: { sell: 15 }, 나뭇가지: { sell: 5 }, 꽃: { sell: 10 }, 풀: { sell: 3 }, 나무: { sell: 12 }, 돌: { sell: 14 }, 도끼: { buy: 300, tool: true }, 곡괭이: { buy: 400, tool: true } };
 const SELLABLE = ['열매', '나뭇가지', '꽃', '풀', '나무', '돌'], TOOLS = ['도끼', '곡괭이'];
-const REGEN_LOCAL = { T: 120, R: 100, F: 80 }; // 혼자 놀기(서버 없음)일 때만 쓰는 다시 자라는 시간 — 함께일 땐 워커 REGEN 이 정함
+const REGEN_LOCAL = { T: 120, R: 100, F: 80, E: 90 }; // 혼자 놀기(서버 없음)일 때만 쓰는 다시 자라는 시간 — 함께일 땐 워커 REGEN 이 정함
 const MATERIALS = ['나무', '돌']; // 건축 재료(집 올리기에 드는 것) — 일괄 판매에서 빼고 수량을 골라 판다
 const sellQty = {};
 const ic = (id) => `url(img/i-${id.replace(/ /g, '')}.webp)`;
@@ -53,7 +53,7 @@ function take(id, n, box = S.bag) {
   return true;
 }
 function changed() { dirty = true; if (S.tool && !count(S.tool)) S.tool = null; setHeld(); refreshHud(); if (!winEl.hidden) render(); }
-function gain(id, n = 1) { const left = put(S.bag, id, n), got = n - left; if (got) toast(`+${got} ${id}`, id); if (left) toast('가방이 가득 찼어요', '가방'); changed(); return got; }
+function gain(id, n = 1) { if ((id === '열매' || id === '나뭇가지') && shaking()) dropFromTree(me.actTree, id, n); const left = put(S.bag, id, n), got = n - left; if (got) toast(`+${got} ${id}`, id); if (left) toast('가방이 가득 찼어요', '가방'); changed(); return got; }
 function refreshHud() { $('moneyN').textContent = S.money.toLocaleString(); $('toolIc').style.backgroundImage = S.tool ? ic(S.tool) : ic('손'); }
 
 // 손에 든 도구 (모델은 시작할 때 붙임)
@@ -69,8 +69,8 @@ function cycleTool() {
 
 // 채집 대상 숨기기 · 되살리기 · 흔들기
 const ZERO = new THREE.Matrix4().makeScale(0, 0, 0);
-function hideRec(r) { r.im.setMatrixAt(r.i, ZERO); r.im.instanceMatrix.needsUpdate = true; if (r.circle) r.circle.off = true; }
-function showRec(r) { r.im.setMatrixAt(r.i, r.m); r.im.instanceMatrix.needsUpdate = true; if (r.circle) r.circle.off = false; }
+function hideRec(r) { r.im.setMatrixAt(r.i, ZERO); r.im.instanceMatrix.needsUpdate = true; if (r.circle) r.circle.off = true; blobOn(r, false); }
+function showRec(r) { r.im.setMatrixAt(r.i, r.m); r.im.instanceMatrix.needsUpdate = true; if (r.circle) r.circle.off = false; blobOn(r, true); }
 const wobbles = new Map(), WM = new THREE.Matrix4(), WR = new THREE.Matrix4();
 const wobAmp = new Map(), wobble = (r, amp = WOB_AMP) => { wobbles.set(r, 0.6); wobAmp.set(r, amp); };
 
@@ -85,12 +85,13 @@ function findTarget() {
   see('chest', null, CHEST_AT.x, CHEST_AT.z, 1.7);
   for (const r of FLOWERS) if (!r.down) see('flower', r, r.x, r.z, 0.9);
   for (const r of BUSHES) see('bush', r, r.x, r.z, 1.3);
+  for (const r of BERRIES) if (!r.down) see('berry', r, r.x, r.z, 1.3, 0.05); // 열매가 달렸으면 풀보다 먼저
   for (const r of TREES) if (!r.down) see('tree', r, r.x, r.z, 1.35);
   for (const r of ROCKS) if (!r.down) see('rock', r, r.x, r.z, 0.95 + r.circle.r);
   fightTargets(see); // 다른 수달(때리기) · 자루(줍기) — fight.js
   return best;
 }
-const labelOf = (t) => !t ? '줍기/쓰기' : { shop: '가게 열기', chest: '보관함', house: '집 올리기', flower: '꽃 꺾기', bush: '풀 뜯기', otter: S.tool === '도끼' ? '도끼로 치기' : '때리기', sack: '자루 줍기' }[t.type]
+const labelOf = (t) => !t ? '줍기/쓰기' : { shop: '가게 열기', chest: '보관함', house: '집 올리기', flower: '꽃 꺾기', bush: '풀 뜯기', berry: '열매 따기', otter: S.tool === '도끼' ? '도끼로 치기' : '때리기', sack: '자루 줍기' }[t.type]
   || (t.type === 'tree' ? (S.tool === '도끼' ? '나무 베기' : '나무 흔들기') : S.tool === '곡괭이' ? '돌 캐기' : '곡괭이 필요');
 
 let actCool = 0;
@@ -114,10 +115,11 @@ function doAction() {
   }
   if (srvOn()) { // 서버가 결과를 정함 — 동작 · 흔들림만 보이고 요청을 보냄(가방은 서버 inv 로 바뀜)
     if (t.type === 'rock' && S.tool !== '곡괭이') { toast('곡괭이가 있어야 캘 수 있어요', '곡괭이'); me.actT = 0; return; }
-    if (t.type === 'tree') wobble(r, S.tool === '도끼' ? WOB_AMP : SHAKE_AMP); else if (t.type === 'bush') wobble(r);
+    if (t.type === 'tree') wobble(r, S.tool === '도끼' ? WOB_AMP : SHAKE_AMP); else if (t.type === 'bush') wobble(r); else if (t.type === 'berry') wobble(r.bush);
     netSend({ t: 'act', k: r.key }); return;
   }
   if (t.type === 'flower') { r.down = clock + REGEN_LOCAL.F; hideRec(r); netRes(r); gain('꽃'); }
+  else if (t.type === 'berry') { wobble(r.bush); r.down = clock + REGEN_LOCAL.E; hideRec(r); netRes(r); gain('열매', 2); }
   else if (t.type === 'bush') { wobble(r); if (clock < r.next) toast('아직 풀이 덜 자랐어요', '풀'); else { r.next = clock + 60; gain('풀', 2); } }
   else if (t.type === 'tree') {
     wobble(r, S.tool === '도끼' ? WOB_AMP : SHAKE_AMP); // 맨손 흔들기는 크게
@@ -138,7 +140,7 @@ function life(dt) {
   }
   if ((regrowT -= dt) <= 0) {
     regrowT = 1;
-    for (const r of [...TREES, ...ROCKS, ...FLOWERS]) if (r.down && clock > r.down && Math.hypot(r.x - me.x, r.z - me.z) > 3 && ![...net.others.values()].some((o) => Math.hypot(r.x - o.x, r.z - o.z) < 3)) { r.down = 0; showRec(r); } // 누가 서 있으면 다시 자라지 않음
+    for (const r of [...TREES, ...ROCKS, ...FLOWERS, ...BERRIES]) if (r.down && clock > r.down && Math.hypot(r.x - me.x, r.z - me.z) > 3 && ![...net.others.values()].some((o) => Math.hypot(r.x - o.x, r.z - o.z) < 3)) { r.down = 0; showRec(r); } // 누가 서 있으면 다시 자라지 않음
   }
   if ((tgtT -= dt) <= 0) {
     tgtT = 0.12; target = winEl.hidden ? findTarget() : null;
@@ -242,9 +244,9 @@ let mySet = null, houseBox = null, npc = null;
 function placeHouseSet(at, tier) {
   const H = HOUSES[tier], obj = placeModel(srcs[H.model], at.x, at.z, 0, H.h, 'b'), box = boxes[boxes.length - 1];
   const chest = placeModel(srcs['보관함'], at.x + 3.6, at.z + 3.4, -20, 0.75, 'c'), circle = circles[circles.length - 1];
-  return { obj, box, chest, circle };
+  return { obj, box, chest, circle, blob: houseBlob(box) };
 }
-function removeHouseSet(h) { scene.remove(h.obj); scene.remove(h.chest); boxes.splice(boxes.indexOf(h.box), 1); circles.splice(circles.indexOf(h.circle), 1); }
+function removeHouseSet(h) { scene.remove(h.obj); scene.remove(h.chest); if (h.blob) scene.remove(h.blob); boxes.splice(boxes.indexOf(h.box), 1); circles.splice(circles.indexOf(h.circle), 1); }
 function buildHouse(goHome = false) {
   if (mySet) removeHouseSet(mySet);
   HOUSE_AT = PLOTS[S.plot]; CHEST_AT = { x: HOUSE_AT.x + 3.6, z: HOUSE_AT.z + 3.4 };
