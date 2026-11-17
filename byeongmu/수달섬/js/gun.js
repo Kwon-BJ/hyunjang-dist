@@ -75,7 +75,7 @@ function gunMeshFor(src, g) {
   const long = sz.x >= sz.z ? 'x' : 'z', k = GUN_INFO[g].len / Math.max(sz.x, sz.z);
   const inner = new THREE.Group(); inner.add(o); o.position.set(-c.x, -c.y, -c.z); inner.scale.setScalar(k);
   if (long === 'x') inner.rotation.y = -Math.PI / 2; // 긴 쪽을 앞(+z)으로
-  const grp = new THREE.Group(); grp.add(inner); grp.position.set(0.1, 0.62, 0.32 + GUN_INFO[g].len * 0.25); grp.traverse((m) => { if (m.isMesh) m.castShadow = true; });
+  const grp = new THREE.Group(); grp.add(inner); grp.position.set(0.08, 0.37, 0.24 + GUN_INFO[g].len * 0.25); // 새 수달: 머리 밑 · 몸통 앞(가방은 등) grp.traverse((m) => { if (m.isMesh) m.castShadow = true; });
   return grp;
 }
 function ensureGuns(obj) {
