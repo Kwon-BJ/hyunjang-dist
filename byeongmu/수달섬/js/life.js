@@ -2,7 +2,7 @@
 // ───────── 살림: 가방 · 조개 · 채집 · 상점 · 집 · 보관함 · 저장 (2026-11-17 · 창은 ChatGPT 시안대로) ─────────
 const $ = (id) => document.getElementById(id);
 const ITEMS = { 열매: { sell: 15 }, 나뭇가지: { sell: 5 }, 꽃: { sell: 10 }, 풀: { sell: 3 }, 나무: { sell: 12 }, 돌: { sell: 14 }, 도끼: { buy: 300, tool: true }, 곡괭이: { buy: 400, tool: true } };
-const SELLABLE = ['열매', '나뭇가지', '꽃', '풀', '나무', '돌'], TOOLS = ['도끼', '곡괭이'];
+const SELLABLE = ['열매', '나뭇가지', '꽃', '풀', '나무', '돌'], TOOLS = ['도끼', '곡괭이', '낚싯대']; // 낚싯대(6단계)는 함께일 때만 팜
 const REGEN_LOCAL = { T: 120, R: 100, F: 80, E: 90 }; // 혼자 놀기(서버 없음)일 때만 쓰는 다시 자라는 시간 — 함께일 땐 워커 REGEN 이 정함
 const MATERIALS = ['나무', '돌']; // 건축 재료(집 올리기에 드는 것) — 일괄 판매에서 빼고 수량을 골라 판다
 const sellQty = {};
@@ -60,7 +60,7 @@ function refreshHud() { $('moneyN').textContent = S.money.toLocaleString(); $('t
 const held = {};
 function setHeld() { for (const t of TOOLS) if (held[t]) held[t].visible = S.tool === t; }
 function cycleTool() {
-  const opts = [null, ...[...TOOLS, ...GUNS].filter((t) => count(t))]; // 총도 손에 들 수 있음
+  const opts = [null, ...[...TOOLS, ...GUNS, ...TRAP_ITEMS].filter((t) => count(t))]; // 총도 손에 들 수 있음
   if (opts.length === 1) { toast('도구가 없어요 — 상점에서 살 수 있어요', '손'); return; }
   const nextTool = opts[(opts.indexOf(S.tool) + 1) % opts.length];
   if (srvOn()) { netSend({ t: 'equip', tool: nextTool }); toast(nextTool ? `${nextTool}를 들었어요` : '맨손이에요', nextTool || '손'); return; }
@@ -82,26 +82,33 @@ function findTarget() {
   const see = (type, rec, x, z, reach, bonus = 0) => { const d = Math.hypot(x - fx, z - fz); if (d < reach && d - bonus < bd) { bd = d - bonus; best = { type, rec, x, z }; } }; // bonus: 가까운 꽃보다 먼저 잡을 것(싸움 상대 · 자루)
   if (houseBox) { const b = houseBox, cx = Math.max(b.x0, Math.min(b.x1, me.x)), cz = Math.max(b.z0, Math.min(b.z1, me.z)); if (Math.hypot(me.x - cx, me.z - cz) < 1.3) { bd = 0.5; best = { type: 'house', x: cx, z: cz }; } }
   see('shop', null, SHOP_AT.x, SHOP_AT.z, 2.0);
-  see('chest', null, CHEST_AT.x, CHEST_AT.z, 1.7);
+  if (!(typeof HSTATE !== 'undefined' && (HSTATE.get(net.name) || {}).broken)) see('chest', null, CHEST_AT.x, CHEST_AT.z, 1.7); // 부서진 집 보관함은 고친 뒤에
   for (const r of FLOWERS) if (!r.down) see('flower', r, r.x, r.z, 0.9);
+  if (S.tool === '낚싯대') for (const r of FISH_SPOTS) if (!r.down) see('fish', r, r.x, r.z, 1.6, 0.1); // 낚시 자리(6단계)
   for (const r of BUSHES) see('bush', r, r.x, r.z, 1.3);
   for (const r of BERRIES) if (!r.down) see('berry', r, r.x, r.z, 1.3, 0.05); // 열매가 달렸으면 풀보다 먼저
   for (const r of TREES) if (!r.down) see('tree', r, r.x, r.z, 1.35);
   for (const r of ROCKS) if (!r.down) see('rock', r, r.x, r.z, 0.95 + r.circle.r);
   fightTargets(see); // 다른 수달(때리기) · 자루(줍기) — fight.js
+  raidTargets(see); // 남의 집 치기(7단계) — house.js
+  trapTargets(see); // 함정 놓기 · 탄약 · 부수기(8단계) — trap.js
   return best;
 }
-const labelOf = (t) => !t ? '줍기/쓰기' : { shop: '가게 열기', chest: '보관함', house: '집 올리기', flower: '꽃 꺾기', bush: '풀 뜯기', berry: '열매 따기', otter: S.tool === '도끼' ? '도끼로 치기' : '때리기', sack: '자루 줍기' }[t.type]
+const labelOf = (t) => !t ? '줍기/쓰기' : (typeof trapLabel === 'function' && trapLabel(t)) || { shop: '가게 열기', chest: '보관함', house: '집 올리기', flower: '꽃 꺾기', bush: '풀 뜯기', berry: '열매 따기', fish: '낚시하기', raid: S.tool === '도끼' ? '집 부수기' : '집 치기', otter: S.tool === '도끼' ? '도끼로 치기' : '때리기', sack: '자루 줍기' }[t.type]
   || (t.type === 'tree' ? (S.tool === '도끼' ? '나무 베기' : '나무 흔들기') : S.tool === '곡괭이' ? '돌 캐기' : '곡괭이 필요');
 
 let actCool = 0;
 function doAction() {
-  if (!winEl.hidden || actCool > 0 || me.dead) return;
+  if (!winEl.hidden || me.dead) return;
+  if (fishAction()) return; // 낚시 중이면 연타 · 거두기(쿨타임 없음 — 연타 검사는 서버)
+  if (actCool > 0) return;
   const t = target = findTarget();
   if (!t) { toast('가까이에 할 수 있는 것이 없어요'); return; }
   actCool = 0.4; me.face = Math.atan2(t.x - me.x, t.z - me.z);
   const r = t.rec;
   if (t.type === 'shop') return openWin('shop');
+  if (t.type === 'raid') return raidAction(t); // 7단계
+  if ((t.type === 'place' || t.type === 'tload' || t.type === 'trap') && trapAction(t)) return; // 8단계
   if (t.type === 'house') return openWin('house');
   if (t.type === 'chest') return openWin('chest');
   if (t.type === 'otter' || t.type === 'sack') return fightAction(t);
@@ -144,7 +151,7 @@ function life(dt) {
   }
   if ((tgtT -= dt) <= 0) {
     tgtT = 0.12; target = winEl.hidden ? findTarget() : null;
-    const L = labelOf(target); if ($('actTxt').textContent !== L) $('actTxt').textContent = L; $('actBtn').classList.toggle('off', !target);
+    const L = fishLabel() || labelOf(target); if ($('actTxt').textContent !== L) $('actTxt').textContent = L; $('actBtn').classList.toggle('off', !target && !fishing.st);
   }
   if (npc) animOtter(npc, 0, 0, false, clock + 3);
 }
@@ -160,7 +167,7 @@ const price = (n) => `<span class="pr"><i class="ic"></i>${n.toLocaleString()}</
 function render() {
   frameEl.classList.toggle('wide', view === 'chest');
   const H = HOUSES[S.tier];
-  const [title, tic] = { bag: ['가방', '가방'], shop: ['수달 상점', '조개'], house: ['집 올리기', H.model], chest: ['보관함', H.model] }[view];
+  const [title, tic] = { bag: ['가방', '가방'], shop: ['수달 상점', '조개'], house: ['내 집', H.model], chest: ['보관함', H.model], raids: ['습격 기록', H.model] }[view];
   $('winTitle').textContent = title; $('winIc').style.backgroundImage = ic(tic);
   let h = '';
   if (view === 'bag') {
@@ -191,6 +198,8 @@ function render() {
         <div class="mats">${need.map(([k, v]) => `<div class="mat${have(k) >= v ? '' : ' lack'}"><i class="ic" style="background-image:${ic(k)}"></i><b>${k} ${Math.min(have(k), v).toLocaleString()}/${v.toLocaleString()}</b></div>`).join('')}</div>
         <div class="foot"><button type="button" class="gbtn" id="upBtn" ${okAll ? '' : 'disabled'}><i class="ic" style="background-image:${ic(N.model)}"></i>올리기</button></div>`;
     }
+    h = houseHpHtml() + h; // 내구도 · 고치기(7단계)
+  } else if (view === 'raids') { h = raidsHtml();
   } else if (view === 'chest') {
     h = `<div class="two"><div><h4>가방 (누르면 보관함으로)</h4><div class="grid">${slotsHtml(S.bag, 'bagc')}</div></div><div><h4>보관함 ${S.chest.length}칸 (누르면 가방으로)</h4><div class="grid chestgrid">${slotsHtml(S.chest, 'chest')}</div></div></div>`;
   }
@@ -208,6 +217,8 @@ bodyEl.addEventListener('click', (e) => {
     if (b.id === 'sellAll') return netSend({ t: 'sellall' });
     if (b.dataset.buy) return netSend({ t: 'buy', id: b.dataset.buy });
     if (b.id === 'upBtn') return netSend({ t: 'up' });
+    if (b.id === 'repairBtn') return netSend({ t: 'repair' });
+    if (b.id === 'raidsBtn') return openWin('raids');
   }
   if (b.dataset.box === 'bag') { const i = +b.dataset.i, s = S.bag[i]; sel = i; trashArm = 0; if (s && ITEMS[s.id].tool) { S.tool = S.tool === s.id ? null : s.id; toast(S.tool ? `${S.tool}를 들었어요` : '맨손이에요', S.tool || '손'); return changed(); } return render(); }
   if (b.dataset.box === 'bagc' || b.dataset.box === 'chest') { // 한 묶음 통째로 옮김
