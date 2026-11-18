@@ -1,12 +1,21 @@
 // 수달섬 — 살림(가방 · 조개 · 채집 · 상점 · 집 · 보관함 · 저장) (2026-11-17 수달섬 index.html 에서 나눔 · 보통 스크립트: 다른 파일과 맨 위 이름을 함께 씀)
 // ───────── 살림: 가방 · 조개 · 채집 · 상점 · 집 · 보관함 · 저장 (2026-11-17 · 창은 ChatGPT 시안대로) ─────────
 const $ = (id) => document.getElementById(id);
-const ITEMS = { 열매: { sell: 15 }, 나뭇가지: { sell: 5 }, 꽃: { sell: 10 }, 풀: { sell: 3 }, 나무: { sell: 12, buy: 200 }, 돌: { sell: 14, buy: 220 }, 도끼: { buy: 300, tool: true }, 곡괭이: { buy: 400, tool: true }, 텐트: { buy: 5000, tool: true }, 보관함: { buy: 1500 } }; // 텐트 · 나무 · 돌 묶음 · 보관함 늘리기(B단계 · 서버 config 와 같게)
+const ITEMS = { 열매: { sell: 15 }, 나뭇가지: { sell: 5 }, 꽃: { sell: 10 }, 풀: { sell: 3 }, 나무: { sell: 12, buy: 200 }, 돌: { sell: 14, buy: 220 }, 도끼: { buy: 300, tool: true }, 곡괭이: { buy: 400, tool: true }, 텐트: { buy: 5000, tool: true }, 보관함: { buy: 1500 }, 모닥불: { buy: 600, tool: true }, 생선구이: { buy: 150 }, 열매꼬치: {}, 열매잼: {}, 생선수프: {}, 꽃차: {}, 모둠구이: {} };
+ITEMS.열매.buy = 120;
+// 먹을 것 · 요리(서버 config.foods · recipes 와 같게 — 창에 보여 주기용)
+const FOODS = { 열매: { e: 6 }, 생선구이: { e: 25 }, 열매꼬치: { e: 14 }, 열매잼: { e: 20, buff: '빠르게' }, 생선수프: { e: 45, buff: '덜 다침' }, 꽃차: { e: 15, buff: '모닥불 회복 2배' }, 모둠구이: { e: 40, buff: '채집 빨리' } };
+const RECIPES = { 생선구이: [['생선', 1], ['나뭇가지', 1]], 열매꼬치: [['열매', 2], ['나뭇가지', 1]], 열매잼: [['열매', 3], ['꽃', 1]], 생선수프: [['생선', 2], ['풀', 1]], 꽃차: [['꽃', 2], ['풀', 1]], 모둠구이: [['생선', 1], ['열매', 2], ['꽃', 1]] };
+const FISH_KINDS = ['금붕어', '비단잉어', '도미', '넙치'];
+const haveOf = (k) => (k === '생선' ? FISH_KINDS.reduce((n, id) => n + count(id), 0) : count(k));
+let MARKET = null; // 물고기 시세(서버가 보냄)
+const BUFF = {}; // 버프 끝나는 시각(clock) — 서버 'buff' 말로 // 텐트 · 나무 · 돌 묶음 · 보관함 늘리기(B단계 · 서버 config 와 같게)
 const SELLABLE = ['열매', '나뭇가지', '꽃', '풀', '나무', '돌'], TOOLS = ['도끼', '곡괭이', '낚싯대']; // 낚싯대(6단계)는 함께일 때만 팜
 const REGEN_LOCAL = { T: 120, R: 100, F: 80, E: 90 }; // 혼자 놀기(서버 없음)일 때만 쓰는 다시 자라는 시간 — 함께일 땐 워커 REGEN 이 정함
 const MATERIALS = ['나무', '돌']; // 건축 재료(집 올리기에 드는 것) — 일괄 판매에서 빼고 수량을 골라 판다
 const sellQty = {};
-const ic = (id) => `url(img/i-${id.replace(/ /g, '')}.webp)`;
+const ICON_ALIAS = { 생선구이: '도미', 열매꼬치: '열매', 열매잼: '열매', 생선수프: '넙치', 꽃차: '꽃', 모둠구이: '비단잉어', 모닥불: '나무' }; // 그림이 아직 없는 것(요리 · 모닥불) — 재료 그림을 빌림
+const ic = (id) => `url(img/i-${(ICON_ALIAS[id] || id).replace(/ /g, '')}.webp)`;
 const BAG_N = 16, STACK = 30, ACT_T = 0.45;
 const HOUSES = [
   { name: '텐트', model: '텐트', h: 1.9, chest: 8 },
@@ -100,9 +109,10 @@ function findTarget() {
   fightTargets(see); // 다른 수달(때리기) · 자루(줍기) — fight.js
   raidTargets(see); // 남의 집 치기(7단계) — house.js
   trapTargets(see); // 함정 놓기 · 탄약 · 부수기(8단계) — trap.js
+  cookTargets(see); // 모닥불 옆 요리(D단계)
   return best;
 }
-const labelOf = (t) => !t ? '줍기/쓰기' : (typeof trapLabel === 'function' && trapLabel(t)) || (t.type === 'pitch' ? (t.rec.why ? '여기는 못 쳐요' : '텐트 치기') : null) || { shop: t.rec && SHOPS[t.rec] && SHOPS[t.rec].color ? '자판기 열기' : '가게 열기', chest: '보관함', house: '집 올리기', flower: '꽃 꺾기', bush: '풀 뜯기', berry: '열매 따기', fish: '낚시하기', raid: S.tool === '도끼' ? '집 부수기' : '집 치기', otter: S.tool === '도끼' ? '도끼로 치기' : '때리기', sack: '자루 줍기' }[t.type]
+const labelOf = (t) => !t ? '줍기/쓰기' : (typeof trapLabel === 'function' && trapLabel(t)) || (t.type === 'pitch' ? (t.rec.why ? '여기는 못 쳐요' : '텐트 치기') : null) || (t.type === 'cook' ? '요리하기' : null) || { shop: t.rec && SHOPS[t.rec] && SHOPS[t.rec].color ? '자판기 열기' : '가게 열기', chest: '보관함', house: '집 올리기', flower: '꽃 꺾기', bush: '풀 뜯기', berry: '열매 따기', fish: '낚시하기', raid: S.tool === '도끼' ? '집 부수기' : '집 치기', otter: S.tool === '도끼' ? '도끼로 치기' : '때리기', sack: '자루 줍기' }[t.type]
   || (t.type === 'tree' ? (S.tool === '도끼' ? '나무 베기' : '나무 흔들기') : S.tool === '곡괭이' ? '돌 캐기' : '곡괭이 필요');
 
 let actCool = 0;
@@ -112,10 +122,11 @@ function doAction() {
   if (actCool > 0) return;
   const t = target = findTarget();
   if (!t) { if (S.tool === '텐트' && !S.home && PITCH.why) return toast(PITCH.why, '텐트'); toast('가까이에 할 수 있는 것이 없어요'); return; }
-  actCool = 0.4; me.face = Math.atan2(t.x - me.x, t.z - me.z);
+  actCool = 0.4 * ((BUFF.quick || 0) > clock ? 0.7 : 1); me.face = Math.atan2(t.x - me.x, t.z - me.z); // 모둠구이 버프
   const r = t.rec;
   if (t.type === 'shop') { shopKind = t.rec; if (!SHOPS[shopKind].sell) tab = 'buy'; return openWin('shop'); }
   if (t.type === 'pitch') return pitchAction(t.rec);
+  if (t.type === 'cook') return openWin('cook');
   if (t.type === 'raid') return raidAction(t); // 7단계
   if ((t.type === 'place' || t.type === 'tload' || t.type === 'trap') && trapAction(t)) return; // 8단계
   if (t.type === 'house') return openWin('house');
@@ -178,22 +189,23 @@ const price = (n) => `<span class="pr"><i class="ic"></i>${n.toLocaleString()}</
 function render() {
   frameEl.classList.toggle('wide', view === 'chest');
   const H = HOUSES[S.tier];
-  const [title, tic] = { bag: ['가방', '가방'], shop: [(SHOPS[shopKind] || SHOPS.tool).name, '조개'], house: ['내 집', H.model], chest: ['보관함', H.model], raids: ['습격 기록', H.model], settings: ['설정', '손'] }[view];
+  const [title, tic] = { bag: ['가방', '가방'], shop: [(SHOPS[shopKind] || SHOPS.tool).name, '조개'], house: ['내 집', H.model], chest: ['보관함', H.model], raids: ['습격 기록', H.model], settings: ['설정', '손'], cook: ['요리', '도미'] }[view];
   $('winTitle').textContent = title; $('winIc').style.backgroundImage = ic(tic);
   let h = '';
   if (view === 'bag') {
     const s = S.bag[sel];
-    h = `<div class="grid">${slotsHtml(S.bag, 'bag')}</div><div class="foot"><button type="button" class="bbtn" id="trash" ${s ? '' : 'disabled'}><i class="ic" style="background-image:${ic('쓰레기통')}"></i>${trashArm ? '한 번 더 누르면 버려요' : '버리기'}</button></div>`;
+    const food = s && FOODS[s.id];
+    h = `<div class="grid">${slotsHtml(S.bag, 'bag')}</div><div class="${food || (s && FISH_KINDS.includes(s.id)) ? 'qsel' : 'foot'}">${food ? `<button type="button" class="gbtn" id="eatBtn">먹기 +${food.e}${food.buff ? ' · ' + food.buff : ''}</button>` : s && FISH_KINDS.includes(s.id) ? '<span class="pk">날생선은 모닥불에서 익혀요</span>' : ''}<button type="button" class="bbtn" id="trash" ${s ? '' : 'disabled'}><i class="ic" style="background-image:${ic('쓰레기통')}"></i>${trashArm ? '한 번 더 누르면 버려요' : '버리기'}</button></div>`;
   } else if (view === 'shop') {
     if (!(SHOPS[shopKind] || SHOPS.tool).sell) tab = 'buy'; // 자판기는 사기만(팔기는 도구 상점 상인)
     h = (SHOPS[shopKind] || SHOPS.tool).sell ? `<div class="tabs"><button type="button" class="tab${tab === 'sell' ? ' on' : ''}" data-tab="sell">팔기</button><button type="button" class="tab${tab === 'buy' ? ' on' : ''}" data-tab="buy">사기</button></div>` : '';
     if (tab === 'sell') {
       const list = SELLABLE.filter((id) => count(id));
       // 건축 재료(나무 · 돌)는 수량을 골라 따로 판다 · 나머지는 줄마다 전부 팔기 + 탭 바로 아래 「재료 빼고 모두 팔기」 (2026-11-17 문파원 불만 · 가로 휴대폰에서 안 내려도 보이게 위로)
-      const bulk = SELLABLE.filter((id) => !MATERIALS.includes(id)).reduce((n, id) => n + count(id) * ITEMS[id].sell, 0);
+      const bulk = SELLABLE.filter((id) => !MATERIALS.includes(id)).reduce((n, id) => n + count(id) * sellOf(id), 0);
       if (list.length) h += `<div class="foot bulk"><button type="button" class="bbtn" id="sellAll" ${bulk ? '' : 'disabled'}>재료 빼고 모두 팔기 +${bulk.toLocaleString()}</button></div>`;
       h += list.length ? list.map((id) => {
-        if (!MATERIALS.includes(id)) return `<div class="row"><i class="ic" style="background-image:${ic(id)}"></i><span class="nm">${id}<small>×${count(id)}</small></span>${price(ITEMS[id].sell)}<button type="button" class="bbtn" data-sell="${id}">팔기</button></div>`;
+        if (!MATERIALS.includes(id)) return `<div class="row"><i class="ic" style="background-image:${ic(id)}"></i><span class="nm">${id}<small>×${count(id)}${mkTag(id)}</small></span>${price(sellOf(id))}<button type="button" class="bbtn" data-sell="${id}">팔기</button></div>`;
         const q = Math.max(1, Math.min(count(id), sellQty[id] || 1)); sellQty[id] = q;
         return `<div class="row mat-row"><i class="ic" style="background-image:${ic(id)}"></i><span class="nm">${id}<small>×${count(id)}</small></span>${price(ITEMS[id].sell)}<div class="mat-line"><span class="qty"><button type="button" class="bbtn" data-qty="${id}" data-d="-1" ${q <= 1 ? 'disabled' : ''}>−</button><b>${q}</b><button type="button" class="bbtn" data-qty="${id}" data-d="1" ${q >= count(id) ? 'disabled' : ''}>+</button></span><button type="button" class="bbtn" data-sellq="${id}">${q}개 팔기</button></div></div>`; // 둘째 줄에 수량 · 팔기(좁은 휴대폰에서 넘치지 않게)
       }).join('') : '<div class="empty">팔 물건이 없어요. 섬에서 모아 오세요!</div>';
@@ -210,7 +222,10 @@ function render() {
         <div class="mats">${need.map(([k, v]) => `<div class="mat${have(k) >= v ? '' : ' lack'}"><i class="ic" style="background-image:${ic(k)}"></i><b>${k} ${Math.min(have(k), v).toLocaleString()}/${v.toLocaleString()}</b></div>`).join('')}</div>
         <div class="foot"><button type="button" class="gbtn" id="upBtn" ${okAll ? '' : 'disabled'}><i class="ic" style="background-image:${ic(N.model)}"></i>올리기</button></div>`;
     }
+    if (S.tier === 0 && S.homeAt && DECAY_H) { const left = Math.max(0, S.homeAt + DECAY_H * 3600e3 - Date.now()) / 3600e3; h += `<div class="empty">텐트는 ${left >= 1 ? Math.floor(left) + '시간' : Math.ceil(left * 60) + '분'} 뒤 낡아 사라져요 — 오두막으로 올리면 그대로예요</div>`; }
     h = houseHpHtml() + h + `<div class="foot"><button type="button" class="bbtn" id="moveBtn">${moveArm ? '한 번 더 누르면 접어요' : '텐트로 접기 (이사)'}</button></div>`; // 내구도 · 고치기(7단계) · 이사(B단계)
+  } else if (view === 'cook') {
+    h = Object.entries(RECIPES).map(([id, need]) => { const okk = need.every(([k, n]) => haveOf(k) >= n), F = FOODS[id]; return `<div class="row mat-row"><i class="ic" style="background-image:${ic(id)}"></i><span class="nm">${id}<small>+${F.e}${F.buff ? ' · ' + F.buff : ''}</small></span><div class="mat-line"><span class="need">${need.map(([k, n]) => `${k} ${Math.min(haveOf(k), n)}/${n}`).join(' · ')}</span><button type="button" class="bbtn" data-cook="${id}" ${okk ? '' : 'disabled'}>만들기</button></div></div>`; }).join('') + '<div class="empty">생선 = 물고기 아무거나 · 모닥불 옆에 있으면 에너지가 차요</div>';
   } else if (view === 'settings') { const NM = { auto: '자동', low: '저사양', high: '고사양' };
     h = `<div class="empty">그래픽 품질 — 지금 ${NM[qMode]}${qMode === 'auto' ? ` (${['저사양', '보통', '고사양'][quality.level]})` : ''}</div><div class="qsel">${['auto', 'low', 'high'].map((m) => `<button type="button" class="${m === qMode ? 'gbtn' : 'bbtn'}" data-q="${m}">${NM[m]}</button>`).join('')}</div><div class="empty">저사양: 빠르게(효과 · 그림자 줄임) · 고사양: 부드러운 그림자 · 불빛 번짐 · 흐림 · 조명 많이</div>`;
   } else if (view === 'raids') { h = raidsHtml();
@@ -235,8 +250,11 @@ bodyEl.addEventListener('click', (e) => {
     if (b.id === 'repairBtn') return netSend({ t: 'repair' });
     if (b.id === 'raidsBtn') return openWin('raids');
     if (b.id === 'moveBtn') { if (!moveArm) return armMove(); moveArm = 0; return netSend({ t: 'unpitch' }); }
+    if (b.id === 'eatBtn') return netSend({ t: 'eat', i: sel });
+    if (b.dataset.cook) return netSend({ t: 'cook', r: b.dataset.cook });
   }
   if (b.id === 'moveBtn') { if (!moveArm) return armMove(); moveArm = 0; return movePack(); } // 혼자 놀기 이사
+  if (b.id === 'eatBtn' || b.dataset.cook) return toast('먹기 · 요리는 홈페이지에서 로그인해 함께일 때 돼요', '열매'); // 혼자 놀기엔 에너지가 없음
   if (b.dataset.box === 'bag') { const i = +b.dataset.i, s = S.bag[i]; sel = i; trashArm = 0; if (s && ITEMS[s.id].tool) { S.tool = S.tool === s.id ? null : s.id; toast(S.tool ? `${S.tool}를 들었어요` : '맨손이에요', S.tool || '손'); return changed(); } return render(); }
   if (b.dataset.box === 'bagc' || b.dataset.box === 'chest') { // 한 묶음 통째로 옮김
     const from = b.dataset.box === 'chest' ? S.chest : S.bag, to = from === S.chest ? S.bag : S.chest, i = +b.dataset.i, s = from[i]; if (!s) return;
@@ -294,7 +312,7 @@ function nudgeFree() {
 }
 
 // ───────── 가게 · 자판기 줄 · 혼자 놀기 사기 (B단계) ─────────
-const MATPACK = { 나무: 10, 돌: 10 }; // 자판기 수리 재료 묶음(서버 config.matPack 과 같게)
+const MATPACK = { 나무: 10, 돌: 10, 열매: 5 }; // 자판기 수리 재료 묶음(서버 config.matPack 과 같게)
 function buyRow(id) {
   const cost = ITEMS[id].buy, pk = PACK[id] ? `${PACK[id]}발 묶음` : MATPACK[id] ? `${MATPACK[id]}개 묶음` : '';
   if (id === '보관함') { const full = (S.extra | 0) >= 2, no = !S.home; return `<div class="row"><i class="ic" style="background-image:${ic(HOUSES[S.tier].model)}"></i><span class="nm">보관함 늘리기<small class="pk">+8칸 · ${S.extra | 0}/2</small></span>${price(cost)}<button type="button" class="bbtn" data-buy="보관함" ${full || no || S.money < cost ? 'disabled' : ''}>${full ? '다 늘림' : no ? '집 먼저' : '사기'}</button></div>`; }
@@ -365,4 +383,15 @@ function tentGhostTick() {
   const p = pitchSpot(), good = !p.why;
   ghost.g.visible = true; ghost.g.position.set(p.x, Math.max(0, height(p.x, p.z)), p.z);
   if (ghost.last !== good) { ghost.last = good; for (const m of ghost.meshes) m.material = good ? ghost.ok : ghost.no; ghost.ring.material = good ? ghost.okRing : ghost.noRing; }
+}
+
+// ───────── 요리 · 시세 · 부식 (D단계) ─────────
+let DECAY_H = 0; // 텐트 부식 시간(서버가 보냄)
+const sellOf = (id) => (MARKET && MARKET[id] ? Math.max(1, Math.round(ITEMS[id].sell * MARKET[id])) : ITEMS[id].sell);
+const mkTag = (id) => { if (!MARKET || !MARKET[id]) return ''; const d = Math.round((MARKET[id] - 1) * 100); return d ? ` <b class="${d > 0 ? 'up' : 'dn'}">${d > 0 ? '▲' : '▼'}${Math.abs(d)}%</b>` : ''; };
+const FIRE_SPOTS = PROPS.filter((p) => p[0] === '모닥불').map((p) => ({ x: p[1], z: p[2] })); // 공용 모닥불(서버 config.fires 와 같은 자리)
+function cookTargets(see) { // 모닥불(공용 · 내 것) 옆 → 「요리하기」
+  if (!srvOn()) return;
+  for (const f of FIRE_SPOTS) see('cook', f, f.x, f.z, 2.4, 0.3);
+  for (const t of traps.values()) if (t.kind === 'fire') see('cook', t, t.x, t.z, 2.4, t.owner === net.name ? 0.3 : 0.2); // 남의 모닥불에서도 요리(서버와 같게)
 }
