@@ -14,7 +14,18 @@ const FENCES = [[FARM.x - 7, FARM.z - 11, 0], [FARM.x - 1, FARM.z - 11, 0], [FAR
 let srcs = {}; // 받은 모델(이름 → 장면) — main 이 채움
 const loader = new GLTFLoader();
 const cache = {};
-const loadModel = (name) => (cache[name] ||= loader.loadAsync(`models/${encodeURIComponent(name)}.glb`).then((g) => g.scene));
+// 펠트 느낌(2026-11-19): 모델의 반사 재질(Standard)을 같은 색의 무광(Lambert)으로 바꿈 — render.js 의 펠트 결이 붙고 휴대폰에서 더 가벼움
+function feltModel(root) {
+  const done = new Map();
+  root.traverse((m) => {
+    if (!m.isMesh || !m.material || !m.material.isMeshStandardMaterial) return;
+    const s = m.material;
+    if (!done.has(s)) done.set(s, new THREE.MeshLambertMaterial({ color: s.color, map: s.map, vertexColors: s.vertexColors, emissive: s.emissive, emissiveMap: s.emissiveMap, emissiveIntensity: s.emissiveIntensity, transparent: s.transparent, opacity: s.opacity, side: s.side, alphaTest: s.alphaTest, name: s.name }));
+    m.material = done.get(s);
+  });
+  return root;
+}
+const loadModel = (name) => (cache[name] ||= loader.loadAsync(`models/${encodeURIComponent(name)}.glb`).then((g) => feltModel(g.scene)));
 function placeModel(src, x, z, rotDeg, h, block) {
   const o = src.clone(true), b = new THREE.Box3().setFromObject(o), sz = b.getSize(new THREE.Vector3()), s = h / sz.y;
   const inner = new THREE.Group(); inner.add(o); o.position.set(-(b.min.x + sz.x / 2), -b.min.y, -(b.min.z + sz.z / 2));
