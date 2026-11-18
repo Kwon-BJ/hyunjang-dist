@@ -2,6 +2,7 @@
 // 포탑 = 통 + 소총(코드로 조립 · CC0 모델) · 가시덫 = 덫 모델. 가시덫은 놓은 사람에게만 뚜렷하고 남에게는 흐릿하게.
 const TRAP_ITEMS = ['포탑', '가시덫'];
 Object.assign(ITEMS, { 포탑: { buy: 4000, tool: true }, 가시덫: { buy: 300, tool: true } }); // 서버 config 와 같게
+const BULB_G = new THREE.SphereGeometry(0.07, 10, 8), BULB_M = new THREE.MeshBasicMaterial({ color: 0xff3030 }); // 포탑 빨간 불(모두 같이 씀 · 리뷰 10)
 const traps = new Map(); // id → { ...서버 값, obj, gun }
 function makeTrapObj(t) {
   const mine = t.owner === net.name;
@@ -12,7 +13,8 @@ function makeTrapObj(t) {
     const pivot = new THREE.Group(); pivot.add(inner); pivot.position.set(t.x, Math.max(0, height(t.x, t.z)) + 0.95, t.z); scene.add(pivot);
     pivot.traverse((m) => { if (m.isMesh) m.castShadow = true; });
     const circle = { x: t.x, z: t.z, r: 0.5 }; circles.push(circle);
-    return { obj: base, gun: pivot, circle };
+    const bulb = new THREE.Mesh(BULB_G, BULB_M); bulb.position.set(0, 0.32, 0); pivot.add(bulb); // 포탑 빨간 불(C단계)
+    return { obj: base, gun: pivot, circle, glow: addGlow(t.x, pivot.position.y + 0.32, t.z, 0xff2a2a, 0.8, null, 0.9) };
   }
   const o = placeModel(srcs['가시덫'], t.x, t.z, (t.id * 53) % 360, 0.28, '');
   o.traverse((m) => { if (m.isMesh) { m.material = m.material.clone(); m.material.transparent = !mine; m.material.opacity = mine ? 1 : 0.22; m.castShadow = mine; } }); // 남에게는 흐릿하게
@@ -23,7 +25,7 @@ function addTrap(t) {
   traps.set(t.id, { ...t, ...makeTrapObj(t) });
 }
 function removeTrap(id) {
-  const t = traps.get(id); if (!t) return; scene.remove(t.obj); if (t.gun) scene.remove(t.gun);
+  const t = traps.get(id); if (!t) return; scene.remove(t.obj); if (t.gun) scene.remove(t.gun); if (t.glow) removeGlow(t.glow);
   if (t.circle) { const i = circles.indexOf(t.circle); if (i >= 0) circles.splice(i, 1); }
   t.obj.traverse((m) => { if (m.isMesh && t.kind === 'spike') m.material.dispose(); }); traps.delete(id);
 }
@@ -60,6 +62,6 @@ function puffAt(x, z) { for (let i = 0; i < 4; i++) puffDust(x + (Math.random() 
 function turretShot(m) {
   const t = traps.get(m.tid) || guardObjs.get(m.tid); if (!t || !t.gun) return; // 경비 포탑도
   const e = m.ends[0]; t.gun.rotation.y = Math.atan2(e[0] - t.x, e[1] - t.z); t.ammo = m.ammo ?? t.ammo;
-  const f = new THREE.Mesh(FLASH_G, FLASH); f.position.set(t.x + Math.sin(t.gun.rotation.y) * 0.55, t.gun.position.y + 0.12, t.z + Math.cos(t.gun.rotation.y) * 0.55); scene.add(f); fx.push({ o: f, t: 0.06 });
+  const f = new THREE.Mesh(FLASH_G, FLASH); f.position.set(t.x + Math.sin(t.gun.rotation.y) * 0.55, t.gun.position.y + 0.12, t.z + Math.cos(t.gun.rotation.y) * 0.55); scene.add(f); fx.push({ o: f, t: 0.06 }); flashAt(f.position.x, f.position.z, f.position.y);
   bang('소총', Math.max(0, 1 - Math.hypot(t.x - me.x, t.z - me.z) / 40));
 }
