@@ -49,7 +49,7 @@ const trapLabel = (t) => (t.type === 'place' ? `${S.tool} 놓기` : t.type === '
 function trapAction(t) {
   if (t.type === 'place') { netSend({ t: 'place', x: +t.x.toFixed(2), z: +t.z.toFixed(2) }); return true; }
   if (t.type === 'tload') { netSend({ t: 'tload', id: t.rec.id }); return true; }
-  if (t.type === 'trap') { me.actT = me.actDur = 0.45; net.ac++; actCool = S.tool === '도끼' ? 0.7 : 0.6; me.actSwing = S.tool === '도끼'; netSend({ t: 'thit', id: t.rec.id }); return true; }
+  if (t.type === 'trap') { me.actT = me.actDur = 0.45; net.ac++; actCool = S.tool === '도끼' ? 0.7 : 0.6; me.actSwing = meleeSwing(); netSend({ t: 'thit', id: t.rec.id }); return true; }
   return false;
 }
 // ── 서버 말 ──
