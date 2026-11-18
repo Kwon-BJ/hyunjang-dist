@@ -2,15 +2,15 @@
 // ───────── 모델 (CC0) ─────────
 const PROPS = [
   // 이름, x, z, 돌림(도), 높이, 막힘
-  ['텐트', -12, -21.5, -15, 1.7, 'c'], ['모닥불', -19, -15.5, 0, 0.75, 'c'], ['침낭', -21.5, -13.5, 70, 0.22, ''], // 내 집 자리(-20, -23)는 비워 둠
-  ['가판대', 0, -57.4, 0, 2.6, 'c'], ['수레', -8.5, -49.5, 60, 1.5, 'c'], // B단계 · 부장님 알림: 상인 가판대 = 도구 상점(항구 울타리 안)
-  ['작업대', -13.5, -14.5, -90, 1.0, 'c'], ['모루', -12.8, -17.2, -60, 0.9, 'c'], ['통', -25.5, -18, 0, 0.95, 'c'], ['상자', -26, -19.6, 25, 0.7, 'c'], // 보관함은 집마다 옆에(placeHouseSet)
-  ['표지판', 2.4, -45.6, -20, 1.7, 'c'], // 항구 남쪽 문 밖
-  ['통', -2.2, -58.6, 0, 0.95, 'c'], ['상자', 2.3, -58.7, 20, 0.7, 'c'], ['통', -5.2, -51.2, 0, 0.95, 'c'], // 항구 장식(채집 안 됨)
-  ['헛간', 41, -17, 0, 5.2, 'b'], ['닭장', 34, -6.5, 30, 2.0, 'c'], ['사일로', 48, -12, 0, 8, 'c'], ['풍차', 44, 14, -30, 10, 'c'],
-  ['낚시대', -22.6, 14.5, 120, 1.1, 'c'], ['통', 33, -11, 0, 0.95, 'c'], ['상자', 36.5, -16.5, 10, 0.7, 'c'],
+  ['텐트', CAMP.x + 7, CAMP.z - 4.5, -15, 1.7, 'c'], ['모닥불', CAMP.x, CAMP.z + 1.5, 0, 0.75, 'c'], ['침낭', CAMP.x - 2.5, CAMP.z + 3.5, 70, 0.22, ''], ['모닥불', 0, 0, 0, 0.75, 'c'], // 서쪽 야영지 · 가운데 광장 모닥불
+  ['가판대', HARBOR.x, HARBOR.z - 3.4, 0, 2.6, 'c'], ['수레', HARBOR.x - 8.5, HARBOR.z + 4.5, 60, 1.5, 'c'], // B단계 · 부장님 알림: 상인 가판대 = 도구 상점(항구 울타리 안)
+  ['작업대', CAMP.x + 5.5, CAMP.z + 2.5, -90, 1.0, 'c'], ['모루', CAMP.x + 6.2, CAMP.z - 0.2, -60, 0.9, 'c'], ['통', CAMP.x - 6.5, CAMP.z - 1, 0, 0.95, 'c'], ['상자', CAMP.x - 7, CAMP.z - 2.6, 25, 0.7, 'c'], // 보관함은 집마다 옆에(placeHouseSet)
+  ['표지판', HARBOR.x + 2.4, HARBOR.z + 8.4, -20, 1.7, 'c'], // 항구 남쪽 문 밖
+  ['통', HARBOR.x - 2.2, HARBOR.z - 4.6, 0, 0.95, 'c'], ['상자', HARBOR.x + 2.3, HARBOR.z - 4.7, 20, 0.7, 'c'], ['통', HARBOR.x - 5.2, HARBOR.z + 2.8, 0, 0.95, 'c'], ['모닥불', HARBOR.x, HARBOR.z + 4, 0, 0.75, 'c'], // 항구 장식(채집 안 됨)
+  ['헛간', FARM.x, FARM.z - 7, 0, 5.2, 'b'], ['닭장', FARM.x - 7, FARM.z + 3.5, 30, 2.0, 'c'], ['사일로', FARM.x + 7, FARM.z - 2, 0, 8, 'c'], ['풍차', 98, -16, -30, 10, 'c'],
+  ['낚시대', POND.x + 17, POND.z - 3, 120, 1.1, 'c'], ['통', FARM.x - 8, FARM.z - 1, 0, 0.95, 'c'], ['상자', FARM.x - 4.5, FARM.z - 6.5, 10, 0.7, 'c'],
 ];
-const FENCES = [[34, -21, 0], [40, -21, 0], [46, -21, 0], [50.5, -17.5, 90], [50.5, -7, 90]];
+const FENCES = [[FARM.x - 7, FARM.z - 11, 0], [FARM.x - 1, FARM.z - 11, 0], [FARM.x + 5, FARM.z - 11, 0], [FARM.x + 9.5, FARM.z - 7.5, 90], [FARM.x + 9.5, FARM.z + 3, 90]]; // 농장 울타리
 let srcs = {}; // 받은 모델(이름 → 장면) — main 이 채움
 const loader = new GLTFLoader();
 const cache = {};
@@ -33,25 +33,25 @@ function placeModel(src, x, z, rotDeg, h, block) {
 const SAFE_DEF = { x: HARBOR.x, z: HARBOR.z, r: 6.5 }; // 혼자 놀기 때 텐트 자리 판정용(함께일 땐 서버가 보낸 SAFE)
 const STATIC = { circles: [], boxes: [] }; // 섬이 다 차린 뒤의 막힘(나무 · 바위 · 모델 · 울타리) — 텐트 자리 판정용(main 이 채움)
 const SHOPS = {
-  tool: { x: 0, z: -55.6, name: '도구 상점', buy: ['도끼', '곡괭이', '낚싯대'], sell: true },
-  gun: { x: -4, z: -55, name: '무기 자판기', buy: ['권총', '소총', '산탄총', '권총탄', '소총탄', '산탄'], color: 0xe0584a, glow: 0xffb0a0 },
-  tent: { x: -3.4, z: -51.8, name: '텐트 자판기', buy: ['텐트', '나무', '돌', '보관함'], color: 0x4fae6a, glow: 0xb8ffc8 },
-  trap: { x: 4, z: -55, name: '함정 자판기', buy: ['포탑', '가시덫'], color: 0x8f6cc8, glow: 0xdccbff },
-  food: { x: 3.4, z: -51.8, name: '먹거리 자판기', buy: [], color: 0xf2b244, glow: 0xfff0b8 }, // D단계에 채움
+  tool: { x: HARBOR.x, z: HARBOR.z - 1.6, name: '도구 상점', buy: ['도끼', '곡괭이', '낚싯대'], sell: true },
+  gun: { x: HARBOR.x - 4, z: HARBOR.z - 1, name: '무기 자판기', buy: ['권총', '소총', '산탄총', '권총탄', '소총탄', '산탄'], color: 0xe0584a, glow: 0xffb0a0 },
+  tent: { x: HARBOR.x - 3.4, z: HARBOR.z + 2.2, name: '텐트 자판기', buy: ['텐트', '나무', '돌', '보관함'], color: 0x4fae6a, glow: 0xb8ffc8 },
+  trap: { x: HARBOR.x + 4, z: HARBOR.z - 1, name: '함정 자판기', buy: ['포탑', '가시덫'], color: 0x8f6cc8, glow: 0xdccbff },
+  food: { x: HARBOR.x + 3.4, z: HARBOR.z + 2.2, name: '먹거리 자판기', buy: [], color: 0xf2b244, glow: 0xfff0b8 }, // D단계에 채움
 };
 const SHOP_AT = SHOPS.tool; // 예전 이름(시험 · 지도)
-const FENCE_R = 6.5, FENCE_GATES = [[Math.atan2(10, 16), 0.24], [Math.PI / 2, 0.24], [Math.atan2(16, -28), 0.24], [-Math.PI / 2, 0.22]]; // 항구 울타리 반지름 · 문(항구에서 본 각도 rad · 반폭 rad): 동쪽 길 · 남쪽 길 · 서쪽 길 · 북쪽 부두
+const FENCE_R = 6.5, FENCE_GATES = [[Math.atan2(22, 25), 0.24], [Math.PI / 2, 0.24], [Math.atan2(22, -40), 0.24], [-Math.PI / 2, 0.22]]; // 항구 울타리 반지름 · 문(항구에서 본 각도 rad · 반폭 rad): 동쪽 길 · 남쪽 길 · 서쪽 길 · 북쪽 부두
 const vendObjs = [];
 // 자판기: 찰흙 느낌 둥근 상자 + 빛나는 앞판 · 위 띠(밤에 빛남 — 조명은 C단계)
 function makeVending(k) {
   const g = new THREE.Group(), clay = (c, e) => new THREE.MeshLambertMaterial({ color: c, emissive: e || 0x000000 });
   const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.42, 1.0, 6, 16), clay(k.color)); body.scale.set(1.25, 1, 0.85); body.position.y = 0.95; g.add(body);
-  const face = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.85, 0.06), clay(0xffffff, k.glow)); face.position.set(0, 1.05, 0.36); g.add(face);
+  const face = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.85, 0.06), clay(0x000000, k.glow)); face.material.emissiveIntensity = 0.75; face.position.set(0, 1.05, 0.36); g.add(face);
   const top = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.14, 0.08), clay(0xffffff, k.glow)); top.position.set(0, 1.72, 0.3); g.add(top);
   const slot = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.12, 0.08), clay(0x2c2720)); slot.position.set(0, 0.4, 0.37); g.add(slot);
   g.traverse((m) => { if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; } });
   g.position.set(k.x, Math.max(0, height(k.x, k.z)), k.z); g.rotation.y = Math.atan2(-k.x, -k.z); // 광장 가운데를 봄
-  scene.add(g); circles.push({ x: k.x - Math.sin(g.rotation.y) * 0.05, z: k.z - Math.cos(g.rotation.y) * 0.05, r: 0.55 }); vendObjs.push(g);
+  g.userData.glow = k.glow; scene.add(g); circles.push({ x: k.x - Math.sin(g.rotation.y) * 0.05, z: k.z - Math.cos(g.rotation.y) * 0.05, r: 0.55 }); vendObjs.push(g);
   return g;
 }
 function buildTown() {
@@ -68,6 +68,6 @@ function buildTown() {
 }
 
 // ───────── 경비 포탑(부장님 2026-11-18) — 항구에서 나가는 길마다 하나. 안 부서지고 탄약도 없음. 쏘는 판정은 서버(config.guards)
-const GUARDS = [{ id: 'G0', x: 5.55, z: -47.56 }, { id: 'G1', x: -2.51, z: -45.88 }, { id: 'G2', x: -8.29, z: -52.1 }]; // 서버 config.guards.at 과 같은 자리(동 · 남 · 서 길 옆)
+const GUARDS = [[4.43, 7.25], [-2.51, 8.12], [-8.34, 1.66]].map(([dx, dz], i) => ({ id: 'G' + i, x: HARBOR.x + dx, z: HARBOR.z + dz })); // 서버 config.guards.at 과 같은 자리(동 · 남 · 서 길 옆)
 const guardObjs = new Map();
 function buildGuards() { for (const g of GUARDS) guardObjs.set(g.id, { ...g, ...makeTrapObj({ kind: 'turret', x: g.x, z: g.z, owner: '' }) }); }
