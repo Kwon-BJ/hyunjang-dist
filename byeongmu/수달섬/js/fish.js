@@ -10,8 +10,8 @@ SELLABLE.push(...FISH);
 const FISH_SPOTS = [];
 {
   const isWater = (x, z) => height(x, z) < -0.18;
-  const seeds = [[riverX(-25) - 9, -25, 1, 0], [riverX(20) - 9, 20, 1, 0], [riverX(-44) + 9, -44, -1, 0], [POND.x + 12, POND.z, -1, 0], [POND.x, POND.z - 12, 0, 1],
-    [0, -40, 0, -1], [-40, -6, -1, 0], [-16, 40, 0, 1]];
+  const seeds = [[riverX(-40) - 10, -40, 1, 0], [riverX(30) - 10, 30, 1, 0], [riverX(-100) + 10, -100, -1, 0], [riverX(100) + 10, 100, -1, 0], [POND.x + 21, POND.z, -1, 0], [POND.x, POND.z - 21, 0, 1], [POND.x - 21, POND.z, 1, 0], // 개울 · 호수
+    [-100, -20, -1, 0], [20, 105, 0, 1], [105, 40, 1, 0], [-70, 95, -1, 1]]; // 바닷가(항구에서 먼 곳)
   const RIP = new THREE.RingGeometry(0.35, 0.5, 20).rotateX(-Math.PI / 2), ripMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5, depthWrite: false });
   const im = new THREE.InstancedMesh(RIP, ripMat, seeds.length), m = new THREE.Matrix4();
   let n = 0;
