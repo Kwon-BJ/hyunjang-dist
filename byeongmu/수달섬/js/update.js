@@ -16,7 +16,7 @@ function newGameTick(dt) {
   idleT = idle ? idleT + dt : 0;
   if (idleT < 1.5) return;
   const b = newGame; newGame = '';
-  try { sessionStorage.setItem('suseom-reloaded', b); sessionStorage.setItem('suseom-pos', JSON.stringify({ x: me.x, z: me.z, f: me.face, t: Date.now() })); } catch { /* */ }
+  try { sessionStorage.setItem('suseom-reloaded', b); sessionStorage.setItem('suseom-pos', JSON.stringify({ x: me.x, z: me.z, f: me.face, t: Date.now(), v: MAP_V })); } catch { /* */ }
   dirty = true; flush();
   const q = new URLSearchParams(location.search); q.set('v', b); location.replace(location.pathname + '?' + q);
 }
