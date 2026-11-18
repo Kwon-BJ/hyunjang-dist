@@ -8,8 +8,9 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { HorizontalTiltShiftShader } from 'three/addons/shaders/HorizontalTiltShiftShader.js';
 import { VerticalTiltShiftShader } from 'three/addons/shaders/VerticalTiltShiftShader.js';
-Object.assign(window, { THREE, GLTFLoader, mergeGeometries, EffectComposer, RenderPass, ShaderPass, OutputPass, HorizontalTiltShiftShader, VerticalTiltShiftShader });
-const FILES = ["render","island","nature","props","look","otter","input","loop","life","fish","house","trap","net","fight","gun","update","map","main"];
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+Object.assign(window, { THREE, GLTFLoader, mergeGeometries, EffectComposer, RenderPass, ShaderPass, OutputPass, HorizontalTiltShiftShader, VerticalTiltShiftShader, UnrealBloomPass });
+const FILES = ["render","island","nature","props","look","otter","input","loop","life","fish","house","trap","light","net","fight","gun","update","map","main"];
 for (const f of FILES) {
   await new Promise((ok, no) => { const s = document.createElement('script'); s.src = `js/${f}.js?v=${window.GAME_BUILD}`; s.onload = ok; s.onerror = () => no(new Error(f + '.js 를 못 받음')); document.body.appendChild(s); });
 }
