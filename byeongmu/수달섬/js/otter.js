@@ -5,7 +5,7 @@
 const FUR = 0x96705f, CREAM = 0xf6dfc4, INK = 0x2c2720; // 게임 빛(따뜻한 해 · 색 보정)을 거쳐 시안 색(털 #ad7759 · 얼굴 #eed2b3)에 가깝게
 const LOOK_COLORS = [0x4d9f90, 0xf5735c, 0xf2b244, 0x8f7cc8, 0x5aaee0, 0xf08fb3, 0x8cc463, 0x4f6aa6]; // 시안 3색(청록 · 주황 · 노랑) + 보라 · 하늘 · 분홍 · 연두 · 남색
 const HAT_KINDS = ['bucket', 'cap', 'beanie']; // 벙거지 · 야구모자 · 비니
-const OTTER = { hat: 'bucket', color: LOOK_COLORS[0] };
+const OTTER = { hat: null, color: LOOK_COLORS[0] }; // 2026-11-18 부장님 — 모자 없앰(기본 수달은 모자 없이 · 머리 위 이름표)
 const H_Y = 0.53, H_R = [0.41, 0.365, 0.37]; // 머리 붙는 높이(목) · 머리 반지름(가로 · 세로 · 앞뒤)
 // 얼굴 그림: 공(SphereGeometry)의 u · v 를 방향으로 바꿔, 방향이 얼굴 쪽이면 크림 · 눈 · 코를 칠함(경계는 곡선 · 부드럽게)
 const FACE_TEX = (() => {
@@ -13,9 +13,9 @@ const FACE_TEX = (() => {
   const g = c.getContext('2d'), img = g.createImageData(W, Hh), d = img.data;
   const col = (h) => [(h >> 16) & 255, (h >> 8) & 255, h & 255], fur = col(FUR), cream = col(CREAM), ink = col(INK);
   const sm = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
-  // 크림 윗선 b(x): 코(가운데)에서 눈 밑을 지나 옆에서 둥글게 내려감 — 시안 정면에서 잼
-  const top = (ax) => (ax < 0.84 ? -0.03 + 0.075 * Math.sin(Math.PI * ax / 0.84) : -0.03 - (ax - 0.84) * 1.2); // 옆으로 갈수록 천천히 내려감(볼을 감쌈)
-  const spots = [[-0.4, 0.075, 0.072, 0.09], [0.4, 0.075, 0.072, 0.09], [0, -0.03, 0.11, 0.085]]; // 눈 2 · 코: 가운데 x · y · 반폭 · 반높이(시안)
+  // 크림 윗선 b(x): 코(가운데)에서 눈 밑을 지나 볼 쪽에서 위로 휨(2026-11-18 작업지시서 2 A) — 시안 정면에서 잼
+  const top = (ax) => -0.03 + 0.07 * sm(0, 0.42, ax) + 0.13 * sm(0.55, 0.98, ax); // 코에서 눈 밑을 지나 볼 쪽에서 위로 휨(시안 · 작업지시서 2 A)
+  const spots = [[-0.4, 0.075, 0.094, 0.117], [0.4, 0.075, 0.094, 0.117], [0, -0.035, 0.143, 0.11]]; // 눈 2 · 코: 가운데 x · y · 반폭 · 반높이(시안 × 1.3 — 작업지시서 2 A)
   for (let py = 0; py < Hh; py++) for (let px = 0; px < W; px++) {
     const th = (py + 0.5) / Hh * Math.PI, ph = (px + 0.5) / W * Math.PI * 2;
     const x = -Math.cos(ph) * Math.sin(th), y = Math.cos(th), z = Math.sin(ph) * Math.sin(th);
@@ -40,8 +40,8 @@ function roundBox(w, h, dp, r, seg = 6) {
 }
 // 모자 3종(시안) — 한 모양씩 합쳐 부품 1개
 const HAT_GEO = {
-  bucket: () => new THREE.LatheGeometry([[0, 0.39], [0.12, 0.385], [0.22, 0.365], [0.3, 0.33], [0.355, 0.27], [0.39, 0.18], [0.41, 0.08], [0.425, 0.02], [0.46, -0.02], [0.5, -0.08], [0.515, -0.125], [0.5, -0.14], [0.46, -0.1], [0.42, -0.04], [0.4, -0.01]].map(([r, y]) => new THREE.Vector2(r, y)), 48),
-  cap: () => { const dome = new THREE.SphereGeometry(1, 40, 20, 0, Math.PI * 2, 0, Math.PI / 2); dome.scale(0.43, 0.38, 0.41); const visor = new THREE.CylinderGeometry(0.36, 0.36, 0.05, 40, 1, false, -Math.PI * 0.4, Math.PI * 0.8); visor.scale(1, 1, 1.25); visor.translate(0, 0, 0.12); visor.rotateX(0.16); return mergeGeometries([dome.toNonIndexed(), visor.toNonIndexed()].map((x) => { x.deleteAttribute('uv'); return x; })); },
+  bucket: () => new THREE.LatheGeometry([[0, 0.39], [0.12, 0.385], [0.22, 0.365], [0.3, 0.33], [0.355, 0.27], [0.39, 0.18], [0.41, 0.08], [0.425, 0.02], [0.45, -0.02], [0.48, -0.065], [0.49, -0.1], [0.475, -0.115], [0.44, -0.085], [0.41, -0.035], [0.4, -0.01]].map(([r, y]) => new THREE.Vector2(r, y)), 48),
+  cap: () => { const dome = new THREE.SphereGeometry(1, 40, 20, 0, Math.PI * 2, 0, Math.PI / 2); dome.scale(0.43, 0.38, 0.41); const visor = new THREE.CylinderGeometry(0.41, 0.41, 0.075, 40, 1, false, -Math.PI * 0.42, Math.PI * 0.84); visor.scale(1, 1, 1.25); visor.translate(0, -0.005, 0.05); visor.rotateX(0.14); return mergeGeometries([dome.toNonIndexed(), visor.toNonIndexed()].map((x) => { x.deleteAttribute('uv'); return x; })); },
   beanie: () => { const dome = new THREE.SphereGeometry(1, 40, 20, 0, Math.PI * 2, 0, Math.PI / 2); dome.scale(0.415, 0.4, 0.395); dome.translate(0, 0.1, 0); const band = new THREE.TorusGeometry(0.375, 0.07, 16, 48).rotateX(Math.PI / 2); band.scale(1.0, 1.5, 0.98); band.translate(0, 0.06, 0); const wall = new THREE.CylinderGeometry(0.415, 0.415, 0.1, 40, 1, true); wall.translate(0, 0.08, 0); return mergeGeometries([dome.toNonIndexed(), band.toNonIndexed(), wall.toNonIndexed()].map((x) => { x.deleteAttribute('uv'); return x; })); },
 };
 const HAT_CACHE = {}; const hatGeo = (k) => HAT_CACHE[k] || (HAT_CACHE[k] = HAT_GEO[k]());
@@ -69,15 +69,15 @@ function makeOtter(look = OTTER) {
   setLook(root, look);
   return root;
 }
-// 문파원마다 모자 종류 · 색(가방도 같은 색, 조금 진하게)
+// 문파원마다 모자 종류 · 색(가방도 같은 색, 조금 진하게) — 모자는 위로 · 뒤로 젖혀 게임 카메라(약 40도 위)에서도 두 눈이 보이게(작업지시서 2 A)
 function setLook(root, look = OTTER) {
   const u = root.userData, kind = HAT_KINDS.includes(look.hat) ? look.hat : null, c = look.color ?? LOOK_COLORS[0];
   u.hat.visible = !!kind; u.ears.visible = !kind; // 모자를 쓰면 귀는 모자 속(시안)
-  if (kind) { u.hat.geometry = hatGeo(kind); u.hat.position.set(0, kind === 'bucket' ? H_R[1] + 0.12 : kind === 'cap' ? H_R[1] + 0.07 : H_R[1] + 0.09, kind === 'cap' ? 0.0 : -0.01); u.hat.rotation.set(kind === 'cap' ? -0.1 : -0.06, 0, 0); u.hat.material.color.set(c); u.hat.material.emissive.set(c).multiplyScalar(0.14); }
+  if (kind) { u.hat.geometry = hatGeo(kind); u.hat.position.set(0, kind === 'bucket' ? H_R[1] + 0.2 : kind === 'cap' ? H_R[1] + 0.13 : H_R[1] + 0.14, kind === 'cap' ? -0.02 : -0.04); u.hat.rotation.set(kind === 'cap' ? -0.42 : kind === 'bucket' ? -0.34 : -0.26, 0, 0); u.hat.material.color.set(c); u.hat.material.emissive.set(c).multiplyScalar(0.14); }
   const bc = new THREE.Color(c).multiplyScalar(0.92); u.bag.material.color.copy(bc); u.bag.material.emissive.copy(bc).multiplyScalar(0.14);
   u.look = { hat: kind, color: c };
 }
-const lookFromName = (name) => { if (!name) return OTTER; const h = hashName(name); return { hat: HAT_KINDS[h % 3], color: LOOK_COLORS[Math.floor(h / 3) % LOOK_COLORS.length] }; };
+const lookFromName = (name) => { if (!name) return OTTER; const h = hashName(name); return { hat: null, color: LOOK_COLORS[Math.floor(h / 3) % LOOK_COLORS.length] }; }; // 모자 없음 — 가방 색만 문파원마다 다름
 // act: 0~1 진행(없으면 -1) · swing: 도구 휘두르기 / 아니면 손으로 줍기(허리 숙임)
 function animOtter(o, phase, amt, run, t, act = -1, swing = false, fit = null) {
   const p = o.userData, sw = Math.sin(phase);
