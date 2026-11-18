@@ -4,6 +4,8 @@
 srcs = Object.fromEntries(await Promise.all([...new Set([...PROPS.map((p) => p[0]), '울타리', '보관함', '오두막', '나무집', '큰집', '도끼', '곡괭이', '자루', '권총', '소총', '산탄총', '낚싯대', '금붕어', '비단잉어', '도미', '넙치', '가시덫'])].map(async (n) => [n, await loadModel(n)])));
 for (const [n, x, z, r, h, b] of PROPS) placeModel(srcs[n], x, z, r, h, b);
 for (const [x, z, r] of FENCES) placeModel(srcs['울타리'], x, z, r, 1.0, 'f');
+buildTown(); buildGuards(); // 안전지대 울타리 · 자판기(B단계) · 경비 포탑
+STATIC.circles = circles.slice(); STATIC.boxes = boxes.slice(); // 텐트 자리 판정용 — 나무 · 바위 · 모델 · 울타리(집 · 함정 빼고)
 
 buildMapBase();
 buildHouse(true);
@@ -13,8 +15,8 @@ try { // 새 판으로 새로 열린 거면 있던 자리로
 } catch { /* */ }
 for (const t of TOOLS) { held[t] = heldModel(srcs[t]); me.obj.userData.hold.add(held[t]); }
 connect();
-npc = makeOtter({ hat: 'cap', color: 0x8cc463 }); // 가게 주인: 연두 야구모자
-npc.position.set(-4.5, height(-4.5, -5.9), -5.9); scene.add(npc);
+npc = makeOtter({ hat: null, color: 0x8cc463 }); // 가게 주인(도구 상점 · 모자 없음)
+npc.position.set(0, height(0, -58.1), -58.1); scene.add(npc);
 changed(); dirty = false;
 document.getElementById('load').remove();
 requestAnimationFrame((t) => { last = t; frame(t); });
@@ -24,7 +26,7 @@ requestAnimationFrame((t) => { last = t; frame(t); });
 // 시험용: sim(누를 키, 초) — 화면 속도와 상관없이 1/60초씩 움직여 본다
 const sim = (codes, secs) => { codes.forEach((k) => keys.add(k)); for (let i = 0; i < Math.round(secs * 60); i++) step(1 / 60); codes.forEach((k) => keys.delete(k)); };
 window.__수달섬 = { me, free, height, circles, boxes, onBridge, BRIDGE, riverX, camera, renderer, quality, sim, joy, grass,
-  S, TREES, ROCKS, BUSHES, FLOWERS, BERRIES, KEYED, FISH_SPOTS, fishing, fishAction, fishOf, setZoom, get zoomLv() { return zoomLv; }, get zoomK() { return zoomK; }, zoomWant, ZOOM_K, HSTATE, raids, traps, PLACE_AT, get view() { return view; }, get mySet() { return mySet; }, HOUSES, SHOP_AT, PLOTS, net, checkGame, save: () => { dirty = true; flush(); }, GAME_BUILD, doAction, findTarget, openWin, closeWin, count, flush,
+  S, SHOPS, tentWhy, TENT, get HOUSE_AT() { return HOUSE_AT; }, buildHouse, CLEARINGS, STATIC, shopKind: () => shopKind, S_home: () => S.home, TREES, ROCKS, BUSHES, FLOWERS, BERRIES, KEYED, FISH_SPOTS, fishing, fishAction, fishOf, setZoom, get zoomLv() { return zoomLv; }, get zoomK() { return zoomK; }, zoomWant, ZOOM_K, HSTATE, raids, traps, PLACE_AT, get view() { return view; }, get mySet() { return mySet; }, HOUSES, SHOP_AT, net, checkGame, save: () => { dirty = true; flush(); }, GAME_BUILD, doAction, findTarget, openWin, closeWin, count, flush,
   get sacks() { return sacks; }, aim, fireOnce, GUNS, get lastShot() { return lastShot; }, get SAFE() { return SAFE; }, get srv() { return srvOn(); }, testHold, shakeFit, wobbleAngle, TRUNK, SHAKE_T, PAW_R, get newGame() { return newGame; }, get idleT() { return idleT; }, keys, get HOUSE_AT() { return HOUSE_AT; }, get CHEST_AT() { return CHEST_AT; }, get houseBox() { return houseBox; }, get clock() { return clock; } };
 
 // 섬 자료(서버 판정용) — 기획/수달섬-세계뽑기.cjs 가 이것을 워커/src/suseom/world.json 으로 저장한다.
@@ -32,7 +34,7 @@ window.__수달섬 = { me, free, height, circles, boxes, onBridge, BRIDGE, river
 function worldSum(W) { let h = 7; const add = (v) => { h = (h * 31 + Math.round(v * 100)) >>> 0; }; for (const l of [W.trees, W.rocks, W.flowers, W.bushes, W.berries || [], W.fishSpots || []]) for (const r of l) { add(r.x); add(r.z); } return h.toString(36); }
 window.__수달섬.worldData = () => {
   const r2 = (v) => Math.round(v * 100) / 100;
-  const own = new Set([mySet && mySet.circle, mySet && mySet.box].filter(Boolean));
+  const own = new Set([mySet && mySet.circle, mySet && mySet.box, ...[...net.houses.values()].flatMap((h) => [h.circle, h.box]), ...[...traps.values()].map((t) => t.circle)].filter(Boolean)); // 집 · 함정은 섬 자료가 아님
   const natural = new Set([...TREES, ...ROCKS, ...BUSHES].map((r) => r.circle).filter(Boolean));
   const tierBox = HOUSES.map((H) => { const b = new THREE.Box3().setFromObject(srcs[H.model]), sz = b.getSize(new THREE.Vector3()), s = H.h / sz.y; return [r2(sz.x * s / 2), r2(sz.z * s / 2)]; });
   const W = {
@@ -42,11 +44,11 @@ window.__수달섬.worldData = () => {
     bushes: BUSHES.map((r, i) => ({ k: 'B' + i, x: r2(r.x), z: r2(r.z) })),
     berries: BERRIES.map((r, i) => ({ k: 'E' + i, x: r2(r.x), z: r2(r.z) })),
     fishSpots: FISH_SPOTS.map((r, i) => ({ k: 'P' + i, x: r.x, z: r.z, wx: r.wx, wz: r.wz })),
-    plots: PLOTS.map((p) => ({ x: r2(p.x), z: r2(p.z) })),
+    clearings: CLEARINGS.map((p) => ({ x: r2(p.x), z: r2(p.z) })), // 집 짓기 좋은 빈터(참고용)
     circles: circles.filter((c) => !natural.has(c) && !own.has(c)).map((c) => ({ x: r2(c.x), z: r2(c.z), r: r2(c.r) })), // 모델(텐트 · 모닥불 · 가판대 …)
     boxes: boxes.filter((b) => !own.has(b)).map((b) => ({ x0: r2(b.x0), z0: r2(b.z0), x1: r2(b.x1), z1: r2(b.z1) })), // 헛간 · 울타리
     water: (() => { const w = { river: [24, 4, 0.06], rw: RW, pond: { x: POND.x, z: POND.z, r: POND.r }, isle: [62, 3, 2] }; for (const z of [-30, 7, 41]) if (Math.abs(riverX(z) - (w.river[0] + w.river[1] * Math.sin(z * w.river[2]))) > 1e-9) throw new Error('개울 식이 바뀜 — world 물 자료 고쳐야 함'); if (Math.abs(islandR(1) - (62 + 3 * Math.sin(3) + 2 * Math.sin(6))) > 1e-9) throw new Error('섬 둘레 식이 바뀜'); return w; })(), // 함정 자리 물 판정(요청 4)
-    houseHalf: tierBox, chestOff: [3.6, 3.4], shop: { x: SHOP_AT.x, z: SHOP_AT.z }, plaza: { x: PLAZA.x, z: PLAZA.z, r: PLAZA.r },
+    houseHalf: tierBox, chestOff: [3.6, 3.4], shop: { x: SHOP_AT.x, z: SHOP_AT.z }, shops: Object.fromEntries(Object.entries(SHOPS).map(([k, v]) => [k, { x: v.x, z: v.z, buy: v.buy }])), plaza: { x: PLAZA.x, z: PLAZA.z, r: PLAZA.r },
   };
   W.sum = worldSum(W); return W;
 };
