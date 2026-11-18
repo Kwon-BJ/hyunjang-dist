@@ -135,7 +135,7 @@ const rockOk = (x, z) => {
   if (d > R - 7 || height(x, z) < -0.05 || pathDist(x, z) < 2.2) return false;
   if (Math.abs(x - riverX(z)) < RW + 2 || Math.hypot(x - POND.x, z - POND.z) < POND.r + 2) return false;
   if (KEEP.some((k) => Math.hypot(x - k.x, z - k.z) < k.r)) return false;
-  if (PLOTS.some((p) => Math.hypot(x - p.x, z - p.z) < 5 || Math.hypot(x - p.x - 3.6, z - p.z - 3.4) < 2.2)) return false;
+  if (CLEARINGS.some((p) => Math.hypot(x - p.x, z - p.z) < 5 || Math.hypot(x - p.x - 3.6, z - p.z - 3.4) < 2.2)) return false;
   return spotOk(x, z, 2.4) && rockSpots.every((q) => Math.hypot(q.x - x, q.z - z) > 3);
 };
 ROCKS.push(...scatter(ROCK, rockMat, 24, (x, z) => {
@@ -165,7 +165,13 @@ const grass = scatter(BLADE, grassMat, GRASS_N, (x, z) => {
   return { s: 0.7 + rnd() * 0.7, sx: 1, sz: 1, color: tint(0xffffff, 0.1) };
 }, { shadow: false });
 
-// ───────── 다리 (나무 판) ─────────
+// ───────── 다리 · 부두 (나무 판) ─────────
+{ // 부두: 항구 북쪽 바다로
+  const wood = new THREE.MeshLambertMaterial({ color: 0xb07a45 }), dark = new THREE.MeshLambertMaterial({ color: 0x80552f });
+  const add = (g, m, x, y, z) => { const o = new THREE.Mesh(g, m); o.position.set(x, y, z); o.castShadow = o.receiveShadow = true; scene.add(o); };
+  const n = Math.round((DOCK.z1 - DOCK.z0) / 0.59); for (let i = 0; i < n; i++) add(new THREE.BoxGeometry(DOCK.half * 2 + 0.3, 0.14, 0.52), i % 2 ? wood : dark, DOCK.x + (hash(i, 7) - 0.5) * 0.08, DOCK.y - 0.07, DOCK.z1 - 0.3 - i * 0.59);
+  for (const s of [-1, 1]) for (let i = 0; i <= 5; i++) add(new THREE.CylinderGeometry(0.13, 0.15, 1.6, 10), dark, DOCK.x + s * (DOCK.half + 0.1), DOCK.y - 0.45, DOCK.z1 - 0.4 - i * (DOCK.z1 - DOCK.z0 - 0.8) / 5);
+}
 {
   const wood = new THREE.MeshLambertMaterial({ color: 0xb07a45 }), dark = new THREE.MeshLambertMaterial({ color: 0x80552f });
   const add = (g, m, x, y, z) => { const o = new THREE.Mesh(g, m); o.position.set(x, y, z); o.castShadow = o.receiveShadow = true; scene.add(o); };
