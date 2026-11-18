@@ -31,7 +31,9 @@ addEventListener('keydown', (e) => { if (e.code === 'KeyR' && !e.repeat) reload(
 
 // PC: 마우스로 조준(땅 높이 평면) · 누르면 발사
 const RC = new THREE.Raycaster(), MV = new THREE.Vector2(), PL = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), PT = new THREE.Vector3();
+function aimAtMouse() { if (aim.mx == null || aim.touch != null) return; MV.set(aim.mx / innerWidth * 2 - 1, -(aim.my / innerHeight) * 2 + 1); RC.setFromCamera(MV, camera); PL.constant = -(groundY(me.x, me.z) + 0.6); if (RC.ray.intersectPlane(PL, PT)) { aim.ang = Math.atan2(PT.x - me.x, PT.z - me.z); aim.dist = Math.hypot(PT.x - me.x, PT.z - me.z); aim.has = true; } }
 cv.addEventListener('mousemove', (e) => {
+  aim.mx = e.clientX; aim.my = e.clientY;
   if (!isGun(S.tool)) return;
   MV.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); RC.setFromCamera(MV, camera);
   PL.constant = -(groundY(me.x, me.z) + 0.6); if (RC.ray.intersectPlane(PL, PT)) { aim.ang = Math.atan2(PT.x - me.x, PT.z - me.z); aim.dist = Math.hypot(PT.x - me.x, PT.z - me.z); aim.has = true; }
@@ -62,6 +64,7 @@ function fireOnce(ang) {
 function gunTick(dt) {
   aim.cd -= dt;
   const g = S.tool;
+  if (isGun(g) && !HAS_TOUCH) aimAtMouse(); // 카메라가 움직여도(확대 · 따라감) 마우스가 가리키는 땅을 다시 봄
   if (isGun(g) && aim.has && !me.dead) me.face = aim.ang; // 총을 들면 조준 쪽을 봄
   if (aim.firing && isGun(g) && aim.cd <= 0 && srvOn()) { if (fireOnce(aim.ang)) aim.cd = 1 / GUN_INFO[g].rate; else aim.cd = 0.3; }
   for (let i = fx.length - 1; i >= 0; i--) { const f = fx[i]; f.t -= dt; if (f.t <= 0) { scene.remove(f.o); if (f.own) { f.o.geometry.dispose(); f.o.material.dispose(); } else if (f.fade) f.o.material.dispose(); fx.splice(i, 1); } else if (f.fade) f.o.material.opacity = f.t / f.t0; } // 다 쓴 그림 조각은 버림(리뷰 8번 · 메모리)
