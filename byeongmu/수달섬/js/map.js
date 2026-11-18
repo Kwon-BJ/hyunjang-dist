@@ -1,6 +1,6 @@
 // 수달섬 — 미니맵 (2026-11-17 수달섬 index.html 에서 나눔 · 보통 스크립트: 다른 파일과 맨 위 이름을 함께 씀)
 // ───────── 미니맵 (북쪽 위 · 섬 전체) — 바탕(땅 · 물 · 길 · 나무 · 건물)은 한 번만 그리고, 상점 · 집 · 사람은 0.2초마다 ─────────
-const MAP_R = 70, miniEl = $('mini'), mcv = $('miniCv'), mg = mcv.getContext('2d'), MS = mcv.width;
+const MAP_R = ISLE_R + 10, miniEl = $('mini'), mcv = $('miniCv'), mg = mcv.getContext('2d'), MS = mcv.width;
 const mp = (x, z) => [(x + MAP_R) / (2 * MAP_R) * MS, (z + MAP_R) / (2 * MAP_R) * MS];
 const mapBase = document.createElement('canvas'); mapBase.width = mapBase.height = MS;
 function buildMapBase() { // 모델(헛간 등)을 놓은 뒤 main 이 부름
@@ -17,7 +17,7 @@ function buildMapBase() { // 모델(헛간 등)을 놓은 뒤 main 이 부름
   g.putImageData(im, 0, 0);
   g.fillStyle = 'rgba(38, 104, 46, .6)'; for (const r of TREES) { const [x, z] = mp(r.x, r.z); g.beginPath(); g.arc(x, z, 2.4, 0, 7); g.fill(); }
   g.fillStyle = '#a84636'; for (const b of boxes) { const [x0, z0] = mp(b.x0, b.z0), [x1, z1] = mp(b.x1, b.z1); g.fillRect(x0, z0, Math.max(2, x1 - x0), Math.max(2, z1 - z0)); }
-  g.fillStyle = '#9a6a3a'; { const [x0, z0] = mp(BRIDGE.x - BRIDGE.half, -1.5), [x1, z1] = mp(BRIDGE.x + BRIDGE.half, 1.5); g.fillRect(x0, z0, x1 - x0, z1 - z0); }
+  g.fillStyle = '#9a6a3a'; for (const B of BRIDGES) { const [x0, z0] = mp(B.x - B.half, B.z - 1.5), [x1, z1] = mp(B.x + B.half, B.z + 1.5); g.fillRect(x0, z0, x1 - x0, Math.max(2, z1 - z0)); }
   { const [x0, z0] = mp(DOCK.x - DOCK.half, DOCK.z0), [x1, z1] = mp(DOCK.x + DOCK.half, DOCK.z1); g.fillRect(x0, z0, Math.max(2, x1 - x0), z1 - z0); } // 부두
 }
 const imgOf = {}, iconImg = (id) => imgOf[id] || ((imgOf[id] = new Image()).src = `img/i-${id}.webp`, imgOf[id]);
