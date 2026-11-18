@@ -78,7 +78,7 @@ function step(dt) {
   if (me.actSwing === 'shake' && me.actT > 0 && (Math.hypot(mx, mz) || (joy.id !== null && Math.hypot(joy.dx, joy.dy) > 0.15))) me.actT = 0; // 흔들다 움직이면 손을 놓음
   else if (mag) { mx /= mag; mz /= mag; mag = 1; hideHint(); }
   else if (joy.id !== null) { const l = Math.hypot(joy.dx, joy.dy); if (l > 0.15) { mx = joy.dx / l; mz = joy.dy / l; mag = Math.min(1, l); run = l > 0.8; } }
-  const target = mag ? (run ? RUN : WALK) * (run ? 1 : Math.max(0.45, mag)) : 0;
+  const target = (mag ? (run ? RUN : WALK) * (run ? 1 : Math.max(0.45, mag)) : 0) * ((BUFF.fast || 0) > clock ? 1.1 : 1); // 열매잼 버프(서버 이동 한도도 ×1.1)
   me.speed += (target - me.speed) * Math.min(1, dt * 10);
   me.run = run && mag > 0;
   if (mag) {
