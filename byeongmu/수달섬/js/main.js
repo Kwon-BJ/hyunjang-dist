@@ -2,6 +2,8 @@
 // ───────── 시작 (모델을 받은 뒤 섬을 채우고 돌리기 시작) ─────────
 (async () => {
 srcs = Object.fromEntries(await Promise.all([...new Set([...PROPS.map((p) => p[0]), '울타리', '보관함', '오두막', '나무집', '큰집', '도끼', '곡괭이', '자루', '권총', '소총', '산탄총', '낚싯대', '금붕어', '비단잉어', '도미', '넙치', '가시덫'])].map(async (n) => [n, await loadModel(n)])));
+// 삽은 그림 파일이 없어 직접 만든 모양(작업지시서 3 E · grow.js)
+srcs['삽'] = shovelModel();
 for (const [n, x, z, r, h, b] of PROPS) placeModel(srcs[n], x, z, r, h, b);
 for (const [x, z, r] of FENCES) placeModel(srcs['울타리'], x, z, r, 1.0, 'f');
 buildTown(); buildGuards(); buildLights(); setQualityMode(HQ ? 'auto' : qMode); // 안전지대 울타리 · 자판기(B단계) · 경비 포탑 · 밤 불빛(C단계)
