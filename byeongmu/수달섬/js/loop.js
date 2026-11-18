@@ -109,6 +109,8 @@ function step(dt) {
   if (typeof lightTick === 'function') lightTick(dt);
   // 맞음 효과 · 밀려남 · 겹치지 않기 · 화면 흔들림(작업지시서 3 C)
   if (typeof hitTick === 'function') hitTick(dt);
+  // 말풍선 자리 · 말하기 단추(작업지시서 3 D)
+  if (typeof chatTick === 'function') chatTick(dt);
 }
 let last = performance.now();
 const testHold = { paused: false, cam: null };
