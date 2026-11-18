@@ -23,7 +23,15 @@ TOOLS.push('삽'); SELLABLE.push('씨앗'); SHOPS.tool.buy.push('삽');
 
 // 그루터기: 나무 종류와 상관없이 짧은 통나무(나무마다 한 칸 · 처음엔 안 보임)
 const STUMP_N = TREES.length + 220;
-const stumpIM = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.26, 0.32, 0.34, 10).translate(0, 0.17, 0), new THREE.MeshLambertMaterial({ color: 0x8a5a33 }), STUMP_N);
+// 펠트 그루터기(2026-11-19): 밑이 살짝 퍼지고 모서리가 둥근 통 · 윗면은 밝은 나이테 색(높이 0.36 — 앉기 높이 그대로)
+const STUMP_GEO = (() => {
+  // 빈 칸도 늘 그려지는 묶음(나무 수만큼)이라 점을 적게 — 10 둘레 · 6 마디
+  const g = lathe([[0.36, 0], [0.33, 0.14], [0.3, 0.29], [0.27, 0.35], [0.2, 0.362], [0, 0.365]], 10);
+  const top = new THREE.Color(0xe6c48f), side0 = new THREE.Color(BARK0), side1 = new THREE.Color(0x8a5a33), c = new THREE.Color(), p = g.attributes.position, col = [];
+  for (let i = 0; i < p.count; i++) { const y = p.getY(i), r = Math.hypot(p.getX(i), p.getZ(i)); c.copy(side0).lerp(side1, sstep(0, 0.3, y)); if (y > 0.35 && r < 0.27) c.copy(top); col.push(c.r, c.g, c.b); }
+  g.deleteAttribute('uv'); g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); return g;
+})();
+const stumpIM = new THREE.InstancedMesh(STUMP_GEO, new THREE.MeshLambertMaterial({ vertexColors: true }), STUMP_N);
 for (let i = 0; i < STUMP_N; i++) stumpIM.setMatrixAt(i, ZERO_G);
 // 처음엔 모든 칸이 크기 0 이라 경계 구가 원점에 잡혀 통째로 안 그려짐 → 시야 거르기를 끔(심은 나무도 같게)
 stumpIM.castShadow = true; stumpIM.receiveShadow = true; stumpIM.frustumCulled = false; scene.add(stumpIM);
@@ -40,7 +48,36 @@ function stageOfC(r) {
   const f = (r.down - clock) / (r.full || 120);
   return f > GROW.stumpF ? 'stump' : f > GROW.youngF ? 'sapling' : 'young';
 }
+// ── 새싹(2026-11-19 펠트): 「작게 줄인 나무」 대신 둥근 줄기 + 통통한 떡잎 둘 · 그루터기 옆 땅에서 돋음 ──
+// 새싹 단계인 것만 칸을 받음(빈 칸을 그리지 않게 쓰는 칸만 count) — 휴대폰 부담 작게
+const SPROUT_GEO = (() => {
+  const stem = lathe([[0, 0], [0.035, 0], [0.03, 0.12], [0.026, 0.24], [0.018, 0.28], [0, 0.29]], 6);
+  const leaf = (s) => { const g = new THREE.SphereGeometry(0.1, 10, 7); g.scale(1, 0.32, 0.62); g.rotateZ(s * 0.45); g.translate(s * 0.1, 0.3, 0); return g; };
+  const parts = [stem, leaf(-1), leaf(1)].map((g, i) => { g.deleteAttribute('uv'); const p = g.attributes.position, A = new THREE.Color(i ? 0x5f9a3e : 0x6e9b45), B = new THREE.Color(i ? 0xa6cf6a : 0x86b456), c = new THREE.Color(), col = []; for (let v = 0; v < p.count; v++) { c.copy(A).lerp(B, sstep(0.05, 0.34, p.getY(v))); col.push(c.r, c.g, c.b); } g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); return g; });
+  return mergeGeometries(parts);
+})();
+const SPROUT_N = 220, sproutIM = new THREE.InstancedMesh(SPROUT_GEO, windy(new THREE.MeshLambertMaterial({ vertexColors: true }), { sway: 1.0, from: 0.1 }), SPROUT_N);
+sproutIM.count = 0; sproutIM.castShadow = true; sproutIM.receiveShadow = true; sproutIM.frustumCulled = false; scene.add(sproutIM);
+const sproutOf = new Map(), sproutRec = [], SPROUT_V = new THREE.Vector3();
+// k: 0 이면 없앰 · 아니면 그 크기로(새싹 단계 진행에 따라 0.7 → 1.3)
+function setSprout(r, k) {
+  let i = sproutOf.get(r);
+  if (!k) {
+    if (i == null) return;
+    const last = sproutRec.length - 1, lr = sproutRec[last];
+    if (i !== last) { sproutIM.getMatrixAt(last, GM); sproutIM.setMatrixAt(i, GM); sproutRec[i] = lr; sproutOf.set(lr, i); }
+    sproutRec.pop(); sproutOf.delete(r); sproutIM.count = sproutRec.length; sproutIM.instanceMatrix.needsUpdate = true; return;
+  }
+  if (i == null) { if (sproutRec.length >= SPROUT_N) return; i = sproutRec.length; sproutRec.push(r); sproutOf.set(r, i); sproutIM.count = sproutRec.length; }
+  // 1.8: 게임 카메라(멀리)에서도 떡잎이 보이게
+  const s = (r.s || 1) * k * 1.8, a = (hashName(String(r.key || r.i)) % 628) / 100;
+  GM.makeRotationY(a).scale(SPROUT_V.set(s, s, s)); GM.setPosition(r.x + 0.42 * (r.s || 1), groundY(r.x, r.z) - 0.01, r.z + 0.32 * (r.s || 1)); sproutIM.setMatrixAt(i, GM);
+  sproutIM.instanceMatrix.needsUpdate = true;
+}
+const sproutScale = (r) => { const i = sproutOf.get(r); if (i == null) return 0; sproutIM.getMatrixAt(i, GM); return new THREE.Vector3().setFromMatrixScale(GM).y / 1.8; };
+// 그루터기를 숨기면(다 자람 · 파냄 · 들어올 때) 새싹도 같이 없앰
 function setStump(r, on) {
+  if (!on) setSprout(r, 0);
   if (r.stumpI == null) return;
   if (on) { GM.makeScale(r.s || 1, 1, r.s || 1); GM.setPosition(r.x, groundY(r.x, r.z) - 0.02, r.z); stumpIM.setMatrixAt(r.stumpI, GM); } else stumpIM.setMatrixAt(r.stumpI, ZERO_G);
   stumpIM.instanceMatrix.needsUpdate = true;
@@ -52,12 +89,13 @@ function treeShow(r) {
   if (st === 'gone') { r.im.setMatrixAt(r.i, ZERO_G); r.im.instanceMatrix.needsUpdate = true; setStump(r, false); growing.delete(r); return; }
   const f = (r.down - clock) / (r.full || 120);
   let k = 0;
-  // 새싹: 0.12 → 0.3 · 어린 나무: 0.4 → 0.8(다 자라면 1 — 그때는 life.js 가 원래 모양으로 되돌림)
-  if (st === 'sapling') k = 0.12 + 0.18 * (1 - (f - GROW.youngF) / (GROW.stumpF - GROW.youngF));
-  else if (st === 'young') k = 0.4 + 0.4 * (1 - f / GROW.youngF);
+  // 새싹 단계: 나무는 숨기고 그루터기 옆에 새싹(0.7 → 1.3) · 어린 나무: 0.4 → 0.8(다 자라면 1 — 그때는 life.js 가 원래 모양으로 되돌림)
+  const sp = st === 'sapling' ? 0.7 + 0.6 * (1 - (f - GROW.youngF) / (GROW.stumpF - GROW.youngF)) : 0;
+  if (st === 'young') k = 0.4 + 0.4 * (1 - f / GROW.youngF);
   if (k > 0) { GM.copy(r.m).multiply(GS.makeScale(k, k, k)); r.im.setMatrixAt(r.i, GM); } else r.im.setMatrixAt(r.i, ZERO_G);
   r.im.instanceMatrix.needsUpdate = true;
   setStump(r, st === 'stump' || st === 'sapling');
+  setSprout(r, sp);
 }
 // 풀 덤불 · 꽃 · 열매: 다 자랄 때까지 작게(0.3 → 0.9)
 function smallShow(r) {
