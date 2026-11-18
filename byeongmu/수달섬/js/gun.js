@@ -6,7 +6,8 @@ const GUN_INFO = { 권총: { rate: 3, mag: 12, ammo: '권총탄', snd: 1700, len
 const PACK = { 권총탄: 12, 소총탄: 30, 산탄: 6 };
 Object.assign(ITEMS, { 권총: { buy: 6000, tool: true }, 소총: { buy: 14000, tool: true }, 산탄총: { buy: 9000, tool: true }, 권총탄: { buy: 300 }, 소총탄: { buy: 700 }, 산탄: { buy: 400 } }); // 서버 config buy 와 같게(3단계 — 30분 채집 ≈ 권총)
 const BUY_ALL = ['도끼', '곡괭이', '낚싯대', '권총', '소총', '산탄총', '권총탄', '소총탄', '산탄', '포탑', '가시덫'];
-const buyList = () => (srvOn() ? BUY_ALL : ['도끼', '곡괭이']); // 총 · 탄약 · 낚싯대는 함께일 때만 판다 // 총 · 탄약은 함께일 때만 판다
+const LOCAL_BUY = ['도끼', '곡괭이', '텐트', '나무', '돌', '보관함']; // 혼자 놀기(서버 없음)에서 파는 것 — 총 · 탄약 · 낚싯대 · 함정은 함께일 때만
+const buyList = () => (SHOPS[shopKind] || SHOPS.tool).buy.filter((id) => srvOn() || LOCAL_BUY.includes(id)); // 지금 연 가게 · 자판기가 파는 것(B단계)
 const isGun = (t) => GUNS.includes(t);
 S.mag = {};
 const aim = { ang: 0, firing: false, has: false, cd: 0, at: 0 }; // 조준 방향 · 쏘는 중
@@ -78,7 +79,7 @@ function gunMeshFor(src, g) {
   const long = sz.x >= sz.z ? 'x' : 'z', k = GUN_INFO[g].len / Math.max(sz.x, sz.z);
   const inner = new THREE.Group(); inner.add(o); o.position.set(-c.x, -c.y, -c.z); inner.scale.setScalar(k);
   if (long === 'x') inner.rotation.y = -Math.PI / 2; // 긴 쪽을 앞(+z)으로
-  const grp = new THREE.Group(); grp.add(inner); grp.position.set(0.08, 0.37, 0.24 + GUN_INFO[g].len * 0.25); // 새 수달: 머리 밑 · 몸통 앞(가방은 등) grp.traverse((m) => { if (m.isMesh) m.castShadow = true; });
+  const grp = new THREE.Group(); grp.add(inner); grp.position.set(0.08, 0.37, 0.24 + GUN_INFO[g].len * 0.25); grp.traverse((m) => { if (m.isMesh) m.castShadow = true; }); // 새 수달: 머리 밑 · 몸통 앞(가방은 등)
   return grp;
 }
 function ensureGuns(obj) {
