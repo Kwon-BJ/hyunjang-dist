@@ -29,6 +29,19 @@ function resize() {
 }
 addEventListener('resize', resize); resize();
 const camAt = new THREE.Vector3(me.x, 0, me.z);
+// 확대 3단계(작업지시서 2 A) — 보통에서 세로 휴대폰 수달 키가 화면 높이의 12~14%. 총을 들면 한 단계 멀리(사거리가 화면에 들어오게)
+const ZOOM_K = [0.6, 0.76, 1.1], // 잰 값(모자 없음 · 2026-11-18): 세로 390 에서 수달 키 약 16.5% · 13% · 9% (예전 카메라 = 1.0 → 9.8%)
+  ZOOM_NAME = ['가까이', '보통', '멀리'];
+let zoomLv = 1; try { const z = parseInt(localStorage.getItem('suseom-zoom'), 10); if (z >= 0 && z <= 2) zoomLv = z; } catch { /* */ }
+let zoomK = ZOOM_K[zoomLv];
+const zoomBtn = document.createElement('button'); zoomBtn.type = 'button'; zoomBtn.id = 'zoomBtn'; zoomBtn.className = 'ui'; document.body.appendChild(zoomBtn);
+const zoomWant = () => Math.min(2, zoomLv + (typeof isGun === 'function' && isGun(S.tool) ? 1 : 0));
+function paintZoom() { const gun = typeof isGun === 'function' && isGun(S.tool); zoomBtn.textContent = '확대 · ' + ZOOM_NAME[zoomWant()] + (gun && zoomWant() !== zoomLv ? '(총)' : ''); }
+function setZoom(l) { zoomLv = ((l % 3) + 3) % 3; try { localStorage.setItem('suseom-zoom', String(zoomLv)); } catch { /* */ } paintZoom(); }
+zoomBtn.tabIndex = -1; zoomBtn.onclick = () => { setZoom(zoomLv + 1); zoomBtn.blur(); }; paintZoom();
+addEventListener('keydown', (e) => { if (e.code === 'KeyZ' && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey && document.getElementById('win').hidden) setZoom(zoomLv + 1); });
+let wheelAcc = 0, wheelAt = 0;
+cv.addEventListener('wheel', (e) => { if (e.ctrlKey || !e.deltaY) return; e.preventDefault(); wheelAcc += e.deltaY; const now = performance.now(); if (Math.abs(wheelAcc) < 50 || now - wheelAt < 250) return; setZoom(Math.max(0, Math.min(2, zoomLv + (wheelAcc > 0 ? 1 : -1)))); wheelAcc = 0; wheelAt = now; }, { passive: false }); // 트랙패드 · 관성에 한 번에 끝까지 안 가게
 
 // ───────── 품질 자동 조절 (느린 휴대폰) ─────────
 const quality = { level: 2, fps: 0 }; // 2 전부 · 1 흐림 끔 · 풀 반 · 0 그림자 · 효과 끔 · 풀 적게
@@ -76,7 +89,9 @@ function step(dt) {
   if (typeof fishPose === 'function') fishPose(me.obj, !!fishing.st); // 낚시 중
   const want = new THREE.Vector3(me.x, me.obj.position.y, me.z);
   if (camAt.distanceTo(want) > 8) camAt.copy(want); else camAt.lerp(want, Math.min(1, dt * 6)); // 멀리 옮겨지면(다시 태어남 등) 바로 따라붙음
-  camera.position.set(camAt.x, camAt.y + camH, camAt.z + camD); camera.lookAt(camAt.x, camAt.y + 0.6, camAt.z);
+  { const zw = zoomWant(); zoomK += (ZOOM_K[zw] - zoomK) * Math.min(1, dt * 5); if (zoomBtn.dataset.lv !== String(zw)) { zoomBtn.dataset.lv = zw; paintZoom(); } }
+  { const sc = sun.shadow.camera, ext = 20 * Math.max(1, zoomK) + 3; if (Math.abs(sc.right - ext) > 0.05) { sc.left = sc.bottom = -ext; sc.right = sc.top = ext; sc.updateProjectionMatrix(); } } // 멀리(×1.2)에서도 화면 끝까지 그림자
+  camera.position.set(camAt.x, camAt.y + camH * zoomK, camAt.z + camD * zoomK); camera.lookAt(camAt.x, camAt.y + 0.6, camAt.z);
   sun.position.set(camAt.x + 16, 24, camAt.z + 10); sun.target.position.copy(camAt);
   U.uTime.value = clock; U.uCam.value.copy(camera.position); U.uPlayer.value.copy(me.obj.position);
 }
