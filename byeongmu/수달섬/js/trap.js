@@ -1,11 +1,12 @@
 // 수달섬 — 함정(밤샘 8단계): 기관총 포탑 · 가시덫. 놓기 · 탄약 넣기 · 부수기 요청만 보내고, 조준 · 발사 · 피해는 서버가 한다.
 // 포탑 = 통 + 소총(코드로 조립 · CC0 모델) · 가시덫 = 덫 모델. 가시덫은 놓은 사람에게만 뚜렷하고 남에게는 흐릿하게.
-const TRAP_ITEMS = ['포탑', '가시덫'];
+const TRAP_ITEMS = ['포탑', '가시덫', '모닥불']; // 모닥불: D단계 — 집 둘레에 놓는 내 모닥불
 Object.assign(ITEMS, { 포탑: { buy: 4000, tool: true }, 가시덫: { buy: 300, tool: true } }); // 서버 config 와 같게
 const BULB_G = new THREE.SphereGeometry(0.07, 10, 8), BULB_M = new THREE.MeshBasicMaterial({ color: 0xff3030 }); // 포탑 빨간 불(모두 같이 씀 · 리뷰 10)
 const traps = new Map(); // id → { ...서버 값, obj, gun }
 function makeTrapObj(t) {
   const mine = t.owner === net.name;
+  if (t.kind === 'fire') { const o = placeModel(srcs['모닥불'], t.x, t.z, 0, 0.75, ''), circle = { x: t.x, z: t.z, r: 0.4 }; circles.push(circle); return { obj: o, circle, glow: addGlow(t.x, Math.max(0, height(t.x, t.z)) + 0.8, t.z, 0xff8a3a, 2.2, { i: 5, d: 9, fire: 1 }) }; }
   if (t.kind === 'turret') {
     const base = placeModel(srcs['통'], t.x, t.z, 0, 0.95, '');
     const gun = srcs['소총'].clone(true), b = new THREE.Box3().setFromObject(gun), sz = b.getSize(new THREE.Vector3()), k = 0.9 / Math.max(sz.x, sz.z);
@@ -44,7 +45,7 @@ function trapTargets(see) {
     else if (!mine && !inSafeC(me.x, me.z)) see('trap', t, t.x, t.z, t.kind === 'turret' ? 1.6 : 1.1, 0.4); // 남의 가시덫도 바로 앞(1.1칸)이면 부수기(요청 3)
   }
 }
-const trapLabel = (t) => (t.type === 'place' ? `${S.tool} 놓기` : t.type === 'tload' ? `탄약 넣기 (${t.rec.ammo})` : t.type === 'trap' ? (t.rec.kind === 'turret' ? '포탑 부수기' : '덫 부수기') : null);
+const trapLabel = (t) => (t.type === 'place' ? `${S.tool} 놓기` : t.type === 'tload' ? `탄약 넣기 (${t.rec.ammo})` : t.type === 'trap' ? (t.rec.kind === 'turret' ? '포탑 부수기' : t.rec.kind === 'fire' ? '모닥불 부수기' : '덫 부수기') : null);
 function trapAction(t) {
   if (t.type === 'place') { netSend({ t: 'place', x: +t.x.toFixed(2), z: +t.z.toFixed(2) }); return true; }
   if (t.type === 'tload') { netSend({ t: 'tload', id: t.rec.id }); return true; }
