@@ -13,7 +13,7 @@ try { // 새 판으로 새로 열린 거면 있던 자리로
   const p = JSON.parse(sessionStorage.getItem('suseom-pos') || 'null'); sessionStorage.removeItem('suseom-pos');
   if (p && p.v === MAP_V && Date.now() - p.t < 120000 && Number.isFinite(p.x)) { me.x = p.x; me.z = p.z; me.face = p.f; nudgeFree(); keepPos = true; } // 서버에도 이 자리로(hi.keep)
 } catch { /* */ }
-for (const t of TOOLS) { held[t] = heldModel(srcs[t]); me.obj.userData.hold.add(held[t]); }
+for (const t of TOOLS) { held[t] = heldModel(srcs[t], t); me.obj.userData.hold.add(held[t]); }
 connect();
 npc = makeOtter({ hat: null, color: 0x8cc463 }); // 가게 주인(도구 상점 · 모자 없음)
 npc.position.set(HARBOR.x, height(HARBOR.x, HARBOR.z - 4.1), HARBOR.z - 4.1); scene.add(npc);
