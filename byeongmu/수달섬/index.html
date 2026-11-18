@@ -115,6 +115,15 @@
   .slot.sel { background-image: url(img/ui-칸-고름.webp) !important; }
   .slot .ic { position: absolute; inset: 13%; }
   .slot b { position: absolute; right: 5px; bottom: 2px; font-size: 15px; color: #4a2e14; text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 2px #fff; }
+  /* 피해 숫자(작업지시서 3 C) — 맞은 나: 빨강 · 내가 때림: 노랑 · 남끼리: 흰색. 화면에 고정 · 누를 수 없음 */
+  .dmgn { position: fixed; left: 0; top: 0; z-index: 3; pointer-events: none; font: 900 22px system-ui, sans-serif; color: #fff; -webkit-text-stroke: 1px rgba(60, 20, 10, .55); text-shadow: 0 2px 0 rgba(60, 20, 10, .5), 0 0 6px rgba(0, 0, 0, .35); white-space: nowrap; will-change: transform, opacity; }
+  .dmgn.dmg-me { color: #ff5a46; }
+  .dmgn.dmg-hit { color: #ffd23a; font-size: 26px; }
+  .dmgn.dmg-other { font-size: 18px; }
+  /* 내구도 막대 · 고장 표시(작업지시서 3 B) */
+  .slot i.dur { position: absolute; left: 8px; right: 8px; bottom: 5px; height: 4px; border-radius: 2px; background: rgba(60, 40, 20, .25); }
+  .slot i.dur u { display: block; height: 100%; border-radius: 2px; background: #6aa83a; }
+  .slot em.broke { position: absolute; left: 50%; bottom: 3px; transform: translateX(-50%); font: 700 10px system-ui, sans-serif; font-style: normal; padding: 0 4px; border-radius: 5px; background: #c0392b; color: #fff; }
   .slot.hold::after { content: '손'; position: absolute; left: 4px; top: 3px; font-size: 11px; padding: 0 4px; border-radius: 6px; background: #6aa83a; color: #fff; }
   .foot { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 10px; }
   .bbtn { height: 44px; min-width: 150px; box-sizing: border-box; padding: 0 16px; background: url(img/ui-갈색단추.webp) center / 100% 100% no-repeat !important; color: #fff4dc !important; display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 17px; white-space: nowrap; }
@@ -174,7 +183,7 @@
 </script>
 <div class="ui" id="win" hidden><div class="frame" id="frame"><div class="ribbon"><i class="ic" id="winIc"></i><span id="winTitle"></span></div><button type="button" id="winX" aria-label="닫기"></button><div id="winBody"></div><div id="winMsg"></div></div></div>
 <script type="module">
-const GAME_BUILD = "202611180722"; // 올리기.mjs 가 게임 파일이 바뀐 때만 적는다
+const GAME_BUILD = "202611180837"; // 올리기.mjs 가 게임 파일이 바뀐 때만 적는다
 window.GAME_BUILD = GAME_BUILD;
 import('./js/boot.js?v=' + GAME_BUILD).catch((e) => { const l = document.getElementById('load'); if (l) l.textContent = '수달섬을 못 열었어요: ' + e.message; });
 </script>
