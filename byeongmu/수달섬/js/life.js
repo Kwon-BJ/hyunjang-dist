@@ -183,8 +183,9 @@ function life(dt) {
 // 창
 let view = null, sel = -1, tab = 'sell', trashArm = 0, moveArm = 0, shopKind = 'tool';
 function armMove() { moveArm = 1; render(); setTimeout(() => { if (moveArm && view === 'house') { moveArm = 0; render(); } }, 2500); } // shopKind: 연 가게 · 자판기(B단계)
-function openWin(v) { view = v; sel = -1; trashArm = 0; winEl.hidden = false; document.body.classList.add('winopen'); toastsEl.textContent = ''; $('winMsg').textContent = ''; hideHint(); render(); }
-function closeWin() { winEl.hidden = true; view = null; document.body.classList.remove('winopen'); }
+// 교환 창에서 다른 창으로 바꾸거나 닫으면 교환 취소(trade.js)
+function openWin(v) { if (view === 'trade' && v !== 'trade' && typeof tradeClosed === 'function') tradeClosed(); view = v; sel = -1; trashArm = 0; winEl.hidden = false; document.body.classList.add('winopen'); toastsEl.textContent = ''; $('winMsg').textContent = ''; hideHint(); render(); }
+function closeWin() { if (view === 'trade' && typeof tradeClosed === 'function') tradeClosed(); winEl.hidden = true; view = null; document.body.classList.remove('winopen'); }
 $('winX').onclick = closeWin;
 winEl.addEventListener('pointerdown', (e) => { if (e.target === winEl) closeWin(); });
 // 내구도 막대(작업지시서 3 B): 도구 · 총 칸 아래 · 0 이면 「고장」
@@ -193,9 +194,9 @@ const durHtml = (s) => (s && DUR[s.id] && Number.isFinite(s.d) ? (s.d <= 0 ? '<e
 const slotsHtml = (box, kind) => box.map((s, i) => `<button type="button" class="slot${kind === 'bag' && sel === i ? ' sel' : ''}${s && s.id === S.tool ? ' hold' : ''}" data-box="${kind}" data-i="${i}">${s ? `<i class="ic" style="background-image:${ic(s.id)}"></i>${ITEMS[s.id].tool ? '' : `<b>${s.n}</b>`}${durHtml(s)}` : ''}</button>`).join('');
 const price = (n) => `<span class="pr"><i class="ic"></i>${n.toLocaleString()}</span>`;
 function render() {
-  frameEl.classList.toggle('wide', view === 'chest');
+  frameEl.classList.toggle('wide', view === 'chest' || view === 'trade');
   const H = HOUSES[S.tier];
-  const [title, tic] = { bag: ['가방', '가방'], shop: [(SHOPS[shopKind] || SHOPS.tool).name, '조개'], house: ['내 집', H.model], chest: ['보관함', H.model], raids: ['습격 기록', H.model], settings: ['설정', '손'], cook: ['요리', '도미'] }[view];
+  const [title, tic] = { bag: ['가방', '가방'], shop: [(SHOPS[shopKind] || SHOPS.tool).name, '조개'], house: ['내 집', H.model], chest: ['보관함', H.model], raids: ['습격 기록', H.model], settings: ['설정', '손'], cook: ['요리', '도미'], trade: ['교환', '조개'] }[view];
   $('winTitle').textContent = title; $('winIc').style.backgroundImage = ic(tic);
   let h = '';
   if (view === 'bag') {
@@ -235,6 +236,7 @@ function render() {
     h = Object.entries(RECIPES).map(([id, need]) => { const okk = need.every(([k, n]) => haveOf(k) >= n), F = FOODS[id]; return `<div class="row mat-row"><i class="ic" style="background-image:${ic(id)}"></i><span class="nm">${id}<small>+${F.e}${F.buff ? ' · ' + F.buff : ''}</small></span><div class="mat-line"><span class="need">${need.map(([k, n]) => `${k} ${Math.min(haveOf(k), n)}/${n}`).join(' · ')}</span><button type="button" class="bbtn" data-cook="${id}" ${okk ? '' : 'disabled'}>만들기</button></div></div>`; }).join('') + '<div class="empty">생선 = 물고기 아무거나 · 모닥불 옆에 있으면 에너지가 차요</div>';
   } else if (view === 'settings') { const NM = { auto: '자동', low: '저사양', high: '고사양' };
     h = `<div class="empty">그래픽 품질 — 지금 ${NM[qMode]}${qMode === 'auto' ? ` (${['저사양', '보통', '고사양'][quality.level]})` : ''}</div><div class="qsel">${['auto', 'low', 'high'].map((m) => `<button type="button" class="${m === qMode ? 'gbtn' : 'bbtn'}" data-q="${m}">${NM[m]}</button>`).join('')}</div><div class="empty">저사양: 빠르게(효과 · 그림자 줄임) · 고사양: 부드러운 그림자 · 불빛 번짐 · 흐림 · 조명 많이</div>`;
+  } else if (view === 'trade') { h = tradeHtml();
   } else if (view === 'raids') { h = raidsHtml();
   } else if (view === 'chest') {
     h = `<div class="two"><div><h4>가방 (누르면 보관함으로)</h4><div class="grid">${slotsHtml(S.bag, 'bagc')}</div></div><div><h4>보관함 ${S.chest.length}칸 (누르면 가방으로)</h4><div class="grid chestgrid">${slotsHtml(S.chest, 'chest')}</div></div></div>`;
@@ -245,6 +247,8 @@ bodyEl.addEventListener('click', (e) => {
   const b = e.target.closest('button'); if (!b || b.disabled) return;
   if (b.dataset.tab) { tab = b.dataset.tab; return render(); }
   if (b.dataset.q) { setQualityMode(b.dataset.q); return render(); } // 설정 창(C단계)
+  // 교환 창 단추(작업지시서 3 D · trade.js)
+  if (view === 'trade' && tradeClick(b)) return;
   if (srvOn()) { // 서버가 정함 — 요청만 보내고 inv 로 받음
     if (b.dataset.box === 'bag') { const i = +b.dataset.i, s = S.bag[i]; sel = i; trashArm = 0; if (s && ITEMS[s.id].tool) return netSend({ t: 'equip', tool: S.tool === s.id ? null : s.id }); return render(); }
     if (b.dataset.box === 'bagc' || b.dataset.box === 'chest') return netSend({ t: 'chest', from: b.dataset.box === 'chest' ? 'chest' : 'bag', i: +b.dataset.i });
