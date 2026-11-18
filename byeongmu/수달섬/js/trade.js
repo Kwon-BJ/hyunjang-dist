@@ -32,7 +32,8 @@ cv.addEventListener('pointerup', (e) => { if (e.pointerType !== 'mouse') return;
 const TAPV = new THREE.Vector3();
 // 누른 자리에서 48px 안 · 4칸 안의 수달 중 가장 가까운 것
 function tapOtter(x, y) {
-  if (!srvOn() || me.dead || TRADE || !winEl.hidden) return null;
+  // 총을 들었으면 누르기 = 쏘기(싸우다 교환 띠가 뜨지 않게 — 리뷰 2026-11-18)
+  if (!srvOn() || me.dead || TRADE || !winEl.hidden || GUNS.includes(S.tool)) return null;
   let best = null, bd = 48;
   for (const o of net.others.values()) {
     if (o.alive === false || !o.obj.visible || Math.hypot(o.x - me.x, o.z - me.z) > 4) continue;
