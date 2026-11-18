@@ -110,9 +110,11 @@ function findTarget() {
   raidTargets(see); // 남의 집 치기(7단계) — house.js
   trapTargets(see); // 함정 놓기 · 탄약 · 부수기(8단계) — trap.js
   cookTargets(see); // 모닥불 옆 요리(D단계)
+  // 바닥 물건 줍기(작업지시서 3 B) — ground.js
+  groundTargets(see);
   return best;
 }
-const labelOf = (t) => !t ? '줍기/쓰기' : (typeof trapLabel === 'function' && trapLabel(t)) || (t.type === 'pitch' ? (t.rec.why ? '여기는 못 쳐요' : '텐트 치기') : null) || (t.type === 'cook' ? '요리하기' : null) || { shop: t.rec && SHOPS[t.rec] && SHOPS[t.rec].color ? '자판기 열기' : '가게 열기', chest: '보관함', house: '집 올리기', flower: '꽃 꺾기', bush: '풀 뜯기', berry: '열매 따기', fish: '낚시하기', raid: S.tool === '도끼' ? '집 부수기' : '집 치기', otter: S.tool === '도끼' ? '도끼로 치기' : '때리기', sack: '자루 줍기' }[t.type]
+const labelOf = (t) => !t ? '줍기/쓰기' : (typeof trapLabel === 'function' && trapLabel(t)) || (t.type === 'pitch' ? (t.rec.why ? '여기는 못 쳐요' : '텐트 치기') : null) || (t.type === 'cook' ? '요리하기' : t.type === 'pickup' ? `줍기 (${t.rec.n})` : null) || { shop: t.rec && SHOPS[t.rec] && SHOPS[t.rec].color ? '자판기 열기' : '가게 열기', chest: '보관함', house: '집 올리기', flower: '꽃 꺾기', bush: '풀 뜯기', berry: '열매 따기', fish: '낚시하기', raid: S.tool === '도끼' ? '집 부수기' : '집 치기', otter: S.tool === '도끼' ? '도끼로 치기' : '때리기', sack: '자루 줍기' }[t.type]
   || (t.type === 'tree' ? (S.tool === '도끼' ? '나무 베기' : '나무 흔들기') : S.tool === '곡괭이' ? '돌 캐기' : '곡괭이 필요');
 
 let actCool = 0;
@@ -127,6 +129,7 @@ function doAction() {
   if (t.type === 'shop') { shopKind = t.rec; if (!SHOPS[shopKind].sell) tab = 'buy'; return openWin('shop'); }
   if (t.type === 'pitch') return pitchAction(t.rec);
   if (t.type === 'cook') return openWin('cook');
+  if (t.type === 'pickup') return pickupAction();
   if (t.type === 'raid') return raidAction(t); // 7단계
   if ((t.type === 'place' || t.type === 'tload' || t.type === 'trap') && trapAction(t)) return; // 8단계
   if (t.type === 'house') return openWin('house');
@@ -184,7 +187,10 @@ function openWin(v) { view = v; sel = -1; trashArm = 0; winEl.hidden = false; do
 function closeWin() { winEl.hidden = true; view = null; document.body.classList.remove('winopen'); }
 $('winX').onclick = closeWin;
 winEl.addEventListener('pointerdown', (e) => { if (e.target === winEl) closeWin(); });
-const slotsHtml = (box, kind) => box.map((s, i) => `<button type="button" class="slot${kind === 'bag' && sel === i ? ' sel' : ''}${s && s.id === S.tool ? ' hold' : ''}" data-box="${kind}" data-i="${i}">${s ? `<i class="ic" style="background-image:${ic(s.id)}"></i>${ITEMS[s.id].tool ? '' : `<b>${s.n}</b>`}` : ''}</button>`).join('');
+// 내구도 막대(작업지시서 3 B): 도구 · 총 칸 아래 · 0 이면 「고장」
+const DUR = { 도끼: 250, 곡괭이: 250, 낚싯대: 120, 권총: 600, 소총: 1500, 산탄총: 300 };
+const durHtml = (s) => (s && DUR[s.id] && Number.isFinite(s.d) ? (s.d <= 0 ? '<em class="broke">고장</em>' : `<i class="dur"><u style="width:${Math.round(s.d / DUR[s.id] * 100)}%"></u></i>`) : '');
+const slotsHtml = (box, kind) => box.map((s, i) => `<button type="button" class="slot${kind === 'bag' && sel === i ? ' sel' : ''}${s && s.id === S.tool ? ' hold' : ''}" data-box="${kind}" data-i="${i}">${s ? `<i class="ic" style="background-image:${ic(s.id)}"></i>${ITEMS[s.id].tool ? '' : `<b>${s.n}</b>`}${durHtml(s)}` : ''}</button>`).join('');
 const price = (n) => `<span class="pr"><i class="ic"></i>${n.toLocaleString()}</span>`;
 function render() {
   frameEl.classList.toggle('wide', view === 'chest');
@@ -195,7 +201,7 @@ function render() {
   if (view === 'bag') {
     const s = S.bag[sel];
     const food = s && FOODS[s.id];
-    h = `<div class="grid">${slotsHtml(S.bag, 'bag')}</div><div class="${food || (s && FISH_KINDS.includes(s.id)) ? 'qsel' : 'foot'}">${food ? `<button type="button" class="gbtn" id="eatBtn">먹기 +${food.e}${food.buff ? ' · ' + food.buff : ''}</button>` : s && FISH_KINDS.includes(s.id) ? '<span class="pk">날생선은 모닥불에서 익혀요</span>' : ''}<button type="button" class="bbtn" id="trash" ${s ? '' : 'disabled'}><i class="ic" style="background-image:${ic('쓰레기통')}"></i>${trashArm ? '한 번 더 누르면 버려요' : '버리기'}</button></div>`;
+    h = `<div class="grid">${slotsHtml(S.bag, 'bag')}</div><div class="${food || (s && FISH_KINDS.includes(s.id)) ? 'qsel' : 'foot'}">${food ? `<button type="button" class="gbtn" id="eatBtn">먹기 +${food.e}${food.buff ? ' · ' + food.buff : ''}</button>` : s && FISH_KINDS.includes(s.id) ? '<span class="pk">날생선은 모닥불에서 익혀요</span>' : ''}<button type="button" class="bbtn" id="trash" ${s ? '' : 'disabled'}><i class="ic" style="background-image:${ic('쓰레기통')}"></i>${trashArm ? '한 번 더 누르면 버려요' : '버리기'}</button></div>${srvOn() ? dropRows(s) : ''}`;
   } else if (view === 'shop') {
     if (!(SHOPS[shopKind] || SHOPS.tool).sell) tab = 'buy'; // 자판기는 사기만(팔기는 도구 상점 상인)
     h = (SHOPS[shopKind] || SHOPS.tool).sell ? `<div class="tabs"><button type="button" class="tab${tab === 'sell' ? ' on' : ''}" data-tab="sell">팔기</button><button type="button" class="tab${tab === 'buy' ? ' on' : ''}" data-tab="buy">사기</button></div>` : '';
@@ -210,6 +216,7 @@ function render() {
         return `<div class="row mat-row"><i class="ic" style="background-image:${ic(id)}"></i><span class="nm">${id}<small>×${count(id)}</small></span>${price(ITEMS[id].sell)}<div class="mat-line"><span class="qty"><button type="button" class="bbtn" data-qty="${id}" data-d="-1" ${q <= 1 ? 'disabled' : ''}>−</button><b>${q}</b><button type="button" class="bbtn" data-qty="${id}" data-d="1" ${q >= count(id) ? 'disabled' : ''}>+</button></span><button type="button" class="bbtn" data-sellq="${id}">${q}개 팔기</button></div></div>`; // 둘째 줄에 수량 · 팔기(좁은 휴대폰에서 넘치지 않게)
       }).join('') : '<div class="empty">팔 물건이 없어요. 섬에서 모아 오세요!</div>';
     } else {
+      h += fixRows();
       const list = buyList(); h += list.length ? list.map(buyRow).join('') : '<div class="empty">먹거리는 곧 들어와요</div>';
     }
     h += `<div class="mine">내 조개 ${price(S.money)}</div>`;
@@ -251,6 +258,12 @@ bodyEl.addEventListener('click', (e) => {
     if (b.id === 'raidsBtn') return openWin('raids');
     if (b.id === 'moveBtn') { if (!moveArm) return armMove(); moveArm = 0; return netSend({ t: 'unpitch' }); }
     if (b.id === 'eatBtn') return netSend({ t: 'eat', i: sel });
+    // 내려놓기 · 조개 주머니 · 수리(작업지시서 3 B)
+    if (b.dataset.dq) { const s = S.bag[sel]; dropQty = Math.max(1, Math.min(s ? s.n : 1, dropQty + +b.dataset.dq * (dropQty >= 10 ? 5 : 1))); return render(); }
+    if (b.id === 'dropBtn') { const s = S.bag[sel]; if (!s) return; const n = Math.min(s.n, dropQty); dropQty = 1; return netSend({ t: 'drop', i: sel, n }); }
+    if (b.dataset.mq) { const st = moneyQty >= 1000 ? 500 : moneyQty >= 100 ? 50 : 10; moneyQty = Math.max(10, Math.min(Math.max(10, S.money), moneyQty + +b.dataset.mq * st)); return render(); }
+    if (b.id === 'dropMoney') { const n = Math.min(S.money, moneyQty); if (n > 0) netSend({ t: 'drop', money: n }); return; }
+    if (b.dataset.fix) return netSend({ t: 'fix', i: +b.dataset.fix });
     if (b.dataset.cook) return netSend({ t: 'cook', r: b.dataset.cook });
   }
   if (b.id === 'moveBtn') { if (!moveArm) return armMove(); moveArm = 0; return movePack(); } // 혼자 놀기 이사
@@ -383,6 +396,26 @@ function tentGhostTick() {
   const p = pitchSpot(), good = !p.why;
   ghost.g.visible = true; ghost.g.position.set(p.x, Math.max(0, height(p.x, p.z)), p.z);
   if (ghost.last !== good) { ghost.last = good; for (const m of ghost.meshes) m.material = good ? ghost.ok : ghost.no; ghost.ring.material = good ? ghost.okRing : ghost.noRing; }
+}
+
+// ───────── 내려놓기 · 조개 주머니 · 수리 (작업지시서 3 B) ─────────
+let dropQty = 1, moneyQty = 100;
+// 가방 창 아래: 고른 칸을 수량을 골라 내려놓기 · 조개를 금액을 골라 주머니로 내려놓기
+function dropRows(s) {
+  if (s) dropQty = Math.max(1, Math.min(s.n, dropQty));
+  moneyQty = Math.max(10, Math.min(Math.max(10, S.money), moneyQty));
+  const item = s ? `<div class="row mat-row"><i class="ic" style="background-image:${ic(s.id)}"></i><span class="nm">내려놓기<small>${s.id}</small></span><div class="mat-line"><span class="qty"><button type="button" class="bbtn" data-dq="-1" ${dropQty <= 1 ? 'disabled' : ''}>−</button><b>${dropQty}</b><button type="button" class="bbtn" data-dq="1" ${dropQty >= s.n ? 'disabled' : ''}>+</button></span><button type="button" class="bbtn" id="dropBtn">내려놓기</button></div></div>` : '';
+  const money = `<div class="row mat-row"><i class="ic" style="background-image:${ic('조개')}"></i><span class="nm">조개 주머니<small>가진 조개 ${S.money.toLocaleString()}</small></span><div class="mat-line"><span class="qty"><button type="button" class="bbtn" data-mq="-1" ${moneyQty <= 10 ? 'disabled' : ''}>−</button><b>${moneyQty.toLocaleString()}</b><button type="button" class="bbtn" data-mq="1" ${moneyQty >= S.money ? 'disabled' : ''}>+</button></span><button type="button" class="bbtn" id="dropMoney" ${S.money < 1 ? 'disabled' : ''}>내려놓기</button></div></div>`;
+  return item + money;
+}
+// 상점(도구) · 무기 자판기(총) 사기 쪽 위에: 닳은 도구 고치기 줄(값 = 새것 값 × 0.35 × 닳은 비율 · 서버 config.fixRate 와 같게)
+function fixRows() {
+  const forGun = shopKind === 'gun', forTool = shopKind === 'tool';
+  if (!srvOn() || !(forGun || forTool)) return '';
+  return S.bag.map((s, i) => [s, i]).filter(([s]) => s && DUR[s.id] && Number.isFinite(s.d) && s.d < DUR[s.id] && GUNS.includes(s.id) === forGun).map(([s, i]) => {
+    const cost = Math.ceil(ITEMS[s.id].buy * 0.35 * (1 - s.d / DUR[s.id]));
+    return `<div class="row"><i class="ic" style="background-image:${ic(s.id)}"></i><span class="nm">${s.id} 고치기<small class="pk">내구 ${s.d}/${DUR[s.id]}${s.d <= 0 ? ' · 고장' : ''}</small></span>${price(cost)}<button type="button" class="bbtn" data-fix="${i}" ${S.money < cost ? 'disabled' : ''}>고치기</button></div>`;
+  }).join('');
 }
 
 // ───────── 요리 · 시세 · 부식 (D단계) ─────────
