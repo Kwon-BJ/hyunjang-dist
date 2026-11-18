@@ -3,8 +3,9 @@
 // 산 옷은 옷장(서버 inv.closet)에 — 죽어도 안 떨굼. 입은 것은 서버가 모두에게 알림(look).
 // 새 그림 없이 있던 조각만: 창 · 줄 · 갈색 단추 · 탭. 색은 글자 앞 동그라미(글자 색 칸)로 보여 줌.
 const CLOTH = {
-  kinds: [['bucket', '벙거지', 'head'], ['cap', '야구모자', 'head'], ['beanie', '비니', 'head'], ['shirt', '옷', 'body'], ['bag', '가방', 'back']],
-  price: { bucket: 800, cap: 700, beanie: 600, shirt: 1000, bag: 900 },
+  kinds: [['bucket', '벙거지', 'head'], ['cap', '야구모자', 'head'], ['beanie', '비니', 'head'], ['shirt', '반팔 티', 'body'], ['overall', '멜빵바지', 'body'], ['bag', '가방', 'back'], ['satchel', '크로스백', 'back']],
+  // 값은 서버 config.js clothes.price 와 같게(멜빵바지 · 크로스백은 2026-11-19 · 부장님 확인 전 임시값)
+  price: { bucket: 800, cap: 700, beanie: 600, shirt: 1000, overall: 1000, bag: 900, satchel: 900 },
   names: ['청록', '주황', '노랑', '보라', '하늘', '분홍', '연두', '남색'],
 };
 const SLOT_NM = { head: '머리', body: '몸', back: '등' };
@@ -13,23 +14,55 @@ S.closet = []; S.wear = { head: null, body: null, back: null };
 let clothTab = 'bucket';
 const keyParts = (k) => { if (typeof k !== 'string') return null; const [kind, c] = k.split(':'); return { kind, c: +c }; };
 
-// 몸에 입는 옷: 몸통을 살짝 크게 감싼 껍데기(처음 입을 때 만듦)
-function shirtOf(u) {
-  if (!u.shirt) {
-    u.shirt = new THREE.Mesh(new THREE.CapsuleGeometry(0.215, 0.12, 8, 20), clay(LOOK_COLORS[0]));
-    u.shirt.position.set(0, 0.4, 0); u.shirt.scale.set(1.13, 0.86, 1.04); u.shirt.castShadow = true; u.body.add(u.shirt);
-  }
-  return u.shirt;
+// ── 옷 모양(2026-11-19 기획/수달-디자인시안-2.png) — 모양은 한 번만 만들어 모든 수달이 같이 씀 · 수달마다 재질(색)만 따로 ──
+// 붙이는 자리는 몸통(otter.js: 캡슐 반지름 0.205 · 가운데 높이 0.385 · 가로 1.1배)에 맞춤. 팔 · 손(도구 자리)은 건드리지 않음
+const noUv = (gs) => gs.map((g) => { const n = g.index ? g.toNonIndexed() : g; n.deleteAttribute('uv'); return n; });
+const CLOTH_GEO = {};
+// 반팔 티: 몸통 껍데기 + 어깨 소매 둥근 덩어리 2개(몸에 붙음 — 팔이 흔들려도 어깨를 덮음)
+CLOTH_GEO.shirt = () => {
+  const torso = new THREE.CapsuleGeometry(0.215, 0.12, 8, 20); torso.scale(1.13, 0.86, 1.04); torso.translate(0, 0.4, 0);
+  const sl = (s) => { const g = new THREE.SphereGeometry(0.1, 16, 10); g.scale(1, 0.85, 1.05); g.translate(s * 0.245, 0.47, 0); return g; };
+  return mergeGeometries(noUv([torso, sl(-1), sl(1)]));
+};
+// 멜빵바지: 엉덩이를 감싼 바지(돌림 모양) + 가슴판 + 어깨 끈 2(어깨를 넘어 등으로)
+CLOTH_GEO.overall = () => {
+  const prof = [[0, 0.12], [0.12, 0.125], [0.2, 0.14], [0.235, 0.18], [0.245, 0.25], [0.246, 0.32], [0.24, 0.4], [0.236, 0.435]].map(([r, y]) => new THREE.Vector2(r, y));
+  const pants = new THREE.LatheGeometry(prof, 28); pants.scale(1.06, 1, 0.94);
+  const bib = roundBox(0.25, 0.17, 0.045, 0.02); bib.rotateX(-0.1); bib.translate(0, 0.5, 0.195);
+  const strap = (s) => { const g = new THREE.TorusGeometry(0.205, 0.017, 6, 18, Math.PI); g.rotateY(Math.PI / 2); g.scale(1, 0.42, 1.03); g.translate(s * 0.09, 0.5, 0); return g; };
+  return mergeGeometries(noUv([pants, bib, strap(-1), strap(1)]));
+};
+// 멜빵 단추 2(크림 · 따로 한 부품)
+CLOTH_GEO.button = () => { const b = (s) => { const g = new THREE.CylinderGeometry(0.03, 0.03, 0.02, 12); g.rotateX(Math.PI / 2); g.translate(s * 0.09, 0.565, 0.222); return g; }; return mergeGeometries(noUv([b(-1), b(1)])); };
+// 크로스백: 왼쪽 어깨에서 오른쪽 엉덩이로 비스듬한 끈 + 앞 옆구리 작은 가방(덮개 줄 포함 · 한 부품). 오른손(도구) · 등 가방 자리를 안 가림
+CLOTH_GEO.satchel = () => {
+  const strap = new THREE.TorusGeometry(1, 0.075, 6, 32); strap.rotateX(Math.PI / 2); strap.scale(0.258, 0.25, 0.24); strap.rotateZ(0.62); strap.translate(0, 0.42, 0);
+  const bag = roundBox(0.19, 0.16, 0.08, 0.04); bag.rotateY(-0.5); bag.translate(-0.2, 0.27, 0.16);
+  const flap = roundBox(0.19, 0.07, 0.085, 0.03); flap.rotateY(-0.5); flap.translate(-0.199, 0.325, 0.163);
+  return mergeGeometries(noUv([strap, bag, flap]));
+};
+const clothGeo = (k) => CLOTH_GEO[k + '_'] || (CLOTH_GEO[k + '_'] = CLOTH_GEO[k]());
+// 그 수달의 옷 부품(처음 입을 때 만듦) — 몸통(body)에 붙음
+// userData 이름 = 옷 이름(shirt · overall · button · satchel — 시험이 u.shirt 를 봄)
+function clothPart(u, k) {
+  if (!u[k]) { const m = new THREE.Mesh(clothGeo(k), clay(k === 'button' ? 0xf3e3c8 : LOOK_COLORS[0])); m.castShadow = true; u.body.add(m); u[k] = m; }
+  return u[k];
 }
+const clothTint = (m, hex) => { const c = new THREE.Color(hex); m.material.color.copy(c); m.material.emissive.copy(c).multiplyScalar(0.14); };
 // 입은 것을 그 수달에 그림 · w = { head, body, back } (열쇠 또는 null)
 function applyOutfit(obj, w) {
   const u = obj.userData, h = keyParts(w && w.head), b = keyParts(w && w.body), k = keyParts(w && w.back);
   setLook(obj, { hat: h ? h.kind : null, color: LOOK_COLORS[(h ? h.c : k ? k.c : 0) % LOOK_COLORS.length] });
-  // 가방: 산 사람만 · 색은 가방 색
-  u.bag.visible = !!k;
-  if (k) { const c = new THREE.Color(LOOK_COLORS[k.c % 8]).multiplyScalar(0.92); u.bag.material.color.copy(c); u.bag.material.emissive.copy(c).multiplyScalar(0.14); }
-  const s = shirtOf(u); s.visible = !!b;
-  if (b) { const c = new THREE.Color(LOOK_COLORS[b.c % 8]); s.material.color.copy(c); s.material.emissive.copy(c).multiplyScalar(0.14); }
+  // 등 칸: 등 가방(bag) 또는 크로스백(satchel) — 산 사람만 · 색은 그 옷 색
+  u.bag.visible = !!k && k.kind === 'bag';
+  if (u.bag.visible) { const c = new THREE.Color(LOOK_COLORS[k.c % 8]).multiplyScalar(0.92); u.bag.material.color.copy(c); u.bag.material.emissive.copy(c).multiplyScalar(0.14); }
+  if (k && k.kind === 'satchel') clothTint(clothPart(u, 'satchel'), LOOK_COLORS[k.c % 8]);
+  if (u.satchel) u.satchel.visible = !!k && k.kind === 'satchel';
+  // 몸 칸: 반팔 티(shirt) 또는 멜빵바지(overall + 단추) — 만든 적 있는 것만 숨김(안 입으면 부품을 만들지 않음)
+  const bk = b ? b.kind : null;
+  if (bk === 'shirt' || bk === 'overall') clothTint(clothPart(u, bk), LOOK_COLORS[b.c % 8]);
+  if (bk === 'overall') clothPart(u, 'button');
+  for (const nm of ['shirt', 'overall', 'button']) if (u[nm]) u[nm].visible = nm === 'button' ? bk === 'overall' : bk === nm;
   u.outfit = { ...(w || {}) };
 }
 // 서버 inv 에 옷장 · 입은 것이 오면(net.js adoptInv 뒤)
