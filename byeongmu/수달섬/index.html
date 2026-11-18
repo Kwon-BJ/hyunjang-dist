@@ -83,6 +83,10 @@
   .row.raid { height: auto; min-height: 52px; padding: 6px 12px; } .row.raid .nm { white-space: normal; font-size: 15px; line-height: 1.3; } .row.raid small { white-space: nowrap; color: #8a6a44; }
   #notice { position: fixed; left: 50%; top: max(56px, calc(env(safe-area-inset-top) + 48px)); transform: translateX(-50%); max-width: 86vw; background: rgba(30,24,18,.86); color: #fff4dc; font-size: 15px; padding: 8px 16px; border-radius: 18px; z-index: 6; text-align: center; pointer-events: none; }
   #notice[hidden] { display: none; }
+  /* 확대 단추(작업지시서 2 A) — 미니맵 밑 · 기존 알약 모양 */
+  #zoomBtn { position: fixed; left: calc(max(10px, env(safe-area-inset-left)) + 124px); top: max(130px, calc(env(safe-area-inset-top) + 120px)); padding: 6px 12px; border: 0; border-radius: 999px; background: rgba(255, 246, 225, .92); box-shadow: 0 2px 6px rgba(60, 40, 10, .2); font-size: 13px; z-index: 3; cursor: pointer; min-height: 32px; -webkit-tap-highlight-color: transparent; color: #4a3520; }
+  @media (min-width: 900px) and (min-height: 600px) { #zoomBtn { left: calc(max(10px, env(safe-area-inset-left)) + 156px); top: 160px; } } /* 미니맵 오른쪽 아래(안내 글과 안 겹치게) */
+  body.winopen #zoomBtn { visibility: hidden; }
   .tag { position: fixed; left: 0; top: 0; padding: 2px 9px; border-radius: 999px; background: rgba(45, 32, 18, .6); color: #fff; font: 700 12px system-ui, sans-serif; white-space: nowrap; pointer-events: none; z-index: 2; }
   #toasts { position: fixed; left: 50%; top: max(176px, calc(env(safe-area-inset-top) + 166px)); transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 4px; pointer-events: none; z-index: 7; }
   #toasts div { display: flex; align-items: center; gap: 6px; padding: 4px 14px 4px 8px; border-radius: 999px; background: rgba(255, 246, 225, .94); box-shadow: 0 2px 6px rgba(60, 40, 10, .25); white-space: nowrap; animation: toast 2.2s forwards; }
@@ -162,7 +166,7 @@
 </script>
 <div class="ui" id="win" hidden><div class="frame" id="frame"><div class="ribbon"><i class="ic" id="winIc"></i><span id="winTitle"></span></div><button type="button" id="winX" aria-label="닫기"></button><div id="winBody"></div><div id="winMsg"></div></div></div>
 <script type="module">
-const GAME_BUILD = "202611180021"; // 올리기.mjs 가 게임 파일이 바뀐 때만 적는다
+const GAME_BUILD = "202611180126"; // 올리기.mjs 가 게임 파일이 바뀐 때만 적는다
 window.GAME_BUILD = GAME_BUILD;
 import('./js/boot.js?v=' + GAME_BUILD).catch((e) => { const l = document.getElementById('load'); if (l) l.textContent = '수달섬을 못 열었어요: ' + e.message; });
 </script>
