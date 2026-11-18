@@ -7,7 +7,9 @@ const FUR = 0x96705f, CREAM = 0xf6dfc4, INK = 0x2c2720; // 게임 빛(따뜻한 
 const LOOK_COLORS = [0x4d9f90, 0xf5735c, 0xf2b244, 0x8f7cc8, 0x5aaee0, 0xf08fb3, 0x8cc463, 0x4f6aa6]; // 시안 3색(청록 · 주황 · 노랑) + 보라 · 하늘 · 분홍 · 연두 · 남색
 const HAT_KINDS = ['bucket', 'cap', 'beanie']; // 벙거지 · 야구모자 · 비니
 const OTTER = { hat: null, color: LOOK_COLORS[0] }; // 2026-11-18 부장님 — 모자 없앰(기본 수달은 모자 없이 · 머리 위 이름표)
-const H_Y = 0.53, H_R = [0.41, 0.365, 0.37]; // 머리 붙는 높이(목) · 머리 반지름(가로 · 세로 · 앞뒤)
+// 머리 붙는 높이(목) · 머리 반지름(가로 · 세로 · 앞뒤). 2026-11-19 시안 2 비율로 키움: 정면 머리 폭 = 키의 0.72배(시안 잼 309/430px · 예전 0.65배) · 옆으로 넓은 머리
+// 모자는 예전 머리(HAT_BASE)에 맞춘 모양이라 setLook 에서 이 비율만큼 늘림
+const H_Y = 0.53, H_R = [0.48, 0.385, 0.41], HAT_BASE = [0.41, 0.365, 0.37];
 // 얼굴 그림(2026-11-19): 기획/디자인/수달-얼굴.png(정면 · 큰 눈 · 코 · 웃는 입 · 수염 · 볼의 밝은 면)을 머리 공에 감은 펼친 그림.
 // 다시 그리려면 node 기획/디자인/그리기.cjs → node 기획/디자인/얼굴감기.cjs (휴대폰에서 계산하지 않게 미리 구움)
 const FACE_TEX = (() => { const t = new THREE.TextureLoader().load('img/수달-얼굴.webp'); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; })();
@@ -72,7 +74,7 @@ function makeOtter(look = OTTER) {
   const skull = mesh(S(1, 48, 32), HEAD_MAT, 0, H_R[1] - 0.02, 0, H_R[0], H_R[1], H_R[2]); head.add(skull);
   // 볼 덩어리(머리와 같은 재질 · 같은 얼굴 그림)
   const cheeks = mesh(CHEEK_GEO || (CHEEK_GEO = cheekGeo()), HEAD_MAT, 0, H_R[1] - 0.02, 0); head.add(cheeks);
-  const ear = S(0.098, 18, 12), ears = mesh(mergeGeometries([ear.clone().translate(-0.3, 0, 0), ear.clone().translate(0.3, 0, 0)]), FUR_MAT, 0, H_R[1] + 0.25, -0.05, 1, 1, 0.6); head.add(ears);
+  const ear = S(0.098, 18, 12), ears = mesh(mergeGeometries([ear.clone().translate(-H_R[0] * 0.73, 0, 0), ear.clone().translate(H_R[0] * 0.73, 0, 0)]), FUR_MAT, 0, H_R[1] + 0.25, -0.05, 1, 1, 0.6); head.add(ears);
   const tail = new THREE.Group(); tail.position.set(0, 0.2, -0.17); body.add(tail);
   // 굵은 노 모양 꼬리(시안 2 — 뒤 아래로 길고 도톰하게) · 뒤로 눕게
   const tseg = new THREE.Group(); tseg.rotation.x = 1.3; tail.add(tseg); tseg.add(mesh(CAP(0.115, 0.17), FUR_MAT, 0, -0.18, 0, 1.15, 1, 0.8));
@@ -87,7 +89,9 @@ function makeOtter(look = OTTER) {
 function setLook(root, look = OTTER) {
   const u = root.userData, kind = HAT_KINDS.includes(look.hat) ? look.hat : null, c = look.color ?? LOOK_COLORS[0];
   u.hat.visible = !!kind; u.ears.visible = !kind; // 모자를 쓰면 귀는 모자 속(시안)
-  if (kind) { u.hat.geometry = hatGeo(kind); u.hat.position.set(0, kind === 'bucket' ? H_R[1] + 0.2 : kind === 'cap' ? H_R[1] + 0.13 : H_R[1] + 0.14, kind === 'cap' ? -0.02 : -0.04); u.hat.rotation.set(kind === 'cap' ? -0.42 : kind === 'bucket' ? -0.34 : -0.26, 0, 0); u.hat.material.color.set(c); u.hat.material.emissive.set(c).multiplyScalar(0.14); }
+  // 모자: 예전 머리에서 머리 가운데 위로 잰 높이(벙거지 0.22 · 야구모자 0.15 · 비니 0.16)를 새 머리 비율로 늘림
+  const hk = [0, 1, 2].map((i) => H_R[i] / HAT_BASE[i]);
+  if (kind) { u.hat.geometry = hatGeo(kind); u.hat.scale.set(hk[0], hk[1], hk[2]); u.hat.position.set(0, H_R[1] - 0.02 + (kind === 'bucket' ? 0.22 : kind === 'cap' ? 0.15 : 0.16) * hk[1], (kind === 'cap' ? -0.02 : -0.04) * hk[2]); u.hat.rotation.set(kind === 'cap' ? -0.42 : kind === 'bucket' ? -0.34 : -0.26, 0, 0); u.hat.material.color.set(c); u.hat.material.emissive.set(c).multiplyScalar(0.14); }
   const bc = new THREE.Color(c).multiplyScalar(0.92); u.bag.material.color.copy(bc); u.bag.material.emissive.copy(bc).multiplyScalar(0.14);
   u.look = { hat: kind, color: c };
 }
