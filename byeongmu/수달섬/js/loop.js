@@ -111,6 +111,8 @@ function step(dt) {
   if (typeof hitTick === 'function') hitTick(dt);
   // 말풍선 자리 · 말하기 단추(작업지시서 3 D)
   if (typeof chatTick === 'function') chatTick(dt);
+  // 나무 자람 · 앉기 · 물고기 그림자(작업지시서 3 E)
+  if (typeof growTick === 'function') growTick(dt);
 }
 let last = performance.now();
 const testHold = { paused: false, cam: null };
