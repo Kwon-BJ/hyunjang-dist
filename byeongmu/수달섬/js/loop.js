@@ -5,6 +5,8 @@ composer.addPass(new RenderPass(scene, camera));
 const tiltH = new ShaderPass(HorizontalTiltShiftShader), tiltV = new ShaderPass(VerticalTiltShiftShader);
 tiltH.uniforms.r.value = tiltV.uniforms.r.value = 0.5;
 composer.addPass(tiltH); composer.addPass(tiltV);
+let bloom = null; // 고사양: 불빛 번짐(처음 고사양이 될 때 만들어 끼움 · 리뷰 8)
+function ensureBloom() { if (bloom) return; bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.32, 0.45, 0.92); composer.insertPass(bloom, composer.passes.indexOf(tiltV) + 1); composer.setSize(innerWidth, innerHeight); }
 composer.addPass(new OutputPass());
 const grade = new ShaderPass({
   uniforms: { tDiffuse: { value: null } },
@@ -38,19 +40,27 @@ const zoomBtn = document.createElement('button'); zoomBtn.type = 'button'; zoomB
 const zoomWant = () => Math.min(2, zoomLv + (typeof isGun === 'function' && isGun(S.tool) ? 1 : 0));
 function paintZoom() { const gun = typeof isGun === 'function' && isGun(S.tool); zoomBtn.textContent = '확대 · ' + ZOOM_NAME[zoomWant()] + (gun && zoomWant() !== zoomLv ? '(총)' : ''); }
 function setZoom(l) { zoomLv = ((l % 3) + 3) % 3; try { localStorage.setItem('suseom-zoom', String(zoomLv)); } catch { /* */ } paintZoom(); }
+const setBtn = document.createElement('button'); setBtn.type = 'button'; setBtn.id = 'setBtn'; setBtn.className = 'ui'; setBtn.textContent = '설정'; setBtn.tabIndex = -1; document.body.appendChild(setBtn); setBtn.onclick = () => { setBtn.blur(); openWin('settings'); };
 zoomBtn.tabIndex = -1; zoomBtn.onclick = () => { setZoom(zoomLv + 1); zoomBtn.blur(); }; paintZoom();
 addEventListener('keydown', (e) => { if (e.code === 'KeyZ' && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey && document.getElementById('win').hidden) setZoom(zoomLv + 1); });
 let wheelAcc = 0, wheelAt = 0;
 cv.addEventListener('wheel', (e) => { if (e.ctrlKey || !e.deltaY) return; e.preventDefault(); wheelAcc += e.deltaY; const now = performance.now(); if (Math.abs(wheelAcc) < 50 || now - wheelAt < 250) return; setZoom(Math.max(0, Math.min(2, zoomLv + (wheelAcc > 0 ? 1 : -1)))); wheelAcc = 0; wheelAt = now; }, { passive: false }); // 트랙패드 · 관성에 한 번에 끝까지 안 가게
 
 // ───────── 품질 자동 조절 (느린 휴대폰) ─────────
-const quality = { level: 2, fps: 0 }; // 2 전부 · 1 흐림 끔 · 풀 반 · 0 그림자 · 효과 끔 · 풀 적게
-function setQuality(l) {
+// 품질(작업지시서 2 C): 설정 단추로 자동 · 저사양 · 고사양(기기에 저장). 단계: 0 저사양(후처리 없음 · 가짜 둥근 그림자 · 해상도 낮춤 · 소품 줄임 · 조명 4)
+// 1 보통(그림자 · 미니어처 흐림 · 조명 4 — 시험 ?hq=1 은 여기 고정) · 2 고사양(부드러운 그림자 · SSAO · 블룸 · 흐림 · 소품 많이 · 조명 8). 자동은 프레임을 재서 낮춤
+const quality = { level: 2, fps: 0 };
+let qMode = 'auto'; try { const q = localStorage.getItem('suseom-q'); if (q === 'low' || q === 'high' || q === 'auto') qMode = q; } catch { /* */ }
+function setQuality(l, auto = false) { // auto: 자동 낮추기 — 셰이더를 다시 만들지 않게 조명 수 · 그림자 종류는 그대로(리뷰 7)
   quality.level = l;
-  tiltH.enabled = tiltV.enabled = l >= 2;
-  grass.count = l >= 2 ? grass.userData.full : l === 1 ? Math.floor(grass.userData.full * 0.5) : Math.floor(grass.userData.full * 0.25);
-  sun.castShadow = l >= 1;
+  tiltH.enabled = tiltV.enabled = l >= 1; if (l >= 2) ensureBloom(); if (bloom) bloom.enabled = l >= 2; // SSAO(GTAO)는 시험 사진에 큰 네모 얼룩이 생겨 뺌(결정기록)
+  grass.count = l >= 2 ? grass.userData.full : l === 1 ? Math.floor(grass.userData.full * 0.5) : 0;
+  sun.castShadow = l >= 1; if (!auto) renderer.shadowMap.type = l >= 2 ? THREE.PCFSoftShadowMap : THREE.PCFShadowMap;
+  renderer.setPixelRatio(l === 0 ? Math.min(devicePixelRatio, 1) * 0.8 : Math.min(devicePixelRatio, touchy ? 1.5 : 2)); resize();
+  if (!auto && typeof setLightBudget === 'function') setLightBudget(l >= 2 ? 8 : 4);
+  if (typeof setBlobs === 'function') setBlobs(l === 0);
 }
+function setQualityMode(m) { qMode = m; try { localStorage.setItem('suseom-q', m); } catch { /* */ } setQuality(m === 'low' ? 0 : m === 'high' ? 2 : (HQ ? 1 : touchy ? 1 : 2)); fpsT = fpsN = 0; }
 grass.userData.full = grass.count;
 let fpsT = 0, fpsN = 0;
 
@@ -94,6 +104,7 @@ function step(dt) {
   camera.position.set(camAt.x, camAt.y + camH * zoomK, camAt.z + camD * zoomK); camera.lookAt(camAt.x, camAt.y + 0.6, camAt.z);
   sun.position.set(camAt.x + 16, 24, camAt.z + 10); sun.target.position.copy(camAt);
   U.uTime.value = clock; U.uCam.value.copy(camera.position); U.uPlayer.value.copy(me.obj.position);
+  if (typeof lightTick === 'function') lightTick(dt);
 }
 let last = performance.now();
 const testHold = { paused: false, cam: null };
@@ -102,9 +113,9 @@ function frame(now) {
   if (!testHold.paused) step(dt); // 시험용: 멈춤 · 옆 카메라(시험 사진)
   if (testHold.cam) testHold.cam(camera);
   if (quality.level === 0) renderer.render(scene, camera); else composer.render();
-  if (!HQ && quality.level > 0 && clock > 1.5) { // 처음 1.5초 뒤부터 3초씩 재서 느리면 낮춤
+  if (!HQ && qMode === 'auto' && quality.level > 0 && clock > 1.5) { // 자동: 처음 1.5초 뒤부터 3초씩 재서 느리면 낮춤
     fpsT += dt; fpsN++;
-    if (fpsT > 3) { quality.fps = fpsN / fpsT; if (quality.fps < 26) setQuality(quality.level - 1); fpsT = fpsN = 0; }
+    if (fpsT > 3) { quality.fps = fpsN / fpsT; if (quality.fps < 26) setQuality(quality.level - 1, true); fpsT = fpsN = 0; }
   }
   requestAnimationFrame(frame);
 }
