@@ -140,6 +140,8 @@
   .chat-bub { position: fixed; left: 0; top: 0; max-width: 200px; padding: 5px 10px; border-radius: 12px; background: #fff8ea; color: #3d2a14; font: 600 13px system-ui, sans-serif; box-shadow: 0 2px 6px rgba(60, 40, 10, .3); pointer-events: none; z-index: 2; overflow-wrap: anywhere; white-space: normal; text-align: center; }
   /* 교환(작업지시서 3 D) — 신청 띠는 아래 단추 위 가운데 · 교환 창은 보관함처럼 넓은 창 */
   .trade-bar { position: fixed; left: 50%; bottom: calc(max(12px, env(safe-area-inset-bottom)) + 92px); transform: translateX(-50%); display: flex; align-items: center; gap: 8px; max-width: calc(100vw - 16px); box-sizing: border-box; padding: 6px 8px 6px 14px; border-radius: 999px; background: rgba(255, 246, 225, .97); box-shadow: 0 3px 10px rgba(60, 40, 10, .35); z-index: 8; font: 700 14px system-ui, sans-serif; color: #4a2e14; white-space: nowrap; }
+  /* display:flex 가 hidden 속성을 이기지 않게(2026-11-18 사진에서 찾음 — 늘 떠 있었음) */
+  .trade-bar[hidden], #chatBox[hidden], #chatBtn[hidden] { display: none; }
   .trade-bar span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   .trade-bar .bbtn, .trade-bar .gbtn { min-width: 0; height: 38px; padding: 0 12px; font-size: 15px; flex: none; text-shadow: none; }
   body.winopen .trade-bar { visibility: hidden; }
@@ -151,6 +153,10 @@
   /* 확인 · 취소 두 단추가 좁은 휴대폰에서 넘치지 않게 반씩 */
   .trade-foot { display: flex; gap: 8px; justify-content: center; }
   .trade-foot .gbtn, .trade-foot .bbtn { min-width: 0; flex: 1 1 0; max-width: 220px; height: 48px; font-size: 18px; padding: 0 8px; }
+  /* 옷 자판기(작업지시서 3 F) — 색 동그라미 · 종류 탭 5개는 좁으면 두 줄 */
+  .cloth-dot { flex: none; width: 26px; height: 26px; margin: 0 4px; border-radius: 50%; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .18), 0 0 0 2px #fff4dc; }
+  .cloth-tabs { flex-wrap: wrap; gap: 4px; }
+  .cloth-tabs .tab { flex: 1 1 18%; min-width: 0; padding: 0 4px; font-size: 14px; white-space: nowrap; }
   /* 내구도 막대 · 고장 표시(작업지시서 3 B) */
   .slot i.dur { position: absolute; left: 8px; right: 8px; bottom: 5px; height: 4px; border-radius: 2px; background: rgba(60, 40, 20, .25); }
   .slot i.dur u { display: block; height: 100%; border-radius: 2px; background: #6aa83a; }
@@ -214,7 +220,7 @@
 </script>
 <div class="ui" id="win" hidden><div class="frame" id="frame"><div class="ribbon"><i class="ic" id="winIc"></i><span id="winTitle"></span></div><button type="button" id="winX" aria-label="닫기"></button><div id="winBody"></div><div id="winMsg"></div></div></div>
 <script type="module">
-const GAME_BUILD = "202611180932"; // 올리기.mjs 가 게임 파일이 바뀐 때만 적는다
+const GAME_BUILD = "202611181405"; // 올리기.mjs 가 게임 파일이 바뀐 때만 적는다
 window.GAME_BUILD = GAME_BUILD;
 import('./js/boot.js?v=' + GAME_BUILD).catch((e) => { const l = document.getElementById('load'); if (l) l.textContent = '수달섬을 못 열었어요: ' + e.message; });
 </script>
