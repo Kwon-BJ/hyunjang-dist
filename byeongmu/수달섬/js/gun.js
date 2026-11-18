@@ -100,7 +100,7 @@ function muzzlePos(obj, g) { const gun = ensureGuns(obj)[g]; obj.updateMatrixWor
 // ── 효과: 총구 불꽃 · 총알 길 · 닿은 곳 ──
 const fx = [];
 const FLASH = new THREE.MeshBasicMaterial({ color: 0xffd85a }), PUFF_G = new THREE.SphereGeometry(0.09, 8, 6), FLASH_G = new THREE.SphereGeometry(0.11, 8, 6);
-function muzzle(obj, g) { const m = new THREE.Mesh(FLASH_G, FLASH); m.position.copy(muzzlePos(obj, g)); m.scale.set(1, 1, 1.8); scene.add(m); fx.push({ o: m, t: 0.06 }); }
+function muzzle(obj, g) { const m = new THREE.Mesh(FLASH_G, FLASH); m.position.copy(muzzlePos(obj, g)); m.scale.set(1, 1, 1.8); scene.add(m); fx.push({ o: m, t: 0.06 }); flashAt(m.position.x, m.position.z, m.position.y); } // 쏘면 잠깐 주변이 밝아짐(C단계)
 function tracer(x0, y, z0, x1, z1) {
   const g = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x0, y, z0), new THREE.Vector3(x1, y, z1)]);
   const l = new THREE.Line(g, new THREE.LineBasicMaterial({ color: 0xfff0b0, transparent: true, opacity: 1 })); scene.add(l); fx.push({ o: l, t: 0.12, t0: 0.12, fade: true, own: true });
