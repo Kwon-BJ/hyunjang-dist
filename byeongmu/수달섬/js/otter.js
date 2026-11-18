@@ -1,32 +1,41 @@
 // 수달섬 — 수달 모양 · 동작 · 나 · 맨손 흔들기 (2026-11-17 수달섬 index.html 에서 나눔 · 보통 스크립트: 다른 파일과 맨 위 이름을 함께 씀)
 // ───────── 수달 (2026-11-18 기획/수달-디자인시안.png 를 보고 다시 만듦 — 찰흙 인형 · 큰 머리 · 크림 얼굴 · 모자 3종 · 가방) ─────────
 // 비율은 시안 정면(키 435px)에서 잼: 머리 너비 0.82 · 높이 0.67(키의 약 55%) · 몸통 너비 0.46 · 다리 0.27 · 팔 0.27. 색도 시안에서 잼.
-// 부품 10개(머리 · 귀 · 몸통 · 팔 2 · 다리 2 · 꼬리 · 모자 · 가방). 얼굴(밝은 면 · 눈 2 · 코)은 머리에 입히는 그림 한 장.
+// 2026-11-19 기획/수달-디자인시안-2.png 기준 펠트 인형으로: 얼굴은 그림 한 장(img/수달-얼굴.webp) · 볼 덩어리 · 펠트 결(render.js) · 옷 자판기에 멜빵바지 · 크로스백(clothes.js)
+// 부품: 기본 11개(머리 · 볼 · 귀 · 몸통 · 팔 2 · 다리 2 · 꼬리 · 모자 · 가방) + 입은 옷(몸 1~2 · 등 1) — 한 번에 보이는 것은 15개 이하.
 const FUR = 0x96705f, CREAM = 0xf6dfc4, INK = 0x2c2720; // 게임 빛(따뜻한 해 · 색 보정)을 거쳐 시안 색(털 #ad7759 · 얼굴 #eed2b3)에 가깝게
 const LOOK_COLORS = [0x4d9f90, 0xf5735c, 0xf2b244, 0x8f7cc8, 0x5aaee0, 0xf08fb3, 0x8cc463, 0x4f6aa6]; // 시안 3색(청록 · 주황 · 노랑) + 보라 · 하늘 · 분홍 · 연두 · 남색
 const HAT_KINDS = ['bucket', 'cap', 'beanie']; // 벙거지 · 야구모자 · 비니
 const OTTER = { hat: null, color: LOOK_COLORS[0] }; // 2026-11-18 부장님 — 모자 없앰(기본 수달은 모자 없이 · 머리 위 이름표)
 const H_Y = 0.53, H_R = [0.41, 0.365, 0.37]; // 머리 붙는 높이(목) · 머리 반지름(가로 · 세로 · 앞뒤)
-// 얼굴 그림: 공(SphereGeometry)의 u · v 를 방향으로 바꿔, 방향이 얼굴 쪽이면 크림 · 눈 · 코를 칠함(경계는 곡선 · 부드럽게)
-const FACE_TEX = (() => {
-  const W = 1024, Hh = 512, c = document.createElement('canvas'); c.width = W; c.height = Hh;
-  const g = c.getContext('2d'), img = g.createImageData(W, Hh), d = img.data;
-  const col = (h) => [(h >> 16) & 255, (h >> 8) & 255, h & 255], fur = col(FUR), cream = col(CREAM), ink = col(INK);
+// 얼굴 그림(2026-11-19): 기획/디자인/수달-얼굴.png(정면 · 큰 눈 · 코 · 웃는 입 · 수염 · 볼의 밝은 면)을 머리 공에 감은 펼친 그림.
+// 다시 그리려면 node 기획/디자인/그리기.cjs → node 기획/디자인/얼굴감기.cjs (휴대폰에서 계산하지 않게 미리 구움)
+const FACE_TEX = (() => { const t = new THREE.TextureLoader().load('img/수달-얼굴.webp'); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t; })();
+// 볼 덩어리(2026-11-19): 얼굴 그림의 밝은 볼 자리에 도톰한 공 2개. 꼭짓점마다 머리 공의 같은 방향 그림을 칠해(수염 · 밝은 면이 볼 위에 이어짐) 이음매가 안 보임
+const CHEEK_DIR = [0.54, -0.33];
+let CHEEK_GEO = null;
+function cheekGeo() {
+  // lz: 덩어리 안에서 앞쪽 정도(가운데 1 · 머리에 묻힌 가장자리 0 이하) — 가장자리 법선을 머리 쪽으로 녹여 테두리 선이 안 생기게
+  const lz = [];
+  const parts = [-1, 1].map((s) => {
+    const n = new THREE.Vector3(s * CHEEK_DIR[0], CHEEK_DIR[1], Math.sqrt(1 - CHEEK_DIR[0] ** 2 - CHEEK_DIR[1] ** 2));
+    const c = new THREE.Vector3(n.x * H_R[0], n.y * H_R[1], n.z * H_R[2]).multiplyScalar(0.93);
+    const g = new THREE.SphereGeometry(1, 18, 12), gp = g.attributes.position;
+    for (let i = 0; i < gp.count; i++) lz.push(gp.getZ(i));
+    g.scale(0.17, 0.13, 0.07); g.lookAt(n); g.translate(c.x, c.y, c.z);
+    return g;
+  });
+  const g = mergeGeometries(parts), p = g.attributes.position, uv = g.attributes.uv, nr = g.attributes.normal, hn = new THREE.Vector3(), on = new THREE.Vector3();
   const sm = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
-  // 크림 윗선 b(x): 코(가운데)에서 눈 밑을 지나 볼 쪽에서 위로 휨(2026-11-18 작업지시서 2 A) — 시안 정면에서 잼
-  const top = (ax) => -0.03 + 0.07 * sm(0, 0.42, ax) + 0.13 * sm(0.55, 0.98, ax); // 코에서 눈 밑을 지나 볼 쪽에서 위로 휨(시안 · 작업지시서 2 A)
-  const spots = [[-0.4, 0.075, 0.094, 0.117], [0.4, 0.075, 0.094, 0.117], [0, -0.035, 0.143, 0.11]]; // 눈 2 · 코: 가운데 x · y · 반폭 · 반높이(시안 × 1.3 — 작업지시서 2 A)
-  for (let py = 0; py < Hh; py++) for (let px = 0; px < W; px++) {
-    const th = (py + 0.5) / Hh * Math.PI, ph = (px + 0.5) / W * Math.PI * 2;
-    const x = -Math.cos(ph) * Math.sin(th), y = Math.cos(th), z = Math.sin(ph) * Math.sin(th);
-    let k = 0; // 크림 정도
-    if (z > -0.4) k = sm(0.012, -0.012, y - top(Math.abs(x))) * sm(-0.4, -0.18, z) * sm(0.985, 0.94, -y); // 앞 · 볼(옆 뒤쪽 -0.18 까지) · 윗선 아래 · 목 쪽 끝은 털 // 앞쪽 · 윗선 아래 · 목 쪽 끝은 털
-    let c3 = fur.map((v, i) => v + (cream[i] - v) * k);
-    if (z > 0.5) for (const [ex, ey, rx, ry] of spots) { const q = ((x - ex) / rx) ** 2 + ((y - ey) / ry) ** 2; if (q < 1.15) { const a = sm(1.15, 0.85, q); c3 = c3.map((v, i) => v + (ink[i] - v) * a); } }
-    const o = (py * W + px) * 4; d[o] = c3[0]; d[o + 1] = c3[1]; d[o + 2] = c3[2]; d[o + 3] = 255;
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i) / H_R[0], y = p.getY(i) / H_R[1], z = p.getZ(i) / H_R[2], l = Math.hypot(x, y, z);
+    const th = Math.acos(Math.max(-1, Math.min(1, y / l))), ph = Math.atan2(z / l, -x / l);
+    uv.setXY(i, ((ph / (Math.PI * 2)) + 1) % 1, 1 - th / Math.PI);
+    hn.set(x / H_R[0], y / H_R[1], z / H_R[2]).normalize(); on.fromBufferAttribute(nr, i);
+    on.lerp(hn, 1 - sm(0.1, 0.9, lz[i]) * 0.75).normalize(); nr.setXYZ(i, on.x, on.y, on.z);
   }
-  g.putImageData(img, 0, 0); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t;
-})();
+  return g;
+}
 // 찰흙 재질: 반사 없는 무광(Lambert) + 그늘이 너무 어둡지 않게 살짝 스스로 밝음
 // 빛을 감싸게(half-Lambert 비슷): 그늘 쪽도 둥글게 밝아 찰흙 인형처럼 부드러움 — 수달 재질에만
 const WRAP = (m) => { m.onBeforeCompile = (sh) => { sh.fragmentShader = sh.fragmentShader.replace('#include <lights_lambert_pars_fragment>', THREE.ShaderChunk.lights_lambert_pars_fragment.replace('float dotNL = saturate( dot( geometryNormal, directLight.direction ) );', 'float dotNL = pow( saturate( dot( geometryNormal, directLight.direction ) * 0.5 + 0.5 ), 1.4 );')).replace('#include <opaque_fragment>', 'outgoingLight += vec3(0.36, 0.46, 0.7) * pow(1.0 - saturate(dot(normal, normalize(vViewPosition))), 2.2) * 0.75;\n#include <opaque_fragment>'); }; m.customProgramCacheKey = () => 'clayWrap'; return m; }; // 밤에 수달 가장자리를 달빛으로 살짝(땅과 구별 · C단계)
@@ -61,9 +70,12 @@ function makeOtter(look = OTTER) {
   const hold = new THREE.Group(); hold.position.set(0, -ARM_L, 0.03); armR.add(hold); // 손에 든 도구 자리
   const head = new THREE.Group(); head.position.set(0, H_Y, 0); body.add(head);
   const skull = mesh(S(1, 48, 32), HEAD_MAT, 0, H_R[1] - 0.02, 0, H_R[0], H_R[1], H_R[2]); head.add(skull);
+  // 볼 덩어리(머리와 같은 재질 · 같은 얼굴 그림)
+  const cheeks = mesh(CHEEK_GEO || (CHEEK_GEO = cheekGeo()), HEAD_MAT, 0, H_R[1] - 0.02, 0); head.add(cheeks);
   const ear = S(0.098, 18, 12), ears = mesh(mergeGeometries([ear.clone().translate(-0.3, 0, 0), ear.clone().translate(0.3, 0, 0)]), FUR_MAT, 0, H_R[1] + 0.25, -0.05, 1, 1, 0.6); head.add(ears);
   const tail = new THREE.Group(); tail.position.set(0, 0.2, -0.17); body.add(tail);
-  const tseg = new THREE.Group(); tseg.rotation.x = 1.25; tail.add(tseg); tseg.add(mesh(CAP(0.085, 0.2), FUR_MAT, 0, -0.17, 0)); // 굵은 꼬리 — 뒤로 눕게
+  // 굵은 노 모양 꼬리(시안 2 — 뒤 아래로 길고 도톰하게) · 뒤로 눕게
+  const tseg = new THREE.Group(); tseg.rotation.x = 1.3; tail.add(tseg); tseg.add(mesh(CAP(0.115, 0.17), FUR_MAT, 0, -0.18, 0, 1.15, 1, 0.8));
   const hat = new THREE.Mesh(hatGeo('bucket'), clay(LOOK_COLORS[0])); hat.material.side = THREE.DoubleSide; hat.castShadow = true; head.add(hat);
   const bag = mesh(BAG_GEO, clay(LOOK_COLORS[0]), 0, 0.37, -0.28); body.add(bag); // 등 가방 — 앞(총) · 오른손(도구)을 안 가림
   root.userData = { body, legL, legR, armL, armR, head, tail, hold, hat, bag, ears };
