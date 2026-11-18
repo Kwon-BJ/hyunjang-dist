@@ -120,6 +120,37 @@
   .dmgn.dmg-me { color: #ff5a46; }
   .dmgn.dmg-hit { color: #ffd23a; font-size: 26px; }
   .dmgn.dmg-other { font-size: 18px; }
+  /* 채팅(작업지시서 3 D) — 새 그림 없이 있던 조각만: 둥근 띠(설정 단추와 같은 모양) · 갈색 단추 */
+  #chatBtn { position: fixed; left: calc(max(10px, env(safe-area-inset-left)) + 306px); top: max(130px, calc(env(safe-area-inset-top) + 120px)); padding: 6px 12px; border: 0; border-radius: 999px; background: rgba(255, 246, 225, .92); box-shadow: 0 2px 6px rgba(60, 40, 10, .2); font-size: 13px; z-index: 3; cursor: pointer; min-height: 32px; -webkit-tap-highlight-color: transparent; color: #4a3520; font-weight: 700; white-space: nowrap; }
+  @media (min-width: 900px) and (min-height: 600px) { #chatBtn { left: calc(max(10px, env(safe-area-inset-left)) + 338px); top: 160px; } }
+  body.winopen #chatBtn, body.winopen #chatPeek, body.winopen .chat-bub { visibility: hidden; }
+  #chatBox { position: fixed; left: 50%; top: max(8px, env(safe-area-inset-top)); transform: translateX(-50%); width: min(560px, calc(100vw - 16px)); box-sizing: border-box; padding: 8px; border-radius: 14px; background: rgba(255, 246, 225, .97); box-shadow: 0 3px 12px rgba(60, 40, 10, .35); z-index: 9; }
+  .chat-row { display: flex; gap: 6px; align-items: center; }
+  #chatIn { flex: 1; min-width: 0; height: 38px; box-sizing: border-box; padding: 0 10px; border: 1px solid #c9a77a; border-radius: 10px; font-size: 16px; background: #fffdf7; color: #3d2a14; }
+  #chatBox .bbtn { min-width: 0; height: 38px; padding: 0 12px; font-size: 15px; flex: none; }
+  #chatAll { max-height: 34vh; overflow-y: auto; margin-top: 6px; font-size: 13px; line-height: 1.5; color: #4a2e14; overflow-wrap: anywhere; }
+  #chatAll:empty { display: none; }
+  #chatAll b, #chatPeek b { margin-right: 4px; }
+  #chatAll b { color: #8a4b1c; }
+  #chatPeek { position: fixed; left: max(10px, env(safe-area-inset-left)); top: max(214px, calc(env(safe-area-inset-top) + 204px)); max-width: min(62vw, 360px); pointer-events: none; z-index: 2; font: 600 12px system-ui, sans-serif; color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, .7); }
+  #chatPeek div { margin-bottom: 2px; padding: 1px 7px; border-radius: 8px; background: rgba(40, 28, 14, .42); overflow-wrap: anywhere; }
+  #chatPeek.fade { animation: chat-peek-fade 12s forwards; }
+  @keyframes chat-peek-fade { 0%, 80% { opacity: 1; } 100% { opacity: 0; } }
+  body.chatting #chatPeek { visibility: hidden; }
+  .chat-bub { position: fixed; left: 0; top: 0; max-width: 200px; padding: 5px 10px; border-radius: 12px; background: #fff8ea; color: #3d2a14; font: 600 13px system-ui, sans-serif; box-shadow: 0 2px 6px rgba(60, 40, 10, .3); pointer-events: none; z-index: 2; overflow-wrap: anywhere; white-space: normal; text-align: center; }
+  /* 교환(작업지시서 3 D) — 신청 띠는 아래 단추 위 가운데 · 교환 창은 보관함처럼 넓은 창 */
+  .trade-bar { position: fixed; left: 50%; bottom: calc(max(12px, env(safe-area-inset-bottom)) + 92px); transform: translateX(-50%); display: flex; align-items: center; gap: 8px; max-width: calc(100vw - 16px); box-sizing: border-box; padding: 6px 8px 6px 14px; border-radius: 999px; background: rgba(255, 246, 225, .97); box-shadow: 0 3px 10px rgba(60, 40, 10, .35); z-index: 8; font: 700 14px system-ui, sans-serif; color: #4a2e14; white-space: nowrap; }
+  .trade-bar span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .trade-bar .bbtn, .trade-bar .gbtn { min-width: 0; height: 38px; padding: 0 12px; font-size: 15px; flex: none; text-shadow: none; }
+  body.winopen .trade-bar { visibility: hidden; }
+  .trade-grid { --s: clamp(40px, calc((100vh - 300px) / 5), 56px); }
+  .trade-money { margin: 4px 0 6px; text-align: center; }
+  .two h4 small { margin-left: 6px; font-size: 11px; font-weight: 400; }
+  em.trade-ok { font-style: normal; color: #2f8a2f; }
+  .trade-bag-h { margin: 8px 0 6px; text-align: center; font-size: 16px; }
+  /* 확인 · 취소 두 단추가 좁은 휴대폰에서 넘치지 않게 반씩 */
+  .trade-foot { display: flex; gap: 8px; justify-content: center; }
+  .trade-foot .gbtn, .trade-foot .bbtn { min-width: 0; flex: 1 1 0; max-width: 220px; height: 48px; font-size: 18px; padding: 0 8px; }
   /* 내구도 막대 · 고장 표시(작업지시서 3 B) */
   .slot i.dur { position: absolute; left: 8px; right: 8px; bottom: 5px; height: 4px; border-radius: 2px; background: rgba(60, 40, 20, .25); }
   .slot i.dur u { display: block; height: 100%; border-radius: 2px; background: #6aa83a; }
@@ -183,7 +214,7 @@
 </script>
 <div class="ui" id="win" hidden><div class="frame" id="frame"><div class="ribbon"><i class="ic" id="winIc"></i><span id="winTitle"></span></div><button type="button" id="winX" aria-label="닫기"></button><div id="winBody"></div><div id="winMsg"></div></div></div>
 <script type="module">
-const GAME_BUILD = "202611180837"; // 올리기.mjs 가 게임 파일이 바뀐 때만 적는다
+const GAME_BUILD = "202611180932"; // 올리기.mjs 가 게임 파일이 바뀐 때만 적는다
 window.GAME_BUILD = GAME_BUILD;
 import('./js/boot.js?v=' + GAME_BUILD).catch((e) => { const l = document.getElementById('load'); if (l) l.textContent = '수달섬을 못 열었어요: ' + e.message; });
 </script>
