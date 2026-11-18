@@ -4,6 +4,21 @@
 const NET_URL = (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && new URLSearchParams(location.search).get('net')) || 'wss://byeongmu.byeongmu-munpa.workers.dev/suseom';
 const net = { ws: null, on: false, server: false, id: 0, name: '', others: new Map(), houses: new Map(), tries: 0, sendT: 0, last: '', ac: 0 };
 let keepPos = false; // 새 판으로 다시 열려 있던 자리를 지킬 때 true
+// 말 판(서버 config.proto 와 같게) — 서버가 새 판이면 옛 화면으로 사고팔기 · 도구가 어긋나므로 바로 새로 연다(작업지시서 3 A1).
+// 시험(localhost)에서만 ?proto= 로 일부러 다르게 해 볼 수 있음
+const PROTO = (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && +new URLSearchParams(location.search).get('proto')) || 5;
+function reloadForServer() {
+  // 30초 안에 또 새로 열었으면(화면 파일이 아직 안 올라옴) 다시 열지 않고 30초 뒤에 한 번 더
+  let last = 0;
+  try { last = +sessionStorage.getItem('suseom-proto-reload') || 0; } catch { /* 저장소 막힘 */ }
+  if (Date.now() - last < 30000) { netStatus('새 판을 받는 중…'); setTimeout(reloadForServer, 30000 - (Date.now() - last)); return; }
+  try {
+    sessionStorage.setItem('suseom-proto-reload', String(Date.now()));
+    sessionStorage.setItem('suseom-pos', JSON.stringify({ x: me.x, z: me.z, f: me.face, t: Date.now(), v: MAP_V }));
+  } catch { /* 저장소 막힘 */ }
+  net.protoReload = true;
+  const q = new URLSearchParams(location.search); q.set('v', String(Date.now())); location.replace(location.pathname + '?' + q);
+}
 const srvOn = () => net.on && net.server; // 수달섬 서버(가방 · 채집 · 싸움을 서버가 정함)에 붙어 있음
 const KEYED = new Map();
 for (const [list, p] of [[TREES, 'T'], [ROCKS, 'R'], [FLOWERS, 'F'], [BUSHES, 'B'], [BERRIES, 'E'], [FISH_SPOTS, 'P']]) list.forEach((r, i) => { r.key = p + i; KEYED.set(r.key, r); });
@@ -28,7 +43,7 @@ const lookOf = (name) => lookFromName(name); // 문파원마다 모자 3종 × 8
 function addOther(p) {
   removeOther(net.others.get(p.id));
   const obj = makeOtter(lookOf(p.name)); obj.position.set(p.x, groundY(p.x, p.z), p.z); obj.rotation.y = p.f; scene.add(obj);
-  const tools = {}; for (const t of TOOLS) { tools[t] = heldModel(srcs[t]); obj.userData.hold.add(tools[t]); tools[t].visible = p.tl === t; }
+  const tools = {}; for (const t of TOOLS) { tools[t] = heldModel(srcs[t], t); obj.userData.hold.add(tools[t]); tools[t].visible = p.tl === t; }
   const label = document.createElement('div'); label.className = 'tag'; label.textContent = p.name; document.body.appendChild(label);
   net.others.set(p.id, { ...p, tx: p.x, tz: p.z, tf: p.f, s: 0, r: 0, phase: 0, actT: 0, sw: 0, ac: 0, obj, tools, label });
 }
@@ -42,6 +57,8 @@ function setHouse(name, x, z, tier) { // 남의 집(B단계: 텐트를 친 자�
 }
 function onNet(m) {
   if (m.t === 'welcome') {
+    // 서버 말 판이 이 화면과 다르면(서버만 먼저 새 판) 바로 새로 열기
+    if (m.proto && m.proto !== PROTO) { net.protoMismatch = m.proto; try { net.ws.close(); } catch { /* */ } reloadForServer(); return; }
     me.obj.userData.setLook(lookOf(m.name)); // 내 모자 · 가방도 이름으로
     if (fishing.st) endFish();
     net.on = true; net.tries = 0; net.id = m.id; net.name = m.name;
@@ -99,6 +116,10 @@ function connect() {
     if (net.server) { net.server = false; me.dead = false; layDown(me.obj, false); hpBox.hidden = true; for (const id of [...sacks.keys()]) removeSack(id); closeWin(); loadLocal(); clearTraps(); } // 끊기면 누운 채 멈추지 않게(리뷰 9번) · 열린 창을 닫고 혼자 놀기 가방으로(3단계 리뷰 3 · 4번)
     if (e.code === 4001) return netStatus('혼자 놀기 · 홈페이지에서 다시 로그인해 주세요');
     if (e.code === 4002) return netStatus('다른 창에서 들어와서 이 창은 혼자 놀기');
+    // 서버 판이 달라 새로 여는 중이면 다시 붙지 않음
+    if (net.protoMismatch) return;
+    // 끊겼다면 서버가 새 판일 수 있으니 화면 판도 바로 확인(1분 기다리지 않음)
+    if (typeof checkGame === 'function') checkGame();
     netStatus('다시 붙는 중…'); setTimeout(connect, Math.min(30000, 2000 * 2 ** Math.min(4, net.tries++)));
   };
 }
@@ -133,8 +154,13 @@ function netTick(dt) {
     if (vis) o.label.style.transform = `translate(${((TAGV.x + 1) / 2 * innerWidth).toFixed(0)}px, ${((1 - TAGV.y) / 2 * innerHeight).toFixed(0)}px) translate(-50%, -100%)`;
   }
 }
-function heldModel(src) {
-  const o = src.clone(true), b = new THREE.Box3().setFromObject(o), sz = b.getSize(new THREE.Vector3()), k = 0.5 / Math.max(sz.x, sz.y, sz.z);
-  const inner = new THREE.Group(); inner.add(o); o.position.set(-(b.min.x + sz.x / 2), -b.min.y - sz.y * 0.2, -(b.min.z + sz.z / 2)); inner.scale.setScalar(k);
-  const g = new THREE.Group(); g.add(inner); g.rotation.x = Math.PI / 2; g.traverse((m) => { if (m.isMesh) m.castShadow = true; }); return g;
+// 손에 든 도구 쥐는 법(작업지시서 3 A3) — s: 길이(칸) · grip: 손잡이 끝에서 쥐는 자리(길이 비율) · rx: 손 기준 기울기
+// (π = 팔 따라 바로 아래 · π/2 = 앞). 도끼 · 곡괭이는 손잡이 끝을 쥐고 머리(날)가 앞 아래로 — 휘두르면 팔과 함께 위에서 아래로.
+// 낚싯대는 앞 위로. 예전(길이 0.5 · 앞으로 눕힘)은 게임 카메라에서 안 보여 1.5배 넘게 키움
+const HOLD = { 도끼: { s: 0.82, grip: 0.18, rx: Math.PI - 0.95 }, 곡괭이: { s: 0.82, grip: 0.18, rx: Math.PI - 0.95 }, 낚싯대: { s: 0.95, grip: 0.12, rx: 0.85 } };
+function heldModel(src, tool) {
+  const H = HOLD[tool] || { s: 0.5, grip: 0.2, rx: Math.PI / 2 };
+  const o = src.clone(true), b = new THREE.Box3().setFromObject(o), sz = b.getSize(new THREE.Vector3()), k = H.s / Math.max(sz.x, sz.y, sz.z);
+  const inner = new THREE.Group(); inner.add(o); o.position.set(-(b.min.x + sz.x / 2), -b.min.y - sz.y * H.grip, -(b.min.z + sz.z / 2)); inner.scale.setScalar(k);
+  const g = new THREE.Group(); g.add(inner); g.rotation.x = H.rx; g.traverse((m) => { if (m.isMesh) m.castShadow = true; }); return g;
 }
