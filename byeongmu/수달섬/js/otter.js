@@ -31,7 +31,9 @@ const FACE_TEX = (() => {
 // 빛을 감싸게(half-Lambert 비슷): 그늘 쪽도 둥글게 밝아 찰흙 인형처럼 부드러움 — 수달 재질에만
 const WRAP = (m) => { m.onBeforeCompile = (sh) => { sh.fragmentShader = sh.fragmentShader.replace('#include <lights_lambert_pars_fragment>', THREE.ShaderChunk.lights_lambert_pars_fragment.replace('float dotNL = saturate( dot( geometryNormal, directLight.direction ) );', 'float dotNL = pow( saturate( dot( geometryNormal, directLight.direction ) * 0.5 + 0.5 ), 1.4 );')).replace('#include <opaque_fragment>', 'outgoingLight += vec3(0.36, 0.46, 0.7) * pow(1.0 - saturate(dot(normal, normalize(vViewPosition))), 2.2) * 0.75;\n#include <opaque_fragment>'); }; m.customProgramCacheKey = () => 'clayWrap'; return m; }; // 밤에 수달 가장자리를 달빛으로 살짝(땅과 구별 · C단계)
 const clay = (color, map) => WRAP(new THREE.MeshLambertMaterial({ color: map ? 0xffffff : color, map: map || null, emissive: new THREE.Color(color).multiplyScalar(map ? 0 : 0.2) }));
-const FUR_MAT = clay(FUR), HEAD_MAT = (() => { const m = clay(FUR, FACE_TEX); m.emissiveMap = FACE_TEX; m.emissive = new THREE.Color(0.2, 0.2, 0.2); return m; })(); // 얼굴 그림 자체를 조금 밝게(아래쪽 크림이 그늘에 묻히지 않게)
+// 얼굴 그림 자체를 조금 밝게(아래쪽 크림이 그늘에 묻히지 않게) · 맞으면 붉게 번쩍이도록 수달마다 따로 만들 수 있게 함수로(작업지시서 3 C · hit.js)
+const headMat = () => { const m = clay(FUR, FACE_TEX); m.emissiveMap = FACE_TEX; m.emissive = new THREE.Color(0.2, 0.2, 0.2); return m; };
+const FUR_MAT = clay(FUR), HEAD_MAT = headMat();
 // 둥근 상자(가방) — 상자 꼭짓점을 안쪽 상자에 붙인 뒤 반지름만큼 밀어 냄
 function roundBox(w, h, dp, r, seg = 6) {
   const g = new THREE.BoxGeometry(w, h, dp, seg, seg, seg), p = g.attributes.position, v = new THREE.Vector3(), q = new THREE.Vector3(), iw = w / 2 - r, ih = h / 2 - r, id = dp / 2 - r;
@@ -82,11 +84,15 @@ const lookFromName = (name) => { if (!name) return OTTER; const h = hashName(nam
 function animOtter(o, phase, amt, run, t, act = -1, swing = false, fit = null) {
   const p = o.userData, sw = Math.sin(phase);
   if (p.shook && !(act >= 0 && swing === 'shake')) { p.armL.rotation.set(0, 0, -0.18); p.armR.rotation.set(0, 0, 0.18); p.body.position.x = p.body.position.z = 0; p.shook = false; } // 흔들기 끝 → 팔 · 몸 제자리
+  // 팔 옆 기울기 제자리(맨손 때리기가 바꿈)
+  p.armL.rotation.z = -0.18; p.armR.rotation.z = 0.18; p.armL.rotation.y = p.armR.rotation.y = 0;
   p.legL.rotation.x = sw * 0.75 * amt; p.legR.rotation.x = -sw * 0.75 * amt;
   p.armL.rotation.x = -sw * (run ? 0.9 : 0.55) * amt; p.armR.rotation.x = sw * (run ? 0.9 : 0.55) * amt;
   p.body.position.y = Math.abs(Math.cos(phase)) * (run ? 0.07 : 0.04) * amt + (1 - amt) * Math.sin(t * 2.2) * 0.008;
   p.body.rotation.x = (run ? 0.2 : 0.05) * amt;
-  if (act >= 0 && swing === 'shake' && fit) shakePose(p, o.rotation.y, act, fit);
+  p.body.rotation.y = 0;
+  if (act >= 0 && (swing === 'punchl' || swing === 'punchr')) punchPose(p, act, swing === 'punchl' ? -1 : 1);
+  else if (act >= 0 && swing === 'shake' && fit) shakePose(p, o.rotation.y, act, fit);
   else if (act >= 0) {
     if (swing) { p.armR.rotation.x = act < 0.4 ? -2.5 * (act / 0.4) : -2.5 + 2.0 * ((act - 0.4) / 0.6); p.body.rotation.x = act < 0.4 ? -0.08 : 0.15 * Math.sin(((act - 0.4) / 0.6) * Math.PI); }
     else { const k = Math.sin(act * Math.PI); p.body.rotation.x = 0.55 * k; p.armR.rotation.x = p.armL.rotation.x = -1.1 * k; }
@@ -97,6 +103,14 @@ function animOtter(o, phase, amt, run, t, act = -1, swing = false, fit = null) {
   if (act >= 0 && swing === 'shake') p.head.rotation.x = -0.45 * Math.max(0, Math.min(1, act / 0.15, (1 - act) / 0.1)); // 큰 머리 — 줄기를 올려다봄
 }
 
+// 맨손 때리기: 권투처럼 한 팔을 앞으로 곧게 뻗고(빠르게 · 천천히 거둠) 다른 팔은 얼굴 앞을 막음 · 몸을 뻗는 쪽으로 살짝 비틂(작업지시서 3 C)
+// side: -1 왼손 · 1 오른손
+function punchPose(p, act, side) {
+  const k = act < 0.3 ? Math.sin((act / 0.3) * Math.PI / 2) : 1 - (act - 0.3) / 0.7, hit = side < 0 ? p.armL : p.armR, guard = side < 0 ? p.armR : p.armL;
+  hit.rotation.x = -1.55 * k; hit.rotation.z = side * 0.18 * (1 - k);
+  guard.rotation.x = -1.0 * Math.min(1, k * 2 + 0.3); guard.rotation.z = -side * 0.35;
+  p.body.rotation.y = -side * 0.28 * k; p.body.rotation.x = 0.12 * k;
+}
 // ───────── 나 ─────────
 // ───────── 맨손 나무 흔들기 'shake' (2026-11-17) — 몸은 안 숙이고, 줄기에서 팔 길이만큼 서서 두 손을 줄기에 대고,
 // 나무가 wobble(0.6초 · 같은 식)로 기우는 쪽으로 어깨 · 팔을 좌우로 민다. 손 자리는 줄기 표면에 맞춰 계산(IK)
