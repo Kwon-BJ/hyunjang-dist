@@ -102,7 +102,8 @@ function findTarget() {
   if (!(typeof HSTATE !== 'undefined' && (HSTATE.get(net.name) || {}).broken)) see('chest', null, CHEST_AT.x, CHEST_AT.z, 1.7); // 부서진 집 보관함은 고친 뒤에
   for (const r of FLOWERS) if (!r.down) see('flower', r, r.x, r.z, 0.9);
   if (S.tool === '낚싯대') for (const r of FISH_SPOTS) if (!r.down) see('fish', r, r.x, r.z, 1.6, 0.1); // 낚시 자리(6단계)
-  for (const r of BUSHES) see('bush', r, r.x, r.z, 1.3);
+  // 풀 덤불도 다 자란 것만(작업지시서 3 E)
+  for (const r of BUSHES) if (!(r.down > clock)) see('bush', r, r.x, r.z, 1.3);
   for (const r of BERRIES) if (!r.down) see('berry', r, r.x, r.z, 1.3, 0.05); // 열매가 달렸으면 풀보다 먼저
   for (const r of TREES) if (!r.down) see('tree', r, r.x, r.z, 1.35);
   for (const r of ROCKS) if (!r.down) see('rock', r, r.x, r.z, 0.95 + r.circle.r);
@@ -112,9 +113,11 @@ function findTarget() {
   cookTargets(see); // 모닥불 옆 요리(D단계)
   // 바닥 물건 줍기(작업지시서 3 B) — ground.js
   groundTargets(see);
+  // 그루터기(앉기 · 파내기) · 심은 나무 · 씨앗 심기(작업지시서 3 E) — grow.js
+  growTargets(see, fx, fz);
   return best;
 }
-const labelOf = (t) => !t ? '줍기/쓰기' : (typeof trapLabel === 'function' && trapLabel(t)) || (t.type === 'pitch' ? (t.rec.why ? '여기는 못 쳐요' : '텐트 치기') : null) || (t.type === 'cook' ? '요리하기' : t.type === 'pickup' ? `줍기 (${t.rec.n})` : null) || { shop: t.rec && SHOPS[t.rec] && SHOPS[t.rec].color ? '자판기 열기' : '가게 열기', chest: '보관함', house: '집 올리기', flower: '꽃 꺾기', bush: '풀 뜯기', berry: '열매 따기', fish: '낚시하기', raid: S.tool === '도끼' ? '집 부수기' : '집 치기', otter: S.tool === '도끼' ? '도끼로 치기' : '때리기', sack: '자루 줍기' }[t.type]
+const labelOf = (t) => !t ? '줍기/쓰기' : (typeof trapLabel === 'function' && trapLabel(t)) || (t.type === 'pitch' ? (t.rec.why ? '여기는 못 쳐요' : '텐트 치기') : null) || (t.type === 'cook' ? '요리하기' : t.type === 'pickup' ? `줍기 (${t.rec.n})` : growLabel(t)) || { shop: t.rec && SHOPS[t.rec] && SHOPS[t.rec].color ? '자판기 열기' : '가게 열기', chest: '보관함', house: '집 올리기', flower: '꽃 꺾기', bush: '풀 뜯기', berry: '열매 따기', fish: '낚시하기', raid: S.tool === '도끼' ? '집 부수기' : '집 치기', otter: S.tool === '도끼' ? '도끼로 치기' : '때리기', sack: '자루 줍기' }[t.type]
   || (t.type === 'tree' ? (S.tool === '도끼' ? '나무 베기' : '나무 흔들기') : S.tool === '곡괭이' ? '돌 캐기' : '곡괭이 필요');
 
 let actCool = 0;
@@ -130,6 +133,7 @@ function doAction() {
   if (t.type === 'pitch') return pitchAction(t.rec);
   if (t.type === 'cook') return openWin('cook');
   if (t.type === 'pickup') return pickupAction();
+  if ((t.type === 'stump' || t.type === 'plant') && growAction(t)) return;
   if (t.type === 'raid') return raidAction(t); // 7단계
   if ((t.type === 'place' || t.type === 'tload' || t.type === 'trap') && trapAction(t)) return; // 8단계
   if (t.type === 'house') return openWin('house');
@@ -203,6 +207,7 @@ function render() {
     const s = S.bag[sel];
     const food = s && FOODS[s.id];
     h = `<div class="grid">${slotsHtml(S.bag, 'bag')}</div><div class="${food || (s && FISH_KINDS.includes(s.id)) ? 'qsel' : 'foot'}">${food ? `<button type="button" class="gbtn" id="eatBtn">먹기 +${food.e}${food.buff ? ' · ' + food.buff : ''}</button>` : s && FISH_KINDS.includes(s.id) ? '<span class="pk">날생선은 모닥불에서 익혀요</span>' : ''}<button type="button" class="bbtn" id="trash" ${s ? '' : 'disabled'}><i class="ic" style="background-image:${ic('쓰레기통')}"></i>${trashArm ? '한 번 더 누르면 버려요' : '버리기'}</button></div>${srvOn() ? dropRows(s) : ''}`;
+  } else if (view === 'shop' && shopKind === 'cloth') { h = clothHtml(); // 옷 자판기(작업지시서 3 F · clothes.js)
   } else if (view === 'shop') {
     if (!(SHOPS[shopKind] || SHOPS.tool).sell) tab = 'buy'; // 자판기는 사기만(팔기는 도구 상점 상인)
     h = (SHOPS[shopKind] || SHOPS.tool).sell ? `<div class="tabs"><button type="button" class="tab${tab === 'sell' ? ' on' : ''}" data-tab="sell">팔기</button><button type="button" class="tab${tab === 'buy' ? ' on' : ''}" data-tab="buy">사기</button></div>` : '';
@@ -249,6 +254,8 @@ bodyEl.addEventListener('click', (e) => {
   if (b.dataset.q) { setQualityMode(b.dataset.q); return render(); } // 설정 창(C단계)
   // 교환 창 단추(작업지시서 3 D · trade.js)
   if (view === 'trade' && tradeClick(b)) return;
+  // 옷 자판기 단추(작업지시서 3 F · clothes.js)
+  if (view === 'shop' && shopKind === 'cloth' && clothClick(b)) return;
   if (srvOn()) { // 서버가 정함 — 요청만 보내고 inv 로 받음
     if (b.dataset.box === 'bag') { const i = +b.dataset.i, s = S.bag[i]; sel = i; trashArm = 0; if (s && ITEMS[s.id].tool) return netSend({ t: 'equip', tool: S.tool === s.id ? null : s.id }); return render(); }
     if (b.dataset.box === 'bagc' || b.dataset.box === 'chest') return netSend({ t: 'chest', from: b.dataset.box === 'chest' ? 'chest' : 'bag', i: +b.dataset.i });
