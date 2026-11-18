@@ -6,12 +6,15 @@ const RW = 3; // 개울 반폭
 const riverX = (z) => 24 + 4 * Math.sin(z * 0.06);
 const BRIDGE = { x: 24, half: 5, w: 1.3, y: 0.3 };
 const POND = { x: -28, z: 18, r: 6 };
-const PLAZA = { x: 0, z: 0, r: 6 };
-const PATHS = [[0, 0, 19, 0], [29, 0, 38, -10], [0, 0, -18, -15], [0, 0, 0, 44], [0, 0, -6, 30], [-6, 30, -20, 22]];
-const FLAT = [{ x: 0, z: 0, r: 9 }, { x: -19, z: -17, r: 11 }, { x: 41, z: -10, r: 14 }, { x: 44, z: 14, r: 7 }, { x: 24, z: 0, r: 9 }]; // 언덕을 만들지 않는 곳
+const PLAZA = { x: 0, z: 0, r: 6 }; // 옛 광장(이제 갈림길)
+const HARBOR = { x: 0, z: -54 }; // 항구 = 안전지대(섬 북쪽 가장자리 · 부장님 2026-11-18) — 부두 · 도구 상점 · 자판기
+const DOCK = { x: 0, half: 1.2, z0: -69, z1: -58.5, y: 0.3 }; // 부두(바다로 나간 나무 길)
+const PATHS = [[0, -54, 16, -44], [16, -44, 14, -20], [14, -20, 19, 0], [0, -54, 0, -6], [0, -54, -28, -38], [-28, -38, -19, -17], // 항구에서 나가는 길 3곳: 동(다리 쪽) · 남(옛 광장) · 서(야영지)
+  [0, 0, 19, 0], [29, 0, 38, -10], [0, 0, -18, -15], [0, 0, 0, 44], [0, 0, -6, 30], [-6, 30, -20, 22]];
+const FLAT = [{ x: 0, z: -54, r: 9 }, { x: 0, z: 0, r: 9 }, { x: -19, z: -17, r: 11 }, { x: 41, z: -10, r: 14 }, { x: 44, z: 14, r: 7 }, { x: 24, z: 0, r: 9 }]; // 언덕을 만들지 않는 곳
 const sstep = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 const segDist = (px, pz, [ax, az, bx, bz]) => { const dx = bx - ax, dz = bz - az, t = Math.max(0, Math.min(1, ((px - ax) * dx + (pz - az) * dz) / (dx * dx + dz * dz))); return Math.hypot(px - ax - t * dx, pz - az - t * dz); };
-const pathDist = (x, z) => Math.min(Math.hypot(x - PLAZA.x, z - PLAZA.z) - PLAZA.r + 1.6, ...PATHS.map((s) => segDist(x, z, s)));
+const pathDist = (x, z) => Math.min(Math.hypot(x - PLAZA.x, z - PLAZA.z) - PLAZA.r + 1.6, Math.hypot(x - HARBOR.x, z - HARBOR.z) - 7 + 1.6, ...PATHS.map((s) => segDist(x, z, s)));
 const hash = (x, z) => { const s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); };
 function noise(x, z) {
   const xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi, u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf);
@@ -30,9 +33,9 @@ function height(x, z) {
   h = Math.min(h, -0.8 * sstep(POND.r + 1.5, POND.r, pd));
   return h;
 }
-// 집터: 문파원마다 하나씩(서버가 번호를 정해 줌) — 섬 안쪽 · 물 · 길 · 마을 시설을 피해 8칸 간격, 광장에 가까운 순 64개(2026-11-17 9칸 40개였는데 실제론 33개뿐 · 문파원 50명이라 늘림). 집터는 평평하게
-const KEEP = [{ x: 0, z: 0, r: 10 }, { x: -19, z: -17, r: 10 }, { x: 41, z: -10, r: 13 }, { x: 44, z: 14, r: 7 }, { x: 0, z: 50, r: 6 }, { x: -4.5, z: -5, r: 4 }];
-const PLOTS = (() => {
+// 빈터(2026-11-18 B단계: 정해진 집터를 없애고 텐트를 사서 아무 데나 침 — 옛 집터 자리는 「평평한 빈터」로 남겨 나무 · 바위 자리가 바뀌지 않게). 옛 설명: 집터 문파원마다 하나씩(서버가 번호를 정해 줌) — 섬 안쪽 · 물 · 길 · 마을 시설을 피해 8칸 간격, 광장에 가까운 순 64개(2026-11-17 9칸 40개였는데 실제론 33개뿐 · 문파원 50명이라 늘림). 집터는 평평하게
+const KEEP = [{ x: 0, z: -54, r: 10 }, { x: 0, z: 0, r: 10 }, { x: -19, z: -17, r: 10 }, { x: 41, z: -10, r: 13 }, { x: 44, z: 14, r: 7 }, { x: 0, z: 50, r: 6 }, { x: -4.5, z: -5, r: 4 }];
+const CLEARINGS = (() => {
   const out = [];
   const SP = 9; // 집터 간격(2026-11-18 부장님 — 집마다 함정 자리 8곳 이상: 8 → 9 · 가장자리 여유 11 → 8 로 56곳 유지)
   for (let gz = -54; gz <= 54; gz += SP) for (let gx = -54; gx <= 54; gx += SP) {
@@ -44,14 +47,15 @@ const PLOTS = (() => {
   }
   return out.sort((a, b) => Math.hypot(a.x, a.z) - Math.hypot(b.x, b.z)).slice(0, 64);
 })();
-FLAT.push(...PLOTS.map((p) => ({ x: p.x, z: p.z, r: 5.5 })));
-const onBridge = (x, z) => Math.abs(x - BRIDGE.x) < BRIDGE.half && Math.abs(z) < BRIDGE.w;
+FLAT.push(...CLEARINGS.map((p) => ({ x: p.x, z: p.z, r: 5.5 })));
+const onBridge = (x, z) => (Math.abs(x - BRIDGE.x) < BRIDGE.half && Math.abs(z) < BRIDGE.w) || (Math.abs(x - DOCK.x) < DOCK.half && z > DOCK.z0 && z < DOCK.z1); // 다리 · 부두 위는 걸어짐
 const groundY = (x, z) => (onBridge(x, z) ? Math.max(BRIDGE.y, height(x, z)) : height(x, z));
 let seed = 20261117;
 const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
 const isGrass = (x, z) => {
   const d = Math.hypot(x, z), R = islandR(Math.atan2(z, x));
-  return d < R - 8.5 && height(x, z) > -0.05 && pathDist(x, z) > 1.7 && Math.abs(x - riverX(z)) > RW + 1.9 && Math.hypot(x - POND.x, z - POND.z) > POND.r + 1.9;
+  return d < R - 8.5 && Math.hypot(x - HARBOR.x, z - HARBOR.z) > 10 && height(x, z) > -0.05 && // 항구(안전지대) 안엔 꽃 · 풀 없음(부장님)
+    pathDist(x, z) > 1.7 && Math.abs(x - riverX(z)) > RW + 1.9 && Math.hypot(x - POND.x, z - POND.z) > POND.r + 1.9;
 };
 
 // ───────── 땅 ─────────
@@ -135,7 +139,7 @@ const keepOut = KEEP;
 const clearSpot = (x, z, gap) => {
   const d = Math.hypot(x, z), R = islandR(Math.atan2(z, x));
   if (d > R - 10 || height(x, z) < 0 || pathDist(x, z) < gap) return false;
-  if (PLOTS.some((p) => Math.hypot(x - p.x, z - p.z) < 6)) return false; // 집터엔 나무 · 바위 없음
+  if (CLEARINGS.some((p) => Math.hypot(x - p.x, z - p.z) < 6)) return false; // 빈터엔 나무 · 바위 없음
   if (Math.abs(x - riverX(z)) < RW + 2.5 || Math.hypot(x - POND.x, z - POND.z) < POND.r + 2.5) return false;
   return !keepOut.some((k) => Math.hypot(x - k.x, z - k.z) < k.r);
 };
