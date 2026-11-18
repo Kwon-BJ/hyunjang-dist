@@ -22,6 +22,7 @@ const SPAWN = { x: HARBOR.x, z: HARBOR.z + 1.8 }; // 집이 없을 때 시작하
 const chestSize = () => HOUSES[S.tier].chest + Math.max(0, Math.min(2, S.extra | 0)) * 8; // 보관함 칸(늘리기 포함)
 const okHome = (h) => (h && Number.isFinite(+h.x) && Number.isFinite(+h.z) ? { x: +h.x, z: +h.z } : null);
 function fixSave() { // 예전 저장(집터 번호 plot)이면 집 대신 가방에 텐트(서버 초기화와 같게) · 집 자리 모양 검사
+  if (S.mapV !== MAP_V) { if (S.home && S.plot == null) { S.home = null; if (put(S.bag, '텐트', 1)) { S.chest = Array.isArray(S.chest) ? S.chest : []; fit(S.chest, HOUSES[S.tier].chest); put(S.chest, '텐트', 1); } } S.mapV = MAP_V; } // 지도가 바뀌면 옛 집은 텐트로
   if (S.plot != null) { delete S.plot; S.home = null; if (!S.bag.some((s) => s && s.id === '텐트') && put(S.bag, '텐트', 1)) { S.chest = Array.isArray(S.chest) ? S.chest : []; fit(S.chest, HOUSES[S.tier].chest); put(S.chest, '텐트', 1); } }
   S.home = okHome(S.home); S.extra = Math.max(0, Math.min(2, S.extra | 0));
 }
@@ -32,11 +33,11 @@ let dirty = false;
 let onSaved = null; // 여럿이 함께일 때 서버에도 저장(아래 「여럿이 함께」에서 채움)
 // 혼자 놀기 저장으로 되돌림 — 서버에서 끊겼을 때(서버 가방이 이 기기 저장에 섞이지 않게 · 리뷰 3단계 4번)
 function loadLocal() {
-  try { const d = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); if (d && Array.isArray(d.bag)) Object.assign(S, { money: Math.max(0, +d.money || 0), bag: d.bag, chest: d.chest || [], tier: d.tier | 0, extra: d.extra | 0, tool: d.tool || null, home: d.home || null, plot: d.plot }); else Object.assign(S, { money: 100, bag: [], chest: [], tier: 0, extra: 0, tool: null, home: null }); } catch { /* */ }
+  try { const d = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); if (d && Array.isArray(d.bag)) Object.assign(S, { money: Math.max(0, +d.money || 0), bag: d.bag, chest: d.chest || [], tier: d.tier | 0, extra: d.extra | 0, tool: d.tool || null, home: d.home || null, plot: d.plot, mapV: d.mapV }); else Object.assign(S, { money: 100, bag: [], chest: [], tier: 0, extra: 0, tool: null, home: null }); } catch { /* */ }
   S.tier = Math.max(0, Math.min(HOUSES.length - 1, S.tier | 0)); fit(S.bag, BAG_N); fixSave(); fit(S.chest, chestSize()); S.mag = {};
   buildHouse(false); changed(); dirty = false;
 }
-const flush = () => { if (!dirty) return; dirty = false; if (typeof srvOn === 'function' && srvOn()) return; try { localStorage.setItem(SAVE_KEY, JSON.stringify({ money: S.money, bag: S.bag, chest: S.chest, tier: S.tier, extra: S.extra, tool: S.tool, home: S.home })); } catch { /* 저장 공간 없음 */ } if (onSaved) onSaved(); };
+const flush = () => { if (!dirty) return; dirty = false; if (typeof srvOn === 'function' && srvOn()) return; try { localStorage.setItem(SAVE_KEY, JSON.stringify({ money: S.money, bag: S.bag, chest: S.chest, tier: S.tier, extra: S.extra, tool: S.tool, home: S.home, mapV: MAP_V })); } catch { /* 저장 공간 없음 */ } if (onSaved) onSaved(); };
 setInterval(flush, 2000); addEventListener('pagehide', () => { dirty = true; flush(); });
 
 const winEl = $('win'), bodyEl = $('winBody'), frameEl = $('frame'), toastsEl = $('toasts');
@@ -177,7 +178,7 @@ const price = (n) => `<span class="pr"><i class="ic"></i>${n.toLocaleString()}</
 function render() {
   frameEl.classList.toggle('wide', view === 'chest');
   const H = HOUSES[S.tier];
-  const [title, tic] = { bag: ['가방', '가방'], shop: [(SHOPS[shopKind] || SHOPS.tool).name, '조개'], house: ['내 집', H.model], chest: ['보관함', H.model], raids: ['습격 기록', H.model] }[view];
+  const [title, tic] = { bag: ['가방', '가방'], shop: [(SHOPS[shopKind] || SHOPS.tool).name, '조개'], house: ['내 집', H.model], chest: ['보관함', H.model], raids: ['습격 기록', H.model], settings: ['설정', '손'] }[view];
   $('winTitle').textContent = title; $('winIc').style.backgroundImage = ic(tic);
   let h = '';
   if (view === 'bag') {
@@ -210,6 +211,8 @@ function render() {
         <div class="foot"><button type="button" class="gbtn" id="upBtn" ${okAll ? '' : 'disabled'}><i class="ic" style="background-image:${ic(N.model)}"></i>올리기</button></div>`;
     }
     h = houseHpHtml() + h + `<div class="foot"><button type="button" class="bbtn" id="moveBtn">${moveArm ? '한 번 더 누르면 접어요' : '텐트로 접기 (이사)'}</button></div>`; // 내구도 · 고치기(7단계) · 이사(B단계)
+  } else if (view === 'settings') { const NM = { auto: '자동', low: '저사양', high: '고사양' };
+    h = `<div class="empty">그래픽 품질 — 지금 ${NM[qMode]}${qMode === 'auto' ? ` (${['저사양', '보통', '고사양'][quality.level]})` : ''}</div><div class="qsel">${['auto', 'low', 'high'].map((m) => `<button type="button" class="${m === qMode ? 'gbtn' : 'bbtn'}" data-q="${m}">${NM[m]}</button>`).join('')}</div><div class="empty">저사양: 빠르게(효과 · 그림자 줄임) · 고사양: 부드러운 그림자 · 불빛 번짐 · 흐림 · 조명 많이</div>`;
   } else if (view === 'raids') { h = raidsHtml();
   } else if (view === 'chest') {
     h = `<div class="two"><div><h4>가방 (누르면 보관함으로)</h4><div class="grid">${slotsHtml(S.bag, 'bagc')}</div></div><div><h4>보관함 ${S.chest.length}칸 (누르면 가방으로)</h4><div class="grid chestgrid">${slotsHtml(S.chest, 'chest')}</div></div></div>`;
@@ -219,6 +222,7 @@ function render() {
 bodyEl.addEventListener('click', (e) => {
   const b = e.target.closest('button'); if (!b || b.disabled) return;
   if (b.dataset.tab) { tab = b.dataset.tab; return render(); }
+  if (b.dataset.q) { setQualityMode(b.dataset.q); return render(); } // 설정 창(C단계)
   if (srvOn()) { // 서버가 정함 — 요청만 보내고 inv 로 받음
     if (b.dataset.box === 'bag') { const i = +b.dataset.i, s = S.bag[i]; sel = i; trashArm = 0; if (s && ITEMS[s.id].tool) return netSend({ t: 'equip', tool: S.tool === s.id ? null : s.id }); return render(); }
     if (b.dataset.box === 'bagc' || b.dataset.box === 'chest') return netSend({ t: 'chest', from: b.dataset.box === 'chest' ? 'chest' : 'bag', i: +b.dataset.i });
@@ -268,9 +272,9 @@ let mySet = null, houseBox = null, npc = null;
 function placeHouseSet(at, tier) {
   const H = HOUSES[tier], obj = placeModel(srcs[H.model], at.x, at.z, 0, H.h, 'b'), box = boxes[boxes.length - 1];
   const chest = placeModel(srcs['보관함'], at.x + 3.6, at.z + 3.4, -20, 0.75, 'c'), circle = circles[circles.length - 1];
-  return { obj, box, chest, circle, blob: houseBlob(box) };
+  return { obj, box, chest, circle, blob: houseBlob(box), glow: typeof houseGlow === 'function' ? houseGlow(at, tier, box) : null }; // 창문 · 텐트 등불(C단계)
 }
-function removeHouseSet(h) { scene.remove(h.obj); scene.remove(h.chest); if (h.blob) scene.remove(h.blob); boxes.splice(boxes.indexOf(h.box), 1); circles.splice(circles.indexOf(h.circle), 1); }
+function removeHouseSet(h) { scene.remove(h.obj); scene.remove(h.chest); if (h.blob) scene.remove(h.blob); if (h.glow) removeGlow(h.glow); boxes.splice(boxes.indexOf(h.box), 1); circles.splice(circles.indexOf(h.circle), 1); }
 function buildHouse(goHome = false) {
   if (mySet) { removeHouseSet(mySet); mySet = null; }
   if (!S.home) { HOUSE_AT = null; houseBox = null; CHEST_AT = { x: 1e4, z: 1e4 }; if (goHome) { me.x = SPAWN.x; me.z = SPAWN.z; me.face = 0; } nudgeFree(); return; } // 집 없음(텐트 치기 전) — 울타리 안에서 시작
@@ -312,7 +316,7 @@ const inWaterC = (x, z) => Math.abs(x - riverX(z)) < RW + 0.4 || Math.hypot(x - 
 let NATURAL = null; // 나무 · 바위 · 덤불 막힘(서버는 나무 · 바위만 따로 봄 · 덤불은 안 봄)
 function tentWhy(x, z) {
   const T = TENT, sf = (typeof SAFE !== 'undefined' && SAFE) || SAFE_DEF;
-  if (!Number.isFinite(x) || !Number.isFinite(z) || Math.hypot(x, z) >= 70) return '여기는 칠 수 없어요';
+  if (!Number.isFinite(x) || !Number.isFinite(z) || Math.hypot(x, z) >= ISLE_R + 12) return '여기는 칠 수 없어요';
   if (Math.hypot(x - sf.x, z - sf.z) < sf.r + T.safeGap) return `안전지대(항구) 둘레 ${T.safeGap}칸 안에는 칠 수 없어요`;
   const f = T.foot - 0.7; for (const [ox, oz] of [[0, 0], [f, 0], [-f, 0], [0, f], [0, -f], [f, f], [-f, f], [f, -f], [-f, -f]]) if (inWaterC(x + ox, z + oz)) return '물가에는 칠 수 없어요';
   for (const s of FISH_SPOTS) if (Math.hypot(x - s.x, z - s.z) < T.fishGap) return '낚시 자리에는 칠 수 없어요';
