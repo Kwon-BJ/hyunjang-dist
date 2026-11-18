@@ -62,7 +62,7 @@ function onNetFight(m) {
   else if (m.t === 'msg') toast(m.text, m.icon);
   else if (m.t === 'shield') toast(m.s > 0 ? `안전지대를 나왔어요 — ${m.s}초 동안 안 다쳐요(먼저 공격하면 풀려요)` : '보호가 풀렸어요', '손'); // 부장님 2026-11-18
   else if (m.t === 'hp') {
-    if (m.id === net.id) { const lost = me.hp - m.hp; setMyHp(m.hp); if (lost > 0) flashHurt(); }
+    if (m.id === net.id) { const lost = me.hp - m.hp; setMyHp(m.hp); if (lost > 0 && 'by' in m) flashHurt(); } // 배고픔 · 걷기로 줄 땐 안 깜빡임(D단계)
     else { const o = net.others.get(m.id); if (o) { o.hp = m.hp; updateTagHp(o); } }
   } else if (m.t === 'died') {
     const o = net.others.get(m.id);
