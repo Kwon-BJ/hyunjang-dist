@@ -72,7 +72,12 @@ function chatTick() {
     BUBV.set(o.x, groundY(o.x, o.z) + TAG_Y + 0.38, o.z).project(camera);
     const vis = BUBV.z < 1 && Math.abs(BUBV.x) < 1.1 && Math.abs(BUBV.y) < 1.1;
     b.el.style.display = vis ? '' : 'none';
-    if (vis) b.el.style.transform = `translate(${((BUBV.x + 1) / 2 * innerWidth).toFixed(0)}px, ${((1 - BUBV.y) / 2 * innerHeight).toFixed(0)}px) translate(-50%, -100%)`;
+    // 화면 가장자리의 수달이 말해도 말풍선이 잘리지 않게 좌우 · 위를 화면 안으로 당김
+    if (vis) {
+      const w = b.el.offsetWidth, h = b.el.offsetHeight;
+      const x = Math.max(w / 2 + 4, Math.min(innerWidth - w / 2 - 4, (BUBV.x + 1) / 2 * innerWidth)), y = Math.max(h + 4, (1 - BUBV.y) / 2 * innerHeight);
+      b.el.style.transform = `translate(${x.toFixed(0)}px, ${y.toFixed(0)}px) translate(-50%, -100%)`;
+    }
   }
 }
 function clearChat() { for (const b of bubbles.values()) b.el.remove(); bubbles.clear(); }
