@@ -34,7 +34,7 @@ function trapTargets(see) {
   if (!srvOn()) return;
   if (TRAP_ITEMS.includes(S.tool) && HOUSE_AT) {
     const x = me.x + Math.sin(me.face) * 1.3, z = me.z + Math.cos(me.face) * 1.3;
-    if (Math.hypot(x - HOUSE_AT.x, z - HOUSE_AT.z) < 6 && !inSafeC(x, z)) { PLACE_AT.x = x; PLACE_AT.z = z; see('place', PLACE_AT, x, z, 1.5, 1.0); } // 함정을 들었으면 꽃 · 풀보다 놓기가 먼저(2026-11-18 시험에서 드러남)
+    const sf = SAFE || SAFE_DEF; if (Math.hypot(x - HOUSE_AT.x, z - HOUSE_AT.z) < 6 && Math.hypot(x - sf.x, z - sf.z) >= sf.r + 25) { PLACE_AT.x = x; PLACE_AT.z = z; see('place', PLACE_AT, x, z, 1.5, 1.0); } // 함정을 들었으면 꽃 · 풀보다 놓기가 먼저(2026-11-18 시험에서 드러남)
   }
   for (const t of traps.values()) {
     const mine = t.owner === net.name;
@@ -52,13 +52,13 @@ function trapAction(t) {
 // ── 서버 말 ──
 function onNetTrap(m) {
   if (m.t === 'trap') addTrap(m.tr);
-  else if (m.t === 'trapgone') { const t = traps.get(m.id); if (t) { puffAt(t.x, t.z); toast(t.owner === net.name ? `내 ${t.item}이 부서졌어요`.replace('가시덫이', '가시덫이') : `${t.item}을 부쉈어요`); } removeTrap(m.id); }
+  else if (m.t === 'trapgone') { const t = traps.get(m.id); if (t && !m.back) { puffAt(t.x, t.z); toast(t.owner === net.name ? `내 ${t.item}이 부서졌어요`.replace('가시덫이', '가시덫이') : `${t.item}을 부쉈어요`); } removeTrap(m.id); }
   else if (m.t === 'spiked') { const t = traps.get(m.id); if (t && m.who === net.id) toast('가시덫을 밟았어요!'); }
 }
 function puffAt(x, z) { for (let i = 0; i < 4; i++) puffDust(x + (Math.random() - 0.5), z + (Math.random() - 0.5), 1.6); }
 // 포탑이 쏠 때: 총구를 겨눈 쪽으로 · 불꽃 · 소리(gun.js 'shot' 에서 부름)
 function turretShot(m) {
-  const t = traps.get(m.tid); if (!t || !t.gun) return;
+  const t = traps.get(m.tid) || guardObjs.get(m.tid); if (!t || !t.gun) return; // 경비 포탑도
   const e = m.ends[0]; t.gun.rotation.y = Math.atan2(e[0] - t.x, e[1] - t.z); t.ammo = m.ammo ?? t.ammo;
   const f = new THREE.Mesh(FLASH_G, FLASH); f.position.set(t.x + Math.sin(t.gun.rotation.y) * 0.55, t.gun.position.y + 0.12, t.z + Math.cos(t.gun.rotation.y) * 0.55); scene.add(f); fx.push({ o: f, t: 0.06 });
   bang('소총', Math.max(0, 1 - Math.hypot(t.x - me.x, t.z - me.z) / 40));
