@@ -8,15 +8,29 @@ function grad(g, c0, c1, y0, y1, jitter = 0) {
   g.setAttribute('color', new THREE.BufferAttribute(a, 3)); return g;
 }
 const at = (g, x, y, z, sx = 1, sy = sx, sz = sx) => { g.scale(sx, sy, sz); g.translate(x, y, z); return g; };
-// 잎 덩어리: 공 여러 개를 모아 둥근 나무 모양
-function canopy(cy, R, n, dark, light, s) {
-  const out = [];
-  for (let i = 0; i < n; i++) {
-    const a = (i / n) * Math.PI * 2 + hash(i, s) * 0.8, rr = i === 0 ? 0 : R * (0.45 + 0.25 * hash(s, i)), yy = i === 0 ? 0.15 : (hash(i * 3, s) - 0.35) * R * 0.9;
-    out.push(at(new THREE.IcosahedronGeometry(R * (i === 0 ? 0.85 : 0.5 + 0.18 * hash(i, s * 2)), 2), Math.cos(a) * rr, cy + yy, Math.sin(a) * rr)); // 매끈한 공(찰흙 · C단계)
-  }
-  return out.map((g) => grad(g, dark, light, cy - R * 0.9, cy + R * 0.9, 0.06));
+// ── 펠트 인형 모양(2026-11-19 부장님 · 기획/디자인/배경소품-시안.png): 둥글고 통통한 덩어리 몇 개 · 각진 면 · 뾰족한 끝 없음 ──
+// 꼭짓점을 나눠 쓰는(index) 매끈한 공 · 돌림 모양이라 면이 안 보이고, 예전(잘게 나눈 공 7개 · 꼭짓점 따로)보다 꼭짓점이 훨씬 적어 휴대폰이 가벼움.
+// 섬 자리(rnd)는 건드리지 않음 — 모양 안의 흔들림은 hash 만 씀(서버 world.json 과 같은 자리)
+function gradI(g, c0, c1, y0, y1, jitter = 0) {
+  if (g.attributes.uv) g.deleteAttribute('uv');
+  const p = g.attributes.position, a = new Float32Array(p.count * 3), A = new THREE.Color(c0), B = new THREE.Color(c1), c = new THREE.Color();
+  for (let i = 0; i < p.count; i++) { c.copy(A).lerp(B, sstep(y0, y1, p.getY(i))); if (jitter) c.multiplyScalar(1 - jitter + 2 * jitter * hash(p.getX(i) * 1.3, p.getZ(i) * 1.1 + p.getY(i))); a.set([c.r, c.g, c.b], i * 3); }
+  g.setAttribute('color', new THREE.BufferAttribute(a, 3)); return g;
 }
+const feltBall = (r, x, y, z, sx = 1, sy = sx, sz = sx, w = 12, h = 9) => at(new THREE.SphereGeometry(r, w, h), x, y, z, sx, sy, sz);
+// 돌림 모양: [반지름, 높이] 점들을 세로축으로 돌림(꼭대기 · 바닥 가운데는 0.001 로 닫음)
+const lathe = (pts, seg = 12) => new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(Math.max(0.001, r), y)), seg);
+// 통통한 줄기: 밑은 뿌리처럼 살짝 퍼지고 위는 둥글게 닫힘(잎 덩어리 속) — 높이 h · 밑 r0 · 위 r1 은 예전과 같게(otter.js TRUNK · 흔들기 손 자리)
+const trunkP = (h, r0, r1) => gradI(lathe([[0, -0.06], [r0 * 1.32, -0.06], [r0 * 1.3, 0.05], [r0 * 1.08, 0.16 * h], [r0, 0.3 * h], [(r0 + r1) / 2, 0.65 * h], [r1, 0.95 * h], [r1 * 0.75, h * 1.04], [0, h * 1.08]], 10), BARK0, BARK1, 0, h);
+// 둥근 잎 덩어리: 가운데 큰 공 하나 + 둘레 아래쪽 n 개(시안의 활엽수처럼 위 하나 · 양옆 둘)
+function softCanopy(cy, R, n, dark, light, s) {
+  const out = [feltBall(R * 0.86, 0, cy + R * 0.18, 0, 1, 0.92, 1)];
+  for (let i = 0; i < n; i++) { const a = (i / n) * Math.PI * 2 + hash(s, i) * 0.6, rr = R * 0.6, k = 0.56 + 0.1 * hash(i, s * 2); out.push(feltBall(R * k, Math.cos(a) * rr, cy - R * 0.2 + (hash(i * 3, s) - 0.5) * R * 0.15, Math.sin(a) * rr, 1, 0.9, 1)); }
+  return out.map((g) => gradI(g, dark, light, cy - R * 0.95, cy + R * 1.05, 0.035));
+}
+// 침엽수 한 층: 끝이 둥근 고깔(반지름 r · 높이 h · 밑 높이 y) — 아래 가장자리도 둥글게 말림
+// 2026-11-19 3차: 뾰족해 보여서 낮고 넓게 · 꼭대기는 넓은 둥근 끝(반지름의 약 1/3)
+const pineTier = (r, h, y, dark, light) => gradI(at(lathe([[0, 0], [0.75, 0], [0.96, 0.06], [1, 0.17], [0.93, 0.33], [0.78, 0.5], [0.6, 0.66], [0.44, 0.8], [0.3, 0.9], [0.15, 0.97], [0, 1]], 12), 0, y, 0, r, h, r), dark, light, y, y + h, 0.03);
 // 바람 · 가림(수달과 카메라 사이면 비침)
 function windy(mat, { sway = 0.05, from = 1.0, occlude = false, noFlip = false } = {}) {
   mat.onBeforeCompile = (sh) => {
@@ -47,18 +61,24 @@ function windy(mat, { sway = 0.05, from = 1.0, occlude = false, noFlip = false }
 
 // ───────── 나무 · 덤불 · 바위 · 꽃 · 풀 (같은 모양은 한 번에 그림) ─────────
 const BARK0 = 0x5e3b22, BARK1 = 0x9a6a40;
-const trunk = (h, r0, r1) => grad(at(new THREE.CylinderGeometry(r1, r0, h, 12), 0, h / 2, 0), BARK0, BARK1, 0, h);
+// 덤불 공: 가운데 위 하나 + 둘레 셋(앞 왼쪽 · 앞 오른쪽 · 뒤) — [x, y, z, 반지름] · 열매 덤불의 열매도 이 공 겉면에 붙임
+const BUSH_BLOBS = [[0, 0.5, 0, 0.54], ...[0.6, 2.7, 4.7].map((a) => [Math.cos(a) * 0.3, 0.32, Math.sin(a) * 0.3, 0.38])];
+// 나무 · 덤불(2026-11-19 펠트 인형 모양) — 줄기 높이 · 굵기는 예전 그대로(흔들기 · 막힘), 잎은 큰 공 몇 개
 const TREE_KINDS = {
-  round: mergeGeometries([trunk(1.6, 0.27, 0.17), ...canopy(2.4, 1.25, 7, 0x2f7a33, 0x9ad65a, 1)]),
-  round2: mergeGeometries([trunk(1.9, 0.3, 0.18), ...canopy(2.8, 1.45, 8, 0x2a6e30, 0x8fcf55, 2)]),
-  fruit: mergeGeometries([trunk(1.4, 0.26, 0.16), ...canopy(2.15, 1.2, 7, 0x3a8a37, 0xa6dc62, 3),
-    ...[[0.8, 2.0, 0.85], [-0.85, 2.15, 0.65], [0.2, 1.65, 1.1], [-0.3, 2.7, 0.95], [0.95, 2.55, -0.3], [-0.75, 1.75, -0.85], [0.4, 2.9, 0.4]].map(([x, y, z]) => grad(at(new THREE.IcosahedronGeometry(0.15, 1), x, y, z), 0xb52a1c, 0xff6a4a, y - 0.15, y + 0.15))]),
-  pine: mergeGeometries([trunk(1.0, 0.22, 0.14), ...[[1.2, 0.62, 1.55], [0.95, 0.55, 2.3], [0.68, 0.5, 2.95], [0.38, 0.42, 3.5]].map(([r, h, y]) => grad(at(new THREE.SphereGeometry(1, 14, 8), 0, y, 0, r, h, r), 0x1f5a35, 0x5fa85a, y - h, y + h, 0.04))]), // 둥근 층층(찰흙 소나무)
-  bush: mergeGeometries([...canopy(0.5, 0.6, 5, 0x2f7a33, 0x8fcf55, 4),
-    ...[[0.35, 0.75, 0.35], [-0.3, 0.8, 0.3], [0.05, 0.95, -0.2], [0.45, 0.55, -0.25]].map(([x, y, z]) => grad(at(new THREE.IcosahedronGeometry(0.07, 0), x, y, z), 0xffffff, 0xffffff, 0, 1))]),
+  round: mergeGeometries([trunkP(1.6, 0.27, 0.17), ...softCanopy(2.4, 1.25, 3, 0x2f7a33, 0x9ad65a, 1)]),
+  round2: mergeGeometries([trunkP(1.9, 0.3, 0.18), ...softCanopy(2.8, 1.45, 4, 0x2a6e30, 0x8fcf55, 2)]),
+  fruit: mergeGeometries([trunkP(1.4, 0.26, 0.16), ...softCanopy(2.15, 1.2, 3, 0x3a8a37, 0xa6dc62, 3),
+    ...[[0.8, 2.05, 0.75], [-0.85, 2.15, 0.6], [0.15, 1.75, 1.05], [-0.25, 2.75, 0.9], [0.95, 2.5, -0.3], [-0.7, 1.8, -0.8], [0.35, 3.0, 0.45]].map(([x, y, z]) => gradI(feltBall(0.16, x, y, z, 1, 1, 1, 8, 6), 0xb52a1c, 0xff6a4a, y - 0.16, y + 0.16))]),
+  // 침엽수: 끝이 둥근 고깔 세 층(시안처럼 층마다 아래 가장자리가 말림)
+  pine: mergeGeometries([trunkP(1.0, 0.22, 0.14), pineTier(1.35, 1.0, 0.95, 0x1f5a35, 0x4f9a55), pineTier(1.05, 0.9, 1.6, 0x22603a, 0x5aa65c), pineTier(0.76, 0.82, 2.2, 0x266840, 0x66b264), gradI(feltBall(0.26, 0, 2.98, 0), 0x2c7246, 0x72ba6c, 2.75, 3.24)]),
+  // 덤불: 통통한 공 셋 + 뒤 하나 · 작은 꽃 공
+  bush: mergeGeometries([...BUSH_BLOBS.map(([x, y, z, r]) => gradI(feltBall(r, x, y, z), 0x2f7a33, 0x8fcf55, 0, 1.0, 0.03)),
+    ...[[0.32, 0.72, 0.3], [-0.3, 0.6, 0.38], [0.05, 0.98, 0.1], [0.5, 0.5, -0.12]].map(([x, y, z]) => gradI(feltBall(0.07, x, y, z, 1, 1, 1, 8, 6), 0xffffff, 0xffffff, 0, 1))]),
 };
-const ROCK = (() => { const g = new THREE.IcosahedronGeometry(1, 3); const p = g.attributes.position; for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i), z = p.getZ(i), k = 0.88 + 0.22 * noise(x * 1.3 + 5, z * 1.3 + y * 1.1); p.setXYZ(i, x * k, y * k, z * k); } g.computeVertexNormals(); return grad(g, 0x7e8078, 0xb8b6a8, -0.6, 0.6); })(); // 매끈한 둥근 바위(찰흙 · C단계)
-const mossy = (g) => { const p = g.attributes.position, c = g.attributes.color, m = new THREE.Color(0x7aa848), t = new THREE.Color(); for (let i = 0; i < p.count; i++) if (p.getY(i) > 0.55) { t.setRGB(c.getX(i), c.getY(i), c.getZ(i)).lerp(m, 0.6); c.setXYZ(i, t.r, t.g, t.b); } return g; };
+// 바위(2026-11-19 펠트): 꼭짓점을 나눠 쓰는 매끈한 공을 아주 완만하게만 울퉁불퉁 — 면 · 모서리가 안 보이는 통통한 조약돌
+const ROCK = (() => { const g = new THREE.SphereGeometry(1, 22, 16), p = g.attributes.position; for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i), z = p.getZ(i), k = 0.93 + 0.12 * noise(x * 0.9 + 5, z * 0.9 + y * 0.8); p.setXYZ(i, x * k, y * k, z * k); } g.computeVertexNormals(); return gradI(g, 0x7e8078, 0xbcb9ab, -0.6, 0.7); })();
+// 윗면 이끼: 높이에 따라 부드럽게 물듦
+const mossy = (g) => { const p = g.attributes.position, c = g.attributes.color, m = new THREE.Color(0x7aa848), t = new THREE.Color(); for (let i = 0; i < p.count; i++) { const k = sstep(0.5, 0.8, p.getY(i)) * 0.6; if (k > 0) { t.setRGB(c.getX(i), c.getY(i), c.getZ(i)).lerp(m, k); c.setXYZ(i, t.r, t.g, t.b); } } return g; };
 mossy(ROCK);
 const BLADE = (() => { // 풀잎 하나: 아래 진한 초록 → 끝 연두
   const w = 0.05, h = 0.3, g = new THREE.BufferGeometry();
@@ -73,13 +93,15 @@ const FLOWER = mergeGeometries([
   grad(at(new THREE.SphereGeometry(0.04, 6, 4), 0, 0.17, 0), 0xffd23a, 0xffd23a, 0, 1),
   grad(at(new THREE.CylinderGeometry(0.008, 0.008, 0.16, 3), 0, 0.08, 0), 0x4f8f2e, 0x4f8f2e, 0, 1),
 ]);
-const PEBBLE = grad(new THREE.DodecahedronGeometry(0.12, 0), 0x9a9486, 0xd2cbb8, -0.1, 0.1);
+// 길가 자갈: 납작한 둥근 공(각진 12면체 대신 · 꼭짓점도 더 적음)
+const PEBBLE = gradI(feltBall(0.12, 0, 0, 0, 1, 0.62, 1, 7, 4), 0x9a9486, 0xd2cbb8, -0.08, 0.08);
 const treeMat = windy(new THREE.MeshLambertMaterial({ vertexColors: true }), { sway: 0.022, from: 1.2, occlude: true }); // 매끈한 면(찰흙 · C단계)
 const bushMat = windy(new THREE.MeshLambertMaterial({ vertexColors: true }), { sway: 0.05, from: 0.2, occlude: false });
 const rockMat = new THREE.MeshLambertMaterial({ vertexColors: true });
 const grassMat = windy(new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide }), { sway: 1.6, from: 0, noFlip: true });
 const flowerMat = windy(new THREE.MeshLambertMaterial({ vertexColors: true }), { sway: 1.2, from: 0 });
-const plainMat = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true });
+// 자갈도 면이 안 보이게 매끈하게(2026-11-19 펠트 · 예전 flatShading 끔)
+const plainMat = new THREE.MeshLambertMaterial({ vertexColors: true });
 function scatter(geo, mat, n, place, { shadow = true, area = ISLE_R * 2 + 4, tryMul = 40 } = {}) {
   const im = new THREE.InstancedMesh(geo, mat, n), m = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), v = new THREE.Vector3(), s = new THREE.Vector3();
   let k = 0;
@@ -120,7 +142,8 @@ BUSHES.push(...scatter(TREE_KINDS.bush, bushMat, 230, (x, z) => {
 const BERRIES = [];
 {
   const parts = [];
-  for (let j = 0; j < 7; j++) { const a = j / 7 * Math.PI * 2 + 0.4, y = 0.32 + (j % 3) * 0.13, rr = 0.47 - (j % 3) * 0.08; const g = new THREE.SphereGeometry(0.09, 7, 5); g.translate(Math.cos(a) * rr, y, Math.sin(a) * rr); const c = new THREE.Color(j % 2 ? 0xd2232f : 0xe84a3c), col = []; for (let v = 0; v < g.attributes.position.count; v++) col.push(c.r, c.g, c.b); g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); parts.push(g); }
+  // 통통한 덤불 겉면에 동그란 열매(2026-11-19 펠트 — 공을 더 둥글게 · 겉으로 조금 나옴)
+  for (let j = 0; j < 7; j++) { const [bx, by, bz, br] = BUSH_BLOBS[j % 4], a = hash(j, 7.7) * Math.PI * 2, d = new THREE.Vector3(bx * 2 + Math.cos(a) * 0.5, by - 0.05 + hash(j, 3.1) * 0.6, bz * 2 + Math.sin(a) * 0.5).normalize(); const g = new THREE.SphereGeometry(0.1, 8, 6); g.translate(bx + d.x * br * 0.97, by + d.y * br * 0.97, bz + d.z * br * 0.97); const c = new THREE.Color(j % 2 ? 0xd2232f : 0xe84a3c), col = []; for (let v = 0; v < g.attributes.position.count; v++) col.push(c.r, c.g, c.b); g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); parts.push(g); }
   const BERRY = mergeGeometries(parts), mat = new THREE.MeshLambertMaterial({ vertexColors: true });
   const pick = BUSHES.filter((b, i) => hash(i * 1.7 + 3, 11.3) < 0.36);
   const im = new THREE.InstancedMesh(BERRY, mat, Math.max(1, pick.length)), m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), v = new THREE.Vector3();
