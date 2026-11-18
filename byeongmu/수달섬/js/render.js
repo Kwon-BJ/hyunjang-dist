@@ -10,11 +10,11 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.0;
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x9fd3ea);
-scene.fog = new THREE.Fog(0xcfe6ef, 55, 130);
-const camera = new THREE.PerspectiveCamera(38, 1, 0.5, 400);
-scene.add(new THREE.HemisphereLight(0xa9cdf5, 0x7d6c46, 1.0)); // 그늘은 푸르게(4단계)
-const sun = new THREE.DirectionalLight(0xffd59c, 3.05); // 햇빛은 따뜻하게(4단계)
+scene.background = new THREE.Color(0x0f1b36); // 늘 달밤(작업지시서 2 C — 미티는 밤을 좋아함)
+scene.fog = new THREE.Fog(0x162443, 34, 110);
+const camera = new THREE.PerspectiveCamera(38, 1, 0.5, 160); // 먼 끝 = 안개 끝(110) 넘어 조금 — 넓은 섬에서 먼 것까지 다 그리지 않게
+const hemi = new THREE.HemisphereLight(0x6a86d0, 0x2a2340, 0.62); scene.add(hemi); // 밤하늘빛(푸름) · 땅 반사(보라)
+const sun = new THREE.DirectionalLight(0xaec4ff, 1.05); // 달빛(이름은 예전 그대로 sun)
 sun.castShadow = true;
 sun.shadow.mapSize.set(touchy ? 1024 : 2048, touchy ? 1024 : 2048);
 Object.assign(sun.shadow.camera, { left: -20, right: 20, top: 20, bottom: -20, near: 1, far: 90 });
