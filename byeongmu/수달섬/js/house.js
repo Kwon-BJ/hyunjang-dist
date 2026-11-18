@@ -58,6 +58,7 @@ function raidText(e) {
   const who = e.by || '누군가';
   if (e.act === 'broke') return `${who} 님이 집을 부숨 — 보관함이 쏟아짐${e.items && e.items.length ? ` (${itemsText(e.items)})` : ''}`;
   if (e.act === 'trap') return `${who} 님이 ${itemsText(e.items).replace(/ 1$/, '')}을 부숨`;
+  if (e.act === 'decay') return '텐트가 낡아 사라짐 — 보관함 물건은 그대로(새 텐트를 치면 다시 씀)';
   if (e.act === 'took') return `${who} 님이 보관함 물건을 가져감 (${itemsText(e.items)})`;
   return `${who} 님이 집을 침`;
 }
