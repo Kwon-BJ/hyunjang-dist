@@ -24,7 +24,7 @@ requestAnimationFrame((t) => { last = t; frame(t); });
 // 시험용: sim(누를 키, 초) — 화면 속도와 상관없이 1/60초씩 움직여 본다
 const sim = (codes, secs) => { codes.forEach((k) => keys.add(k)); for (let i = 0; i < Math.round(secs * 60); i++) step(1 / 60); codes.forEach((k) => keys.delete(k)); };
 window.__수달섬 = { me, free, height, circles, boxes, onBridge, BRIDGE, riverX, camera, renderer, quality, sim, joy, grass,
-  S, TREES, ROCKS, BUSHES, FLOWERS, BERRIES, KEYED, FISH_SPOTS, fishing, fishAction, fishOf, HSTATE, raids, traps, PLACE_AT, get view() { return view; }, get mySet() { return mySet; }, HOUSES, SHOP_AT, PLOTS, net, checkGame, save: () => { dirty = true; flush(); }, GAME_BUILD, doAction, findTarget, openWin, closeWin, count, flush,
+  S, TREES, ROCKS, BUSHES, FLOWERS, BERRIES, KEYED, FISH_SPOTS, fishing, fishAction, fishOf, setZoom, get zoomLv() { return zoomLv; }, get zoomK() { return zoomK; }, zoomWant, ZOOM_K, HSTATE, raids, traps, PLACE_AT, get view() { return view; }, get mySet() { return mySet; }, HOUSES, SHOP_AT, PLOTS, net, checkGame, save: () => { dirty = true; flush(); }, GAME_BUILD, doAction, findTarget, openWin, closeWin, count, flush,
   get sacks() { return sacks; }, aim, fireOnce, GUNS, get lastShot() { return lastShot; }, get SAFE() { return SAFE; }, get srv() { return srvOn(); }, testHold, shakeFit, wobbleAngle, TRUNK, SHAKE_T, PAW_R, get newGame() { return newGame; }, get idleT() { return idleT; }, keys, get HOUSE_AT() { return HOUSE_AT; }, get CHEST_AT() { return CHEST_AT; }, get houseBox() { return houseBox; }, get clock() { return clock; } };
 
 // 섬 자료(서버 판정용) — 기획/수달섬-세계뽑기.cjs 가 이것을 워커/src/suseom/world.json 으로 저장한다.
