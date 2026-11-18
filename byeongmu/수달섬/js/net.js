@@ -15,7 +15,7 @@ let netPending = false;
 onSaved = () => { if (net.server) return; if (net.on) netSend({ t: 'save', inv: { money: S.money, bag: S.bag, chest: S.chest, tier: S.tier, tool: S.tool } }); else netPending = true; };
 function adoptInv(inv) {
   S.mag = inv.mag || {}; S.money = inv.money; S.tier = Math.max(0, Math.min(3, inv.tier | 0)); S.tool = inv.tool || null;
-  S.bag = fit(inv.bag.slice(), BAG_N); S.chest = fit(inv.chest.slice(), HOUSES[S.tier].chest);
+  S.extra = inv.extra | 0; S.bag = fit(inv.bag.slice(), BAG_N); S.chest = inv.chest.slice(); // 보관함 칸은 서버가 정함(늘리기 포함)
   if (Number.isFinite(inv.hp)) setMyHp(inv.hp);
   if (!mySet || mySet.tier !== S.tier) buildHouse(false); // 단계가 바뀐 때만 다시 지음
   changed();
@@ -33,11 +33,11 @@ function addOther(p) {
   net.others.set(p.id, { ...p, tx: p.x, tz: p.z, tf: p.f, s: 0, r: 0, phase: 0, actT: 0, sw: 0, ac: 0, obj, tools, label });
 }
 function removeOther(o) { if (!o) return; scene.remove(o.obj); o.label.remove(); net.others.delete(o.id); }
-function setHouse(name, plot, tier) {
-  if (name === net.name || !(plot >= 0 && plot < PLOTS.length)) return;
+function setHouse(name, x, z, tier) { // 남의 집(B단계: 텐트를 친 자리 x · z)
+  if (name === net.name || !Number.isFinite(x) || !Number.isFinite(z)) return;
   const old = net.houses.get(name);
-  if (old) { if (old.tier === tier && old.plot === plot) return; removeHouseSet(old); }
-  net.houses.set(name, { plot, tier, ...placeHouseSet(PLOTS[plot], Math.max(0, Math.min(3, tier | 0))) });
+  if (old) { if (old.tier === tier && old.x === x && old.z === z) return; removeHouseSet(old); }
+  net.houses.set(name, { x, z, tier, ...placeHouseSet({ x, z }, Math.max(0, Math.min(3, tier | 0))) });
   nudgeFree(); // 내 자리 위에 남의 집이 생기면 옆으로 비킴
 }
 function onNet(m) {
@@ -47,17 +47,17 @@ function onNet(m) {
     net.on = true; net.tries = 0; net.id = m.id; net.name = m.name;
     for (const o of [...net.others.values()]) removeOther(o);
     for (const p of m.players) addOther(p);
-    for (const h of m.houses) { setHouse(h.name, h.plot, h.tier); applyHouseState(h.name, h); }
+    for (const h of [...net.houses.values()]) removeHouseSet(h); net.houses.clear(); // 다시 붙을 때 옛 집이 남지 않게
+    for (const h of m.houses) { setHouse(h.name, h.x, h.z, h.tier); applyHouseState(h.name, h); }
     clearTraps(); for (const t of m.traps || []) addTrap(t); // 함정(8단계)
     if (m.myHouse) HSTATE.set(m.name, { hp: m.myHouse.hp, max: m.myHouse.max, broken: m.myHouse.broken });
     for (const [k, left] of Object.entries(m.res || {})) applyRes(k, left);
     net.server = !!m.server; if (net.server) { me.x = m.x; me.z = m.z; me.speed = 0; fightWelcome(m); } // 자리는 서버가 정함(마지막 자리 10분 안 · 아니면 집 앞)
     if (m.inv && (net.server || !netPending)) adoptInv(m.inv); else { dirty = true; flush(); } // 서버에 없거나(처음) 끊긴 동안 바뀌었으면 이 기기 것을 올림
     netPending = false;
-    if (m.plot >= 0 && m.plot < PLOTS.length) { if (m.plot !== S.plot) { S.plot = m.plot; dirty = true; buildHouse(true); } }
-    else { if (mySet) { removeHouseSet(mySet); mySet = null; houseBox = null; CHEST_AT = { x: 1e4, z: 1e4 }; } toast('집터가 다 찼어요 — 부장님께 알려 주세요'); } // 남의 집터에 겹쳐 짓지 않음
+    if (net.server) { S.home = m.home ? { x: m.home.x, z: m.home.z } : null; buildHouse(false); if (!S.home) setTimeout(() => { if (net.on && !S.home) toast('텐트 자판기에서 텐트를 사서 원하는 곳에 치면 내 집이 돼요', '텐트'); }, 2500); } // 집은 텐트를 친 자리(B단계)
     countNow(); toast(`${m.name} 님, 수달섬에 오신 걸 환영해요!`);
-  } else if (m.t === 'join') { addOther(m); { const o = net.others.get(m.id); if (o && net.server) { o.hp = m.hp; o.alive = m.alive; updateTagHp(o); if (m.alive === false) layDown(o.obj, true); } } setHouse(m.name, m.plot, m.tier); countNow(); toast(`${m.name} 님이 들어왔어요`); }
+  } else if (m.t === 'join') { addOther(m); { const o = net.others.get(m.id); if (o && net.server) { o.hp = m.hp; o.alive = m.alive; updateTagHp(o); if (m.alive === false) layDown(o.obj, true); } } countNow(); toast(`${m.name} 님이 들어왔어요`); }
   else if (m.t === 'leave') { const fo = fishOf.get(m.id); if (fo) { dropBob(fo.bob); fishOf.delete(m.id); } const o = net.others.get(m.id); if (o) { toast(`${o.name} 님이 나갔어요`); removeOther(o); } countNow(); }
   else if (m.t === 'mv') {
     const o = net.others.get(m.id); if (!o) return;
@@ -74,7 +74,11 @@ function onNet(m) {
     const RES_MSG = { T: '나무가 쓰러졌어요 — N초 뒤 다시 자라요', R: '바위를 다 캤어요 — N초 뒤 다시 생겨요', P: '물고기를 다 잡았어요 — N초 뒤 다시 와요' };
     if (m.by === net.id && RES_MSG[m.k[0]]) toast(RES_MSG[m.k[0]].replace('N', Math.round(m.left))); // 내가 없앤 것 — 워커가 정한 시간으로 알림
   }
-  else if (m.t === 'house') setHouse(m.name, m.plot, m.tier);
+  else if (m.t === 'house') { setHouse(m.name, m.x, m.z, m.tier); if (m.hp != null) applyHouseState(m.name, m); }
+  else if (m.t === 'homegone') { const h = net.houses.get(m.name); if (h) { removeHouseSet(h); net.houses.delete(m.name); } } // 이사 가서 빈 자리
+  else if (m.t === 'home') { // 내 텐트를 쳤거나(x · z) 접었음(x 없음)
+    S.home = m.x == null ? null : { x: m.x, z: m.z }; buildHouse(false); if (S.home) { applyHouseState(net.name, m); toast('텐트를 쳤어요! 여기가 내 집이에요', '텐트'); } else if (view === 'house') closeWin();
+  }
   else if (m.t === 'err') netStatus('혼자 놀기 · ' + m.msg);
   else if (m.t === 'inv') { adoptInv(m.inv); aim.reloading = 0; refreshGunHud(); } // 장전이 끝나면 inv 가 옴
   else onNetFight(m); // got · msg · hp · died · respawn · sack · sackgone · fix (fight.js)
