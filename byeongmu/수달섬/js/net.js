@@ -6,7 +6,7 @@ const net = { ws: null, on: false, server: false, id: 0, name: '', others: new M
 let keepPos = false; // 새 판으로 다시 열려 있던 자리를 지킬 때 true
 // 말 판(서버 config.proto 와 같게) — 서버가 새 판이면 옛 화면으로 사고팔기 · 도구가 어긋나므로 바로 새로 연다(작업지시서 3 A1).
 // 시험(localhost)에서만 ?proto= 로 일부러 다르게 해 볼 수 있음
-const PROTO = (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && +new URLSearchParams(location.search).get('proto')) || 6;
+const PROTO = (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && +new URLSearchParams(location.search).get('proto')) || 7;
 function reloadForServer() {
   // 30초 안에 또 새로 열었으면(화면 파일이 아직 안 올라옴) 다시 열지 않고 30초 뒤에 한 번 더
   let last = 0;
@@ -71,6 +71,9 @@ function onNet(m) {
     clearGround(); for (const g of m.ground || []) setGround(g);
     // 수달끼리 겹치지 않기 숫자(서버 config.body · 작업지시서 3 C)
     if (m.body) BODY = { ...BODY, ...m.body };
+    // 다시 붙으면 번호가 바뀌므로 말풍선을 지우고, 하던 교환은 서버가 이미 취소함
+    clearChat();
+    if (TRADE) { TRADE = null; if (view === 'trade') closeWin(); }
     if (m.myHouse) HSTATE.set(m.name, { hp: m.myHouse.hp, max: m.myHouse.max, broken: m.myHouse.broken });
     for (const [k, left] of Object.entries(m.res || {})) applyRes(k, left);
     net.server = !!m.server; if (net.server) { me.x = m.x; me.z = m.z; me.speed = 0; fightWelcome(m); } // 자리는 서버가 정함(마지막 자리 10분 안 · 아니면 집 앞)
@@ -103,6 +106,9 @@ function onNet(m) {
   else if (m.t === 'err') netStatus('혼자 놀기 · ' + m.msg);
   else if (m.t === 'inv') { adoptInv(m.inv); aim.reloading = 0; refreshGunHud(); } // 장전이 끝나면 inv 가 옴
   else if (m.t === 'gd' || m.t === 'gdel') onNetGround(m);
+  // 채팅 · 교환(작업지시서 3 D) — chat.js · trade.js
+  else if (m.t === 'say') onNetSay(m);
+  else if (m.t === 'trade') onNetTrade(m);
   else if (m.t === 'market') { MARKET = m.f; if (view === 'shop' && !winEl.hidden) render(); } // 물고기 시세(D단계)
   else if (m.t === 'buff') (BUFF[m.b] = clock + m.secs), toast(`${{ fast: '빠르게', tough: '덜 다침', warm: '모닥불 회복 2배', quick: '채집 빨리' }[m.b] || m.b} ${m.secs}초`, '열매');
   else onNetFight(m); // got · msg · hp · died · respawn · sack · sackgone · fix (fight.js)
