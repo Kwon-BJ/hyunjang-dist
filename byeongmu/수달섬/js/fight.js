@@ -75,6 +75,7 @@ function onNetFight(m) {
   else if (m.t === 'shot' || m.t === 'mag' || m.t === 'reloading') onNetGun(m);
   else if (m.t === 'bite' || m.t === 'fishp' || m.t === 'fish') onNetFish(m);
   else if (m.t === 'hhp' || m.t === 'raids') onNetHouse(m);
+  else if (m.t === 'notice') showNotice(m.text, m.secs);
   else if (m.t === 'trap' || m.t === 'trapgone' || m.t === 'spiked') onNetTrap(m);
   else if (m.t === 'fix') { me.x = m.x; me.z = m.z; me.speed = 0; } // 서버가 되돌린 자리
 }
@@ -84,4 +85,13 @@ function fightTick() {
   const s = inSafeC(me.x, me.z);
   if (wasSafe !== null && s !== wasSafe) toast(s ? '안전 구역 — 여기서는 싸울 수 없어요' : '안전 구역을 나왔어요 — 조심하세요!');
   wasSafe = s;
+}
+
+// 서버 알림 띠(작업지시서 2 · 배포 1분 전 「1분 뒤 새 판으로 바뀝니다」) — 남은 초를 세어 보여 줌
+const noticeEl = document.createElement('div'); noticeEl.id = 'notice'; noticeEl.hidden = true; document.body.appendChild(noticeEl);
+let noticeT = null;
+function showNotice(text, secs) {
+  clearInterval(noticeT); let left = secs | 0; const paint = () => { noticeEl.textContent = left > 0 ? text + ' (' + left + '초)' : text; };
+  paint(); noticeEl.hidden = false;
+  noticeT = setInterval(() => { left--; if (left <= -8) { clearInterval(noticeT); noticeEl.hidden = true; } else paint(); }, 1000);
 }
