@@ -6,7 +6,7 @@ const net = { ws: null, on: false, server: false, id: 0, name: '', others: new M
 let keepPos = false; // 새 판으로 다시 열려 있던 자리를 지킬 때 true
 // 말 판(서버 config.proto 와 같게) — 서버가 새 판이면 옛 화면으로 사고팔기 · 도구가 어긋나므로 바로 새로 연다(작업지시서 3 A1).
 // 시험(localhost)에서만 ?proto= 로 일부러 다르게 해 볼 수 있음
-const PROTO = (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && +new URLSearchParams(location.search).get('proto')) || 7;
+const PROTO = (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && +new URLSearchParams(location.search).get('proto')) || 9;
 function reloadForServer() {
   // 30초 안에 또 새로 열었으면(화면 파일이 아직 안 올라옴) 다시 열지 않고 30초 뒤에 한 번 더
   let last = 0;
@@ -37,12 +37,19 @@ function adoptInv(inv) {
 }
 function netStatus(text, on) { const el = $('net'); el.querySelector('span').textContent = text; el.classList.toggle('on', !!on); }
 const countNow = () => netStatus(`함께 ${net.others.size + 1}명`, true);
-function applyRes(k, left) { const r = KEYED.get(k); if (!r || !(left > 0)) return; r.down = clock + left; if (r.wood != null) r.wood = 3; if (r.stone != null) r.stone = 3; wobbles.delete(r); hideRec(r); }
+// full: 다시 자라는 전체 시간(나무 단계 계산) · gone: 삽으로 파냄(작업지시서 3 E · grow.js)
+function applyRes(k, left, full, gone) {
+  const r = KEYED.get(k); if (!r) return;
+  if (gone) { wobbles.delete(r); hideRec(r); growApply(r, 0, true); return; }
+  if (!(left > 0)) return;
+  if (r.gone) r.gone = false;
+  r.down = clock + left; if (r.wood != null) r.wood = 3; if (r.stone != null) r.stone = 3; wobbles.delete(r); hideRec(r); growApply(r, full);
+}
 const hashName = (s) => [...String(s)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
 const lookOf = (name) => lookFromName(name); // 문파원마다 모자 3종 × 8색(새 수달 · 2026-11-18)
 function addOther(p) {
   removeOther(net.others.get(p.id));
-  const obj = makeOtter(lookOf(p.name)); obj.position.set(p.x, groundY(p.x, p.z), p.z); obj.rotation.y = p.f; scene.add(obj);
+  const obj = makeOtter(lookOf(p.name)); applyOutfit(obj, p.w); obj.position.set(p.x, groundY(p.x, p.z), p.z); obj.rotation.y = p.f; scene.add(obj);
   const tools = {}; for (const t of TOOLS) { tools[t] = heldModel(srcs[t], t); obj.userData.hold.add(tools[t]); tools[t].visible = p.tl === t; }
   const label = document.createElement('div'); label.className = 'tag'; label.textContent = p.name; document.body.appendChild(label);
   net.others.set(p.id, { ...p, tx: p.x, tz: p.z, tf: p.f, s: 0, r: 0, phase: 0, actT: 0, sw: 0, ac: 0, obj, tools, label });
@@ -60,6 +67,8 @@ function onNet(m) {
     // 서버 말 판이 이 화면과 다르면(서버만 먼저 새 판) 바로 새로 열기
     if (m.proto && m.proto !== PROTO) { net.protoMismatch = m.proto; try { net.ws.close(); } catch { /* */ } reloadForServer(); return; }
     me.obj.userData.setLook(lookOf(m.name)); // 내 모자 · 가방도 이름으로
+    // 입은 옷(작업지시서 3 F) — 서버 옷장 · 입은 것
+    adoptClothes(m.inv);
     if (fishing.st) endFish();
     net.on = true; net.tries = 0; net.id = m.id; net.name = m.name;
     for (const o of [...net.others.values()]) removeOther(o);
@@ -75,7 +84,9 @@ function onNet(m) {
     clearChat();
     if (TRADE) { TRADE = null; if (view === 'trade') closeWin(); }
     if (m.myHouse) HSTATE.set(m.name, { hp: m.myHouse.hp, max: m.myHouse.max, broken: m.myHouse.broken });
-    for (const [k, left] of Object.entries(m.res || {})) applyRes(k, left);
+    // 자연(작업지시서 3 E): 심은 나무 · 파낸 나무 · 그림자를 먼저, 그다음 자라는 중인 것들
+    growWelcome(m);
+    for (const [k, left] of Object.entries(m.res || {})) applyRes(k, left, (m.full || {})[k]);
     net.server = !!m.server; if (net.server) { me.x = m.x; me.z = m.z; me.speed = 0; fightWelcome(m); } // 자리는 서버가 정함(마지막 자리 10분 안 · 아니면 집 앞)
     if (m.inv && (net.server || !netPending)) adoptInv(m.inv); else { dirty = true; flush(); } // 서버에 없거나(처음) 끊긴 동안 바뀌었으면 이 기기 것을 올림
     netPending = false;
@@ -94,8 +105,11 @@ function onNet(m) {
     }
     if (o.tl !== m.tl) { o.tl = m.tl; for (const t of TOOLS) o.tools[t].visible = m.tl === t; }
   } else if (m.t === 'res') {
-    applyRes(m.k, m.left);
-    const RES_MSG = { T: '나무가 쓰러졌어요 — N초 뒤 다시 자라요', R: '바위를 다 캤어요 — N초 뒤 다시 생겨요', P: '물고기를 다 잡았어요 — N초 뒤 다시 와요' };
+    applyRes(m.k, m.left, m.full, m.gone);
+    // 나무는 그루터기가 남고 새싹부터 다시 자람(작업지시서 3 E) · 파냈으면 알림만
+    if (m.gone && m.by === net.id) toast('그루터기를 파냈어요 — 빈 땅이 됐어요', '삽');
+    const RES_MSG = { T: '나무가 쓰러졌어요 — 그루터기에서 새싹이 다시 자라요', N: '나무가 쓰러졌어요 — 그루터기에서 새싹이 다시 자라요', R: '바위를 다 캤어요 — N초 뒤 다시 생겨요' };
+    if (m.gone) return;
     if (m.by === net.id && RES_MSG[m.k[0]]) toast(RES_MSG[m.k[0]].replace('N', Math.round(m.left))); // 내가 없앤 것 — 워커가 정한 시간으로 알림
   }
   else if (m.t === 'house') { setHouse(m.name, m.x, m.z, m.tier); if (m.hp != null) applyHouseState(m.name, m); }
@@ -104,10 +118,13 @@ function onNet(m) {
     S.home = m.x == null ? null : { x: m.x, z: m.z }; S.homeAt = m.at || S.homeAt; if (m.decayH) DECAY_H = m.decayH; buildHouse(false); if (S.home) { applyHouseState(net.name, m); toast('텐트를 쳤어요! 여기가 내 집이에요', '텐트'); } else if (view === 'house') closeWin();
   }
   else if (m.t === 'err') netStatus('혼자 놀기 · ' + m.msg);
-  else if (m.t === 'inv') { adoptInv(m.inv); aim.reloading = 0; refreshGunHud(); } // 장전이 끝나면 inv 가 옴
+  else if (m.t === 'look') onNetLook(m);
+  else if (m.t === 'inv') { adoptInv(m.inv); adoptClothes(m.inv); aim.reloading = 0; refreshGunHud(); } // 장전이 끝나면 inv 가 옴
   else if (m.t === 'gd' || m.t === 'gdel') onNetGround(m);
   // 채팅 · 교환(작업지시서 3 D) — chat.js · trade.js
   else if (m.t === 'say') onNetSay(m);
+  // 자연(작업지시서 3 E) — grow.js
+  else if (m.t === 'plant' || m.t === 'shd' || m.t === 'sit') onNetGrow(m);
   else if (m.t === 'trade') onNetTrade(m);
   else if (m.t === 'market') { MARKET = m.f; if (view === 'shop' && !winEl.hidden) render(); } // 물고기 시세(D단계)
   else if (m.t === 'buff') (BUFF[m.b] = clock + m.secs), toast(`${{ fast: '빠르게', tough: '덜 다침', warm: '모닥불 회복 2배', quick: '채집 빨리' }[m.b] || m.b} ${m.secs}초`, '열매');
