@@ -83,7 +83,9 @@ function step(dt) {
   me.run = run && mag > 0;
   if (mag) {
     const want = Math.atan2(mx, mz); let d = want - me.face; d = Math.atan2(Math.sin(d), Math.cos(d)); me.face += d * Math.min(1, dt * 12);
-    const vx = mx * me.speed * dt, vz = mz * me.speed * dt;
+    let vx = mx * me.speed * dt, vz = mz * me.speed * dt;
+    // 안전지대 밖에서는 다른 수달 쪽으로 파고들지 않음(작업지시서 3 C · hit.js)
+    if (typeof bodyBlock === 'function') [vx, vz] = bodyBlock(vx, vz);
     // 이미 무언가 안에 끼어 있으면(남의 집 · 보관함이 위에 생김, 나무가 다시 자람 등) 막힘 없이 걸어 나오게 — 2026-11-17 「껴서 탈출 못한다」
     const ok = free(me.x, me.z) ? free : (x, z) => Math.hypot(x, z) < islandR(Math.atan2(z, x)) - 2;
     if (ok(me.x + vx, me.z + vz)) { me.x += vx; me.z += vz; }
@@ -105,6 +107,8 @@ function step(dt) {
   sun.position.set(camAt.x + 16, 24, camAt.z + 10); sun.target.position.copy(camAt);
   U.uTime.value = clock; U.uCam.value.copy(camera.position); U.uPlayer.value.copy(me.obj.position);
   if (typeof lightTick === 'function') lightTick(dt);
+  // 맞음 효과 · 밀려남 · 겹치지 않기 · 화면 흔들림(작업지시서 3 C)
+  if (typeof hitTick === 'function') hitTick(dt);
 }
 let last = performance.now();
 const testHold = { paused: false, cam: null };
