@@ -27,7 +27,8 @@ let tapAt = null;
 cv.addEventListener('touchstart', (e) => { const t = e.changedTouches[0]; tapAt = { x: t.clientX, y: t.clientY, t: performance.now() }; }, { passive: true });
 cv.addEventListener('touchend', (e) => { const t = e.changedTouches[0]; if (tapAt && Math.hypot(t.clientX - tapAt.x, t.clientY - tapAt.y) < 12 && performance.now() - tapAt.t < 400) tapOtter(t.clientX, t.clientY); tapAt = null; }, { passive: true });
 cv.addEventListener('pointerdown', (e) => { if (e.pointerType === 'mouse') tapAt = { x: e.clientX, y: e.clientY, t: performance.now() }; });
-cv.addEventListener('pointerup', (e) => { if (e.pointerType === 'mouse' && tapAt && Math.hypot(e.clientX - tapAt.x, e.clientY - tapAt.y) < 6) tapOtter(e.clientX, e.clientY); tapAt = null; });
+// 손가락으로 누르면 pointerup 이 touchend 보다 먼저 오므로, 마우스일 때만 여기서 처리 · 지움(손가락 기록을 지우면 안 됨)
+cv.addEventListener('pointerup', (e) => { if (e.pointerType !== 'mouse') return; if (tapAt && Math.hypot(e.clientX - tapAt.x, e.clientY - tapAt.y) < 6) tapOtter(e.clientX, e.clientY); tapAt = null; });
 const TAPV = new THREE.Vector3();
 // 누른 자리에서 48px 안 · 4칸 안의 수달 중 가장 가까운 것
 function tapOtter(x, y) {
@@ -76,7 +77,7 @@ function tradeHtml() {
   const side = (o, kind) => `<div class="grid trade-grid">${Array.from({ length: 8 }, (_, i) => tSlot(o.items[i], kind, i)).join('')}</div><div class="trade-money">${price(o.money || 0)}</div>`;
   const okTag = '<em class="trade-ok">확인</em>';
   let h = `<div class="two"><div><h4>내가 올린 것${T.okMine ? ' · ' + okTag : ''}<small>누르면 내림</small></h4>${side(T.mine, 'tmine')}</div><div><h4>${escHtml(T.name)} 님${T.okTheirs ? ' · ' + okTag : ''}</h4>${side(T.theirs, 'ttheirs')}</div></div>`;
-  h += `<h4>가방 (눌러서 고르기)</h4><div class="grid">${S.bag.map((s, i) => tSlot(s, 'tbag', i).replace('class="slot"', `class="slot${tradeSel === i ? ' sel' : ''}"`)).join('')}</div>`;
+  h += `<h4 class="trade-bag-h">가방 (눌러서 고르기)</h4><div class="grid">${S.bag.map((s, i) => tSlot(s, 'tbag', i).replace('class="slot"', `class="slot${tradeSel === i ? ' sel' : ''}"`)).join('')}</div>`;
   const s = S.bag[tradeSel];
   if (s) {
     tradeQty = Math.max(1, Math.min(s.n, tradeQty));
@@ -84,7 +85,7 @@ function tradeHtml() {
   }
   tradeMoney = Math.max(0, Math.min(S.money, tradeMoney));
   h += `<div class="row mat-row"><i class="ic" style="background-image:${ic('조개')}"></i><span class="nm">조개 올리기<small>가진 조개 ${S.money.toLocaleString()}</small></span><div class="mat-line"><span class="qty"><button type="button" class="bbtn" data-tm="-1" ${tradeMoney <= 0 ? 'disabled' : ''}>−</button><b>${tradeMoney.toLocaleString()}</b><button type="button" class="bbtn" data-tm="1" ${tradeMoney >= S.money ? 'disabled' : ''}>+</button></span><button type="button" class="bbtn" id="tradeMoneyBtn">올리기</button></div></div>`;
-  h += `<div class="foot"><button type="button" class="gbtn" id="tradeOk" ${T.okMine ? 'disabled' : ''}>${T.okMine ? '상대 확인 기다리는 중' : '확인'}</button><button type="button" class="bbtn" id="tradeCancel">취소</button></div>`;
+  h += `<div class="foot trade-foot"><button type="button" class="gbtn" id="tradeOk" ${T.okMine ? 'disabled' : ''}>${T.okMine ? '상대 확인 기다리는 중' : '확인'}</button><button type="button" class="bbtn" id="tradeCancel">취소</button></div>`;
   return h;
 }
 // 교환 창 단추(life.js 가 먼저 부름) — 처리했으면 true
