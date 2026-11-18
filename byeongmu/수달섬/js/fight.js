@@ -60,6 +60,7 @@ function fightAction(t) {
 function onNetFight(m) {
   if (m.t === 'got') { for (const [id, n] of m.items || []) if ((id === '열매' || id === '나뭇가지') && shaking() && m.k === me.actTree) dropFromTree(me.actTree, id, n); for (const [id, n] of m.items || []) toast(`+${n.toLocaleString()} ${id}`, id); }
   else if (m.t === 'msg') toast(m.text, m.icon);
+  else if (m.t === 'shield') toast(m.s > 0 ? `안전지대를 나왔어요 — ${m.s}초 동안 안 다쳐요(먼저 공격하면 풀려요)` : '보호가 풀렸어요', '손'); // 부장님 2026-11-18
   else if (m.t === 'hp') {
     if (m.id === net.id) { const lost = me.hp - m.hp; setMyHp(m.hp); if (lost > 0) flashHurt(); }
     else { const o = net.others.get(m.id); if (o) { o.hp = m.hp; updateTagHp(o); } }
@@ -68,7 +69,7 @@ function onNetFight(m) {
     if (m.id === net.id) { me.dead = true; me.speed = 0; me.actT = 0; layDown(me.obj, true); setMyHp(0); closeWin(); toast(m.byName ? `${m.byName}${/(포탑|가시덫)$/.test(m.byName) ? '에' : ' 님에게'} 쓰러졌어요 — 3초 뒤 집에서 다시 일어나요` : '쓰러졌어요 — 3초 뒤 집에서 다시 일어나요'); }
     else if (o) { o.alive = false; o.hp = 0; updateTagHp(o); layDown(o.obj, true); toast(m.by === net.id ? `${o.name} 님을 쓰러뜨렸어요!` : `${o.name} 님이 쓰러졌어요`); }
   } else if (m.t === 'respawn') {
-    if (m.id === net.id) { me.dead = false; me.x = m.x; me.z = m.z; me.speed = 0; layDown(me.obj, false); setMyHp(m.hp); toast('집에서 다시 일어났어요'); }
+    if (m.id === net.id) { me.dead = false; me.x = m.x; me.z = m.z; me.speed = 0; nudgeFree(); layDown(me.obj, false); setMyHp(m.hp); toast('집에서 다시 일어났어요'); }
     else { const o = net.others.get(m.id); if (o) { Object.assign(o, { alive: true, hp: m.hp, x: m.x, z: m.z, tx: m.x, tz: m.z }); layDown(o.obj, false); updateTagHp(o); } }
   } else if (m.t === 'sack') addSack(m.s);
   else if (m.t === 'sackgone') removeSack(m.id);
