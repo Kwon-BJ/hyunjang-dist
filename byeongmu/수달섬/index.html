@@ -87,6 +87,7 @@
   #zoomBtn { position: fixed; left: calc(max(10px, env(safe-area-inset-left)) + 124px); top: max(130px, calc(env(safe-area-inset-top) + 120px)); padding: 6px 12px; border: 0; border-radius: 999px; background: rgba(255, 246, 225, .92); box-shadow: 0 2px 6px rgba(60, 40, 10, .2); font-size: 13px; z-index: 3; cursor: pointer; min-height: 32px; -webkit-tap-highlight-color: transparent; color: #4a3520; }
   @media (min-width: 900px) and (min-height: 600px) { #zoomBtn { left: calc(max(10px, env(safe-area-inset-left)) + 156px); top: 160px; } } /* 미니맵 오른쪽 아래(안내 글과 안 겹치게) */
   body.winopen #zoomBtn { visibility: hidden; }
+  .nm small b.up { color: #2f8a3a; } .nm small b.dn { color: #c0392b; } /* 물고기 시세 ▲▼(D단계) */
   .qsel { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 10px 0; } .qsel button { flex: 1 1 88px; max-width: 140px; min-width: 0; padding-left: 6px; padding-right: 6px; } /* 설정 창 품질 단추(좁은 휴대폰에서 줄바꿈) */
   #zoomBtn { width: 116px; white-space: nowrap; text-align: center; padding-left: 4px; padding-right: 4px; } /* 글이 바뀌어도(총 · 가까이) 설정 단추와 안 겹치게 */
   #setBtn { position: fixed; left: calc(max(10px, env(safe-area-inset-left)) + 248px); top: max(130px, calc(env(safe-area-inset-top) + 120px)); padding: 6px 12px; border: 0; border-radius: 999px; background: rgba(255, 246, 225, .92); box-shadow: 0 2px 6px rgba(60, 40, 10, .2); font-size: 13px; z-index: 3; cursor: pointer; min-height: 32px; -webkit-tap-highlight-color: transparent; color: #4a3520; font-weight: 700; }
@@ -134,6 +135,8 @@
   .mat-line { flex-basis: 100%; display: flex; justify-content: flex-end; align-items: center; gap: 10px; }
   .qty { display: inline-flex; align-items: center; gap: 4px; } .qty .bbtn { min-width: 34px; width: 34px; height: 32px; padding: 0; font-size: 18px; } .qty b { min-width: 30px; text-align: center; font-size: 16px; }
   .mat-line > .bbtn { min-width: 92px; height: 34px; }
+  /* 요리 창: 재료 줄은 둘째 줄 왼쪽(좁은 휴대폰에서 줄바꿈) · 만들기 단추는 오른쪽 */
+  .mat-line > .need { flex: 1; min-width: 0; font-size: 12px; line-height: 1.25; color: #8a6a44; white-space: normal; }
   #sellAll { padding: 0 26px; font-size: 16px; height: 40px; } .foot.bulk { margin: 0 0 8px; } /* 나무판 그림 양끝이 투명이라 글씨가 삐져나오지 않게 */
   .mine { height: 44px; margin: 4px auto 0; width: min(300px, 100%); background: url(img/ui-돈판.webp) center / 100% 100% no-repeat; color: #fff4dc; display: flex; align-items: center; justify-content: center; gap: 12px; font-size: 17px; }
   .mine .pr { color: #fff4dc; }
@@ -171,7 +174,7 @@
 </script>
 <div class="ui" id="win" hidden><div class="frame" id="frame"><div class="ribbon"><i class="ic" id="winIc"></i><span id="winTitle"></span></div><button type="button" id="winX" aria-label="닫기"></button><div id="winBody"></div><div id="winMsg"></div></div></div>
 <script type="module">
-const GAME_BUILD = "202611180440"; // 올리기.mjs 가 게임 파일이 바뀐 때만 적는다
+const GAME_BUILD = "202611180646"; // 올리기.mjs 가 게임 파일이 바뀐 때만 적는다
 window.GAME_BUILD = GAME_BUILD;
 import('./js/boot.js?v=' + GAME_BUILD).catch((e) => { const l = document.getElementById('load'); if (l) l.textContent = '수달섬을 못 열었어요: ' + e.message; });
 </script>
