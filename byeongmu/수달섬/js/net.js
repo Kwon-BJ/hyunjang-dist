@@ -55,7 +55,7 @@ function onNet(m) {
     net.server = !!m.server; if (net.server) { me.x = m.x; me.z = m.z; me.speed = 0; fightWelcome(m); } // 자리는 서버가 정함(마지막 자리 10분 안 · 아니면 집 앞)
     if (m.inv && (net.server || !netPending)) adoptInv(m.inv); else { dirty = true; flush(); } // 서버에 없거나(처음) 끊긴 동안 바뀌었으면 이 기기 것을 올림
     netPending = false;
-    if (net.server) { S.home = m.home ? { x: m.home.x, z: m.home.z } : null; buildHouse(false); if (!S.home) setTimeout(() => { if (net.on && !S.home) toast('텐트 자판기에서 텐트를 사서 원하는 곳에 치면 내 집이 돼요', '텐트'); }, 2500); } // 집은 텐트를 친 자리(B단계)
+    if (net.server) { for (const [b, s] of Object.entries(m.buffs || {})) BUFF[b] = clock + s; MARKET = m.market || null; DECAY_H = m.decayH || 0; S.homeAt = m.homeAt || null; S.home = m.home ? { x: m.home.x, z: m.home.z } : null; buildHouse(false); if (!S.home) setTimeout(() => { if (net.on && !S.home) toast('텐트 자판기에서 텐트를 사서 원하는 곳에 치면 내 집이 돼요', '텐트'); }, 2500); } // 집은 텐트를 친 자리(B단계)
     countNow(); toast(`${m.name} 님, 수달섬에 오신 걸 환영해요!`);
   } else if (m.t === 'join') { addOther(m); { const o = net.others.get(m.id); if (o && net.server) { o.hp = m.hp; o.alive = m.alive; updateTagHp(o); if (m.alive === false) layDown(o.obj, true); } } countNow(); toast(`${m.name} 님이 들어왔어요`); }
   else if (m.t === 'leave') { const fo = fishOf.get(m.id); if (fo) { dropBob(fo.bob); fishOf.delete(m.id); } const o = net.others.get(m.id); if (o) { toast(`${o.name} 님이 나갔어요`); removeOther(o); } countNow(); }
@@ -77,10 +77,12 @@ function onNet(m) {
   else if (m.t === 'house') { setHouse(m.name, m.x, m.z, m.tier); if (m.hp != null) applyHouseState(m.name, m); }
   else if (m.t === 'homegone') { const h = net.houses.get(m.name); if (h) { removeHouseSet(h); net.houses.delete(m.name); } } // 이사 가서 빈 자리
   else if (m.t === 'home') { // 내 텐트를 쳤거나(x · z) 접었음(x 없음)
-    S.home = m.x == null ? null : { x: m.x, z: m.z }; buildHouse(false); if (S.home) { applyHouseState(net.name, m); toast('텐트를 쳤어요! 여기가 내 집이에요', '텐트'); } else if (view === 'house') closeWin();
+    S.home = m.x == null ? null : { x: m.x, z: m.z }; S.homeAt = m.at || S.homeAt; if (m.decayH) DECAY_H = m.decayH; buildHouse(false); if (S.home) { applyHouseState(net.name, m); toast('텐트를 쳤어요! 여기가 내 집이에요', '텐트'); } else if (view === 'house') closeWin();
   }
   else if (m.t === 'err') netStatus('혼자 놀기 · ' + m.msg);
   else if (m.t === 'inv') { adoptInv(m.inv); aim.reloading = 0; refreshGunHud(); } // 장전이 끝나면 inv 가 옴
+  else if (m.t === 'market') { MARKET = m.f; if (view === 'shop' && !winEl.hidden) render(); } // 물고기 시세(D단계)
+  else if (m.t === 'buff') (BUFF[m.b] = clock + m.secs), toast(`${{ fast: '빠르게', tough: '덜 다침', warm: '모닥불 회복 2배', quick: '채집 빨리' }[m.b] || m.b} ${m.secs}초`, '열매');
   else onNetFight(m); // got · msg · hp · died · respawn · sack · sackgone · fix (fight.js)
 }
 function connect() {
