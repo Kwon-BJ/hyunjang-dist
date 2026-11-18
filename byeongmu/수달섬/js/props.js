@@ -37,7 +37,7 @@ const SHOPS = {
   gun: { x: HARBOR.x - 4, z: HARBOR.z - 1, name: '무기 자판기', buy: ['권총', '소총', '산탄총', '권총탄', '소총탄', '산탄'], color: 0xe0584a, glow: 0xffb0a0 },
   tent: { x: HARBOR.x - 3.4, z: HARBOR.z + 2.2, name: '텐트 자판기', buy: ['텐트', '나무', '돌', '보관함'], color: 0x4fae6a, glow: 0xb8ffc8 },
   trap: { x: HARBOR.x + 4, z: HARBOR.z - 1, name: '함정 자판기', buy: ['포탑', '가시덫'], color: 0x8f6cc8, glow: 0xdccbff },
-  food: { x: HARBOR.x + 3.4, z: HARBOR.z + 2.2, name: '먹거리 자판기', buy: [], color: 0xf2b244, glow: 0xfff0b8 }, // D단계에 채움
+  food: { x: HARBOR.x + 3.4, z: HARBOR.z + 2.2, name: '먹거리 자판기', buy: ['모닥불', '열매', '생선구이'], color: 0xf2b244, glow: 0xfff0b8 }, // D단계에 채움
 };
 const SHOP_AT = SHOPS.tool; // 예전 이름(시험 · 지도)
 const FENCE_R = 6.5, FENCE_GATES = [[Math.atan2(22, 25), 0.24], [Math.PI / 2, 0.24], [Math.atan2(22, -40), 0.24], [-Math.PI / 2, 0.22]]; // 항구 울타리 반지름 · 문(항구에서 본 각도 rad · 반폭 rad): 동쪽 길 · 남쪽 길 · 서쪽 길 · 북쪽 부두
