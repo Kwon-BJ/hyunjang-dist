@@ -156,7 +156,7 @@
   /* 옷 자판기(작업지시서 3 F) — 색 동그라미 · 종류 탭 5개는 좁으면 두 줄 */
   .cloth-dot { flex: none; width: 26px; height: 26px; margin: 0 4px; border-radius: 50%; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, .18), 0 0 0 2px #fff4dc; }
   .cloth-tabs { flex-wrap: wrap; gap: 4px; }
-  .cloth-tabs .tab { flex: 1 1 18%; min-width: 0; padding: 0 4px; font-size: 14px; white-space: nowrap; }
+  .cloth-tabs .tab { flex: 1 1 22%; min-width: 0; padding: 0 4px; font-size: 14px; white-space: nowrap; }
   /* 내구도 막대 · 고장 표시(작업지시서 3 B) */
   .slot i.dur { position: absolute; left: 8px; right: 8px; bottom: 5px; height: 4px; border-radius: 2px; background: rgba(60, 40, 20, .25); }
   .slot i.dur u { display: block; height: 100%; border-radius: 2px; background: #6aa83a; }
@@ -220,7 +220,7 @@
 </script>
 <div class="ui" id="win" hidden><div class="frame" id="frame"><div class="ribbon"><i class="ic" id="winIc"></i><span id="winTitle"></span></div><button type="button" id="winX" aria-label="닫기"></button><div id="winBody"></div><div id="winMsg"></div></div></div>
 <script type="module">
-const GAME_BUILD = "202611181405"; // 올리기.mjs 가 게임 파일이 바뀐 때만 적는다
+const GAME_BUILD = "202611182309"; // 올리기.mjs 가 게임 파일이 바뀐 때만 적는다
 window.GAME_BUILD = GAME_BUILD;
 import('./js/boot.js?v=' + GAME_BUILD).catch((e) => { const l = document.getElementById('load'); if (l) l.textContent = '수달섬을 못 열었어요: ' + e.message; });
 </script>
