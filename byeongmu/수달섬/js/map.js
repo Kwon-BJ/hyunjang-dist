@@ -18,6 +18,7 @@ function buildMapBase() { // 모델(헛간 등)을 놓은 뒤 main 이 부름
   g.fillStyle = 'rgba(38, 104, 46, .6)'; for (const r of TREES) { const [x, z] = mp(r.x, r.z); g.beginPath(); g.arc(x, z, 2.4, 0, 7); g.fill(); }
   g.fillStyle = '#a84636'; for (const b of boxes) { const [x0, z0] = mp(b.x0, b.z0), [x1, z1] = mp(b.x1, b.z1); g.fillRect(x0, z0, Math.max(2, x1 - x0), Math.max(2, z1 - z0)); }
   g.fillStyle = '#9a6a3a'; { const [x0, z0] = mp(BRIDGE.x - BRIDGE.half, -1.5), [x1, z1] = mp(BRIDGE.x + BRIDGE.half, 1.5); g.fillRect(x0, z0, x1 - x0, z1 - z0); }
+  { const [x0, z0] = mp(DOCK.x - DOCK.half, DOCK.z0), [x1, z1] = mp(DOCK.x + DOCK.half, DOCK.z1); g.fillRect(x0, z0, Math.max(2, x1 - x0), z1 - z0); } // 부두
 }
 const imgOf = {}, iconImg = (id) => imgOf[id] || ((imgOf[id] = new Image()).src = `img/i-${id}.webp`, imgOf[id]);
 let miniT = 0;
@@ -26,10 +27,10 @@ function drawMini(dt) {
   if ((miniT -= dt) > 0) return; miniT = 0.2;
   const big = miniEl.classList.contains('big'), I = big ? 22 : 36; // 작을 땐 아이콘을 크게(화면에선 작아짐)
   mg.clearRect(0, 0, MS, MS); mg.drawImage(mapBase, 0, 0);
-  for (const h of net.houses.values()) { const [x, z] = mp(PLOTS[h.plot].x, PLOTS[h.plot].z); mg.fillStyle = '#8a5a3a'; mg.fillRect(x - 4, z - 4, 8, 8); }
+  for (const h of net.houses.values()) { const [x, z] = mp(h.x, h.z); mg.fillStyle = '#8a5a3a'; mg.fillRect(x - 4, z - 4, 8, 8); }
   const [sx, sz] = mp(SHOP_AT.x, SHOP_AT.z - 1.6), si = iconImg('조개'); if (si.complete) mg.drawImage(si, sx - I / 2, sz - I / 2, I, I);
-  const [hx, hz] = mp(HOUSE_AT.x, HOUSE_AT.z), hi = iconImg(HOUSES[S.tier].model); if (hi.complete) mg.drawImage(hi, hx - I / 2, hz - I / 2, I, I);
-  if (big) { mapLabel('상점', sx, sz + I / 2 + 15); mapLabel('내 집', hx, hz + I / 2 + 15); for (const h of net.houses.values()) { const [x, z] = mp(PLOTS[h.plot].x, PLOTS[h.plot].z); } }
+  const [hx, hz] = HOUSE_AT ? mp(HOUSE_AT.x, HOUSE_AT.z) : [-99, -99], hi = iconImg(HOUSES[S.tier].model); if (HOUSE_AT && hi.complete) mg.drawImage(hi, hx - I / 2, hz - I / 2, I, I); // 집이 없으면(텐트 치기 전) 안 그림
+  if (big) { mapLabel('상점', sx, sz + I / 2 + 15); if (HOUSE_AT) mapLabel('내 집', hx, hz + I / 2 + 15); }
   for (const o of net.others.values()) {
     const [x, z] = mp(o.x, o.z); mg.beginPath(); mg.arc(x, z, big ? 4 : 6, 0, 7); mg.fillStyle = '#' + lookOf(o.name).color.toString(16).padStart(6, '0'); mg.fill(); mg.lineWidth = 2; mg.strokeStyle = '#fff'; mg.stroke();
     if (big) { mg.font = '700 11px system-ui, sans-serif'; mg.fillStyle = '#2a1a0a'; mg.textAlign = 'center'; mg.fillText(o.name, x, z - 7); }
