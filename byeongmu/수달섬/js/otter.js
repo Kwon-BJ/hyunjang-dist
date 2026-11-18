@@ -29,7 +29,7 @@ const FACE_TEX = (() => {
 })();
 // 찰흙 재질: 반사 없는 무광(Lambert) + 그늘이 너무 어둡지 않게 살짝 스스로 밝음
 // 빛을 감싸게(half-Lambert 비슷): 그늘 쪽도 둥글게 밝아 찰흙 인형처럼 부드러움 — 수달 재질에만
-const WRAP = (m) => { m.onBeforeCompile = (sh) => { sh.fragmentShader = sh.fragmentShader.replace('#include <lights_lambert_pars_fragment>', THREE.ShaderChunk.lights_lambert_pars_fragment.replace('float dotNL = saturate( dot( geometryNormal, directLight.direction ) );', 'float dotNL = pow( saturate( dot( geometryNormal, directLight.direction ) * 0.5 + 0.5 ), 1.4 );')); }; m.customProgramCacheKey = () => 'clayWrap'; return m; };
+const WRAP = (m) => { m.onBeforeCompile = (sh) => { sh.fragmentShader = sh.fragmentShader.replace('#include <lights_lambert_pars_fragment>', THREE.ShaderChunk.lights_lambert_pars_fragment.replace('float dotNL = saturate( dot( geometryNormal, directLight.direction ) );', 'float dotNL = pow( saturate( dot( geometryNormal, directLight.direction ) * 0.5 + 0.5 ), 1.4 );')).replace('#include <opaque_fragment>', 'outgoingLight += vec3(0.36, 0.46, 0.7) * pow(1.0 - saturate(dot(normal, normalize(vViewPosition))), 2.2) * 0.75;\n#include <opaque_fragment>'); }; m.customProgramCacheKey = () => 'clayWrap'; return m; }; // 밤에 수달 가장자리를 달빛으로 살짝(땅과 구별 · C단계)
 const clay = (color, map) => WRAP(new THREE.MeshLambertMaterial({ color: map ? 0xffffff : color, map: map || null, emissive: new THREE.Color(color).multiplyScalar(map ? 0 : 0.2) }));
 const FUR_MAT = clay(FUR), HEAD_MAT = (() => { const m = clay(FUR, FACE_TEX); m.emissiveMap = FACE_TEX; m.emissive = new THREE.Color(0.2, 0.2, 0.2); return m; })(); // 얼굴 그림 자체를 조금 밝게(아래쪽 크림이 그늘에 묻히지 않게)
 // 둥근 상자(가방) — 상자 꼭짓점을 안쪽 상자에 붙인 뒤 반지름만큼 밀어 냄
