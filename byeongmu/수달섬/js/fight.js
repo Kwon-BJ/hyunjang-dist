@@ -51,11 +51,15 @@ function fightTargets(see) {
   if (inSafeC(me.x, me.z)) return; // 안전 구역에서는 때리기 대상 없음
   for (const o of net.others.values()) if (o.alive !== false && !inSafeC(o.x, o.z)) see('otter', o, o.x, o.z, 1.8, 1.5); // 싸움 상대가 꽃 · 나무보다 먼저
 }
+// 때리기 동작: 도끼는 내려찍기 · 맨손(다른 도구 포함)은 왼손 · 오른손 번갈아 뻗기(작업지시서 3 C) — 수달 · 집 · 함정 모두
+let punchN = 0;
+function meleeSwing() { if (S.tool === '도끼') return true; punchN++; return punchN % 2 ? 'punchl' : 'punchr'; }
 function fightAction(t) {
   me.actT = me.actDur = ACT_T; net.ac++;
   if (t.type === 'otter') actCool = S.tool === '도끼' ? 0.7 : 0.6; // 서버 쿨타임과 같게(빨리 눌러 헛손질 안 나게 · 리뷰 11번)
   if (t.type === 'sack') { me.actSwing = false; netSend({ t: 'pick', id: t.rec.id }); return; }
-  me.actSwing = S.tool === '도끼'; netSend({ t: 'hit', id: t.rec.id });
+  me.actSwing = meleeSwing();
+  netSend({ t: 'hit', id: t.rec.id });
 }
 function onNetFight(m) {
   if (m.t === 'got') { for (const [id, n] of m.items || []) if ((id === '열매' || id === '나뭇가지') && shaking() && m.k === me.actTree) dropFromTree(me.actTree, id, n); for (const [id, n] of m.items || []) toast(`+${n.toLocaleString()} ${id}`, id); }
@@ -64,11 +68,15 @@ function onNetFight(m) {
   else if (m.t === 'hp') {
     if (m.id === net.id) { const lost = me.hp - m.hp; setMyHp(m.hp); if (lost > 0 && 'by' in m) flashHurt(); } // 배고픔 · 걷기로 줄 땐 안 깜빡임(D단계)
     else { const o = net.others.get(m.id); if (o) { o.hp = m.hp; updateTagHp(o); } }
+    // 맞음 효과(붉게 · 밀림 · 소리 · 숫자 · 흔들림) — hit.js
+    if ('by' in m) onHitFx(m);
   } else if (m.t === 'died') {
     const o = net.others.get(m.id);
     if (m.id === net.id) { me.dead = true; me.speed = 0; me.actT = 0; layDown(me.obj, true); setMyHp(0); closeWin(); toast(m.byName ? `${m.byName}${/(포탑|가시덫)$/.test(m.byName) ? '에' : ' 님에게'} 쓰러졌어요 — 3초 뒤 집에서 다시 일어나요` : '쓰러졌어요 — 3초 뒤 집에서 다시 일어나요'); }
     else if (o) { o.alive = false; o.hp = 0; updateTagHp(o); layDown(o.obj, true); toast(m.by === net.id ? `${o.name} 님을 쓰러뜨렸어요!` : `${o.name} 님이 쓰러졌어요`); }
   } else if (m.t === 'respawn') {
+    // 다시 태어난 뒤 3초는 다른 수달과 겹쳐도 통과(hit.js)
+    ghostAfterRespawn(m.id);
     if (m.id === net.id) { me.dead = false; me.x = m.x; me.z = m.z; me.speed = 0; nudgeFree(); layDown(me.obj, false); setMyHp(m.hp); toast('집에서 다시 일어났어요'); }
     else { const o = net.others.get(m.id); if (o) { Object.assign(o, { alive: true, hp: m.hp, x: m.x, z: m.z, tx: m.x, tz: m.z }); layDown(o.obj, false); updateTagHp(o); } }
   } else if (m.t === 'sack') addSack(m.s);
