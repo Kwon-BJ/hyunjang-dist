@@ -96,9 +96,15 @@ function connect() {
     netStatus('다시 붙는 중…'); setTimeout(connect, Math.min(30000, 2000 * 2 ** Math.min(4, net.tries++)));
   };
 }
-const TAGV = new THREE.Vector3();
+const TAGV = new THREE.Vector3(), TAG_Y = 1.32; // 이름표 높이(머리 위 · 모자 없음)
+const myTag = document.createElement('div'); myTag.className = 'tag me'; myTag.id = 'myTag'; document.body.appendChild(myTag);
+function myTagTick() { // 내 머리 위 이름표(로그인하면 이름 · 혼자 놀기면 「나」)
+  const t = net.name || '나'; if (myTag.textContent !== t) myTag.textContent = t;
+  TAGV.set(me.x, groundY(me.x, me.z) + TAG_Y, me.z).project(camera); const vis = TAGV.z < 1 && Math.abs(TAGV.x) < 1.1 && Math.abs(TAGV.y) < 1.1; myTag.style.display = vis ? '' : 'none';
+  if (vis) myTag.style.transform = `translate(${((TAGV.x + 1) / 2 * innerWidth).toFixed(0)}px, ${((1 - TAGV.y) / 2 * innerHeight).toFixed(0)}px) translate(-50%, -100%)`;
+}
 function netTick(dt) {
-  fightTick(); gunTick(dt); lookTick(dt); fishTick(dt); houseTick(dt);
+  fightTick(); gunTick(dt); lookTick(dt); fishTick(dt); houseTick(dt); myTagTick();
   if (net.on && (net.sendT -= dt) <= 0) { // 움직일 때만 1초에 6번
     const st = `${me.x.toFixed(2)},${me.z.toFixed(2)},${me.face.toFixed(2)},${S.tool},${net.ac}`;
     if (st !== net.last) { net.sendT = 1 / 6; net.last = st; netSend({ t: 'mv', x: +me.x.toFixed(2), z: +me.z.toFixed(2), f: +me.face.toFixed(2), s: +me.speed.toFixed(2), r: me.run ? 1 : 0, ac: net.ac, sw: me.actSwing ? 1 : 0, an: me.actSwing === 'shake' ? 'shake' : me.actSwing ? 'swing' : 'pick', tk: me.actTree, tl: S.tool }); } // an: 동작 이름 · tk: 흔든 나무
@@ -115,7 +121,7 @@ function netTick(dt) {
     animOtter(o.obj, o.phase, Math.min(1, o.s / WALK), !!o.r, clock + o.id, o.actT > 0 ? 1 - o.actT / (o.actDur || ACT_T) : -1, o.sw === 'shake' ? 'shake' : !!o.sw, o.fit);
     gunPose(o.obj, o.tl); // 총을 들었으면 겨누는 팔
     fishPose(o.obj, fishOf.has(o.id)); // 낚시 중이면 낚싯대를 앞으로
-    TAGV.set(o.x, y + 1.45, o.z).project(camera);
+    TAGV.set(o.x, y + TAG_Y, o.z).project(camera);
     const vis = TAGV.z < 1 && Math.abs(TAGV.x) < 1.1 && Math.abs(TAGV.y) < 1.1;
     o.label.style.display = vis ? '' : 'none';
     if (vis) o.label.style.transform = `translate(${((TAGV.x + 1) / 2 * innerWidth).toFixed(0)}px, ${((1 - TAGV.y) / 2 * innerHeight).toFixed(0)}px) translate(-50%, -100%)`;
