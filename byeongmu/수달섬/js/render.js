@@ -4,6 +4,25 @@ const HQ = new URLSearchParams(location.search).has('hq');
 const cv = document.getElementById('cv');
 const touchy = matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0;
 const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true });
+// 펠트 인형 느낌(2026-11-19 부장님 · 기획/디자인/배경소품-시안.png): 모든 무광(Lambert) 재질 — 수달 · 나무 · 돌 · 땅 · 소품 — 에
+// 잔 털 결(세계 자리에 붙은 잡음 · 멀면 꺼서 반짝임 없음)과 가장자리 보송함(비스듬한 면이 살짝 밝음)을 더함. 그림 파일 없이 셰이더 몇 줄(휴대폰 부담 작게)
+(() => {
+  const SC = THREE.ShaderChunk;
+  SC.common += '\n#ifdef LAMBERT\nvarying vec3 vFeltP;\n#endif\n';
+  SC.project_vertex += '\n#ifdef LAMBERT\n{ vec4 feltP = vec4( transformed, 1.0 );\n#ifdef USE_INSTANCING\nfeltP = instanceMatrix * feltP;\n#endif\nvFeltP = ( modelMatrix * feltP ).xyz; }\n#endif\n';
+  SC.lights_lambert_pars_fragment += `
+float feltH( vec3 p ) { p = fract( p * 0.3183099 + 0.1 ); p *= 17.0; return fract( p.x * p.y * p.z * ( p.x + p.y + p.z ) ); }
+float feltN( vec3 x ) { vec3 i = floor( x ), f = fract( x ); f = f * f * ( 3.0 - 2.0 * f );
+  return mix( mix( mix( feltH( i ), feltH( i + vec3( 1, 0, 0 ) ), f.x ), mix( feltH( i + vec3( 0, 1, 0 ) ), feltH( i + vec3( 1, 1, 0 ) ), f.x ), f.y ),
+              mix( mix( feltH( i + vec3( 0, 0, 1 ) ), feltH( i + vec3( 1, 0, 1 ) ), f.x ), mix( feltH( i + vec3( 0, 1, 1 ) ), feltH( i + vec3( 1, 1, 1 ) ), f.x ), f.y ), f.z ); }
+`;
+  SC.lights_lambert_fragment += `
+{ float feltD = length( vViewPosition ), feltFade = 1.0 - smoothstep( 6.0, 20.0, feltD );
+  float feltG = feltN( vFeltP * 18.0 ) - 0.5;
+  float feltR = pow( 1.0 - saturate( dot( normal, normalize( vViewPosition ) ) ), 3.0 );
+  material.diffuseColor *= ( 1.0 + feltG * 0.14 * feltFade ) * ( 1.0 + feltR * 0.1 ); }
+`;
+})();
 renderer.setPixelRatio(Math.min(devicePixelRatio, touchy ? 1.5 : 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
