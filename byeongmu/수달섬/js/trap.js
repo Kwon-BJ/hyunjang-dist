@@ -9,7 +9,8 @@ function makeTrapObj(t) {
   if (t.kind === 'fire') { const o = placeModel(srcs['모닥불'], t.x, t.z, 0, 0.75, ''), circle = { x: t.x, z: t.z, r: 0.4 }; circles.push(circle); return { obj: o, circle, glow: addGlow(t.x, Math.max(0, height(t.x, t.z)) + 0.8, t.z, 0xff8a3a, 2.2, { i: 5, d: 9, fire: 1 }) }; }
   if (t.kind === 'turret') {
     const base = placeModel(srcs['통'], t.x, t.z, 0, 0.95, '');
-    const gun = srcs['소총'].clone(true), b = new THREE.Box3().setFromObject(gun), sz = b.getSize(new THREE.Vector3()), k = 0.9 / Math.max(sz.x, sz.z);
+    // 연사포탑은 기관총 · 산탄포탑은 산탄총 모형(doll.js) · 기본 포탑은 소총
+    const gun = (srcs[{ 연사포탑: '기관총', 산탄포탑: '산탄총' }[t.item]] || srcs['소총']).clone(true), b = new THREE.Box3().setFromObject(gun), sz = b.getSize(new THREE.Vector3()), k = 0.9 / Math.max(sz.x, sz.z);
     const inner = new THREE.Group(); inner.add(gun); gun.position.set(-(b.min.x + sz.x / 2), -b.min.y, -(b.min.z + sz.z / 2)); inner.scale.setScalar(k); if (sz.x > sz.z) inner.rotation.y = -Math.PI / 2;
     const pivot = new THREE.Group(); pivot.add(inner); pivot.position.set(t.x, Math.max(0, height(t.x, t.z)) + 0.95, t.z); scene.add(pivot);
     pivot.traverse((m) => { if (m.isMesh) m.castShadow = true; });
@@ -21,7 +22,8 @@ function makeTrapObj(t) {
   }
   // 내 제작대(작업지시서 4 C): 작업대 모형 · 막힘 원
   if (t.kind === 'bench') { const o = placeModel(srcs['작업대'] || srcs['상자'], t.x, t.z, (t.id * 37) % 360, 1.0, ''), circle = { x: t.x, z: t.z, r: 0.6 }; circles.push(circle); return { obj: o, circle }; }
-  const o = placeModel(srcs['가시덫'], t.x, t.z, (t.id * 53) % 360, 0.28, '');
+  // 폭발덫은 제 모형(둥근 지뢰 · doll.js) · 나머지 덫은 가시덫 모형
+  const o = placeModel(srcs[t.item] || srcs['가시덫'], t.x, t.z, (t.id * 53) % 360, 0.28, '');
   // 철가시덫 · 올가미덫 · 폭발덫은 색으로 구별
   if (typeof gradeLook === 'function') gradeLook(o, t.item);
   o.traverse((m) => { if (m.isMesh) { m.material = m.material.clone(); m.material.transparent = !mine; m.material.opacity = mine ? 1 : 0.22; m.castShadow = mine; } }); // 남에게는 흐릿하게
