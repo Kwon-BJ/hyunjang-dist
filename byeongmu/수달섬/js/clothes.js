@@ -85,7 +85,7 @@ function clothHtml() {
     const key = `${kind}:${c}`, have = S.closet.includes(key), on = S.wear[slot] === key, col = '#' + LOOK_COLORS[c].toString(16).padStart(6, '0');
     const btn = on ? `<button type="button" class="bbtn" data-cunwear="${slot}">벗기</button>` : have ? `<button type="button" class="bbtn" data-cwear="${key}">입기</button>` : `<button type="button" class="bbtn" data-cbuy="${key}" ${S.money < CLOTH.price[kind] ? 'disabled' : ''}>사기</button>`;
     // 두 줄: 색 · 이름 / 값(또는 가짐 · 입음) · 단추 — 좁은 휴대폰에서 넘치지 않게(다른 가게 줄과 같은 모양)
-    return `<div class="row mat-row"><span class="cloth-dot" style="background:${col}"></span><span class="nm">${cn} ${kname}<small>${SLOT_NM[slot]}</small></span><div class="mat-line"><span class="need">${on ? '입고 있어요' : have ? '옷장에 있어요' : price(CLOTH.price[kind])}</span>${btn}</div></div>`;
+    return `<div class="row mat-row" data-cprev="${key}"><span class="cloth-dot" style="background:${col}"></span><span class="nm">${cn} ${kname}<small>${SLOT_NM[slot]}</small></span><div class="mat-line"><span class="need">${on ? '입고 있어요' : have ? '옷장에 있어요' : price(CLOTH.price[kind])}</span>${btn}</div></div>`;
   }).join('');
   return tabs + rows + `<div class="empty">꾸미기만 — 능력은 같아요 · 산 옷은 옷장에 남아 죽어도 안 떨어져요</div><div class="mine">내 조개 ${price(S.money)}</div>`;
 }
