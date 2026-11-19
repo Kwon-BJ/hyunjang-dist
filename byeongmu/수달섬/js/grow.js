@@ -143,6 +143,8 @@ function growWelcome(m) {
 function onNetGrow(m) {
   if (m.t === 'plant') { const r = addPlant(m); if (r) { r.down = clock + m.left; growApply(r, m.full); } if (m.by === net.id) toast('씨앗을 심었어요 — 새싹부터 자라요', '씨앗'); }
   else if (m.t === 'shd') setShadows(m.l || []);
+  // 그루터기 파기(2026-11-19): 서버가 정한 시간 동안 삽질 · 0 이면 그만둠(멀어짐 등)
+  else if (m.t === 'digging') { if (m.s > 0) { me.actT = me.actDur = m.s; me.actSwing = true; toast(`파는 중… ${m.s}초`, '삽'); } else toast('파기를 그만뒀어요'); }
   // 앉기: 그루터기 위로 옮겨 앉음(움직이면 일어남 — 서버도 같게)
   else if (m.t === 'sit') {
     // 모닥불 옆에 앉기(작업지시서 4 B3): 그 자리에서 땅에 앉음
