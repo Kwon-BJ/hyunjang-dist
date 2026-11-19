@@ -63,9 +63,10 @@ function windy(mat, { sway = 0.05, from = 1.0, occlude = false, noFlip = false }
       vec3 pa = uCam, pb = uPlayer + vec3(0.0, 0.6, 0.0), ab = pb - pa;
       float tt = clamp(dot(vWPos - pa, ab) / dot(ab, ab), 0.0, 1.0);
       float occD = length(vWPos - (pa + ab * tt));
-      if (tt < 0.94 && occD < 1.9 && mod(floor(gl_FragCoord.x) + 2.0 * floor(gl_FragCoord.y), 4.0) > 0.5) discard;
-      float occDark = tt < 0.94 ? 1.0 - 0.6 * (1.0 - smoothstep(1.5, 2.8, occD)) : 1.0;`).replace('#include <opaque_fragment>', `outgoingLight *= occDark;
-      #include <opaque_fragment>`);
+      // 작업지시서 4 A2: 가운데(수달 크기 0.95)는 나무를 완전히 비움 → 수달 몸에 점무늬가 안 남음 · 바깥 고리(0.95~1.5)는 4×4 순서 점으로 점점 진해져 큰 둥근 테두리가 안 보임
+      vec2 bq = floor(gl_FragCoord.xy), bh = floor(bq * 0.5);
+      float bay = fract(dot(mod(bh, 2.0), vec2(0.5, mod(bh.y, 2.0) * 0.75))) * 0.25 + fract(dot(mod(bq, 2.0), vec2(0.5, mod(bq.y, 2.0) * 0.75)));
+      if (tt < 0.94 && bay >= smoothstep(0.95, 1.5, occD)) discard;`);
     else sh.fragmentShader = 'uniform vec3 uPlayer;\nvarying vec3 vWPos;\n' + sh.fragmentShader;
     // 수달 등불(머리 위 1.8 · light.js myLamp)이 잎 · 덤불을 비추는 세기만 0.3 배 — 등불이 수달 둘레 나무 층 윗면을 밝게 비춰, 앞 나무 비침 구멍 너머로 밝은 초록 띠가 보이던 것
     // (2026-11-19 · 등불을 끄면 띠가 사라지고, 거리로 어둡게 해도 띠 자리 픽셀이 그대로임을 확인 — 띠는 등불에서 5~7칸 뒤 나무). 땅 · 수달은 등불 그대로
@@ -214,6 +215,9 @@ const BERRIES = [];
   // 칸으로 나눠 그림(멀어도 열매는 그대로 보임 — 딸 수 있는 덤불 표시)
   im.count = pick.length; im.castShadow = true; im.receiveShadow = false; chunkInstances(im, BERRIES);
 }
+// 바위 종류(작업지시서 4 C): 항구에서 먼 바위 일부가 철 바위(60칸 밖) · 금 바위(95칸 밖 · 가장 드묾) — 자리로 정해져(hash) 서버 world.json 과 같음 · 섬 자리(rnd)는 안 건드림
+const rockKind = (x, z) => { const d = Math.hypot(x - HARBOR.x, z - HARBOR.z); return d > 125 && hash(x * 0.53 + 9, z * 1.9) < 0.07 ? '금' : d > 50 && hash(x * 1.31, z * 0.77) < 0.42 ? '철' : null; };
+const ROCK_TINT = { null: new THREE.Color(0xffffff), 철: new THREE.Color(0xe8b49a), 금: new THREE.Color(0xffe27a) };
 // 바위 24개 (2026-11-17 부장님 — 집터 56개로 늘린 뒤 clearSpot(집터 6칸 금지)에 걸려 7개뿐이었음)
 // 바위는 따로: 집 · 보관함 자리만 피하고(집터 가운데 5칸 · 보관함 2.2칸) 모래 가장자리까지 허용
 const rockSpots = [];
@@ -230,8 +234,8 @@ const ROCKY = { x: -45, z: 88, r: 26 }; // 남서쪽 바위 지대(눈에 띄는
 ROCKS.push(...scatter(ROCK, rockMat, 95, (x, z) => {
   if (Math.hypot(x - ROCKY.x, z - ROCKY.z) > ROCKY.r && rnd() < 0.55) return null; // 반쯤은 바위 지대에
   if (!rockOk(x, z)) return null;
-  const s = 0.45 + rnd() * 0.65, circle = { x, z, r: s * 0.95 }; circles.push(circle); rockSpots.push({ x, z }); return { s, sy: s * 0.62, sz: s * 0.85, y: 0.05, circle };
-}, { tryMul: 400, lo: ROCK_LO, far: 30 }).userData.recs.map((r) => Object.assign(r, { stone: 3, down: 0 })));
+  const s = 0.45 + rnd() * 0.65, circle = { x, z, r: s * 0.95 }; circles.push(circle); rockSpots.push({ x, z }); return { s, sy: s * 0.62, sz: s * 0.85, y: 0.05, circle, color: ROCK_TINT[rockKind(x, z)] };
+}, { tryMul: 400, lo: ROCK_LO, far: 30 }).userData.recs.map((r) => Object.assign(r, { stone: 3, down: 0, kind: rockKind(r.x, r.z) })));
 const FLOWER_COLORS = [0xffffff, 0xff9fc4, 0xffe066, 0xc39af5, 0xff8a65, 0x9fd4ff];
 // 꽃 무리 자리는 풀밭에서만 고르고, 시도마다 아무 무리나 고른다
 // (예전: k번째 꽃은 k번째 무리에만 — 무리 하나가 물 · 길이면 거기서 멈춰 섬 전체에 꽃 8개뿐이었음 · 2026-11-17 고침)
