@@ -40,7 +40,7 @@ function raidTargets(see) {
   }
 }
 function raidAction(t) {
-  me.actT = me.actDur = 0.45; net.ac++; actCool = S.tool === '도끼' ? 0.7 : 0.6; me.actSwing = meleeSwing(); netSend({ t: 'hhit', name: t.rec.name }); // ac: 남 화면에 동작 · 쿨타임은 서버와 같게(리뷰 3 · 5번)
+  me.actT = me.actDur = 0.45; net.ac++; actCool = toolIs('도끼') ? 0.7 : 0.6; me.actSwing = meleeSwing(); netSend({ t: 'hhit', name: t.rec.name }); // ac: 남 화면에 동작 · 쿨타임은 서버와 같게(리뷰 3 · 5번)
 }
 // ── 서버 말 ──
 function onNetHouse(m) {
