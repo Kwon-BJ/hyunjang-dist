@@ -15,9 +15,15 @@ function makeTrapObj(t) {
     pivot.traverse((m) => { if (m.isMesh) m.castShadow = true; });
     const circle = { x: t.x, z: t.z, r: 0.5 }; circles.push(circle);
     const bulb = new THREE.Mesh(BULB_G, BULB_M); bulb.position.set(0, 0.32, 0); pivot.add(bulb); // 포탑 빨간 불(C단계)
+    // 연사 · 산탄 포탑은 총 색으로 구별(작업지시서 4 C · craft.js)
+    if (typeof gradeLook === 'function') gradeLook(pivot, t.item);
     return { obj: base, gun: pivot, circle, glow: addGlow(t.x, pivot.position.y + 0.32, t.z, 0xff2a2a, 0.8, null, 0.9) };
   }
+  // 내 제작대(작업지시서 4 C): 작업대 모형 · 막힘 원
+  if (t.kind === 'bench') { const o = placeModel(srcs['작업대'] || srcs['상자'], t.x, t.z, (t.id * 37) % 360, 1.0, ''), circle = { x: t.x, z: t.z, r: 0.6 }; circles.push(circle); return { obj: o, circle }; }
   const o = placeModel(srcs['가시덫'], t.x, t.z, (t.id * 53) % 360, 0.28, '');
+  // 철가시덫 · 올가미덫 · 폭발덫은 색으로 구별
+  if (typeof gradeLook === 'function') gradeLook(o, t.item);
   o.traverse((m) => { if (m.isMesh) { m.material = m.material.clone(); m.material.transparent = !mine; m.material.opacity = mine ? 1 : 0.22; m.castShadow = mine; } }); // 남에게는 흐릿하게
   return { obj: o };
 }
@@ -45,11 +51,11 @@ function trapTargets(see) {
     else if (!mine && !inSafeC(me.x, me.z)) see('trap', t, t.x, t.z, t.kind === 'turret' ? 1.6 : 1.1, 0.4); // 남의 가시덫도 바로 앞(1.1칸)이면 부수기(요청 3)
   }
 }
-const trapLabel = (t) => (t.type === 'place' ? `${S.tool} 놓기` : t.type === 'tload' ? `탄약 넣기 (${t.rec.ammo})` : t.type === 'trap' ? (t.rec.kind === 'turret' ? '포탑 부수기' : t.rec.kind === 'fire' ? '모닥불 부수기' : '덫 부수기') : null);
+const trapLabel = (t) => (t.type === 'place' ? `${nameOf(S.tool)} 놓기` : t.type === 'tload' ? `탄약 넣기 (${t.rec.ammo})` : t.type === 'trap' ? (t.rec.kind === 'turret' ? '포탑 부수기' : t.rec.kind === 'fire' ? '모닥불 부수기' : '덫 부수기') : null);
 function trapAction(t) {
   if (t.type === 'place') { netSend({ t: 'place', x: +t.x.toFixed(2), z: +t.z.toFixed(2) }); return true; }
   if (t.type === 'tload') { netSend({ t: 'tload', id: t.rec.id }); return true; }
-  if (t.type === 'trap') { me.actT = me.actDur = 0.45; net.ac++; actCool = S.tool === '도끼' ? 0.7 : 0.6; me.actSwing = meleeSwing(); netSend({ t: 'thit', id: t.rec.id }); return true; }
+  if (t.type === 'trap') { me.actT = me.actDur = 0.45; net.ac++; actCool = toolIs('도끼') ? 0.7 : 0.6; me.actSwing = meleeSwing(); netSend({ t: 'thit', id: t.rec.id }); return true; }
   return false;
 }
 // ── 서버 말 ──
