@@ -85,7 +85,8 @@ function gunMeshFor(src, g) {
 }
 function ensureGuns(obj) {
   const u = obj.userData; if (u.guns) return u.guns;
-  u.guns = {}; for (const g of GUNS) { u.guns[g] = gunMeshFor(srcs[g], g); u.guns[g].visible = false; u.body.add(u.guns[g]); }
+  // 만든 총(작업지시서 4 C)은 기본 총의 모형을 쓰고 craft.js 가 색을 바꿈(GUN_MODEL)
+  u.guns = {}; for (const g of GUNS) { u.guns[g] = gunMeshFor(srcs[g] || srcs[(typeof GUN_MODEL !== 'undefined' && GUN_MODEL[g]) || '소총'], g); if (typeof gradeLook === 'function') gradeLook(u.guns[g], g); u.guns[g].visible = false; u.body.add(u.guns[g]); }
   return u.guns;
 }
 function gunPose(obj, tool) {
