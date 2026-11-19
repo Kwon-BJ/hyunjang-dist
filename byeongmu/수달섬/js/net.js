@@ -6,7 +6,7 @@ const net = { ws: null, on: false, server: false, id: 0, name: '', others: new M
 let keepPos = false; // 새 판으로 다시 열려 있던 자리를 지킬 때 true
 // 말 판(서버 config.proto 와 같게) — 서버가 새 판이면 옛 화면으로 사고팔기 · 도구가 어긋나므로 바로 새로 연다(작업지시서 3 A1).
 // 시험(localhost)에서만 ?proto= 로 일부러 다르게 해 볼 수 있음
-const PROTO = (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && +new URLSearchParams(location.search).get('proto')) || 9;
+const PROTO = (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && +new URLSearchParams(location.search).get('proto')) || 10;
 function reloadForServer() {
   // 30초 안에 또 새로 열었으면(화면 파일이 아직 안 올라옴) 다시 열지 않고 30초 뒤에 한 번 더
   let last = 0;
@@ -67,6 +67,10 @@ function onNet(m) {
     // 서버 말 판이 이 화면과 다르면(서버만 먼저 새 판) 바로 새로 열기
     if (m.proto && m.proto !== PROTO) { net.protoMismatch = m.proto; try { net.ws.close(); } catch { /* */ } reloadForServer(); return; }
     me.obj.userData.setLook(lookOf(m.name)); // 내 모자 · 가방도 이름으로
+    // 운영자면 「운영자」 단추(작업지시서 4 B6 — 서버가 회원 기록으로 정한 값 · 만들기도 서버가 다시 확인)
+    if (typeof opShow === 'function') opShow(!!m.op);
+    // 만드는 법(작업지시서 4 C) — 서버 config.craft 그대로
+    if (m.craft && typeof onNetCraft === 'function') onNetCraft({ t: 'craftdef', ...m.craft });
     // 입은 옷(작업지시서 3 F) — 서버 옷장 · 입은 것
     adoptClothes(m.inv);
     if (fishing.st) endFish();
@@ -125,6 +129,8 @@ function onNet(m) {
   else if (m.t === 'say') onNetSay(m);
   // 자연(작업지시서 3 E) — grow.js
   else if (m.t === 'plant' || m.t === 'shd' || m.t === 'sit') onNetGrow(m);
+  // 제작대 일감 · 올가미덫(작업지시서 4 C · craft.js)
+  else if ((m.t === 'craft' || m.t === 'stun') && typeof onNetCraft === 'function') onNetCraft(m);
   else if (m.t === 'trade') onNetTrade(m);
   else if (m.t === 'market') { MARKET = m.f; if (view === 'shop' && !winEl.hidden) render(); } // 물고기 시세(D단계)
   else if (m.t === 'buff') (BUFF[m.b] = clock + m.secs), toast(`${{ fast: '빠르게', tough: '덜 다침', warm: '모닥불 회복 2배', quick: '채집 빨리' }[m.b] || m.b} ${m.secs}초`, '열매');
@@ -187,8 +193,12 @@ function netTick(dt) {
 // 낚싯대는 앞 위로. 예전(길이 0.5 · 앞으로 눕힘)은 게임 카메라에서 안 보여 1.5배 넘게 키움
 const HOLD = { 도끼: { s: 0.82, grip: 0.18, rx: Math.PI - 0.95 }, 곡괭이: { s: 0.82, grip: 0.18, rx: Math.PI - 0.95 }, 낚싯대: { s: 0.95, grip: 0.12, rx: 0.85 } };
 function heldModel(src, tool) {
-  const H = HOLD[tool] || { s: 0.5, grip: 0.2, rx: Math.PI / 2 };
+  // 등급 도구(작업지시서 4 C)는 낡은 것의 모형 · 쥐는 법을 쓰고 craft.js 가 색 · 크기를 바꿈
+  const base = kindOfC(tool), H = HOLD[tool] || HOLD[base] || { s: 0.5, grip: 0.2, rx: Math.PI / 2 };
+  src = src || srcs[base];
   const o = src.clone(true), b = new THREE.Box3().setFromObject(o), sz = b.getSize(new THREE.Vector3()), k = H.s / Math.max(sz.x, sz.y, sz.z);
   const inner = new THREE.Group(); inner.add(o); o.position.set(-(b.min.x + sz.x / 2), -b.min.y - sz.y * H.grip, -(b.min.z + sz.z / 2)); inner.scale.setScalar(k);
-  const g = new THREE.Group(); g.add(inner); g.rotation.x = H.rx; g.traverse((m) => { if (m.isMesh) m.castShadow = true; }); return g;
+  const g = new THREE.Group(); g.add(inner); g.rotation.x = H.rx; g.traverse((m) => { if (m.isMesh) m.castShadow = true; });
+  if (typeof gradeLook === 'function') gradeLook(g, tool);
+  return g;
 }
