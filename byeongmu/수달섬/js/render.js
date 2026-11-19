@@ -32,8 +32,9 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0f1b36); // 늘 달밤(작업지시서 2 C — 미티는 밤을 좋아함)
 scene.fog = new THREE.Fog(0x162443, 34, 110);
 const camera = new THREE.PerspectiveCamera(38, 1, 0.5, 160); // 먼 끝 = 안개 끝(110) 넘어 조금 — 넓은 섬에서 먼 것까지 다 그리지 않게
-const hemi = new THREE.HemisphereLight(0x6a86d0, 0x2a2340, 0.62); scene.add(hemi); // 밤하늘빛(푸름) · 땅 반사(보라)
-const sun = new THREE.DirectionalLight(0xaec4ff, 1.05); // 달빛(이름은 예전 그대로 sun)
+// 밤하늘빛(푸름) · 땅 반사(보라) · 달빛(이름은 예전 그대로 sun). 작업지시서 4 A4: 푸른 달밤은 그대로, 땅 · 나무 · 바위가 구별되게 한 단계 밝힘(0.62 → 0.8 · 1.05 → 1.3)
+const hemi = new THREE.HemisphereLight(0x6a86d0, 0x3a3150, 0.8); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xaec4ff, 1.3);
 sun.castShadow = true;
 sun.shadow.mapSize.set(touchy ? 1024 : 2048, touchy ? 1024 : 2048);
 Object.assign(sun.shadow.camera, { left: -20, right: 20, top: 20, bottom: -20, near: 1, far: 90 });
