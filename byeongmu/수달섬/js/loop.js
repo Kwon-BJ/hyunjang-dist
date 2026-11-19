@@ -104,8 +104,6 @@ function step(dt) {
   { const zw = zoomWant(); zoomK += (ZOOM_K[zw] - zoomK) * Math.min(1, dt * 5); if (zoomBtn.dataset.lv !== String(zw)) { zoomBtn.dataset.lv = zw; paintZoom(); } }
   { const sc = sun.shadow.camera, ext = 20 * Math.max(1, zoomK) + 3; if (Math.abs(sc.right - ext) > 0.05) { sc.left = sc.bottom = -ext; sc.right = sc.top = ext; sc.updateProjectionMatrix(); } } // 멀리(×1.2)에서도 화면 끝까지 그림자
   camera.position.set(camAt.x, camAt.y + camH * zoomK, camAt.z + camD * zoomK); camera.lookAt(camAt.x, camAt.y + 0.6, camAt.z);
-  // 가까운 칸 · 먼 칸 모양 바꾸기(nature.js 칸 나눠 그리기)
-  lodTick(camAt);
   sun.position.set(camAt.x + 16, 24, camAt.z + 10); sun.target.position.copy(camAt);
   U.uTime.value = clock; U.uCam.value.copy(camera.position); U.uPlayer.value.copy(me.obj.position);
   if (typeof lightTick === 'function') lightTick(dt);
