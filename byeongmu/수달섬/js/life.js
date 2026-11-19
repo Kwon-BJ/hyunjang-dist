@@ -217,7 +217,9 @@ function render() {
   if (view === 'bag') {
     const s = S.bag[sel];
     const food = s && FOODS[s.id];
-    h = `<div class="grid">${slotsHtml(S.bag, 'bag')}</div><div class="${food || (s && FISH_KINDS.includes(s.id)) ? 'qsel' : 'foot'}">${food ? `<button type="button" class="gbtn" id="eatBtn">먹기 +${food.e}${food.buff ? ' · ' + food.buff : ''}</button>` : s && FISH_KINDS.includes(s.id) ? '<span class="pk">날생선은 모닥불에서 익혀요</span>' : ''}<button type="button" class="bbtn" id="trash" ${s ? '' : 'disabled'}><i class="ic" style="background-image:${ic('쓰레기통')}"></i>${trashArm ? '한 번 더 누르면 버려요' : '버리기'}</button></div>${srvOn() ? dropRows(s) : ''}`;
+    // 고른 칸의 이름(등급은 글자 색 · craft.js nameHtml) · 내구도
+    const bagNm = s ? `<div class="bag-nm">${typeof nameHtml === 'function' ? nameHtml(s.id) : nameOf(s.id)}${DUR[s.id] && Number.isFinite(s.d) ? `<small>내구 ${s.d}/${DUR[s.id]}</small>` : ''}</div>` : '';
+    h = `<div class="grid">${slotsHtml(S.bag, 'bag')}</div>${bagNm}<div class="${food || (s && FISH_KINDS.includes(s.id)) ? 'qsel' : 'foot'}">${food ? `<button type="button" class="gbtn" id="eatBtn">먹기 +${food.e}${food.buff ? ' · ' + food.buff : ''}</button>` : s && FISH_KINDS.includes(s.id) ? '<span class="pk">날생선은 모닥불에서 익혀요</span>' : ''}<button type="button" class="bbtn" id="trash" ${s ? '' : 'disabled'}><i class="ic" style="background-image:${ic('쓰레기통')}"></i>${trashArm ? '한 번 더 누르면 버려요' : '버리기'}</button></div>${srvOn() ? dropRows(s) : ''}`;
   } else if (view === 'shop' && shopKind === 'cloth') { h = clothHtml(); // 옷 자판기(작업지시서 3 F · clothes.js)
   } else if (view === 'shop') {
     if (!(SHOPS[shopKind] || SHOPS.tool).sell) tab = 'buy'; // 자판기는 사기만(팔기는 도구 상점 상인)
