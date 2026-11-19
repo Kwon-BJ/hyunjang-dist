@@ -3,6 +3,13 @@
 const $ = (id) => document.getElementById(id);
 const ITEMS = { 열매: { sell: 15 }, 나뭇가지: { sell: 5 }, 꽃: { sell: 10 }, 풀: { sell: 3 }, 나무: { sell: 12, buy: 200 }, 돌: { sell: 14, buy: 220 }, 도끼: { buy: 300, tool: true }, 곡괭이: { buy: 400, tool: true }, 텐트: { buy: 5000, tool: true }, 보관함: { buy: 1500 }, 모닥불: { buy: 600, tool: true }, 생선구이: { buy: 150 }, 열매꼬치: {}, 열매잼: {}, 생선수프: {}, 꽃차: {}, 모둠구이: {} };
 ITEMS.열매.buy = 120;
+// 화면에 보이는 이름(작업지시서 4 B5): 도구 상점의 기본 도구는 「낡은 ○○」 — 서버 · 저장 열쇠는 그대로(가진 도구도 이 이름으로 보임). 등급 도구 이름은 craft.js 가 더함
+const ITEM_NAME = { 도끼: '낡은 도끼', 곡괭이: '낡은 곡괭이', 낚싯대: '낡은 낚싯대', 삽: '낡은 삽' };
+const nameOf = (id) => ITEM_NAME[id] || id;
+// 도구 종류(작업지시서 4 C): 돌도끼 · 철 도끼 · 황금 도끼도 「도끼」 — 표는 craft.js 가 채움(서버 config toolKind 와 같게)
+const TOOL_KIND = {};
+const kindOfC = (id) => TOOL_KIND[id] || id;
+const toolIs = (k) => !!S.tool && kindOfC(S.tool) === k;
 // 먹을 것 · 요리(서버 config.foods · recipes 와 같게 — 창에 보여 주기용)
 const FOODS = { 열매: { e: 6 }, 생선구이: { e: 25 }, 열매꼬치: { e: 14 }, 열매잼: { e: 20, buff: '빠르게' }, 생선수프: { e: 45, buff: '덜 다침' }, 꽃차: { e: 15, buff: '모닥불 회복 2배' }, 모둠구이: { e: 40, buff: '채집 빨리' } };
 const RECIPES = { 생선구이: [['생선', 1], ['나뭇가지', 1]], 열매꼬치: [['열매', 2], ['나뭇가지', 1]], 열매잼: [['열매', 3], ['꽃', 1]], 생선수프: [['생선', 2], ['풀', 1]], 꽃차: [['꽃', 2], ['풀', 1]], 모둠구이: [['생선', 1], ['열매', 2], ['꽃', 1]] };
@@ -79,8 +86,8 @@ function cycleTool() {
   const opts = [null, ...[...TOOLS, ...GUNS, ...TRAP_ITEMS, '텐트'].filter((t) => count(t))]; // 총도 손에 들 수 있음
   if (opts.length === 1) { toast('도구가 없어요 — 상점에서 살 수 있어요', '손'); return; }
   const nextTool = opts[(opts.indexOf(S.tool) + 1) % opts.length];
-  if (srvOn()) { netSend({ t: 'equip', tool: nextTool }); toast(nextTool ? `${nextTool}를 들었어요` : '맨손이에요', nextTool || '손'); return; }
-  S.tool = nextTool; toast(S.tool ? `${S.tool}를 들었어요` : '맨손이에요', S.tool || '손'); changed();
+  if (srvOn()) { netSend({ t: 'equip', tool: nextTool }); toast(nextTool ? `${nameOf(nextTool)}를 들었어요` : '맨손이에요', nextTool || '손'); return; }
+  S.tool = nextTool; toast(S.tool ? `${nameOf(S.tool)}를 들었어요` : '맨손이에요', S.tool || '손'); changed();
 }
 
 // 채집 대상 숨기기 · 되살리기 · 흔들기
@@ -101,7 +108,7 @@ function findTarget() {
   tentTargets(see); // 텐트를 들었으면 앞쪽에 치기(B단계)
   if (!(typeof HSTATE !== 'undefined' && (HSTATE.get(net.name) || {}).broken)) see('chest', null, CHEST_AT.x, CHEST_AT.z, 1.7); // 부서진 집 보관함은 고친 뒤에
   for (const r of FLOWERS) if (!r.down) see('flower', r, r.x, r.z, 0.9);
-  if (S.tool === '낚싯대') for (const r of FISH_SPOTS) if (!r.down) see('fish', r, r.x, r.z, 1.6, 0.1); // 낚시 자리(6단계)
+  if (toolIs('낚싯대')) for (const r of FISH_SPOTS) if (!r.down) see('fish', r, r.x, r.z, 1.6, 0.1); // 낚시 자리(6단계)
   // 풀 덤불도 다 자란 것만(작업지시서 3 E)
   for (const r of BUSHES) if (!(r.down > clock)) see('bush', r, r.x, r.z, 1.3);
   for (const r of BERRIES) if (!r.down) see('berry', r, r.x, r.z, 1.3, 0.05); // 열매가 달렸으면 풀보다 먼저
@@ -115,10 +122,12 @@ function findTarget() {
   groundTargets(see);
   // 그루터기(앉기 · 파내기) · 심은 나무 · 씨앗 심기(작업지시서 3 E) — grow.js
   growTargets(see, fx, fz);
+  // 제작대(작업지시서 4 C · craft.js)
+  if (typeof craftTargets === 'function') craftTargets(see);
   return best;
 }
-const labelOf = (t) => !t ? '줍기/쓰기' : (typeof trapLabel === 'function' && trapLabel(t)) || (t.type === 'pitch' ? (t.rec.why ? '여기는 못 쳐요' : '텐트 치기') : null) || (t.type === 'cook' ? '요리하기' : t.type === 'pickup' ? `줍기 (${t.rec.n})` : growLabel(t)) || { shop: t.rec && SHOPS[t.rec] && SHOPS[t.rec].color ? '자판기 열기' : '가게 열기', chest: '보관함', house: '집 올리기', flower: '꽃 꺾기', bush: '풀 뜯기', berry: '열매 따기', fish: '낚시하기', raid: S.tool === '도끼' ? '집 부수기' : '집 치기', otter: S.tool === '도끼' ? '도끼로 치기' : '때리기', sack: '자루 줍기' }[t.type]
-  || (t.type === 'tree' ? (S.tool === '도끼' ? '나무 베기' : '나무 흔들기') : S.tool === '곡괭이' ? '돌 캐기' : '곡괭이 필요');
+const labelOf = (t) => !t ? '줍기/쓰기' : (typeof trapLabel === 'function' && trapLabel(t)) || (t.type === 'pitch' ? (t.rec.why ? '여기는 못 쳐요' : '텐트 치기') : null) || (t.type === 'cook' ? '요리하기' : t.type === 'pickup' ? `줍기 (${t.rec.n})` : growLabel(t)) || (t.type === 'craft' ? '제작대' : null) || { shop: t.rec && SHOPS[t.rec] && SHOPS[t.rec].color ? '자판기 열기' : '가게 열기', chest: '보관함', house: '집 올리기', flower: '꽃 꺾기', bush: '풀 뜯기', berry: '열매 따기', fish: '낚시하기', raid: toolIs('도끼') ? '집 부수기' : '집 치기', otter: toolIs('도끼') ? '도끼로 치기' : '때리기', sack: '자루 줍기' }[t.type]
+  || (t.type === 'tree' ? (toolIs('도끼') ? '나무 베기' : '나무 흔들기') : toolIs('곡괭이') ? '돌 캐기' : '곡괭이 필요');
 
 let actCool = 0;
 function doAction() {
@@ -131,16 +140,18 @@ function doAction() {
   const r = t.rec;
   if (t.type === 'shop') { shopKind = t.rec; if (!SHOPS[shopKind].sell) tab = 'buy'; return openWin('shop'); }
   if (t.type === 'pitch') return pitchAction(t.rec);
-  if (t.type === 'cook') return openWin('cook');
+  // 앉을 모닥불: 놓은 모닥불은 'P번호' · 공용은 'F'(서버가 가까운 것을 고름 · 작업지시서 4 B3)
+  if (t.type === 'cook') { cookFire = t.rec && t.rec.kind === 'fire' && t.rec.id != null ? 'P' + t.rec.id : 'F'; return openWin('cook'); }
   if (t.type === 'pickup') return pickupAction();
   if ((t.type === 'stump' || t.type === 'plant') && growAction(t)) return;
+  if (t.type === 'craft') { craftBench = t.rec.key; return openWin('craft'); }
   if (t.type === 'raid') return raidAction(t); // 7단계
   if ((t.type === 'place' || t.type === 'tload' || t.type === 'trap') && trapAction(t)) return; // 8단계
   if (t.type === 'house') return openWin('house');
   if (t.type === 'chest') return openWin('chest');
   if (t.type === 'otter' || t.type === 'sack') return fightAction(t);
-  me.actT = me.actDur = ACT_T; me.actSwing = (t.type === 'tree' && S.tool === '도끼') || (t.type === 'rock' && S.tool === '곡괭이'); me.actTree = null; net.ac++;
-  if (t.type === 'tree' && S.tool !== '도끼') { // 맨손 흔들기: 줄기에서 팔 길이만큼 서서 정면으로
+  me.actT = me.actDur = ACT_T; me.actSwing = (t.type === 'tree' && toolIs('도끼')) || (t.type === 'rock' && toolIs('곡괭이')); me.actTree = null; net.ac++;
+  if (t.type === 'tree' && !toolIs('도끼')) { // 맨손 흔들기: 줄기에서 팔 길이만큼 서서 정면으로
     const R = shakeFit(r, me.x, me.z).R, D = Math.max(shakeReach(R), r.circle.r + 0.32 + 0.02); // 막힘(나무 + 수달)보다 가까이는 못 섬 → 그만큼은 몸째 다가섬(shakePose)
     const dx = me.x - r.x, dz = me.z - r.z, l = Math.hypot(dx, dz) || 1, nx = r.x + dx / l * D, nz = r.z + dz / l * D;
     if (free(nx, nz)) { me.x = nx; me.z = nz; }
@@ -148,20 +159,20 @@ function doAction() {
     me.actT = me.actDur = SHAKE_T; me.actSwing = 'shake'; me.actTree = r.key; me.fit = shakeFit(r, me.x, me.z);
   }
   if (srvOn()) { // 서버가 결과를 정함 — 동작 · 흔들림만 보이고 요청을 보냄(가방은 서버 inv 로 바뀜)
-    if (t.type === 'rock' && S.tool !== '곡괭이') { toast('곡괭이가 있어야 캘 수 있어요', '곡괭이'); me.actT = 0; return; }
-    if (t.type === 'tree') wobble(r, S.tool === '도끼' ? WOB_AMP : SHAKE_AMP); else if (t.type === 'bush') wobble(r); else if (t.type === 'berry') wobble(r.bush);
+    if (t.type === 'rock' && !toolIs('곡괭이')) { toast('곡괭이가 있어야 캘 수 있어요', '곡괭이'); me.actT = 0; return; }
+    if (t.type === 'tree') wobble(r, toolIs('도끼') ? WOB_AMP : SHAKE_AMP); else if (t.type === 'bush') wobble(r); else if (t.type === 'berry') wobble(r.bush);
     netSend({ t: 'act', k: r.key }); return;
   }
   if (t.type === 'flower') { r.down = clock + REGEN_LOCAL.F; hideRec(r); netRes(r); gain('꽃'); }
   else if (t.type === 'berry') { wobble(r.bush); r.down = clock + REGEN_LOCAL.E; hideRec(r); netRes(r); gain('열매', 2); }
   else if (t.type === 'bush') { wobble(r); if (clock < r.next) toast('아직 풀이 덜 자랐어요', '풀'); else { r.next = clock + 60; gain('풀', 2); } }
   else if (t.type === 'tree') {
-    wobble(r, S.tool === '도끼' ? WOB_AMP : SHAKE_AMP); // 맨손 흔들기는 크게
-    if (S.tool === '도끼') { gain('나무'); if (--r.wood <= 0) { r.wood = 3; r.down = clock + REGEN_LOCAL.T; hideRec(r); wobbles.delete(r); netRes(r); if (!net.on) toast(`나무가 쓰러졌어요 — ${REGEN_LOCAL.T}초 뒤 다시 자라요`); } }
+    wobble(r, toolIs('도끼') ? WOB_AMP : SHAKE_AMP); // 맨손 흔들기는 크게
+    if (toolIs('도끼')) { gain('나무'); if (--r.wood <= 0) { r.wood = 3; r.down = clock + REGEN_LOCAL.T; hideRec(r); wobbles.delete(r); netRes(r); if (!net.on) toast(`나무가 쓰러졌어요 — ${REGEN_LOCAL.T}초 뒤 다시 자라요`); } }
     else if (clock < r.next) toast('흔들어도 아무것도 안 떨어져요');
     else { r.next = clock + 45; if (r.kind === 'fruit') gain('열매', 1 + (rnd() < 0.5 ? 1 : 0)); gain('나뭇가지'); }
   } else if (t.type === 'rock') {
-    if (S.tool !== '곡괭이') { toast('곡괭이가 있어야 캘 수 있어요', '곡괭이'); me.actT = 0; return; }
+    if (!toolIs('곡괭이')) { toast('곡괭이가 있어야 캘 수 있어요', '곡괭이'); me.actT = 0; return; }
     gain('돌'); if (--r.stone <= 0) { r.stone = 3; r.down = clock + REGEN_LOCAL.R; hideRec(r); netRes(r); if (!net.on) toast(`바위를 다 캤어요 — ${REGEN_LOCAL.R}초 뒤 다시 생겨요`); }
   }
 }
@@ -185,7 +196,7 @@ function life(dt) {
 }
 
 // 창
-let view = null, sel = -1, tab = 'sell', trashArm = 0, moveArm = 0, shopKind = 'tool';
+let view = null, sel = -1, tab = 'sell', trashArm = 0, moveArm = 0, shopKind = 'tool', cookFire = 'F';
 function armMove() { moveArm = 1; render(); setTimeout(() => { if (moveArm && view === 'house') { moveArm = 0; render(); } }, 2500); } // shopKind: 연 가게 · 자판기(B단계)
 // 교환 창에서 다른 창으로 바꾸거나 닫으면 교환 취소(trade.js)
 function openWin(v) { if (view === 'trade' && v !== 'trade' && typeof tradeClosed === 'function') tradeClosed(); view = v; sel = -1; trashArm = 0; winEl.hidden = false; document.body.classList.add('winopen'); toastsEl.textContent = ''; $('winMsg').textContent = ''; hideHint(); render(); }
@@ -200,7 +211,7 @@ const price = (n) => `<span class="pr"><i class="ic"></i>${n.toLocaleString()}</
 function render() {
   frameEl.classList.toggle('wide', view === 'chest' || view === 'trade');
   const H = HOUSES[S.tier];
-  const [title, tic] = { bag: ['가방', '가방'], shop: [(SHOPS[shopKind] || SHOPS.tool).name, '조개'], house: ['내 집', H.model], chest: ['보관함', H.model], raids: ['습격 기록', H.model], settings: ['설정', '손'], cook: ['요리', '도미'], trade: ['교환', '조개'] }[view];
+  const [title, tic] = { bag: ['가방', '가방'], shop: [(SHOPS[shopKind] || SHOPS.tool).name, '조개'], house: ['내 집', H.model], chest: ['보관함', H.model], raids: ['습격 기록', H.model], settings: ['설정', '손'], cook: ['요리', '도미'], trade: ['교환', '조개'], op: ['운영자 만들기', '조개'], craft: ['제작대', '나무'] }[view];
   $('winTitle').textContent = title; $('winIc').style.backgroundImage = ic(tic);
   let h = '';
   if (view === 'bag') {
@@ -223,7 +234,7 @@ function render() {
       }).join('') : '<div class="empty">팔 물건이 없어요. 섬에서 모아 오세요!</div>';
     } else {
       h += fixRows();
-      const list = buyList(); h += list.length ? list.map(buyRow).join('') : '<div class="empty">먹거리는 곧 들어와요</div>';
+      const list = buyList(); h += list.length ? list.map(buyRow).join('') : '<div class="empty">홈페이지에서 로그인하고 함께 놀 때 팔아요</div>';
     }
     h += `<div class="mine">내 조개 ${price(S.money)}</div>`;
   } else if (view === 'house') {
@@ -239,14 +250,20 @@ function render() {
     h = houseHpHtml() + h + `<div class="foot"><button type="button" class="bbtn" id="moveBtn">${moveArm ? '한 번 더 누르면 접어요' : '텐트로 접기 (이사)'}</button></div>`; // 내구도 · 고치기(7단계) · 이사(B단계)
   } else if (view === 'cook') {
     h = Object.entries(RECIPES).map(([id, need]) => { const okk = need.every(([k, n]) => haveOf(k) >= n), F = FOODS[id]; return `<div class="row mat-row"><i class="ic" style="background-image:${ic(id)}"></i><span class="nm">${id}<small>+${F.e}${F.buff ? ' · ' + F.buff : ''}</small></span><div class="mat-line"><span class="need">${need.map(([k, n]) => `${k} ${Math.min(haveOf(k), n)}/${n}`).join(' · ')}</span><button type="button" class="bbtn" data-cook="${id}" ${okk ? '' : 'disabled'}>만들기</button></div></div>`; }).join('') + '<div class="empty">생선 = 물고기 아무거나 · 모닥불 옆에 있으면 에너지가 차요</div>';
+    // 모닥불 옆에 앉기(작업지시서 4 B3 · 함께일 때 — 서버가 앉힘)
+    if (srvOn()) h = `<div class="foot"><button type="button" class="gbtn" id="fireSitBtn">모닥불 옆에 앉기 · 에너지가 더 빨리 차요</button></div>` + h;
   } else if (view === 'settings') { const NM = { auto: '자동', low: '저사양', high: '고사양' };
     h = `<div class="empty">그래픽 품질 — 지금 ${NM[qMode]}${qMode === 'auto' ? ` (${['저사양', '보통', '고사양'][quality.level]})` : ''}</div><div class="qsel">${['auto', 'low', 'high'].map((m) => `<button type="button" class="${m === qMode ? 'gbtn' : 'bbtn'}" data-q="${m}">${NM[m]}</button>`).join('')}</div><div class="empty">저사양: 빠르게(효과 · 그림자 줄임) · 고사양: 부드러운 그림자 · 불빛 번짐 · 흐림 · 조명 많이</div>`;
+  } else if (view === 'op') { h = opHtml();
+  } else if (view === 'craft') { h = typeof craftHtml === 'function' ? craftHtml() : '';
   } else if (view === 'trade') { h = tradeHtml();
   } else if (view === 'raids') { h = raidsHtml();
   } else if (view === 'chest') {
     h = `<div class="two"><div><h4>가방 (누르면 보관함으로)</h4><div class="grid">${slotsHtml(S.bag, 'bagc')}</div></div><div><h4>보관함 ${S.chest.length}칸 (누르면 가방으로)</h4><div class="grid chestgrid">${slotsHtml(S.chest, 'chest')}</div></div></div>`;
   }
   bodyEl.innerHTML = h;
+  // 미리보기 칸(작업지시서 4 B4 · preview.js)
+  if (typeof prevAfterRender === 'function') prevAfterRender();
 }
 bodyEl.addEventListener('click', (e) => {
   const b = e.target.closest('button'); if (!b || b.disabled) return;
@@ -276,10 +293,11 @@ bodyEl.addEventListener('click', (e) => {
     if (b.id === 'dropMoney') { const n = Math.min(S.money, moneyQty); if (n > 0) netSend({ t: 'drop', money: n }); return; }
     if (b.dataset.fix) return netSend({ t: 'fix', i: +b.dataset.fix });
     if (b.dataset.cook) return netSend({ t: 'cook', r: b.dataset.cook });
+    if (b.id === 'fireSitBtn') { netSend({ t: 'sit', k: cookFire }); return closeWin(); }
   }
   if (b.id === 'moveBtn') { if (!moveArm) return armMove(); moveArm = 0; return movePack(); } // 혼자 놀기 이사
   if (b.id === 'eatBtn' || b.dataset.cook) return toast('먹기 · 요리는 홈페이지에서 로그인해 함께일 때 돼요', '열매'); // 혼자 놀기엔 에너지가 없음
-  if (b.dataset.box === 'bag') { const i = +b.dataset.i, s = S.bag[i]; sel = i; trashArm = 0; if (s && ITEMS[s.id].tool) { S.tool = S.tool === s.id ? null : s.id; toast(S.tool ? `${S.tool}를 들었어요` : '맨손이에요', S.tool || '손'); return changed(); } return render(); }
+  if (b.dataset.box === 'bag') { const i = +b.dataset.i, s = S.bag[i]; sel = i; trashArm = 0; if (s && ITEMS[s.id].tool) { S.tool = S.tool === s.id ? null : s.id; toast(S.tool ? `${nameOf(S.tool)}를 들었어요` : '맨손이에요', S.tool || '손'); return changed(); } return render(); }
   if (b.dataset.box === 'bagc' || b.dataset.box === 'chest') { // 한 묶음 통째로 옮김
     const from = b.dataset.box === 'chest' ? S.chest : S.bag, to = from === S.chest ? S.bag : S.chest, i = +b.dataset.i, s = from[i]; if (!s) return;
     const left = put(to, s.id, s.n); if (left === s.n) toast(to === S.chest ? '보관함이 가득 찼어요' : '가방이 가득 찼어요'); if (left) s.n = left; else from[i] = null; return changed();
@@ -341,7 +359,7 @@ function buyRow(id) {
   const cost = ITEMS[id].buy, pk = PACK[id] ? `${PACK[id]}발 묶음` : MATPACK[id] ? `${MATPACK[id]}개 묶음` : '';
   if (id === '보관함') { const full = (S.extra | 0) >= 2, no = !S.home; return `<div class="row"><i class="ic" style="background-image:${ic(HOUSES[S.tier].model)}"></i><span class="nm">보관함 늘리기<small class="pk">+8칸 · ${S.extra | 0}/2</small></span>${price(cost)}<button type="button" class="bbtn" data-buy="보관함" ${full || no || S.money < cost ? 'disabled' : ''}>${full ? '다 늘림' : no ? '집 먼저' : '사기'}</button></div>`; }
   const one = !!ITEMS[id].tool, have = one && (count(id) > 0 || S.chest.some((s) => s && s.id === id)), home = id === '텐트' && !!S.home;
-  return `<div class="row"><i class="ic" style="background-image:${ic(id)}"></i><span class="nm">${id}${pk ? `<small class="pk">${pk}</small>` : ''}</span>${price(cost)}<button type="button" class="bbtn" data-buy="${id}" ${have || home || S.money < cost ? 'disabled' : ''}>${home ? '집 있음' : have ? '있음' : '사기'}</button></div>`;
+  return `<div class="row" data-prev="${id}"><i class="ic" style="background-image:${ic(id)}"></i><span class="nm">${nameOf(id)}${pk ? `<small class="pk">${pk}</small>` : ''}</span>${price(cost)}<button type="button" class="bbtn" data-buy="${id}" ${have || home || S.money < cost ? 'disabled' : ''}>${home ? '집 있음' : have ? '있음' : '사기'}</button></div>`;
 }
 function buyLocal(id) {
   const cost = ITEMS[id].buy; if (S.money < cost) return;
@@ -425,7 +443,7 @@ function fixRows() {
   if (!srvOn() || !(forGun || forTool)) return '';
   return S.bag.map((s, i) => [s, i]).filter(([s]) => s && DUR[s.id] && Number.isFinite(s.d) && s.d < DUR[s.id] && GUNS.includes(s.id) === forGun).map(([s, i]) => {
     const cost = Math.ceil(ITEMS[s.id].buy * 0.35 * (1 - s.d / DUR[s.id]));
-    return `<div class="row"><i class="ic" style="background-image:${ic(s.id)}"></i><span class="nm">${s.id} 고치기<small class="pk">내구 ${s.d}/${DUR[s.id]}${s.d <= 0 ? ' · 고장' : ''}</small></span>${price(cost)}<button type="button" class="bbtn" data-fix="${i}" ${S.money < cost ? 'disabled' : ''}>고치기</button></div>`;
+    return `<div class="row"><i class="ic" style="background-image:${ic(s.id)}"></i><span class="nm">${nameOf(s.id)} 고치기<small class="pk">내구 ${s.d}/${DUR[s.id]}${s.d <= 0 ? ' · 고장' : ''}</small></span>${price(cost)}<button type="button" class="bbtn" data-fix="${i}" ${S.money < cost ? 'disabled' : ''}>고치기</button></div>`;
   }).join('');
 }
 
