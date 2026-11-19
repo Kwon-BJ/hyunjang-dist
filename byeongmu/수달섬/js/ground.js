@@ -35,7 +35,7 @@ function groundTargets(see) {
   // 도끼 · 곡괭이를 들고 앞에 칠 나무 · 바위가 있으면 치기가 먼저(떨어진 것 때문에 계속 줍기만 잡히지 않게)
   // — 칠 것이 없으면(다 베어 그루터기만 남음 등) 줍기가 먼저(2026-11-18 함께 시험: 그루터기 「앉기」가 줍기를 가림)
   const fx = me.x + Math.sin(me.face) * 0.6, fz = me.z + Math.cos(me.face) * 0.6;
-  const work = (S.tool === '도끼' && [...TREES, ...PLANTED].some((r) => !(r.down > clock) && !r.gone && Math.hypot(r.x - fx, r.z - fz) < 1.35)) || (S.tool === '곡괭이' && ROCKS.some((r) => !(r.down > clock) && Math.hypot(r.x - fx, r.z - fz) < 0.95 + r.circle.r));
+  const work = (toolIs('도끼') && [...TREES, ...PLANTED].some((r) => !(r.down > clock) && !r.gone && Math.hypot(r.x - fx, r.z - fz) < 1.35)) || (toolIs('곡괭이') && ROCKS.some((r) => !(r.down > clock) && Math.hypot(r.x - fx, r.z - fz) < 0.95 + r.circle.r));
   if (near) see('pickup', { n }, near.x, near.z, 2.8, work ? -1.5 : 0.6);
 }
 function pickupAction() {
