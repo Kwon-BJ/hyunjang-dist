@@ -53,10 +53,10 @@ function fightTargets(see) {
 }
 // 때리기 동작: 도끼는 내려찍기 · 맨손(다른 도구 포함)은 왼손 · 오른손 번갈아 뻗기(작업지시서 3 C) — 수달 · 집 · 함정 모두
 let punchN = 0;
-function meleeSwing() { if (S.tool === '도끼') return true; punchN++; return punchN % 2 ? 'punchl' : 'punchr'; }
+function meleeSwing() { if (toolIs('도끼')) return true; punchN++; return punchN % 2 ? 'punchl' : 'punchr'; }
 function fightAction(t) {
   me.actT = me.actDur = ACT_T; net.ac++;
-  if (t.type === 'otter') actCool = S.tool === '도끼' ? 0.7 : 0.6; // 서버 쿨타임과 같게(빨리 눌러 헛손질 안 나게 · 리뷰 11번)
+  if (t.type === 'otter') actCool = toolIs('도끼') ? 0.7 : 0.6; // 서버 쿨타임과 같게(빨리 눌러 헛손질 안 나게 · 리뷰 11번)
   if (t.type === 'sack') { me.actSwing = false; netSend({ t: 'pick', id: t.rec.id }); return; }
   me.actSwing = meleeSwing();
   netSend({ t: 'hit', id: t.rec.id });
