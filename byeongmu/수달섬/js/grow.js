@@ -145,7 +145,9 @@ function onNetGrow(m) {
   else if (m.t === 'shd') setShadows(m.l || []);
   // 앉기: 그루터기 위로 옮겨 앉음(움직이면 일어남 — 서버도 같게)
   else if (m.t === 'sit') {
-    const r = m.k && KEYED.get(m.k); me.sitK = r ? m.k : null;
+    // 모닥불 옆에 앉기(작업지시서 4 B3): 그 자리에서 땅에 앉음
+    if (m.fire && m.k) { me.sitK = m.k; me.sitFire = true; me.sitX = me.x; me.sitZ = me.z; me.speed = 0; toast('모닥불 옆에 앉았어요 — 에너지가 더 빨리 차요', '모닥불'); return; }
+    const r = m.k && KEYED.get(m.k); me.sitK = r ? m.k : null; me.sitFire = false;
     if (r) { me.x = me.sitX = r.x; me.z = me.sitZ = r.z; me.speed = 0; toast('그루터기에 앉았어요 — 에너지가 조금 빨리 차요'); }
   }
 }
@@ -157,16 +159,16 @@ function growTargets(see, fx, fz) {
   for (const r of [...TREES, ...PLANTED]) if (r.down > clock && stageOfC(r) === 'stump') see('stump', r, r.x, r.z, 1.4, -0.8);
   for (const r of PLANTED) if (!(r.down > clock) && !r.gone) see('tree', r, r.x, r.z, 1.35);
   // 삽을 들고 씨앗이 있으면 앞 땅에 심기(다른 대상이 있으면 그것이 먼저)
-  if (S.tool === '삽' && count('씨앗') > 0 && free(fx, fz, 0.5)) see('plant', { x: fx, z: fz }, fx, fz, 9, -3);
+  if (toolIs('삽') && count('씨앗') > 0 && free(fx, fz, 0.5)) see('plant', { x: fx, z: fz }, fx, fz, 9, -3);
 }
 function growLabel(t) {
-  if (t.type === 'stump') return S.tool === '삽' ? '그루터기 파내기' : '앉기';
+  if (t.type === 'stump') return toolIs('삽') ? '그루터기 파내기' : '앉기';
   if (t.type === 'plant') return '씨앗 심기';
   return null;
 }
 function growAction(t) {
   me.actT = me.actDur = ACT_T; net.ac++;
-  if (t.type === 'stump') { me.actSwing = S.tool === '삽'; netSend(S.tool === '삽' ? { t: 'dig', k: t.rec.key } : { t: 'sit', k: t.rec.key }); return true; }
+  if (t.type === 'stump') { me.actSwing = toolIs('삽'); netSend(toolIs('삽') ? { t: 'dig', k: t.rec.key } : { t: 'sit', k: t.rec.key }); return true; }
   if (t.type === 'plant') { me.actSwing = false; netSend({ t: 'plant', x: +t.rec.x.toFixed(2), z: +t.rec.z.toFixed(2) }); return true; }
   return false;
 }
@@ -206,7 +208,8 @@ function growTick(dt) {
   // 그루터기에 앉아 있음: 조금 낮게 · 다리를 앞으로 — 움직이면 일어남(서버도 같게)
   if (me.sitK) {
     if (Math.hypot(me.x - me.sitX, me.z - me.sitZ) > 0.4 || me.dead) me.sitK = null;
-    else { const u = me.obj.userData; me.obj.position.y += 0.3; u.legL.rotation.x = u.legR.rotation.x = -1.35; }
+    // 그루터기 위(+0.3) · 모닥불 옆은 땅에 털썩(-0.12)
+    else { const u = me.obj.userData; me.obj.position.y += me.sitFire ? -0.12 : 0.3; u.legL.rotation.x = u.legR.rotation.x = -1.35; }
   }
   // 그림자: 서버 자리로 부드럽게 · 처음엔 서서히 나타남 · 물결 따라 살짝 흔들림
   for (const q of shadowsC.values()) {
