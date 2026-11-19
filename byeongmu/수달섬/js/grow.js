@@ -32,9 +32,7 @@ const STUMP_GEO = (() => {
   g.deleteAttribute('uv'); g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); return g;
 })();
 const stumpIM = new THREE.InstancedMesh(STUMP_GEO, new THREE.MeshLambertMaterial({ vertexColors: true }), STUMP_N);
-// 처음엔 그루터기 없음(쓰는 칸만 count)
-const stumpOf = new Map(), stumpRec = [];
-stumpIM.count = 0;
+for (let i = 0; i < STUMP_N; i++) stumpIM.setMatrixAt(i, ZERO_G);
 // 처음엔 모든 칸이 크기 0 이라 경계 구가 원점에 잡혀 통째로 안 그려짐 → 시야 거르기를 끔(심은 나무도 같게)
 stumpIM.castShadow = true; stumpIM.receiveShadow = true; stumpIM.frustumCulled = false; scene.add(stumpIM);
 let stumpNext = 0;
@@ -81,19 +79,9 @@ const sproutScale = (r) => { const i = sproutOf.get(r); if (i == null) return 0;
 function setStump(r, on) {
   if (!on) setSprout(r, 0);
   if (r.stumpI == null) return;
-  // 2026-11-19 휴대폰 성능: 그루터기가 있는 나무만 칸을 받음(예전엔 나무 수만큼 빈 칸 655개를 늘 그림) · 지우면 끝 칸을 그 자리로 옮김
-  let i = stumpOf.get(r);
-  if (!on) {
-    if (i == null) return;
-    const last = stumpRec.length - 1, lr = stumpRec[last];
-    if (i !== last) { stumpIM.getMatrixAt(last, GM); stumpIM.setMatrixAt(i, GM); stumpRec[i] = lr; stumpOf.set(lr, i); }
-    stumpRec.pop(); stumpOf.delete(r); stumpIM.count = stumpRec.length; stumpIM.instanceMatrix.needsUpdate = true; return;
-  }
-  if (i == null) { i = stumpRec.length; stumpRec.push(r); stumpOf.set(r, i); stumpIM.count = stumpRec.length; }
-  GM.makeScale(r.s || 1, 1, r.s || 1); GM.setPosition(r.x, groundY(r.x, r.z) - 0.02, r.z); stumpIM.setMatrixAt(i, GM);
+  if (on) { GM.makeScale(r.s || 1, 1, r.s || 1); GM.setPosition(r.x, groundY(r.x, r.z) - 0.02, r.z); stumpIM.setMatrixAt(r.stumpI, GM); } else stumpIM.setMatrixAt(r.stumpI, ZERO_G);
   stumpIM.instanceMatrix.needsUpdate = true;
 }
-const stumpShown = (r) => stumpOf.has(r);
 // 나무 한 그루를 지금 단계대로(나무 · 그루터기)
 function treeShow(r) {
   const st = stageOfC(r);
