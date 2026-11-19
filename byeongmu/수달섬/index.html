@@ -166,10 +166,6 @@
   .prev-cv { width: 150px; height: 150px; border-radius: 14px; background: rgba(255, 255, 255, 0.35); touch-action: none; }
   .prev-ic { width: 96px; height: 96px; margin: 27px; }
   .row.prev-on { outline: 3px solid #f2b244; outline-offset: -3px; }
-  /* 등급 이름 색(돌 짙은 회색 · 대나무 연두 · 철 은색 · 황금 금색) · 가방에서 고른 칸 이름 */
-  .g-stone { color: #5d6166; } .g-bamboo { color: #5f8f2e; } .g-iron { color: #7f95ab; text-shadow: 0 0 1px #fff; } .g-gold { color: #c89400; text-shadow: 0 0 1px #fff6c8; }
-  .bag-nm { margin: 6px 4px 0; font-size: 15px; font-weight: 700; color: #4a3520; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .bag-nm small { margin-left: 8px; font-weight: 400; font-size: 12px; color: #8a7462; }
   /* 운영자 창(작업지시서 4 B6) */
   .op-form { display: grid; gap: 8px; }
   .op-form select, .op-form input { font: inherit; font-size: 16px; padding: 6px 8px; border-radius: 10px; border: 2px solid #c9a27a; width: 100%; box-sizing: border-box; }
@@ -199,7 +195,7 @@
   .qty { display: inline-flex; align-items: center; gap: 4px; } .qty .bbtn { min-width: 34px; width: 34px; height: 32px; padding: 0; font-size: 18px; } .qty b { min-width: 30px; text-align: center; font-size: 16px; }
   .mat-line > .bbtn { min-width: 92px; height: 34px; }
   /* 요리 창: 재료 줄은 둘째 줄 왼쪽(좁은 휴대폰에서 줄바꿈) · 만들기 단추는 오른쪽 */
-  .mat-line > .need { flex: 1; min-width: 0; font-size: 12px; line-height: 1.25; color: #8a6a44; white-space: normal; word-break: keep-all; }
+  .mat-line > .need { flex: 1; min-width: 0; font-size: 12px; line-height: 1.25; color: #8a6a44; white-space: normal; }
   #sellAll { padding: 0 26px; font-size: 16px; height: 40px; } .foot.bulk { margin: 0 0 8px; } /* 나무판 그림 양끝이 투명이라 글씨가 삐져나오지 않게 */
   .mine { height: 44px; margin: 4px auto 0; width: min(300px, 100%); background: url(img/ui-돈판.webp) center / 100% 100% no-repeat; color: #fff4dc; display: flex; align-items: center; justify-content: center; gap: 12px; font-size: 17px; }
   .mine .pr { color: #fff4dc; }
@@ -237,7 +233,7 @@
 </script>
 <div class="ui" id="win" hidden><div class="frame" id="frame"><div class="ribbon"><i class="ic" id="winIc"></i><span id="winTitle"></span></div><button type="button" id="winX" aria-label="닫기"></button><div id="winBody"></div><div id="winMsg"></div></div></div>
 <script type="module">
-const GAME_BUILD = "202611190357"; // 올리기.mjs 가 게임 파일이 바뀐 때만 적는다
+const GAME_BUILD = "202611190400"; // 올리기.mjs 가 게임 파일이 바뀐 때만 적는다
 window.GAME_BUILD = GAME_BUILD;
 import('./js/boot.js?v=' + GAME_BUILD).catch((e) => { const l = document.getElementById('load'); if (l) l.textContent = '수달섬을 못 열었어요: ' + e.message; });
 </script>
