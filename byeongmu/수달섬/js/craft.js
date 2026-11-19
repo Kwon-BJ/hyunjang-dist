@@ -31,17 +31,17 @@ Object.assign(ITEMS, { 철광석: { sell: 25 }, 금광석: { sell: 70 } });
 SELLABLE.push('철광석', '금광석'); MATERIALS.push('철광석', '금광석');
 // 만든 총(서버 config.guns 와 같은 연사 · 탄창 · 탄약) — 모형은 기본 총(GUN_MODEL) · 색은 GUN_COLOR
 const GUN_MODEL = { 철권총: '권총', 황금권총: '권총', 철소총: '소총', 황금소총: '소총', 철산탄총: '산탄총', 황금산탄총: '산탄총', 기관총: '소총', 저격총: '소총' };
-const GUN_COLOR = { 철권총: 0xeef3f8, 철소총: 0xeef3f8, 철산탄총: 0xeef3f8, 황금권총: 0xffcc33, 황금소총: 0xffcc33, 황금산탄총: 0xffcc33, 기관총: 0x5f6b78, 저격총: 0x7c8a5a };
+const GUN_COLOR = { 철권총: 0xeef3f8, 철소총: 0xeef3f8, 철산탄총: 0xeef3f8, 황금권총: 0xffcc33, 황금소총: 0xffcc33, 황금산탄총: 0xffcc33 };
 Object.assign(GUN_INFO, {
   철권총: { rate: 3.4, mag: 15, ammo: '권총탄', snd: 1650, len: 0.66 }, 철소총: { rate: 9, mag: 36, ammo: '소총탄', snd: 2300, len: 1.12 }, 철산탄총: { rate: 1.4, mag: 7, ammo: '산탄', snd: 880, len: 1.08 },
   황금권총: { rate: 3.8, mag: 18, ammo: '권총탄', snd: 1600, len: 0.68 }, 황금소총: { rate: 10, mag: 42, ammo: '소총탄', snd: 2200, len: 1.15 }, 황금산탄총: { rate: 1.6, mag: 8, ammo: '산탄', snd: 860, len: 1.1 },
-  기관총: { rate: 16, mag: 60, ammo: '소총탄', snd: 2600, len: 1.2 }, 저격총: { rate: 0.7, mag: 5, ammo: '소총탄', snd: 1200, len: 1.4 },
+  기관총: { rate: 16, mag: 60, ammo: '소총탄', snd: 2600, len: 0.95 }, 저격총: { rate: 0.7, mag: 5, ammo: '소총탄', snd: 1200, len: 1.4 },
 });
 Object.assign(DUR, { 철권총: 900, 철소총: 2000, 철산탄총: 450, 황금권총: 1300, 황금소총: 2800, 황금산탄총: 650, 기관총: 2500, 저격총: 400 });
 for (const g of Object.keys(GUN_MODEL)) { if (!GUNS.includes(g)) GUNS.push(g); ITEMS[g] = { tool: true }; }
 Object.assign(ITEM_NAME, { 철권총: '철 권총', 철소총: '철 소총', 철산탄총: '철 산탄총', 황금권총: '황금 권총', 황금소총: '황금 소총', 황금산탄총: '황금 산탄총' });
 // 함정 · 포탑 · 제작대(서버 config.traps 와 같은 이름) — 모형은 가시덫 · 포탑 · 작업대, 색은 TRAP_COLOR
-const TRAP_COLOR = { 철가시덫: 0xeef3f8, 올가미덫: 0x9a7444, 폭발덫: 0xd8452e, 연사포탑: 0xeef3f8, 산탄포탑: 0xf09a3a };
+const TRAP_COLOR = { 철가시덫: 0xeef3f8, 올가미덫: 0x9a7444, 연사포탑: 0xeef3f8, 산탄포탑: 0xf09a3a };
 for (const id of ['철가시덫', '올가미덫', '폭발덫', '연사포탑', '산탄포탑', '제작대']) { if (!TRAP_ITEMS.includes(id)) TRAP_ITEMS.push(id); ITEMS[id] = { tool: true }; }
 ITEMS.제작대.buy = 2500;
 // 손에 든 것 · 놓은 것 색 바꾸기(등급 · 만든 총 · 함정) — 재질은 복사해서 바꿈(다른 것과 함께 쓰는 재질은 그대로)
