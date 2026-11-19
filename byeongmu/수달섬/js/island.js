@@ -96,23 +96,8 @@ const isGrass = (x, z) => {
   tx.fillStyle = '#fff'; tx.fillRect(0, 0, 128, 128);
   for (let i = 0; i < 700; i++) { const g = 228 + Math.floor(rnd() * 27); tx.fillStyle = `rgb(${g},${g},${g})`; tx.fillRect(rnd() * 128, rnd() * 128, 1 + rnd() * 2, 1 + rnd() * 2); }
   const tex = new THREE.CanvasTexture(tc); tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(GS * 0.6, GS * 0.6); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
-  // 땅을 10 × 10 조각으로(2026-11-19 휴대폰 성능): 한 장이면 화면 밖 땅(휴대폰 23만 · PC 39만 삼각형)까지 늘 그림.
-  // 조각은 같은 꼭짓점 묶음을 함께 쓰고(메모리 그대로) 삼각형 번호만 나눔 · 조각마다 둘레 공을 따로 정해 화면 밖 조각은 three 가 거름
-  const gmat = new THREE.MeshLambertMaterial({ vertexColors: true, map: tex }), TN = 10, per = Math.ceil(GN / TN), W1 = GN + 1, box = new THREE.Box3(), pv = new THREE.Vector3();
-  for (let ty = 0; ty < TN; ty++) for (let tx = 0; tx < TN; tx++) {
-    const idx = [];
-    box.makeEmpty();
-    for (let iy = ty * per; iy < Math.min(GN, (ty + 1) * per); iy++) for (let ix = tx * per; ix < Math.min(GN, (tx + 1) * per); ix++) {
-      const a = ix + W1 * iy, b = ix + W1 * (iy + 1), c2 = ix + 1 + W1 * (iy + 1), d = ix + 1 + W1 * iy;
-      idx.push(a, b, d, b, c2, d);
-      box.expandByPoint(pv.fromBufferAttribute(pos, a)); box.expandByPoint(pv.fromBufferAttribute(pos, c2));
-    }
-    if (!idx.length) continue;
-    const tg = new THREE.BufferGeometry();
-    for (const k of ['position', 'normal', 'uv', 'color']) tg.setAttribute(k, geo.attributes[k]);
-    tg.setIndex(idx); tg.boundingBox = box.clone(); tg.boundingSphere = box.getBoundingSphere(new THREE.Sphere()); tg.boundingSphere.radius += 1;
-    const tile = new THREE.Mesh(tg, gmat); tile.receiveShadow = true; scene.add(tile);
-  }
+  const ground = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ vertexColors: true, map: tex }));
+  ground.receiveShadow = true; scene.add(ground);
 }
 
 // ───────── 물 (얕은 곳 청록 · 깊은 곳 파랑 · 물가 거품 · 반짝임) ─────────
