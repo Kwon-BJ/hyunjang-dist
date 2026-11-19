@@ -15,7 +15,8 @@ function addGlow(x, y, z, color, size, real = null, opacity = 0.85) {
 }
 function removeGlow(g) { if (!g || !glows.has(g)) return; scene.remove(g.s); g.s.material.dispose(); glows.delete(g); lightT = 0; }
 // 내 등불(늘 켬) + 나눠 쓰는 조명 7개(고사양 7 · 저사양 3 만 보임)
-const myLamp = new THREE.PointLight(0xffd29a, 2.2, 7, 1.6); scene.add(myLamp);
+// 수달 둘레 등불(작업지시서 4 A4): 더 따뜻하고 넓게(2.2 · 7칸 → 2.8 · 10칸) — 밤에 수달을 땅과 구별해 주는 빛. 잎 · 덤불에는 0.12 배만(nature.js windy)
+const myLamp = new THREE.PointLight(0xffbf7a, 2.8, 10, 1.4); scene.add(myLamp);
 const lightPool = []; for (let i = 0; i < 7; i++) { const l = new THREE.PointLight(0xffffff, 0, 10, 1.7); scene.add(l); lightPool.push(l); }
 let lightN = 7, lightT = 0;
 function setLightBudget(total) { lightN = Math.max(0, Math.min(7, total - 1)); lightPool.forEach((l, i) => { l.visible = i < lightN; }); lightT = 0; } // total: 내 등불 포함
