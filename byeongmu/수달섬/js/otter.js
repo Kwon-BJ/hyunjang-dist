@@ -40,10 +40,12 @@ function cheekGeo() {
 }
 // 찰흙 재질: 반사 없는 무광(Lambert) + 그늘이 너무 어둡지 않게 살짝 스스로 밝음
 // 빛을 감싸게(half-Lambert 비슷): 그늘 쪽도 둥글게 밝아 찰흙 인형처럼 부드러움 — 수달 재질에만
-const WRAP = (m) => { m.onBeforeCompile = (sh) => { sh.fragmentShader = sh.fragmentShader.replace('#include <lights_lambert_pars_fragment>', THREE.ShaderChunk.lights_lambert_pars_fragment.replace('float dotNL = saturate( dot( geometryNormal, directLight.direction ) );', 'float dotNL = pow( saturate( dot( geometryNormal, directLight.direction ) * 0.5 + 0.5 ), 1.4 );')).replace('#include <opaque_fragment>', 'outgoingLight += vec3(0.36, 0.46, 0.7) * pow(1.0 - saturate(dot(normal, normalize(vViewPosition))), 2.2) * 0.75;\n#include <opaque_fragment>'); }; m.customProgramCacheKey = () => 'clayWrap'; return m; }; // 밤에 수달 가장자리를 달빛으로 살짝(땅과 구별 · C단계)
+const WRAP = (m) => { m.onBeforeCompile = (sh) => { sh.fragmentShader = sh.fragmentShader.replace('#include <lights_lambert_pars_fragment>', THREE.ShaderChunk.lights_lambert_pars_fragment.replace('float dotNL = saturate( dot( geometryNormal, directLight.direction ) );', 'float dotNL = pow( saturate( dot( geometryNormal, directLight.direction ) * 0.5 + 0.5 ), 1.4 );')).replace('#include <opaque_fragment>', 'outgoingLight += vec3(0.5, 0.36, 0.24) * pow(1.0 - saturate(dot(normal, normalize(vViewPosition))), 2.4) * 0.22;\n#include <opaque_fragment>'); }; m.customProgramCacheKey = () => 'clayWrap2'; return m; };
+// 가장자리 빛: 예전 푸른 달빛(0.75)이 머리 위를 보라 · 회색 안개처럼 띄워 → 작업지시서 4 A1: 따뜻한 갈색으로 밝기 합 약 1/5. 밤에 땅과 구별은 수달 둘레 등불(light.js)이 함
 const clay = (color, map) => WRAP(new THREE.MeshLambertMaterial({ color: map ? 0xffffff : color, map: map || null, emissive: new THREE.Color(color).multiplyScalar(map ? 0 : 0.2) }));
 // 얼굴 그림 자체를 조금 밝게(아래쪽 크림이 그늘에 묻히지 않게) · 맞으면 붉게 번쩍이도록 수달마다 따로 만들 수 있게 함수로(작업지시서 3 C · hit.js)
-const headMat = () => { const m = clay(FUR, FACE_TEX); m.emissiveMap = FACE_TEX; m.emissive = new THREE.Color(0.2, 0.2, 0.2); return m; };
+// 작업지시서 4 A6 2차: 크림 얼굴 아래가 그늘져 회색빛 → 얼굴 그림 스스로 밝기 0.2 → 0.28
+const headMat = () => { const m = clay(FUR, FACE_TEX); m.emissiveMap = FACE_TEX; m.emissive = new THREE.Color(0.28, 0.28, 0.28); return m; };
 const FUR_MAT = clay(FUR), HEAD_MAT = headMat();
 // 둥근 상자(가방) — 상자 꼭짓점을 안쪽 상자에 붙인 뒤 반지름만큼 밀어 냄
 function roundBox(w, h, dp, r, seg = 6) {
@@ -67,7 +69,8 @@ function makeOtter(look = OTTER) {
   const leg = (s) => { const g = new THREE.Group(); g.position.set(s * 0.115, 0.25, 0); g.add(mesh(CAP(0.1, 0.05), FUR_MAT, 0, -0.125, 0.01)); body.add(g); return g; };
   const legL = leg(-1), legR = leg(1);
   body.add(mesh(CAP(0.205, 0.12), FUR_MAT, 0, 0.385, 0, 1.1, 1, 0.98)); // 몸통(배가 살짝 둥글게)
-  const arm = (s) => { const g = new THREE.Group(); g.position.set(s * 0.25, 0.47, 0); g.rotation.z = s * 0.18; g.add(mesh(CAP(0.088, 0.07), FUR_MAT, 0, -0.1, 0)); const paw = new THREE.Object3D(); paw.position.set(0, -ARM_L, 0); g.add(paw); body.add(g); return g; }; // paw: 손 가운데 자리(흔들기 맞춤 · 시험이 씀)
+  // 팔(작업지시서 4 A3): 끝이 가는 막대 대신 통통한 둥근 덩어리 · 어깨를 몸 쪽(SH_X)으로 붙임 — 손 가운데 자리(ARM_L)는 그대로라 도구 쥐는 자리 · 흔들기 손 계산이 같게 맞음
+  const arm = (s) => { const g = new THREE.Group(); g.position.set(s * SH_X, SH_Y, 0); g.rotation.z = s * 0.18; g.add(mesh(S(PAW_R, 16, 12), FUR_MAT, 0, -0.115, 0, 1, 1.4, 1.05)); const paw = new THREE.Object3D(); paw.position.set(0, -ARM_L, 0); g.add(paw); body.add(g); return g; }; // paw: 손 가운데 자리(흔들기 맞춤 · 시험이 씀)
   const armL = arm(-1), armR = arm(1);
   const hold = new THREE.Group(); hold.position.set(0, -ARM_L, 0.03); armR.add(hold); // 손에 든 도구 자리
   const head = new THREE.Group(); head.position.set(0, H_Y, 0); body.add(head);
@@ -131,7 +134,8 @@ function punchPose(p, act, side) {
 // ───────── 맨손 나무 흔들기 'shake' (2026-11-17) — 몸은 안 숙이고, 줄기에서 팔 길이만큼 서서 두 손을 줄기에 대고,
 // 나무가 wobble(0.6초 · 같은 식)로 기우는 쪽으로 어깨 · 팔을 좌우로 민다. 손 자리는 줄기 표면에 맞춰 계산(IK)
 const TRUNK = { round: [1.6, 0.27, 0.17], round2: [1.9, 0.3, 0.18], fruit: [1.4, 0.26, 0.16], pine: [1.0, 0.22, 0.14] }; // 줄기 높이 · 밑 반지름 · 위 반지름(TREE_KINDS 와 같게)
-const SHAKE_T = 0.6, PAW_R = 0.088, ARM_L = 0.135, SH_X = 0.25, SH_Y = 0.47, GRIP_X = 0.16; // 2026-11-18 새 수달(시안) 팔에 맞춤 // 손 반지름 · 어깨→손 가운데 · 어깨 자리 · 두 손 사이 반
+// 손 반지름 · 어깨→손 가운데 · 어깨 자리 · 두 손 사이 반(2026-11-18 새 수달 팔에 맞춤 · 11-19 작업지시서 4 A3 둥근 팔: 손 0.1 · 어깨 0.225)
+const SHAKE_T = 0.6, PAW_R = 0.1, ARM_L = 0.135, SH_X = 0.225, SH_Y = 0.47, GRIP_X = 0.16;
 const ARM_FWD = Math.sqrt(ARM_L ** 2 - (SH_X - GRIP_X) ** 2); // 팔을 수평으로 뻗었을 때 어깨→손의 앞쪽 거리
 const WOB_AMP = 0.06, SHAKE_AMP = 0.21; // 흔들림 세기 — 기본(도끼 · 덤불) / 맨손 흔들기(최대 약 0.12rad 로 눈에 보이게 · 2026-11-17 부장님)
 const wobbleAngle = (left, amp = SHAKE_AMP) => Math.sin(left * 30) * amp * left; // life() 의 wobble 과 같은 식
