@@ -59,7 +59,7 @@ function fishAction() {
     if (fishing.st === 'bite') { netSend({ t: 'tap' }); return true; }
     netSend({ t: 'reel' }); endFish(); toast('낚싯대를 거뒀어요', FISH_ROD); return true;
   }
-  if (S.tool !== FISH_ROD) return false;
+  if (!toolIs(FISH_ROD)) return false;
   const t = findTarget(); if (!t || t.type !== 'fish') return false;
   if (!srvOn()) { toast('낚시는 홈페이지에서 로그인하면(함께) 할 수 있어요', FISH_ROD); return true; }
   const sp = t.rec; me.face = Math.atan2(sp.wx - me.x, sp.wz - me.z); me.speed = 0;
@@ -100,7 +100,7 @@ function fishTick(dt) {
   if (fishing.st && !srvOn()) endFish(); // 끊기면 찌를 거둠(리뷰 4번)
   if (fishing.st && fishing.bob) {
     const sp = FISH_SPOTS[fishing.s]; if (sp) placeBob(fishing.bob, me.obj, sp, fishing.st === 'bite', clock);
-    if (Math.hypot(me.x - fishing.x, me.z - fishing.z) > 1.2 || me.dead || S.tool !== FISH_ROD) { netSend({ t: 'reel' }); endFish(); } // 움직이면 거둠
+    if (Math.hypot(me.x - fishing.x, me.z - fishing.z) > 1.2 || me.dead || !toolIs(FISH_ROD)) { netSend({ t: 'reel' }); endFish(); } // 움직이면 거둠
     if (fishing.st === 'bite' && clock > fishing.until + 1.5) endFish(); // 서버 답이 없을 때 대비
     if (fishing.st === 'cast' && clock > fishing.castAt + 10) { netSend({ t: 'reel' }); endFish(); } // 입질이 안 오면(최대 7초 + 여유)
   }
