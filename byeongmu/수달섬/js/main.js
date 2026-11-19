@@ -6,7 +6,7 @@ srcs = Object.fromEntries(await Promise.all([...new Set([...PROPS.map((p) => p[0
 srcs['삽'] = shovelModel();
 for (const [n, x, z, r, h, b] of PROPS) placeModel(srcs[n], x, z, r, h, b);
 for (const [x, z, r] of FENCES) placeModel(srcs['울타리'], x, z, r, 1.0, 'f');
-buildTown(); buildGuards(); buildLights(); setQualityMode(HQ ? 'auto' : qMode); // 안전지대 울타리 · 자판기(B단계) · 경비 포탑 · 밤 불빛(C단계)
+buildTown(); buildGuards(); craftBuild(); buildLights(); setQualityMode(HQ ? 'auto' : qMode); // 안전지대 울타리 · 자판기(B단계) · 경비 포탑 · 밤 불빛(C단계)
 STATIC.circles = circles.slice(); STATIC.boxes = boxes.slice(); // 텐트 자리 판정용 — 나무 · 바위 · 모델 · 울타리(집 · 함정 빼고)
 
 buildMapBase();
@@ -41,7 +41,7 @@ window.__수달섬.worldData = () => {
   const tierBox = HOUSES.map((H) => { const b = new THREE.Box3().setFromObject(srcs[H.model]), sz = b.getSize(new THREE.Vector3()), s = H.h / sz.y; return [r2(sz.x * s / 2), r2(sz.z * s / 2)]; });
   const W = {
     trees: TREES.map((r) => ({ k: r.key, x: r2(r.x), z: r2(r.z), r: r2(r.circle.r), kind: r.kind })),
-    rocks: ROCKS.map((r) => ({ k: r.key, x: r2(r.x), z: r2(r.z), r: r2(r.circle.r) })),
+    rocks: ROCKS.map((r) => ({ k: r.key, x: r2(r.x), z: r2(r.z), r: r2(r.circle.r), ...(r.kind ? { kind: r.kind } : {}) })),
     flowers: FLOWERS.map((r) => ({ k: r.key, x: r2(r.x), z: r2(r.z) })),
     bushes: BUSHES.map((r, i) => ({ k: 'B' + i, x: r2(r.x), z: r2(r.z) })),
     berries: BERRIES.map((r, i) => ({ k: 'E' + i, x: r2(r.x), z: r2(r.z) })),
