@@ -45,14 +45,26 @@ const SAFE_DEF = { x: HARBOR.x, z: HARBOR.z, r: 6.5 }; // 혼자 놀기 때 텐�
 const STATIC = { circles: [], boxes: [] }; // 섬이 다 차린 뒤의 막힘(나무 · 바위 · 모델 · 울타리) — 텐트 자리 판정용(main 이 채움)
 const SHOPS = {
   tool: { x: HARBOR.x, z: HARBOR.z - 1.6, name: '도구 상점', buy: ['도끼', '곡괭이', '낚싯대'], sell: true },
-  gun: { x: HARBOR.x - 4, z: HARBOR.z - 1, name: '무기 자판기', buy: ['권총', '소총', '산탄총', '권총탄', '소총탄', '산탄'], color: 0xe0584a, glow: 0xffb0a0 },
-  tent: { x: HARBOR.x - 3.4, z: HARBOR.z + 2.2, name: '텐트 자판기', buy: ['텐트', '나무', '돌', '보관함'], color: 0x4fae6a, glow: 0xb8ffc8 },
-  trap: { x: HARBOR.x + 4, z: HARBOR.z - 1, name: '함정 자판기', buy: ['포탑', '가시덫'], color: 0x8f6cc8, glow: 0xdccbff },
+  // 작업지시서 4 B2: 총 자판기 · 탄알 자판기로 나눔(서버 config.shops gun · ammo 와 같은 자리)
+  gun: { x: HARBOR.x - 4, z: HARBOR.z - 1, name: '총 자판기', buy: ['권총', '소총', '산탄총'], color: 0xe0584a, glow: 0xffb0a0 },
+  ammo: { x: HARBOR.x - 4.4, z: HARBOR.z - 4, name: '탄알 자판기', buy: ['권총탄', '소총탄', '산탄'], color: 0xd98a3a, glow: 0xffd8a8 },
+  tent: { x: HARBOR.x - 3.4, z: HARBOR.z + 2.2, name: '텐트 자판기', buy: ['텐트', '나무', '돌', '보관함', '제작대'], color: 0x4fae6a, glow: 0xb8ffc8 },
+  trap: { x: HARBOR.x + 4, z: HARBOR.z - 1, name: '함정 자판기', buy: ['가시덫'], color: 0x8f6cc8, glow: 0xdccbff },
   food: { x: HARBOR.x + 3.4, z: HARBOR.z + 2.2, name: '먹거리 자판기', buy: ['모닥불', '열매', '생선구이'], color: 0xf2b244, glow: 0xfff0b8 }, // D단계에 채움
 };
 const SHOP_AT = SHOPS.tool; // 예전 이름(시험 · 지도)
 const FENCE_R = 6.5, FENCE_GATES = [[Math.atan2(22, 25), 0.24], [Math.PI / 2, 0.24], [Math.atan2(22, -40), 0.24], [-Math.PI / 2, 0.22]]; // 항구 울타리 반지름 · 문(항구에서 본 각도 rad · 반폭 rad): 동쪽 길 · 남쪽 길 · 서쪽 길 · 북쪽 부두
 const vendObjs = [];
+// 이름 간판(작업지시서 4 B1): 둥근 나무판 + 크림 글자 그림판 · 빛을 안 받는 재질(밤에도 읽힘) · 자판기 앞을 봄
+function shopSign(text) {
+  const c = document.createElement('canvas'); c.width = 512; c.height = 136; const g = c.getContext('2d');
+  const r = 40; g.beginPath(); g.moveTo(r, 6); g.arcTo(506, 6, 506, 130, r); g.arcTo(506, 130, 6, 130, r); g.arcTo(6, 130, 6, 6, r); g.arcTo(6, 6, 506, 6, r); g.closePath();
+  g.fillStyle = '#8a5a33'; g.fill(); g.lineWidth = 10; g.strokeStyle = '#5e3b22'; g.stroke();
+  g.fillStyle = '#fff3d6'; g.font = 'bold 66px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(text, 256, 72, 470);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.4), new THREE.MeshBasicMaterial({ map: t, transparent: true, fog: true }));
+  m.name = 'shopSign'; return m;
+}
 // 자판기: 찰흙 느낌 둥근 상자 + 빛나는 앞판 · 위 띠(밤에 빛남 — 조명은 C단계)
 function makeVending(k) {
   const g = new THREE.Group(), clay = (c, e) => new THREE.MeshLambertMaterial({ color: c, emissive: e || 0x000000 });
@@ -61,12 +73,15 @@ function makeVending(k) {
   const top = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.14, 0.08), clay(0xffffff, k.glow)); top.position.set(0, 1.72, 0.3); g.add(top);
   const slot = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.12, 0.08), clay(0x2c2720)); slot.position.set(0, 0.4, 0.37); g.add(slot);
   g.traverse((m) => { if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; } });
+  { const s = shopSign(k.name); s.position.set(0, 2.25, 0.2); g.add(s); }
   g.position.set(k.x, Math.max(0, height(k.x, k.z)), k.z); g.rotation.y = Math.atan2(-k.x, -k.z); // 광장 가운데를 봄
   g.userData.glow = k.glow; scene.add(g); circles.push({ x: k.x - Math.sin(g.rotation.y) * 0.05, z: k.z - Math.cos(g.rotation.y) * 0.05, r: 0.55 }); vendObjs.push(g);
   return g;
 }
 function buildTown() {
   for (const k of Object.values(SHOPS)) if (k.color) makeVending(k);
+  // 도구 상점(상인 가판대) 간판 — 가판대 앞 위(카메라 쪽 +z 를 봄)
+  { const s = shopSign(SHOPS.tool.name); s.position.set(HARBOR.x, Math.max(0, height(HARBOR.x, HARBOR.z - 2.9)) + 2.85, HARBOR.z - 2.75); s.scale.setScalar(1.25); scene.add(s); }
   // 울타리: 문 사이 호를 짧은 토막(울타리 모델 길이를 반으로)으로 두르고, 말뚝 자리에 작은 막힘 원
   const gates = FENCE_GATES.map(([a, w]) => [a - w, a + w]), inGate = (a) => gates.some(([lo, hi]) => { const d = Math.atan2(Math.sin(a - (lo + hi) / 2), Math.cos(a - (lo + hi) / 2)); return Math.abs(d) < (hi - lo) / 2; });
   const steps = 360; let run = [];
