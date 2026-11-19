@@ -128,7 +128,7 @@ function onNet(m) {
   // 채팅 · 교환(작업지시서 3 D) — chat.js · trade.js
   else if (m.t === 'say') onNetSay(m);
   // 자연(작업지시서 3 E) — grow.js
-  else if (m.t === 'plant' || m.t === 'shd' || m.t === 'sit' || m.t === 'digging') onNetGrow(m);
+  else if (m.t === 'plant' || m.t === 'shd' || m.t === 'sit') onNetGrow(m);
   // 제작대 일감 · 올가미덫(작업지시서 4 C · craft.js)
   else if ((m.t === 'craft' || m.t === 'stun') && typeof onNetCraft === 'function') onNetCraft(m);
   else if (m.t === 'trade') onNetTrade(m);
