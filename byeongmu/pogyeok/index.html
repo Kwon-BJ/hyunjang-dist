@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>고슴도치 포격전</title>
+<link rel="icon" href="assets/gfx/hwengine.png">
+<style>
+  /* 원본 글꼴: 영문·숫자 DejaVuSans-Bold, 한글 WenQuanYi Zen Hei (hedgewars-src/share/hedgewars/Data/Fonts) */
+  @font-face { font-family:HWLatin; src:url(assets/fonts/hw-latin.woff2) format('woff2'); font-weight:bold; unicode-range:U+0020-007E; }
+  @font-face { font-family:HWKr; src:url(assets/fonts/hw-kr.woff2) format('woff2'); font-weight:bold; }
+  /* 색·테두리 값은 원본 frontend-qt6/res/css/qt.css 를 그대로 옮김 */
+  :root {
+    --yellow:#ffcc00; --navy:#141250; --field:rgba(13,5,68,.7); --btn:rgba(18,42,5,.7); --btnDown:#344b1e;
+    --head:#00351d; --headLine:#005F35; --link:#c8c8ff; --group:#130f2c;
+  }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { margin:0; height:100%; overflow:hidden; touch-action:none; user-select:none; -webkit-user-select:none; }
+  body { background:var(--navy) url(assets/ui/Background.png) bottom center repeat-x; color:var(--yellow);
+    font:bold 13px HWLatin, HWKr, sans-serif; }
+  a { color:var(--link); }
+  .screen { position:fixed; inset:0; display:none; padding:10px max(10px, env(safe-area-inset-right)) 10px max(10px, env(safe-area-inset-left)); overflow:auto; touch-action:pan-y; }
+  .screen.on { display:flex; }
+  .center { align-items:center; justify-content:center; }
+  /* QGroupBox */
+  .box { border:3px solid var(--yellow); border-radius:16px; background:var(--field); padding:12px 14px; }
+  .modal .box, #authBox { background:var(--group); }
+  h1 { margin:0 0 6px; font-size:20px; color:var(--yellow); }
+  .sub { color:var(--link); margin-bottom:8px; font-size:12px; }
+  label { display:block; margin:8px 0 3px; }
+  /* QLineEdit / QComboBox */
+  input, select { width:100%; font:inherit; font-size:15px; color:var(--yellow); background:var(--field); border:3px solid var(--yellow); border-radius:10px; padding:6px 10px; outline:none; }
+  input:hover, select:hover, input:focus { border-color:yellow; }
+  select { appearance:none; -webkit-appearance:none; background:var(--field) url(assets/ui/dropdown.png) no-repeat right 8px center; padding-right:30px; }
+  select option { background:#0d0544; color:var(--yellow); }
+  input::placeholder { color:#a08a30; }
+  /* QPushButton */
+  button { font:inherit; font-size:14px; color:var(--yellow); background:var(--btn); border:3px solid var(--yellow); border-radius:8px; padding:6px 12px; cursor:pointer;
+    display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:38px; }
+  button:hover { border-color:yellow; }
+  button:active, button.on { border-color:white; background:var(--btnDown); color:white; }
+  button:disabled { color:#a0a0a0; border-color:#a0a0a0; cursor:default; }
+  button img { height:22px; }
+  .row { display:flex; gap:8px; margin-top:8px; align-items:center; }
+  .row > * { flex:1; }
+  .err { color:#ff8080; min-height:18px; margin-top:6px; }
+  .small { font-size:12px; color:var(--link); }
+  .notes { color:#9dff9d; min-height:16px; margin:6px 0; word-break:break-all; }
+
+  /* 로그인 */
+  #home { flex-direction:column; }
+  #authWrap { display:flex; align-items:center; justify-content:center; gap:18px; margin:auto; flex-wrap:wrap; }
+  #authWrap .mascot { height:min(260px, 42vh); }
+  #authBox { width:min(380px, 92vw); }
+  /* 로비 (방 목록) */
+  #homeMain { display:none; flex-direction:column; width:100%; height:100%; gap:8px; }
+  .topbar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .topbar .logo { height:40px; }
+  .topbar .gname { font-size:18px; }
+  .mebox { display:flex; align-items:center; gap:8px; margin-left:auto; }
+  .mebox .meText { display:flex; flex-direction:column; line-height:1.25; }
+  .xpbar { height:8px; width:120px; border:2px solid var(--yellow); border-radius:5px; overflow:hidden; background:#0d0544; }
+  .xpbar div { height:100%; background:var(--yellow); }
+  .topbar button { min-height:34px; padding:4px 10px; }
+  .toolbar { display:flex; gap:8px; align-items:center; }
+  .toolbar .grow { flex:1; }
+  .tablebox { flex:1; min-height:0; overflow:auto; border:3px solid var(--yellow); border-radius:10px; background:var(--field); touch-action:pan-y; }
+  table.rooms { width:100%; border-collapse:collapse; }
+  table.rooms th { position:sticky; top:0; background:var(--head); border-bottom:3px solid var(--yellow); padding:6px 6px; text-align:left; font-weight:bold;
+    border-left:1px solid var(--headLine); border-right:1px solid var(--headLine); white-space:nowrap; }
+  table.rooms td { padding:5px 6px; border-bottom:1px solid #2a2470; white-space:nowrap; }
+  table.rooms td.title { white-space:normal; color:#fff; }
+  table.rooms tr.r { cursor:pointer; }
+  table.rooms tr.r:hover td { background:rgba(255,204,0,.12); }
+  table.rooms tr.sel td { background:var(--yellow); color:#00351d; }
+  table.rooms tr.dim td { color:#a0a0a0; }
+  table.rooms img.st { height:20px; vertical-align:middle; }
+  .empty { padding:30px 10px; text-align:center; color:var(--link); font-size:15px; }
+  /* 계급: 모자 쓴 고슴도치 얼굴 + 계급 이름 + 닉네임 (띄어 씀) */
+  .rbadge { display:inline-flex; align-items:center; gap:5px; vertical-align:middle; }
+  .rbadge img { image-rendering:pixelated; flex:none; }
+  .rname { color:#e8d48a; font-size:11px; }
+  .rnick { color:#fff; }
+  /* 대기실 */
+  #lobby { align-items:flex-start; justify-content:center; }
+  #lobby .box { width:min(560px, 100%); margin:auto; }
+  .players { list-style:none; padding:0; margin:8px 0; }
+  .players li { display:flex; align-items:center; gap:8px; padding:5px 8px; border:2px solid #5a4a10; border-radius:10px; margin-bottom:5px; background:#0d0544; }
+  .players li.off { opacity:.5; }
+  .dot { width:14px; height:14px; border-radius:50%; border:2px solid #000; flex:none; }
+  .tag { font-size:11px; padding:1px 6px; border-radius:6px; border:2px solid var(--yellow); }
+  /* 모달 */
+  .modal { z-index:45; background:rgba(0,0,10,.75); align-items:center; justify-content:center; }
+  .modal .box { width:min(440px, 100%); max-height:96vh; overflow:auto; }
+  .modal .box.wide { width:min(720px, 100%); }
+  table.info { width:100%; border-collapse:collapse; margin:8px 0; }
+  table.info td { padding:5px 6px; border-bottom:1px solid #2a2470; }
+  table.info tr.head td { background:var(--head); border-bottom:3px solid var(--yellow); }
+  table.info tr.meRow td { background:rgba(255,204,0,.15); }
+  button.mini { min-height:28px; font-size:12px; padding:2px 6px; margin:1px; }
+
+  /* 경기 */
+  #game { padding:0; display:none; }
+  #game.on { display:block; }
+  #cv { position:absolute; inset:0; width:100%; height:100%; display:block; }
+  .hud { position:absolute; pointer-events:none; text-shadow:1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000; }
+  #msg { top:26%; left:50%; transform:translateX(-50%); font-size:26px; text-align:center; white-space:nowrap; }
+  #wind { right:8px; bottom:8px; }
+  body.touch #wind { bottom:auto; top:calc(max(6px, env(safe-area-inset-top)) + 44px); }
+  #power { position:absolute; left:50%; bottom:64px; transform:translateX(-50%); width:200px; height:12px; border:2px solid var(--yellow); border-radius:6px; background:#0008; display:none; overflow:hidden; }
+  #power div { height:100%; width:0; background:linear-gradient(90deg,#ffe600,#ff8a00,#ff1a00); }
+  #weapons { position:absolute; top:max(6px, env(safe-area-inset-top)); left:max(6px, env(safe-area-inset-left)); display:flex; flex-direction:column; gap:5px; }
+  .wbtn { width:46px; height:46px; min-height:0; padding:0; border-radius:8px; position:relative; }
+  .wbtn.sel { border-color:white; background:var(--btnDown); }
+  .wbtn span { position:absolute; inset:5px; background-image:url(assets/gfx/Ammos_base.png); background-size:128px 512px; }
+  #gtimers { display:flex; flex-direction:column; gap:3px; }
+  .gt { width:46px; min-height:0; height:26px; padding:0; font-size:12px; }
+  .gt.sel { border-color:white; background:var(--btnDown); color:white; }
+  body.touch #gtimers { display:none !important; }
+  #topRight { position:absolute; top:max(6px, env(safe-area-inset-top)); right:max(6px, env(safe-area-inset-right)); display:flex; gap:5px; }
+  #topRight button { min-height:32px; padding:3px 8px; font-size:12px; }
+  /* 터치 버튼: 원본 Android판 그림, 반투명 → 누르는 동안만 진하게 */
+  #touch { position:absolute; inset:auto 0 0 0; height:0; display:none; }
+  #touch.on { display:block; }
+  .tb { position:absolute; width:58px; height:58px; touch-action:none; opacity:.45; background-size:contain; background-repeat:no-repeat; background-position:center; }
+  .tb.on { opacity:.95; transform:scale(.94); }
+  .tb .lbl { position:absolute; left:50%; bottom:-2px; transform:translateX(-50%); font-size:11px; color:#fff; white-space:nowrap;
+    text-shadow:0 0 2px #000, 0 0 2px #000, 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000; }
+  #tL { background-image:url(assets/touch/arrowleft.png); }
+  #tR { background-image:url(assets/touch/arrowright.png); }
+  #tU { background-image:url(assets/touch/arrowup.png); }
+  #tD { background-image:url(assets/touch/arrowdown.png); }
+  #tJump { background-image:url(assets/touch/forwardjump.png); }
+  /* 높이 점프: 원본에 전용 그림이 없어 앞 점프 그림을 위로 돌려 씀 ("원본에 없음" 목록) */
+  #tHJump::before { content:''; position:absolute; inset:0; background:url(assets/touch/forwardjump.png) center/contain no-repeat; transform:rotate(-90deg); }
+  #touch.idle .tb { opacity:.28; }
+  #tFire { width:74px; height:74px; background-image:url(assets/touch/firebutton.png); }
+  #tSwitch { width:46px; height:46px; background-image:url(assets/touch/ammomenu.png); } /* 원본 Android 무기 메뉴 버튼(파일명 backjump.png) */
+  #tTimer { width:46px; height:46px; background-image:url(assets/touch/timerbutton.png); }
+  #overlay { position:absolute; inset:0; display:none; align-items:center; justify-content:center; background:#0007; }
+  #overlay.on { display:flex; }
+  #closed { position:fixed; inset:0; z-index:55; display:none; align-items:center; justify-content:center; padding:16px; background:var(--navy) url(assets/ui/Background.png) bottom center repeat-x; }
+  #conn { position:fixed; top:0; left:0; right:0; background:#a01418; color:#fff; text-align:center; padding:6px; display:none; z-index:60; }
+  #credits { z-index:50; }
+  #credits .box { width:min(640px,100%); font-size:13px; line-height:1.5; color:#fff; }
+  @media (max-height: 460px) {
+    .topbar .logo { height:30px; } .topbar .gname { display:none; }
+    #authWrap .mascot { height:min(200px, 55vh); }
+    label { margin:4px 0 2px; } input, select { padding:4px 8px; font-size:14px; } button { min-height:32px; }
+    #lobby .box { padding:8px 10px; }
+    #keysHelp { display:none; }
+  }
+</style>
+</head>
+<body>
+<div id="conn">서버와 연결이 끊겼습니다. 다시 연결하는 중…</div>
+<div id="closed"><div class="box" style="text-align:center;max-width:420px">
+  <img src="assets/ui/Mascot.png" alt="" style="height:120px">
+  <h1>지금은 서버가 닫혀 있습니다</h1>
+  <div class="sub">운영자가 서버를 켜면 자동으로 들어가집니다. 30초마다 다시 확인합니다.</div>
+  <div class="row"><button id="btnRetryNow">지금 다시 확인</button></div>
+</div></div>
+
+<section id="home" class="screen on">
+  <div id="authWrap">
+    <img class="mascot" src="assets/ui/Mascot.png" alt="">
+    <div id="authBox" class="box">
+      <h1>고슴도치 포격전</h1>
+      <div class="sub">문파원 전용 · Hedgewars 그림·소리 사용 팬 게임</div>
+      <div id="authLogin">
+        <label for="lgId">아이디</label><input id="lgId" autocomplete="username" autocapitalize="off" maxlength="16">
+        <label for="lgPw">비밀번호</label><input id="lgPw" type="password" autocomplete="current-password" maxlength="64">
+        <div class="row"><button id="btnLogin"><img src="assets/ui/Start.png" alt="">로그인</button><button id="toSignup"><img src="assets/ui/new.png" alt="">회원가입</button></div>
+      </div>
+      <div id="authSignup" style="display:none">
+        <label for="suId">아이디 (영문 소문자·숫자·_ 4~16자)</label><input id="suId" autocomplete="username" autocapitalize="off" maxlength="16">
+        <label for="suPw">비밀번호 (6자 이상)</label><input id="suPw" type="password" autocomplete="new-password" maxlength="64">
+        <label for="suPw2">비밀번호 확인</label><input id="suPw2" type="password" autocomplete="new-password" maxlength="64">
+        <label for="suNick">닉네임 (2~10자, 게임에 표시)</label><input id="suNick" maxlength="10" autocomplete="off">
+        <label for="suCode">가입 초대코드 (운영자에게 받은 값)</label><input id="suCode" autocomplete="off" autocapitalize="characters">
+        <div class="row"><button id="btnSignup"><img src="assets/ui/new.png" alt="">가입하기</button><button id="toLogin">로그인으로</button></div>
+      </div>
+      <div class="err" id="authErr"></div>
+      <div class="small"><a href="#" class="lnkCredits">출처·라이선스(크레딧)</a></div>
+    </div>
+  </div>
+
+  <div id="homeMain">
+    <div class="topbar">
+      <img class="logo" src="assets/ui/Mascot.png" alt=""><span class="gname">고슴도치 포격전</span>
+      <div class="mebox" id="meBox"></div>
+      <button id="btnMyInfo"><img src="assets/ui/info.png" alt="" style="height:16px">내 정보</button>
+      <button id="btnAdmin" style="display:none"><img src="assets/ui/Settings.png" alt="" style="height:18px">운영자</button>
+      <button id="btnLogout"><img src="assets/ui/Exit.png" alt="" style="height:18px">로그아웃</button>
+    </div>
+    <div class="toolbar">
+      <span id="roomCount" class="grow"></span>
+      <button id="btnCreate"><img src="assets/ui/new.png" alt="">방 만들기</button>
+      <button id="btnJoin"><img src="assets/ui/Start.png" alt="">방 들어가기</button>
+    </div>
+    <div class="tablebox">
+      <table class="rooms">
+        <thead><tr><th></th><th>방 제목</th><th>방장</th><th>방식</th><th>인원</th></tr></thead>
+        <tbody id="roomRows"></tbody>
+      </table>
+      <div id="roomEmpty" class="empty">아직 방이 없습니다. 방을 만들어 보세요</div>
+    </div>
+    <div class="row" style="margin-top:0"><div class="err" id="homeErr" style="flex:3"></div><div class="small" style="text-align:right"><a href="#" class="lnkCredits">출처·라이선스</a></div></div>
+  </div>
+</section>
+
+<section id="createDlg" class="screen modal">
+  <div class="box">
+    <h1><img src="assets/ui/new.png" alt="" style="height:22px;vertical-align:middle"> 방 만들기</h1>
+    <label for="ctTitle">방 제목 (2~20자, 비우면 "닉네임의 방")</label><input id="ctTitle" maxlength="20" autocomplete="off">
+    <div class="row">
+      <div><label for="newMode">방식</label><select id="newMode"><option value="solo">개인전</option><option value="team">팀전 (2대2)</option></select></div>
+      <div><label for="ctMax">인원</label><select id="ctMax"><option value="2">2명</option><option value="3">3명</option><option value="4" selected>4명</option></select></div>
+    </div>
+    <div class="row"><button id="btnCreateOk"><img src="assets/ui/new.png" alt="">만들기</button><button id="btnCreateCancel">취소</button></div>
+    <div class="err" id="createErr"></div>
+  </div>
+</section>
+
+<section id="lobby" class="screen">
+  <div class="box">
+    <h1 id="roomTitle">방</h1>
+    <div class="small" id="lobbyModeText"></div>
+    <ul class="players" id="plist"></ul>
+    <div class="row" id="sideRow" style="display:none"><button id="btnSideA" style="border-color:#ff0204">A팀으로</button><button id="btnSideB" style="border-color:#4980c1">B팀으로</button></div>
+    <div class="row">
+      <div><label for="lobbyMode">방식 (방장)</label><select id="lobbyMode"><option value="solo">개인전</option><option value="team">팀전 (2대2)</option></select></div>
+      <div><label for="lobbyMax">인원 (방장)</label><select id="lobbyMax"><option value="2">2명</option><option value="3">3명</option><option value="4">4명</option></select></div>
+      <div><label for="hogs">고슴도치 (방장)</label><select id="hogs"><option value="1">1마리</option><option value="2">2마리</option><option value="3">3마리</option><option value="4">4마리</option></select></div>
+    </div>
+    <div class="row"><button id="btnStart"><img src="assets/ui/Start.png" alt="">경기 시작</button><button id="btnLeave"><img src="assets/ui/Exit.png" alt="" style="height:18px">나가기</button></div>
+    <div class="row"><button id="btnCopy">방 링크 복사</button></div>
+    <div class="err" id="lobbyErr"></div>
+    <div class="small" id="keysHelp">PC: ←→ 걷기 · ↑↓ 조준 · 스페이스 누르고 있다 떼기 = 발사 · Enter 앞 점프 · Backspace 높이 점프 · Tab 무기 · 1~5 수류탄 타이머 · 끌기 화면 이동 · 휠 확대</div>
+  </div>
+</section>
+
+<section id="game" class="screen">
+  <canvas id="cv"></canvas>
+  <div class="hud" id="msg"></div>
+  <canvas class="hud" id="wind" width="160" height="22"></canvas>
+  <div id="power"><div></div></div>
+  <div id="weapons">
+    <button class="wbtn" data-w="bazooka" title="바주카"><span style="background-position:0 -64px"></span></button>
+    <button class="wbtn" data-w="grenade" title="수류탄"><span style="background-position:0 0"></span></button>
+    <div id="gtimers"></div>
+  </div>
+  <div id="topRight"><button id="btnSound">소리 켬</button><button id="btnQuit">나가기</button></div>
+  <div id="touch">
+    <div class="tb" id="tL" style="left:max(4px, env(safe-area-inset-left));bottom:6px"></div>
+    <div class="tb" id="tR" style="left:calc(max(4px, env(safe-area-inset-left)) + 62px);bottom:6px"></div>
+    <div class="tb" id="tJump" style="left:max(4px, env(safe-area-inset-left));bottom:72px"><span class="lbl">점프</span></div>
+    <div class="tb" id="tHJump" style="left:calc(max(4px, env(safe-area-inset-left)) + 62px);bottom:72px"><span class="lbl">높이 점프</span></div>
+    <div class="tb" id="tU" style="right:calc(max(4px, env(safe-area-inset-right)) + 78px);bottom:68px"></div>
+    <div class="tb" id="tD" style="right:calc(max(4px, env(safe-area-inset-right)) + 78px);bottom:6px"></div>
+    <div class="tb" id="tFire" style="right:max(4px, env(safe-area-inset-right));bottom:10px"><span class="lbl">발사</span></div>
+    <div class="tb" id="tSwitch" style="right:calc(max(4px, env(safe-area-inset-right)) + 14px);bottom:92px"><span class="lbl">무기</span></div>
+    <div class="tb" id="tTimer" style="right:calc(max(4px, env(safe-area-inset-right)) + 14px);bottom:150px;display:none"><span class="lbl" id="tTimerLbl">3초</span></div>
+  </div>
+  <div id="overlay"><div class="box" style="text-align:center">
+    <h1 id="resTitle">경기 종료</h1><div id="resText" class="sub"></div>
+  </div></div>
+</section>
+
+<section id="result" class="screen modal">
+  <div class="box wide">
+    <h1 id="resHead">경기 결과</h1>
+    <div id="resBody"></div>
+    <div id="resNotes" class="notes"></div>
+    <div class="row"><button id="btnCloseResult">확인</button></div>
+  </div>
+</section>
+<section id="myinfo" class="screen modal">
+  <div class="box">
+    <h1>내 정보</h1>
+    <div id="myBody"></div>
+    <div id="pwBox">
+      <div id="pwNotice" class="notes" style="color:var(--yellow)"></div>
+      <label for="pwCur">비밀번호 바꾸기 — 현재 비밀번호</label><input id="pwCur" type="password" autocomplete="current-password" maxlength="64">
+      <label for="pwNew">새 비밀번호 (6자 이상)</label><input id="pwNew" type="password" autocomplete="new-password" maxlength="64">
+      <label for="pwNew2">새 비밀번호 확인</label><input id="pwNew2" type="password" autocomplete="new-password" maxlength="64">
+      <div class="row"><button id="btnChPw"><img src="assets/ui/edit.png" alt="">비밀번호 바꾸기</button></div>
+      <div class="err" id="pwMsg"></div>
+    </div>
+    <div class="row"><button id="btnCloseMe">닫기</button></div>
+  </div>
+</section>
+<section id="admin" class="screen modal">
+  <div class="box wide">
+    <h1><img src="assets/ui/Settings.png" alt="" style="height:22px;vertical-align:middle"> 운영자</h1>
+    <div class="small">비밀번호 초기화: 임시 비밀번호가 아래에 표시됩니다. 본인에게 전달하세요. 정지: 즉시 접속이 끊기고 로그인할 수 없습니다.</div>
+    <div id="adminBackup" class="small" style="margin:6px 0"></div>
+    <div class="row" style="margin-top:0"><button id="btnBackupNow" class="mini" style="flex:none"><img src="assets/ui/Save.png" alt="" style="height:14px">지금 백업</button></div>
+    <div id="adminMsg" class="notes"></div>
+    <div id="adminList" style="overflow:auto"></div>
+    <div class="row"><button id="btnCloseAdmin">닫기</button></div>
+  </div>
+</section>
+<section id="credits" class="screen modal">
+  <div class="box">
+    <h1>출처·라이선스</h1>
+    <p>이 게임은 오픈소스 게임 <b>Hedgewars</b>(https://www.hedgewars.org, 소스: https://github.com/hedgewars/hw)의
+    그림·소리·음악·글꼴을 사용하고, 무기·물리 수치를 원본 소스에서 읽어 새로 작성한 팬 게임입니다. Hedgewars 공식 게임이 아닙니다.</p>
+    <ul>
+      <li>그림·소리·음악: Hedgewars 프로젝트 기여자들, GNU Free Documentation License 1.2</li>
+      <li>음악 "Nature" — John Dum / "main_theme" — Hedgewars 프로젝트 / 서든데스 음악 "Hitman" — Kevin MacLeod (sheepluva 편집)</li>
+      <li>글꼴: DejaVu Sans Bold (Bitstream Vera 라이선스), WenQuanYi Zen Hei (GPL2 + 글꼴 임베딩 예외)</li>
+      <li>원본 코드: GNU GPL v2 (이 게임 코드는 수치를 참고해 새로 작성)</li>
+    </ul>
+    <p>사용한 파일 전체 목록과 원본 경로: <a href="assets/ASSET_LICENSES.txt" target="_blank">ASSET_LICENSES</a></p>
+    <div class="row"><button id="btnCloseCredits">닫기</button></div>
+  </div>
+</section>
+
+<script src="sim.js"></script>
+<script src="client.js"></script>
+</body>
+</html>

@@ -1,0 +1,179 @@
+# ASSET_LICENSES — 사용한 재료와 라이선스
+
+이 게임(C:MSWgame)은 오픈소스 게임 **Hedgewars**(https://www.hedgewars.org, 소스 https://github.com/hedgewars/hw, 커밋 3f2a2b6)의
+그림·소리·음악을 그대로 가져다 쓴다. Hedgewars 공식 게임이 아니다.
+
+## 라이선스 요약
+| 구분 | 라이선스 | 비고 |
+|---|---|---|
+| Hedgewars 그림·소리·음악 | GNU Free Documentation License 1.2 (GFDL 1.2) | 아래 표의 파일 전부 |
+| 음악 Nature.ogg | GFDL 1.2, 작곡 John Dum (hedgewars-src/share/hedgewars/Data/Music/credits.txt) | |
+| 음악 main_theme.ogg | GFDL 1.2, Hedgewars 프로젝트 | |
+| Hedgewars 원본 코드 | GNU GPL v2 | 이 게임은 원본 코드를 옮겨 적지 않았다. 수치·규칙만 읽어 JS로 새로 작성 |
+| 이 게임 코드 (game/server.js, game/public/*.js, game/test/*.js) | GPL-2.0 으로 배포 권장 | 원본 물리(doStepFallingGear, doMakeExplosion 피해 공식, hedgehog_step/점프)를 참고해 다시 쓴 부분이 game/public/sim.js 에 있으므로, 안전하게 GPL-2.0 대상으로 취급한다 |
+| 2차 코드 (game/accounts.js, results.js, config.js) | GPL-2.0 으로 배포 권장 | 원본과 무관하게 새로 작성. 외부 라이브러리 없음(Node 기본 crypto) |
+| 계급 표시 | 원본 모자(Graphics/Hats) | 3차에서 코드로 그린 방패 아이콘을 없애고 원본 모자로 교체. 배정표: game/public/rank_hats.json |
+| 글꼴 | 3차부터 원본 글꼴 사용 | 아래 "3차 추가" 표 참고 |
+
+GFDL 1.2 전문: https://www.gnu.org/licenses/old-licenses/fdl-1.2.html · GPL v2 전문: hedgewars-src/COPYING
+
+게임 안 출처 표시: 첫 화면 "출처·라이선스(크레딧)" 링크 → 이 목록(/assets/ASSET_LICENSES.txt)으로 연결.
+
+## 참고한 원본 수치 (코드는 옮기지 않고 값만 사용)
+| 항목 | 값 | 원본 위치 |
+|---|---|---|
+| 중력 | 0.0005 px/ms² | hedgewars/uVariables.pas cGravity |
+| 최대 바람 | 0.00025, 턴마다 ±랜덤 | uVariables.pas cMaxWindSpeed, uTeams.pas |
+| 파워 | 최대 1500ms 누름, 속도=파워/1500 | uConsts.pas cMaxPower/cPowerDivisor, uGearsHedgehog.pas |
+| 바주카 | 반경 4, 폭발 50, 바람 영향 | uGearsList.pas, uGearsHandlersMess.pas doStepShell |
+| 수류탄 | 반경 5, 탄성 0.8, 마찰 0.8, 타이머 3초(1~5), 폭발 50, 바람 무영향 | uGearsList.pas, uVariables.pas Ammoz |
+| 폭발 피해 | min((2R+4-거리)/2, R), 밀려남 0.005*피해+0.01 | uGearsUtils.pas doMakeExplosion |
+| 낙하 피해 | dY>0.4 일 때 1+(dY-0.4)*70 | uGearsUtils.pas CheckHHDamage |
+| 고슴도치 | 반경 9, 체력 100, 걸음 29ms/1px(6px 오르내림), 사망 시 폭발 30 | uConsts.pas, uGearsList.pas, rust/lib-hwengine-future/src/gear.rs |
+| 점프 | 긴 점프(±0.15,-0.15), 높은 점프(-0.2) | rust/lib-hwengine-future/src/gear.rs |
+| 턴 | 45초, 발사 후 후퇴 3초 | uVariables.pas cHedgehogTurnTime, Ammoz TimeAfterTurn |
+| 팀 색 | 빨강·파랑·청록·보라 | frontend-qt6/hwconsts.h (ClanColorArray) |
+
+## 파일 목록 — 파일 — 원본 경로 — 라이선스
+| 파일 | 원본 경로 | 라이선스 |
+|---|---|---|
+| game/assets/gfx/amBazooka.png | hedgewars-src/share/hedgewars/Data/Graphics/Hedgehog/amBazooka.png | GFDL 1.2 |
+| game/assets/gfx/amGrenade.png | hedgewars-src/share/hedgewars/Data/Graphics/Hedgehog/amGrenade.png | GFDL 1.2 |
+| game/assets/gfx/Ammos_base.png | hedgewars-src/share/hedgewars/Data/Graphics/AmmoMenu/Ammos_base.png | GFDL 1.2 |
+| game/assets/gfx/BazookaShell.png | hedgewars-src/share/hedgewars/Data/Graphics/BazookaShell.png | GFDL 1.2 |
+| game/assets/gfx/BlueWater.png | hedgewars-src/share/hedgewars/Data/Graphics/BlueWater.png | GFDL 1.2 |
+| game/assets/gfx/Bomb.png | hedgewars-src/share/hedgewars/Data/Graphics/Bomb.png | GFDL 1.2 |
+| game/assets/gfx/Crosshair.png | hedgewars-src/share/hedgewars/Data/Graphics/Crosshair.png | GFDL 1.2 |
+| game/assets/gfx/Expl50.png | hedgewars-src/share/hedgewars/Data/Graphics/Expl50.png | GFDL 1.2 |
+| game/assets/gfx/Finger.png | hedgewars-src/share/hedgewars/Data/Graphics/Finger.png | GFDL 1.2 |
+| game/assets/gfx/Hedgehog.png | hedgewars-src/share/hedgewars/Data/Graphics/Hedgehog.png | GFDL 1.2 |
+| game/assets/gfx/hwengine.png | hedgewars-src/share/hedgewars/Data/Graphics/hwengine.png | GFDL 1.2 |
+| game/assets/gfx/Nature_Border.png | hedgewars-src/share/hedgewars/Data/Themes/Nature/Border.png | GFDL 1.2 |
+| game/assets/gfx/Nature_horizont.png | hedgewars-src/share/hedgewars/Data/Themes/Nature/horizont.png | GFDL 1.2 |
+| game/assets/gfx/Nature_LandTex.png | hedgewars-src/share/hedgewars/Data/Themes/Nature/LandTex.png | GFDL 1.2 |
+| game/assets/gfx/Nature_Sky.png | hedgewars-src/share/hedgewars/Data/Themes/Nature/Sky.png | GFDL 1.2 |
+| game/assets/gfx/SmokeTrace.png | hedgewars-src/share/hedgewars/Data/Graphics/SmokeTrace.png | GFDL 1.2 |
+| game/assets/gfx/Statue.png | hedgewars-src/share/hedgewars/Data/Graphics/Graves/Statue.png | GFDL 1.2 |
+| game/assets/gfx/WindBar.png | hedgewars-src/share/hedgewars/Data/Graphics/WindBar.png | GFDL 1.2 |
+| game/assets/gfx/WindL.png | hedgewars-src/share/hedgewars/Data/Graphics/WindL.png | GFDL 1.2 |
+| game/assets/gfx/WindR.png | hedgewars-src/share/hedgewars/Data/Graphics/WindR.png | GFDL 1.2 |
+| game/assets/snd/bump.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/bump.ogg (ffmpeg로 mp3 변환) | GFDL 1.2 |
+| game/assets/snd/bump.ogg | hedgewars-src/share/hedgewars/Data/Sounds/bump.ogg | GFDL 1.2 |
+| game/assets/snd/explosion.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/explosion.ogg (ffmpeg로 mp3 변환) | GFDL 1.2 |
+| game/assets/snd/explosion.ogg | hedgewars-src/share/hedgewars/Data/Sounds/explosion.ogg | GFDL 1.2 |
+| game/assets/snd/grenadeimpact.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/grenadeimpact.ogg (ffmpeg로 mp3 변환) | GFDL 1.2 |
+| game/assets/snd/grenadeimpact.ogg | hedgewars-src/share/hedgewars/Data/Sounds/grenadeimpact.ogg | GFDL 1.2 |
+| game/assets/snd/splash.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/splash.ogg (ffmpeg로 mp3 변환) | GFDL 1.2 |
+| game/assets/snd/splash.ogg | hedgewars-src/share/hedgewars/Data/Sounds/splash.ogg | GFDL 1.2 |
+| game/assets/snd/switchhog.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/switchhog.ogg (ffmpeg로 mp3 변환) | GFDL 1.2 |
+| game/assets/snd/switchhog.ogg | hedgewars-src/share/hedgewars/Data/Sounds/switchhog.ogg | GFDL 1.2 |
+| game/assets/snd/throwpowerup.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/throwpowerup.ogg (ffmpeg로 mp3 변환) | GFDL 1.2 |
+| game/assets/snd/throwpowerup.ogg | hedgewars-src/share/hedgewars/Data/Sounds/throwpowerup.ogg | GFDL 1.2 |
+| game/assets/snd/throwrelease.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/throwrelease.ogg (ffmpeg로 mp3 변환) | GFDL 1.2 |
+| game/assets/snd/throwrelease.ogg | hedgewars-src/share/hedgewars/Data/Sounds/throwrelease.ogg | GFDL 1.2 |
+| game/assets/snd/v_Byebye.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Byebye.ogg (ffmpeg로 mp3 변환) | GFDL 1.2 |
+| game/assets/snd/v_Byebye.ogg | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Byebye.ogg | GFDL 1.2 |
+| game/assets/snd/v_Enemydown.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Enemydown.ogg (ffmpeg로 mp3 변환) | GFDL 1.2 |
+| game/assets/snd/v_Enemydown.ogg | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Enemydown.ogg | GFDL 1.2 |
+| game/assets/snd/v_Fire.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Fire.ogg (ffmpeg로 mp3 변환) | GFDL 1.2 |
+| game/assets/snd/v_Fire.ogg | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Fire.ogg | GFDL 1.2 |
+| game/assets/snd/v_Hurry.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Hurry.ogg (ffmpeg로 mp3 변환) | GFDL 1.2 |
+| game/assets/snd/v_Hurry.ogg | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Hurry.ogg | GFDL 1.2 |
+| game/assets/snd/v_Jump1.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Jump1.ogg (ffmpeg로 mp3 변환) | GFDL 1.2 |
+| game/assets/snd/v_Jump1.ogg | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Jump1.ogg | GFDL 1.2 |
+| game/assets/snd/v_Jump3.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Jump3.ogg (ffmpeg로 mp3 변환) | GFDL 1.2 |
+| game/assets/snd/v_Jump3.ogg | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Jump3.ogg | GFDL 1.2 |
+| game/assets/snd/v_Missed.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Missed.ogg (ffmpeg로 mp3 변환) | GFDL 1.2 |
+| game/assets/snd/v_Missed.ogg | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Missed.ogg | GFDL 1.2 |
+| game/assets/snd/v_Ooff1.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Ooff1.ogg (ffmpeg로 mp3 변환) | GFDL 1.2 |
+| game/assets/snd/v_Ooff1.ogg | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Ooff1.ogg | GFDL 1.2 |
+| game/assets/snd/v_Ooff2.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Ooff2.ogg (ffmpeg로 mp3 변환) | GFDL 1.2 |
+| game/assets/snd/v_Ooff2.ogg | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Ooff2.ogg | GFDL 1.2 |
+| game/assets/snd/v_Ow1.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Ow1.ogg (ffmpeg로 mp3 변환) | GFDL 1.2 |
+| game/assets/snd/v_Ow1.ogg | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Ow1.ogg | GFDL 1.2 |
+| game/assets/snd/v_Ow2.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Ow2.ogg (ffmpeg로 mp3 변환) | GFDL 1.2 |
+| game/assets/snd/v_Ow2.ogg | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Ow2.ogg | GFDL 1.2 |
+| game/assets/snd/v_Ow3.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Ow3.ogg (ffmpeg로 mp3 변환) | GFDL 1.2 |
+| game/assets/snd/v_Ow3.ogg | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Ow3.ogg | GFDL 1.2 |
+| game/assets/snd/v_Takecover.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Takecover.ogg (ffmpeg로 mp3 변환) | GFDL 1.2 |
+| game/assets/snd/v_Takecover.ogg | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Takecover.ogg | GFDL 1.2 |
+| game/assets/snd/v_Victory.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Victory.ogg (ffmpeg로 mp3 변환) | GFDL 1.2 |
+| game/assets/snd/v_Victory.ogg | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Victory.ogg | GFDL 1.2 |
+| game/assets/snd/v_Yessir.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Yessir.ogg (ffmpeg로 mp3 변환) | GFDL 1.2 |
+| game/assets/snd/v_Yessir.ogg | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Yessir.ogg | GFDL 1.2 |
+| game/assets/music/main_theme.mp3 | hedgewars-src/share/hedgewars/Data/Music/main_theme.ogg (ffmpeg로 mp3 변환) | GFDL 1.2 |
+| game/assets/music/main_theme.ogg | hedgewars-src/share/hedgewars/Data/Music/main_theme.ogg | GFDL 1.2 |
+| game/assets/music/Nature.mp3 | hedgewars-src/share/hedgewars/Data/Music/Nature.ogg (ffmpeg로 mp3 변환) | GFDL 1.2 |
+| game/assets/music/Nature.ogg | hedgewars-src/share/hedgewars/Data/Music/Nature.ogg | GFDL 1.2 |
+
+
+## 3차 추가 (2026-11-27) — 파일 — 원본 경로 — 라이선스
+| 파일 | 원본 경로 | 라이선스 |
+|---|---|---|
+| game/assets/fonts/hw-latin.woff2 | hedgewars-src/share/hedgewars/Data/Fonts/DejaVuSans-Bold.ttf (영문·숫자만 골라 woff2로 변환, 글자 모양 변경 없음) | Bitstream Vera 라이선스 + DejaVu 변경분 공개 (hedgewars-src/Fonts_LICENSE.txt) |
+| game/assets/fonts/hw-kr.woff2 | hedgewars-src/share/hedgewars/Data/Fonts/wqy-zenhei.ttc 의 첫 글꼴 "WenQuanYi Zen Hei" (한글 11,172자·영문·문장부호만 골라 woff2로 변환, 글자 모양 변경 없음) | 글꼴 내부 표기 "GPL2 with font embedding exception". **원본 Fonts_LICENSE.txt에는 이 글꼴이 빠져 있음** |
+| game/assets/ui/Background.png | hedgewars-src/frontend-qt6/res/Background.png | GFDL 1.2 |
+| game/assets/ui/Mascot.png | hedgewars-src/frontend-qt6/res/Hedgehog.png | GFDL 1.2 |
+| game/assets/ui/new.png | hedgewars-src/frontend-qt6/res/new.png | GFDL 1.2 |
+| game/assets/ui/iconTime.png | hedgewars-src/frontend-qt6/res/iconTime.png | GFDL 1.2 |
+| game/assets/ui/iconDamage.png | hedgewars-src/frontend-qt6/res/iconDamage.png | GFDL 1.2 |
+| game/assets/ui/roomadmin.png | hedgewars-src/frontend-qt6/res/chat/roomadmin.png | GFDL 1.2 |
+| game/assets/ui/hedgehog16.png | hedgewars-src/frontend-qt6/res/chat/hedgehog.png | GFDL 1.2 |
+| game/assets/ui/StatsMedal1.png | hedgewars-src/frontend-qt6/res/StatsMedal1.png | GFDL 1.2 |
+| game/assets/ui/StatsMedal2.png | hedgewars-src/frontend-qt6/res/StatsMedal2.png | GFDL 1.2 |
+| game/assets/ui/StatsMedal3.png | hedgewars-src/frontend-qt6/res/StatsMedal3.png | GFDL 1.2 |
+| game/assets/ui/StatsMedal4.png | hedgewars-src/frontend-qt6/res/StatsMedal4.png | GFDL 1.2 |
+| game/assets/ui/info.png | hedgewars-src/frontend-qt6/res/info.png | GFDL 1.2 |
+| game/assets/ui/Settings.png | hedgewars-src/frontend-qt6/res/Settings.png | GFDL 1.2 |
+| game/assets/ui/Exit.png | hedgewars-src/frontend-qt6/res/Exit.png | GFDL 1.2 |
+| game/assets/ui/edit.png | hedgewars-src/frontend-qt6/res/edit.png | GFDL 1.2 |
+| game/assets/ui/lock.png | hedgewars-src/frontend-qt6/res/lock.png | GFDL 1.2 |
+| game/assets/ui/unlock.png | hedgewars-src/frontend-qt6/res/unlock.png | GFDL 1.2 |
+| game/assets/ui/dropdown.png | hedgewars-src/frontend-qt6/res/dropdown.png | GFDL 1.2 |
+| game/assets/ui/teamicon.png | hedgewars-src/frontend-qt6/res/teamicon.png | GFDL 1.2 |
+| game/assets/ui/hh25x25.png | hedgewars-src/frontend-qt6/res/hh25x25.png | GFDL 1.2 |
+| game/assets/ui/Start.png | hedgewars-src/frontend-qt6/res/Start.png | GFDL 1.2 |
+| game/assets/gfx/BigDigits.png | hedgewars-src/share/hedgewars/Data/Graphics/BigDigits.png | GFDL 1.2 |
+| game/assets/gfx/BigDigitsRed.png | hedgewars-src/share/hedgewars/Data/Graphics/BigDigitsRed.png | GFDL 1.2 |
+| game/assets/gfx/BigDigitsGray.png | hedgewars-src/share/hedgewars/Data/Graphics/BigDigitsGray.png | GFDL 1.2 |
+| game/assets/gfx/Frame.png | hedgewars-src/share/hedgewars/Data/Graphics/Frame.png | GFDL 1.2 |
+| game/assets/gfx/flag_hedgewars.png | hedgewars-src/share/hedgewars/Data/Graphics/Flags/hedgewars.png | GFDL 1.2 |
+| game/assets/touch/arrowleft.png | hedgewars-src/project_files/Android-build/SDL-android-project/assets/Data/Graphics/Buttons/arrowleft.png | GFDL 1.2 (Hedgewars 저장소의 Android판 그림, 별도 표기 없어 저장소 공통 조건으로 봄) |
+| game/assets/touch/arrowright.png | hedgewars-src/project_files/Android-build/SDL-android-project/assets/Data/Graphics/Buttons/arrowright.png | GFDL 1.2 (Hedgewars 저장소의 Android판 그림, 별도 표기 없어 저장소 공통 조건으로 봄) |
+| game/assets/touch/arrowup.png | hedgewars-src/project_files/Android-build/SDL-android-project/assets/Data/Graphics/Buttons/arrowup.png | GFDL 1.2 (Hedgewars 저장소의 Android판 그림, 별도 표기 없어 저장소 공통 조건으로 봄) |
+| game/assets/touch/arrowdown.png | hedgewars-src/project_files/Android-build/SDL-android-project/assets/Data/Graphics/Buttons/arrowdown.png | GFDL 1.2 (Hedgewars 저장소의 Android판 그림, 별도 표기 없어 저장소 공통 조건으로 봄) |
+| game/assets/touch/forwardjump.png | hedgewars-src/project_files/Android-build/SDL-android-project/assets/Data/Graphics/Buttons/forwardjump.png | GFDL 1.2 (Hedgewars 저장소의 Android판 그림, 별도 표기 없어 저장소 공통 조건으로 봄) |
+| game/assets/touch/firebutton.png | hedgewars-src/project_files/Android-build/SDL-android-project/assets/Data/Graphics/Buttons/firebutton.png | GFDL 1.2 (Hedgewars 저장소의 Android판 그림, 별도 표기 없어 저장소 공통 조건으로 봄) |
+| game/assets/touch/timerbutton.png | hedgewars-src/project_files/Android-build/SDL-android-project/assets/Data/Graphics/Buttons/timerbutton.png | GFDL 1.2 (Hedgewars 저장소의 Android판 그림, 별도 표기 없어 저장소 공통 조건으로 봄) |
+| game/assets/touch/ammomenu.png | hedgewars-src/project_files/Android-build/SDL-android-project/assets/Data/Graphics/Buttons/backjump.png (원본 Android판 무기 메뉴 버튼, 서류가방 그림) | GFDL 1.2 (Hedgewars 저장소의 Android판 그림, 별도 표기 없어 저장소 공통 조건으로 봄) |
+| game/assets/hats/war_britsapper.png | hedgewars-src/share/hedgewars/Data/Graphics/Hats/war_britsapper.png | GFDL 1.2 |
+| game/assets/hats/war_frenchww1helmet.png | hedgewars-src/share/hedgewars/Data/Graphics/Hats/war_frenchww1helmet.png | GFDL 1.2 |
+| game/assets/hats/war_desertgrenadier2.png | hedgewars-src/share/hedgewars/Data/Graphics/Hats/war_desertgrenadier2.png | GFDL 1.2 |
+| game/assets/hats/TeamSoldier.png | hedgewars-src/share/hedgewars/Data/Graphics/Hats/TeamSoldier.png | GFDL 1.2 |
+| game/assets/hats/war_desertgrenadier1.png | hedgewars-src/share/hedgewars/Data/Graphics/Hats/war_desertgrenadier1.png | GFDL 1.2 |
+| game/assets/hats/pirate_hat.png | hedgewars-src/share/hedgewars/Data/Graphics/Hats/pirate_hat.png | GFDL 1.2 |
+| game/assets/hats/war_plainpith.png | hedgewars-src/share/hedgewars/Data/Graphics/Hats/war_plainpith.png | GFDL 1.2 |
+| game/assets/hats/war_trenchfrench02.png | hedgewars-src/share/hedgewars/Data/Graphics/Hats/war_trenchfrench02.png | GFDL 1.2 |
+| game/assets/hats/anzac.png | hedgewars-src/share/hedgewars/Data/Graphics/Hats/anzac.png | GFDL 1.2 |
+| game/assets/hats/policecap.png | hedgewars-src/share/hedgewars/Data/Graphics/Hats/policecap.png | GFDL 1.2 |
+| game/assets/hats/war_desertofficer.png | hedgewars-src/share/hedgewars/Data/Graphics/Hats/war_desertofficer.png | GFDL 1.2 |
+| game/assets/hats/beefeaterhat.png | hedgewars-src/share/hedgewars/Data/Graphics/Hats/beefeaterhat.png | GFDL 1.2 |
+| game/assets/hats/royalguard.png | hedgewars-src/share/hedgewars/Data/Graphics/Hats/royalguard.png | GFDL 1.2 |
+| game/assets/hats/Meteorhelmet.png | hedgewars-src/share/hedgewars/Data/Graphics/Hats/Meteorhelmet.png | GFDL 1.2 |
+| game/assets/hats/Viking.png | hedgewars-src/share/hedgewars/Data/Graphics/Hats/Viking.png | GFDL 1.2 |
+| game/assets/hats/Samurai.png | hedgewars-src/share/hedgewars/Data/Graphics/Hats/Samurai.png | GFDL 1.2 |
+| game/assets/hats/knight.png | hedgewars-src/share/hedgewars/Data/Graphics/Hats/knight.png | GFDL 1.2 |
+| game/assets/hats/spartan.png | hedgewars-src/share/hedgewars/Data/Graphics/Hats/spartan.png | GFDL 1.2 |
+| game/assets/hats/crown.png | hedgewars-src/share/hedgewars/Data/Graphics/Hats/crown.png | GFDL 1.2 |
+
+참고: 원본 메뉴의 창 테두리·버튼·표 머리줄은 그림이 아니라 frontend-qt6/res/css/qt.css 스타일로 그려진다. 3차 화면은 그 색·두께·둥글기 값을 그대로 옮겼다(코드 GPL-2.0 참고, 그림 아님).
+
+## 4차 추가 (서든데스) — 파일 — 원본 경로 — 라이선스
+| 파일 | 원본 경로 | 라이선스 |
+|---|---|---|
+| game/assets/gfx/SDWater.png | hedgewars-src/share/hedgewars/Data/Graphics/SuddenDeath/SDWater.png | GFDL 1.2 |
+| game/assets/snd/suddendeath.ogg | hedgewars-src/share/hedgewars/Data/Sounds/suddendeath.ogg | GFDL 1.2 |
+| game/assets/snd/suddendeath.mp3 | 위 파일을 ffmpeg로 mp3 변환 | GFDL 1.2 |
+| game/assets/music/sdmusic.ogg | hedgewars-src/share/hedgewars/Data/Music/sdmusic.ogg (원본 기본 서든데스 음악, uSound.pas SDMusicFN) | Music/credits.txt 기재: Kevin MacLeod - "Hitman" [sheepluva edit]. 원곡자 표기 필요 |
+| game/assets/music/sdmusic.mp3 | 위 파일을 ffmpeg로 mp3 변환 | 위와 같음 |
+| game/assets/ui/Save.png | hedgewars-src/frontend-qt6/res/Save.png | GFDL 1.2 |

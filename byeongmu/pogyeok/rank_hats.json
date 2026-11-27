@@ -1,0 +1,22 @@
+[
+  { "rank": "훈련병", "hat": "NoHat" },
+  { "rank": "이병", "hat": "war_britsapper" },
+  { "rank": "일병", "hat": "war_frenchww1helmet" },
+  { "rank": "상병", "hat": "war_desertgrenadier2" },
+  { "rank": "병장", "hat": "TeamSoldier" },
+  { "rank": "하사", "hat": "war_desertgrenadier1" },
+  { "rank": "중사", "hat": "pirate_hat" },
+  { "rank": "상사", "hat": "war_plainpith" },
+  { "rank": "원사", "hat": "war_trenchfrench02" },
+  { "rank": "준위", "hat": "anzac" },
+  { "rank": "소위", "hat": "policecap" },
+  { "rank": "중위", "hat": "war_desertofficer" },
+  { "rank": "대위", "hat": "beefeaterhat" },
+  { "rank": "소령", "hat": "royalguard" },
+  { "rank": "중령", "hat": "Meteorhelmet" },
+  { "rank": "대령", "hat": "Viking" },
+  { "rank": "준장", "hat": "Samurai" },
+  { "rank": "소장", "hat": "knight" },
+  { "rank": "중장", "hat": "spartan" },
+  { "rank": "대장", "hat": "crown" }
+]
