@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   const $ = (id) => document.getElementById(id);
-  const W = Sim.W, H = Sim.H;
+  let W = Sim.W, H = Sim.H;      // 경기마다 맵 크기가 다름 → startGame 에서 바꿈
 
   // ---------------- 리소스 ----------------
   const IMG = {};
@@ -44,7 +44,7 @@
     if (currentMusic === name && musicEl && !musicEl.paused) return;
     currentMusic = name;
     if (!musicEl) { musicEl = new Audio(); musicEl.loop = true; musicEl.volume = 0.35; }
-    musicEl.src = 'assets/music/' + name + EXT;
+    musicEl.src = 'assets/music/' + name + '.mp3';   // 음악은 mp3 하나로 통일 (홈페이지 용량 절반)
     if (soundOn) musicEl.play().catch(() => {});
   }
   ['pointerdown', 'keydown', 'touchstart'].forEach(e => window.addEventListener(e, () => {
@@ -53,6 +53,27 @@
 
   // ---------------- 화면 전환 ----------------
   function show(id) { for (const s of document.querySelectorAll('.screen:not(.modal)')) s.classList.toggle('on', s.id === id); }
+  // ---------------- 지도·테마 자료 (고른 것만 늦게 불러옴) ----------------
+  const MAPKO = { small: '작은 섬', medium: '보통', large: '큰 땅', cavern: '동굴', wacky: '엉뚱한 섬들',
+    small_tunnels: '좁은 굴 (작게)', medium_tunnels: '좁은 굴 (보통)', large_tunnels: '좁은 굴 (크게)',
+    small_islands: '섬 미로 (작게)', medium_islands: '섬 미로 (보통)', large_islands: '섬 미로 (크게)' };
+  const memo = new Map();
+  const once = (k, f) => { if (!memo.has(k)) memo.set(k, f().catch(e => { memo.delete(k); throw e; })); return memo.get(k); };
+  const getJSON = (u) => fetch(u).then(r => { if (!r.ok) throw new Error(u + ' ' + r.status); return r.json(); });
+  const loadImg = (u) => new Promise(res => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = u; });
+  const loadCatalog = () => once('cat', () => getJSON('maps/catalog.json'));
+  const loadTemplates = () => once('tpl', async () => ({ map: await getJSON('maps/map_templates.json'), maze: await getJSON('maps/maze_templates.json') }));
+  function loadTheme(name) {
+    return once('th:' + name, async () => {
+      const base = 'assets/themes/' + name + '/', j = await getJSON(base + 'theme.json'), f = j.files, img = {};
+      await Promise.all(Object.keys(f).filter(k => f[k]).map(async k => { img[k] = await loadImg(base + f[k] + '.png'); }));
+      const objImgs = await Promise.all(j.objects.map(o => loadImg(base + o.name + '.png')));
+      let avg = [120, 90, 50];
+      if (img.land) { const p = getPixels(img.land); let r = 0, g = 0, b = 0, n = 0; for (let i = 0; i < p.d.length; i += 16) if (p.d[i + 3] > 128) { r += p.d[i]; g += p.d[i + 1]; b += p.d[i + 2]; n++; } if (n) avg = [r / n, g / n, b / n]; }
+      return { name, j, img, objImgs, avg };
+    });
+  }
+  const loadImageMap = (name) => once('im:' + name, async () => ({ land: await getJSON('assets/maps/' + name + '/land.json'), png: await loadImg('assets/maps/' + name + '/map.png') }));
   const S = { ws: null, me: 0, room: null, lobby: null, game: null, retry: 0, auth: null, user: null, authed: false, queue: [], rooms: [], sel: null };
   // 로그인 토큰: 탭마다(sessionStorage) 우선, 없으면 이 브라우저 공통(localStorage)
   const store = {
@@ -218,7 +239,13 @@
   $('btnJoin').onclick = () => tryJoin(S.rooms.find(r => r.code === S.sel));
   $('btnCreate').onclick = () => { $('createErr').textContent = ''; $('ctTitle').value = ''; $('ctTitle').placeholder = (S.user ? S.user.nick : '') + '의 방'; $('createDlg').classList.add('on'); };
   $('btnCreateCancel').onclick = () => $('createDlg').classList.remove('on');
-  $('newMode').onchange = () => { if ($('newMode').value === 'team') $('ctMax').value = '4'; $('ctMax').disabled = $('newMode').value === 'team'; };
+  function fillMax(sel, team, cur) {
+    sel.innerHTML = '';
+    for (let n = team ? 4 : 2; n <= 8; n += team ? 2 : 1) { const o = document.createElement('option'); o.value = n; o.textContent = team ? `${n}명 (${n / 2}대${n / 2})` : n + '명'; sel.append(o); }
+    sel.value = String(cur && [...sel.options].some(o => o.value == cur) ? cur : 4);
+  }
+  fillMax($('ctMax'), false, 4);
+  $('newMode').onchange = () => fillMax($('ctMax'), $('newMode').value === 'team', +$('ctMax').value);
   $('btnCreateOk').onclick = () => {
     const t = $('ctTitle').value.trim();
     if (t && (t.length < 2 || /[<>]/.test(t))) { $('createErr').textContent = '방 제목은 2~20자입니다 (< > 사용 불가).'; return; }
@@ -373,7 +400,8 @@
     if (m.t === 'joined') { S.me = m.you; setRoom(m.room); $('homeErr').textContent = ''; S.creating = false; $('createDlg').classList.remove('on'); return; }
     if (m.t === 'left') { setRoom(null); S.lobby = null; if (S.game) { S.game = null; } show('home'); return; }
     if (m.t === 'lobby') { S.lobby = m; renderLobby(); return; }
-    if (m.t === 'game') { startGame(m); return; }
+    if (m.t === 'game') { S.loadingGame = []; startGame(m).catch(e => { console.error(e); flash('지도를 불러오지 못했습니다: ' + e.message, '#ff8080'); }).finally(() => { const q = S.loadingGame || []; S.loadingGame = null; for (const x of q) onMsg(x); }); return; }
+    if (S.loadingGame) { S.loadingGame.push(m); return; }
     if (m.t === 'result') { showResult(m); return; }
     if (!S.game) return;
     if (m.t === 's') onSnap(m);
@@ -383,7 +411,8 @@
     const L = S.lobby;
     $('roomTitle').textContent = L.title || '방';
     const team = L.mode === 'team';
-    $('lobbyModeText').textContent = (team ? '팀전 (2대2, 4명)' : '개인전') + ` · ${L.players.length}/${L.max}명`;
+    const per = L.players.length >= 7 ? 2 : L.players.length >= 5 ? 3 : null;
+    $('lobbyModeText').textContent = (team ? `팀전 (${L.max / 2}대${L.max / 2})` : '개인전') + ` · ${L.players.length}/${L.max}명` + (per ? ` · 인원이 많아 1인당 고슴도치 ${per}마리, 턴 30초` : '');
     $('plist').innerHTML = '';
     for (const p of L.players) {
       const li = document.createElement('li');
@@ -398,15 +427,18 @@
       $('plist').appendChild(li);
     }
     const isHost = L.host === S.me;
+    renderMapPick(L, isHost);
     $('hogs').value = L.hogs; $('hogs').disabled = !isHost;
     $('lobbyMode').value = L.mode; $('lobbyMode').disabled = !isHost;
-    $('lobbyMax').value = L.max; $('lobbyMax').disabled = !isHost || team;
+    if ($('lobbyMax').dataset.team !== String(team)) { fillMax($('lobbyMax'), team, L.max); $('lobbyMax').dataset.team = String(team); }
+    $('lobbyMax').value = L.max; $('lobbyMax').disabled = !isHost;
+    $('hogs').disabled = !isHost || !!per;
     $('sideRow').style.display = team ? 'flex' : 'none';
     const conn = L.players.filter(p => p.connected);
     let why = '';
     if (conn.length < 2) why = '2명 이상 모이면 시작';
-    else if (team && conn.length !== 4) why = '팀전은 4명이 모여야 시작';
-    else if (team && conn.filter(p => p.side === 0).length !== 2) why = 'A팀 2명·B팀 2명으로 나눠 주세요';
+    else if (team && (conn.length < 4 || conn.length % 2)) why = '팀전은 4·6·8명(2대2~4대4)일 때 시작';
+    else if (team && conn.filter(p => p.side === 0).length * 2 !== conn.length) why = '두 팀 인원을 같게 나눠 주세요';
     $('btnStart').disabled = !isHost || !!why;
     $('btnStart').lastChild.textContent = isHost ? (why || '경기 시작') : '방장이 시작합니다';
     $('lobbyErr').textContent = '';
@@ -414,6 +446,65 @@
       if (S.game) { S.game = null; $('overlay').classList.remove('on'); }
       show('lobby'); music('main_theme');
     }
+  }
+  // ---- 지도 고르기 (방장만 바꿈, 모두 미리보기) ----
+  function opt(sel, list) {
+    const key = JSON.stringify(list); if (sel.dataset.k === key) return; sel.dataset.k = key; sel.innerHTML = '';
+    for (const [v, t, dis] of list) { const o = document.createElement('option'); o.value = v; o.textContent = t; if (dis) o.disabled = true; sel.append(o); }
+  }
+  async function renderMapPick(L, isHost) {
+    const mp = L.map; if (!mp) { $('mapRow').style.display = $('mapPrevRow').style.display = 'none'; return; }
+    const cat = await loadCatalog();
+    if (S.lobby !== L) return;
+    const themes = Object.keys(cat.themes).filter(t => !cat.themes[t].hidden).sort();
+    $('mapKind').value = mp.kind;
+    if (mp.kind === 'image') opt($('mapSub'), [['', '무작위 맵']].concat(Object.keys(cat.maps).sort().map(n => [n, n + ' (' + cat.maps[n].maxHogs + ')', cat.maps[n].maxHogs < mp.hogs])));
+    else opt($('mapSub'), [['', '무작위 종류']].concat((mp.kind === 'maze' ? LandGen.MAZE_TYPES : LandGen.OUTLINE_TYPES).map(t => [t, MAPKO[t] || t])));
+    $('mapSub').value = mp.sub || '';
+    opt($('mapTheme'), mp.kind === 'image' ? [['', '맵에 딸린 테마']] : [['', '무작위 테마']].concat(themes.map(t => [t, t])));
+    $('mapTheme').value = mp.kind === 'image' ? '' : (mp.theme || '');
+    for (const id of ['mapKind', 'mapSub', 'mapTheme', 'btnReroll']) $(id).disabled = !isHost;
+    $('mapTheme').disabled = !isHost || mp.kind === 'image';
+    drawMapPreview(mp).catch(e => console.warn('[hw] 미리보기', e));
+  }
+  ['mapKind', 'mapSub', 'mapTheme'].forEach(id => { $(id).onchange = () => send({ t: 'map', kind: $('mapKind').value, sub: id === 'mapKind' ? '' : $('mapSub').value, theme: $('mapTheme').value }); });
+  $('btnReroll').onclick = () => send({ t: 'reroll' });
+  const prevCache = new Map();
+  async function drawMapPreview(mp) {
+    const key = [mp.kind, mp.sub, mp.seed, mp.hogs, mp.th, mp.name].join('|');
+    if (S.prevKey === key) return; S.prevKey = key;
+    const c = $('mapPrev'), x = c.getContext('2d');
+    const kindKo = mp.kind === 'image' ? '이미지 맵' : mp.kind === 'maze' ? '미로' : '무작위 생성';
+    $('mapDesc').textContent = '불러오는 중…';
+    const th = await loadTheme(mp.th);            // 고른 테마를 미리 받아 둠 (경기 시작이 빨라짐)
+    if (S.prevKey !== key) return;
+    let desc;
+    x.fillStyle = 'rgb(' + th.j.sky.join(',') + ')'; x.fillRect(0, 0, c.width, c.height);
+    if (mp.kind === 'image') {
+      const im = await loadImg('assets/maps/' + mp.name + '/preview.png');
+      loadImageMap(mp.name).catch(() => {});
+      if (S.prevKey !== key) return;
+      if (im) { const sc = Math.min(c.width / im.width, c.height / im.height); x.drawImage(im, (c.width - im.width * sc) / 2, (c.height - im.height * sc) / 2, im.width * sc, im.height * sc); }
+      desc = mp.name;
+    } else {
+      let L = prevCache.get(key);
+      if (!L) {
+        const tpl = await loadTemplates();
+        L = MapGen.build({ kind: mp.kind, sub: mp.sub, seed: mp.seed, hogs: mp.hogs }, { templates: tpl, theme: th.j });
+        prevCache.clear(); prevCache.set(key, L);
+      }
+      if (S.prevKey !== key) return;
+      const sc = Math.min(c.width / L.W, c.height / L.H), w = Math.max(1, Math.floor(L.W * sc)), hh = Math.max(1, Math.floor(L.H * sc));
+      const img = x.createImageData(w, hh), d = img.data, sky = th.j.sky, wt = th.j.waterTop, a = th.avg;
+      for (let yy = 0; yy < hh; yy++) for (let xx = 0; xx < w; xx++) {
+        const sx = Math.floor(xx / sc), sy = Math.floor(yy / sc), v = L[sy * L.W + sx], o = (yy * w + xx) * 4;
+        const col = v === 2 ? [230, 200, 40] : v ? a : sy >= L.waterY ? wt : sky;
+        d[o] = col[0]; d[o + 1] = col[1]; d[o + 2] = col[2]; d[o + 3] = 255;
+      }
+      x.putImageData(img, Math.floor((c.width - w) / 2), Math.floor((c.height - hh) / 2));
+      desc = (MAPKO[L.typeName] || L.typeName) + (mp.sub ? '' : ' (무작위로 뽑힘)');
+    }
+    $('mapDesc').textContent = `${kindKo}: ${desc} · 테마 ${mp.th}${mp.kind !== 'image' && !mp.theme ? ' (무작위)' : ''} · 고슴도치 ${mp.hogs}마리`;
   }
   // 판 결과 (서버가 계산한 값만 보여줌) — 순위 아이콘은 원본 StatsMedal
   function showResult(m) {
@@ -458,16 +549,22 @@
 
   async function startGame(m) {
     await imgReady;
+    const mp = m.map || { kind: 'random', sub: '', theme: 'Nature', hogs: 8, placed: [] };
+    $('msg').textContent = '지도를 불러오는 중…';
+    const [th, tpl, im] = await Promise.all([loadTheme(mp.theme), mp.kind === 'image' ? null : loadTemplates(), mp.kind === 'image' ? loadImageMap(mp.name) : null]);
+    const land = MapGen.build({ kind: mp.kind, sub: mp.sub, seed: m.seed, hogs: mp.hogs },
+      { templates: tpl, theme: th.j, image: im && im.land, placed: mp.placed, keepBase: true });
     const G = {
-      seed: m.seed, teams: m.teams, mode: m.mode, waterY: Sim.WATER_Y, sd: !!m.sd, hogs: {}, snaps: [], parts: [], floats: [], graves: m.graves.slice(),
-      land: Sim.genLand(m.seed), canvas: document.createElement('canvas'),
-      cam: { x: W / 2, y: H / 2, z: 1, manual: 0 }, cur: 0, lastTurnAt: 0, myTeam: m.teams.find(t => t.pid === S.me),
+      seed: m.seed, teams: m.teams, mode: m.mode, waterY: 0, sd: !!m.sd, upcoming: [], hogs: {}, snaps: [], parts: [], floats: [], graves: m.graves.slice(),
+      land, map: mp, T: th, mapPng: im && im.png, canvas: document.createElement('canvas'),
+      cam: { x: 0, y: 0, z: 1, manual: 0 }, cur: 0, lastTurnAt: 0, myTeam: m.teams.find(t => t.pid === S.me),
       deadIds: new Set(),
     };
+    W = G.land.W; H = G.land.H; G.water0 = G.land.waterY; G.waterY = G.water0; G.cam.x = W / 2; G.cam.y = H / 2;
     for (const t of m.teams) for (const h of t.hogs) G.hogs[h.id] = { id: h.id, name: h.name, team: t, hp: 100 };
     buildLand(G);
     for (const b of m.booms) carveCanvas(G, b[0], b[1], b[2]);
-    raiseWater(G, m.waterY == null ? Sim.WATER_Y : m.waterY);
+    raiseWater(G, m.waterY == null ? G.water0 : m.waterY);
     checkLand(G, m.land);
     G.cam.z = defaultZoom();
     S.game = G;
@@ -478,15 +575,21 @@
     const touch = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
     $('touch').classList.toggle('on', touch); document.body.classList.toggle('touch', touch);
     buildTimerButtons();
-    music('Nature');
+    music(G.sd ? (th.j.sdMusic || 'sdmusic') : (th.j.music || 'Nature'));
   }
   function defaultZoom() { return Math.max(0.45, Math.min(1.6, innerHeight / 720)); }
 
   function buildLand(G) {
     const c = G.canvas; c.width = W; c.height = H;
     const x2 = c.getContext('2d');
-    const tex = getPixels(IMG.Nature_LandTex), bor = getPixels(IMG.Nature_Border);
-    const img = x2.createImageData(W, H), d = img.data, mk = G.land;
+    if (G.map.kind === 'image') {
+      if (G.mapPng) x2.drawImage(G.mapPng, 0, 0);
+      drawBorderStripes(G, x2);
+      return;
+    }
+    const T = G.T.img;
+    const tex = getPixels(T.land || IMG.Nature_LandTex), bor = getPixels(T.border || IMG.Nature_Border);
+    const img = x2.createImageData(W, H), d = img.data, mk = G.land.base || G.land;
     for (let y = 0; y < H; y++) {
       const ty = (y % tex.h) * tex.w;
       for (let x = 0; x < W; x++) {
@@ -511,6 +614,21 @@
       }
     }
     x2.putImageData(img, 0, 0);
+    // 장식: 원본처럼 이미 칠해진 땅 뒤쪽으로 (BlitImageAndGenerateCollisionInfo 는 빈 곳에만 칠함)
+    x2.save(); x2.globalCompositeOperation = 'destination-over';
+    for (const [i, x, y] of G.land.objects) { const o = G.T.objImgs[i]; if (o) x2.drawImage(o, x, y); }
+    x2.restore();
+    drawBorderStripes(G, x2);
+    G.land.base = null;
+  }
+  // 부서지지 않는 테두리: 검정·노랑 줄무늬 (원본 uLand.pas)
+  function drawBorderStripes(G, x2) {
+    if (!G.land.border) return;
+    const B = MapGen.BORDER, wy = G.land.waterY;
+    for (let y = 0; y < wy; y++) for (const x0 of [0, W - B]) for (let x = x0; x < x0 + B; x++) {
+      x2.fillStyle = (y + x) % 32 < 16 ? '#000' : '#ff0'; x2.fillRect(x, y, 1, 1);
+    }
+    for (let y = 0; y < B; y++) for (let x = 0; x < W; x += 1) { x2.fillStyle = (y + x) % 32 < 16 ? '#000' : '#ff0'; x2.fillRect(x, y, 1, 1); }
   }
   function getPixels(im) {
     const c = document.createElement('canvas'); c.width = im.width || 1; c.height = im.height || 1;
@@ -540,7 +658,7 @@
   }
   // 서든데스 물 상승: 새로 잠긴 줄의 땅을 지움 (서버 doStepWaterUp 과 같은 처리)
   function raiseWater(G, wy) {
-    const from = Math.min(G.waterY, Sim.WATER_Y), to = Math.max(0, Math.round(wy));
+    const from = Math.min(G.waterY, G.water0), to = Math.max(0, Math.round(wy));
     if (to < from) {
       G.land.fill(0, to * W, Math.min(H, from) * W);
       G.canvas.getContext('2d').clearRect(0, to, W, from - to);
@@ -561,7 +679,7 @@
       if (Math.random() < 0.6) play(['ow1', 'ow2', 'ow3', 'ooff1', 'ooff2'][Math.floor(Math.random() * 5)], 0.8);
     } else if (k === 'turn') {
       const t = G.teams.find(t => t.id === e[1]);
-      G.cur = e[2]; G.lastTurnAt = performance.now(); G.cam.manual = 0;
+      G.cur = e[2]; G.lastTurnAt = performance.now(); G.cam.manual = 0; G.upcoming = e[4] || [];
       flash(t.pid === S.me ? '내 차례!' : t.name + ' 차례', t.color);
       if (t.pid === S.me) play('yessir');
       releaseAllKeys();
@@ -647,26 +765,27 @@
     }
     const halfW = vw / z / 2, halfH = vh / z / 2;
     G.cam.x = Math.max(Math.min(halfW, W / 2), Math.min(Math.max(W - halfW, W / 2), G.cam.x));
-    G.cam.y = Math.max(Math.min(halfH, H / 2) - 300, Math.min(Sim.WATER_Y + 60 - halfH, G.cam.y));
-    if (G.sd && !G.sdMusic) { G.sdMusic = true; music('sdmusic'); }
+    G.cam.y = Math.max(Math.min(halfH, H / 2) - 300, Math.min(G.water0 + 60 - halfH, G.cam.y));
+    if (G.sd && !G.sdMusic) { G.sdMusic = true; music((G.T && G.T.j.sdMusic) || 'sdmusic'); }
     let sx = 0, sy = 0;
     if (G.shakeUntil > now) { sx = (Math.random() - 0.5) * G.shakeAmt; sy = (Math.random() - 0.5) * G.shakeAmt; }
     const ox = vw / 2 - (G.cam.x + sx) * z, oy = vh / 2 - (G.cam.y + sy) * z;
 
     // 하늘 (theme.cfg sky = 19,18,82)
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.fillStyle = 'rgb(19,18,82)'; ctx.fillRect(0, 0, vw, vh);
+    const TJ = G.T ? G.T.j : null, TI = G.T ? G.T.img : {};
+    ctx.fillStyle = TJ ? 'rgb(' + TJ.sky.join(',') + ')' : 'rgb(19,18,82)'; ctx.fillRect(0, 0, vw, vh);
     // 하늘 그림: 화면을 항상 덮도록(cover) 그리고, 카메라에 따라 조금만 움직임(원근감)
-    const sky = IMG.Nature_Sky;
-    if (sky.width) {
+    const sky = TI.sky || (G.T ? null : IMG.Nature_Sky);
+    if (sky && sky.width) {
       const sc = Math.max(vw * 1.15 / sky.width, vh * 1.15 / sky.height);
       const sw = sky.width * sc, shh = sky.height * sc;
-      const fx = G.cam.x / W, fy = Math.max(0, Math.min(1, G.cam.y / Sim.WATER_Y));
+      const fx = G.cam.x / W, fy = Math.max(0, Math.min(1, G.cam.y / G.water0));
       ctx.drawImage(sky, -(sw - vw) * fx, -(shh - vh) * fy, sw, shh);
     }
-    const hz = IMG.Nature_horizont;
-    if (hz.width) {
-      const hzw = hz.width * z, hzh = hz.height * z, base = oy + Sim.WATER_Y * z - hzh;
+    const hz = TI.horizont || (G.T ? null : IMG.Nature_horizont);
+    if (hz && hz.width) {
+      const hzw = hz.width * z, hzh = hz.height * z, base = oy + G.water0 * z - hzh;
       const off = ((ox * 0.6) % hzw + hzw) % hzw;
       for (let x = off - hzw; x < vw; x += hzw) ctx.drawImage(hz, x, base, hzw + 1, hzh);
     }
@@ -780,10 +899,12 @@
     const wy = oy + G.waterY * z;
     if (wy < vh) {
       const gr = ctx.createLinearGradient(0, wy, 0, vh);
-      if (G.sd) { gr.addColorStop(0, 'rgba(182,144,201,0.88)'); gr.addColorStop(1, 'rgba(150,112,169,0.92)'); }
-      else { gr.addColorStop(0, 'rgba(84,92,157,0.85)'); gr.addColorStop(1, 'rgba(52,163,202,0.9)'); }
+      const tj = G.T && G.T.j, rgba = (c, a) => 'rgba(' + c.join(',') + ',' + a + ')';
+      if (G.sd) { gr.addColorStop(0, rgba(tj ? tj.sdWaterTop : [182, 144, 201], 0.88)); gr.addColorStop(1, rgba(tj ? tj.sdWaterBottom : [150, 112, 169], 0.92)); }
+      else { gr.addColorStop(0, rgba(tj ? tj.waterTop : [84, 92, 157], 0.85)); gr.addColorStop(1, rgba(tj ? tj.waterBottom : [52, 163, 202], 0.9)); }
       ctx.fillStyle = gr; ctx.fillRect(0, wy, vw, vh - wy);
-      const bw = G.sd && IMG.SDWater.width ? IMG.SDWater : IMG.BlueWater;
+      const ti = (G.T && G.T.img) || {};
+      const bw = G.sd ? (ti.sdWater || (IMG.SDWater.width ? IMG.SDWater : IMG.BlueWater)) : (ti.water || IMG.BlueWater);
       if (bw.width) {
         const tw = bw.width * z, th = bw.height * z, off = ((ox + now / 30 * z) % tw + tw) % tw;
         for (let x = off - tw; x < vw; x += tw) ctx.drawImage(bw, x, wy - th * 0.6, tw + 1, th);
@@ -828,16 +949,38 @@
       const tw = ctx.measureText(line).width, fw = cur && playing ? 20 : 0, x = Math.round(cw / 2 - (tw + fw) / 2);
       if (fw) { const fi = faceImage(lvl); if (fi.complete && fi.width) ctx.drawImage(fi, x, ty, 18, 18); }
       outlined(line, x + fw, ty + 9, col);
+      ty += 20;
+    }
+    // 다음 차례 순서 (작게)
+    if (playing && G.upcoming && G.upcoming.length) {
+      ctx.font = 'bold 11px ' + HUDFONT;
+      const names = G.upcoming.map(id => G.teams.find(t => t.id === id)).filter(Boolean);
+      const parts = [['다음: ', '#c8c8ff']].concat(names.flatMap((t, i) => [[t.name, t.color], [i < names.length - 1 ? ' → ' : '', '#c8c8ff']]));
+      const tw = parts.reduce((a, p) => a + ctx.measureText(p[0]).width, 0);
+      let x = Math.round(cw / 2 - tw / 2);
+      for (const [txt, cl] of parts) { if (!txt) continue; outlined(txt, x, ty + 7, cl); x += ctx.measureText(txt).width; }
+      ty += 16;
+    }
+    // 탈락한 사람: 관전 안내
+    const mineT = G.teams.find(t => t.pid === S.me);
+    if (mineT && s.st !== 'over' && !mineT.forfeit && mineT.hogs.every(h => G.deadIds.has(h.id))) {
+      ctx.font = 'bold 12px ' + HUDFONT; ctx.textAlign = 'center';
+      outlined('관전 중 — 지금 나가도 감점 없음', Math.round(cw / 2), ty + 8, '#ffcc00');
+      ctx.textAlign = 'left';
     }
     // 팀 줄 (아래 가운데, 원본처럼 작게): 이름표 · 깃발 · 체력바 · 체력
     const teams = G.teams.filter(t => !t.forfeit);
     const totals = teams.map(t => ({ t, hp: t.hogs.reduce((a2, h) => a2 + (G.deadIds.has(h.id) ? 0 : (G.hogs[h.id].hp || 0)), 0) }));
     const maxHp = Math.max(100, ...G.teams.map(t => t.hogs.length * 100));
-    const rowH = small ? 15 : 17, barW = small ? 90 : 120, cx = Math.round(cw / 2);
-    ctx.font = 'bold ' + (small ? 11 : 12) + 'px ' + HUDFONT;
+    const cols = totals.length > 4 ? 2 : 1, rowsN = Math.ceil(totals.length / cols);
+    const rowH = cols > 1 ? (small ? 12 : 14) : (small ? 15 : 17), barW = cols > 1 ? (small ? 56 : 90) : (small ? 90 : 120);
+    const colW = cols > 1 ? (small ? 230 : 300) : 0;
+    ctx.font = 'bold ' + (cols > 1 ? (small ? 10 : 11) : (small ? 11 : 12)) + 'px ' + HUDFONT;
     const blink = (now % 1000) < 500;
     totals.forEach(({ t, hp }, i) => {
-      const y = Math.round(ch - 3 - (totals.length - i) * rowH);
+      const col = cols > 1 ? Math.floor(i / rowsN) : 0, row = cols > 1 ? i % rowsN : i;
+      const cx = Math.round(cw / 2 + (col - (cols - 1) / 2) * colW);
+      const y = Math.round(ch - 3 - (rowsN - row) * rowH);
       if (hp <= 0) return;
       // 이름표 (팀 색 글자, 어두운 바탕)
       const nw = ctx.measureText(t.name).width + 8;
@@ -845,7 +988,8 @@
       ctx.strokeStyle = t.color; ctx.lineWidth = 1; ctx.strokeRect(cx - 14 - nw + .5, y + .5, nw - 1, rowH - 3);
       ctx.fillStyle = t.color; ctx.textAlign = 'right'; ctx.fillText(t.name, cx - 18, y + (rowH - 2) / 2 + 1);
       // 깃발
-      if (IMG.flag_hedgewars.width) ctx.drawImage(IMG.flag_hedgewars, cx - 11, y + Math.round((rowH - 2 - 15) / 2), 22, 15);
+      const fh = Math.min(15, rowH - 2), fwid = Math.round(fh * 22 / 15);
+      if (IMG.flag_hedgewars.width) ctx.drawImage(IMG.flag_hedgewars, cx - Math.round(fwid / 2), y + Math.round((rowH - 2 - fh) / 2), fwid, fh);
       // 체력바 (현재 차례 팀은 깜빡임 — 원본 highlight)
       const bw = Math.max(2, Math.round(barW * hp / maxHp));
       const isCurTeam = cur && cur.team.id === t.id && playing;

@@ -4,8 +4,12 @@
 (function (root) {
   'use strict';
 
-  const W = 2560, H = 1280;          // 지형 크기 (원본 4096x2048보다 작게)
-  const WATER_Y = 1215;              // 수면. 이보다 아래로 가면 익사
+  const W = 2560, H = 1280;          // 기본 지형 크기 (맵마다 다를 수 있음: 지형 배열의 .W .H .waterY)
+  const WATER_Y = 1215;              // 기본 수면 (= H - 65). 이보다 아래로 가면 익사
+  const WATER_MARGIN = 65;
+  const DEF_W = W, DEF_H = H;
+  // 지형 배열: Uint8Array 에 크기·수면을 붙여 들고 다님
+  function makeLand(w, h) { const m = new Uint8Array(w * h); m.W = w; m.H = h; m.waterY = h - WATER_MARGIN; return m; }
   const GRAVITY = 0.0005;            // cGravity = cMaxWindSpeed*2
   const MAX_WIND = 0.00025;          // cMaxWindSpeed
   const MAX_POWER = 1500;            // cMaxPower / cPowerDivisor
@@ -36,9 +40,10 @@
   }
 
   // ---- 지형 생성: 사칙연산만 사용(브라우저마다 결과가 같도록) ----
-  function genLand(seed) {
+  function genLand(seed, width) {
+    const W = width || DEF_W, H = DEF_H;
     const rnd = rng32(seed);
-    const m = new Uint8Array(W * H);
+    const m = makeLand(W, H);
     function noise(step, amp) {
       const n = Math.ceil(W / step) + 2, p = [];
       for (let i = 0; i < n; i++) p.push(rnd() * 2 - 1);
@@ -90,18 +95,19 @@
 
   // 원형으로 지형 깎기 (폭발)
   function carve(m, x, y, r) {
+    const W = m.W, H = m.H;
     x = Math.round(x); y = Math.round(y);
     for (let dy = -r; dy <= r; dy++) {
       const yy = y + dy; if (yy < 0 || yy >= H) continue;
       const w = Math.floor(Math.sqrt(r * r - dy * dy));
       const x0 = Math.max(0, x - w), x1 = Math.min(W - 1, x + w);
-      for (let xx = x0; xx <= x1; xx++) m[yy * W + xx] = 0;
+      for (let xx = x0; xx <= x1; xx++) if (m[yy * W + xx] !== 2) m[yy * W + xx] = 0;   // 2 = 부서지지 않는 땅
     }
   }
 
   function landAt(m, x, y) {
-    if (x < 0 || x >= W || y < 0 || y >= H) return false;
-    return m[y * W + x] === 1;
+    if (x < 0 || x >= m.W || y < 0 || y >= m.H) return false;
+    return m[y * m.W + x] !== 0;
   }
 
   // 원본 CI(충돌 원)처럼: 정지한 고슴도치는 다른 물체에게 단단한 벽이다.
@@ -197,7 +203,7 @@
       world.ignore = ign;
       if (p.wind) g.dx += wind;
       const c = stepFalling(world, g, p);
-      if (g.y > WATER_Y || g.x < -400 || g.x > W + 400) { world.ignore = null; return null; }
+      if (g.y > (world.waterY || world.land.waterY) || g.x < -400 || g.x > world.land.W + 400) { world.ignore = null; return null; }
       if (kind === 'bazooka' && c.coll) { world.ignore = null; return { x: g.x, y: g.y, t }; }
       if (kind === 'grenade' && --g.timer <= 0) { world.ignore = null; return { x: g.x, y: g.y, t }; }
     }
@@ -206,7 +212,7 @@
   }
 
   const Sim = {
-    W, H, WATER_Y, GRAVITY, MAX_WIND, MAX_POWER, MAX_ANGLE, HH_RADIUS, HH_STEP_TICKS, HH_HEALTH,
+    W, H, WATER_Y, WATER_MARGIN, makeLand, GRAVITY, MAX_WIND, MAX_POWER, MAX_ANGLE, HH_RADIUS, HH_STEP_TICKS, HH_HEALTH,
     TURN_TIME, RETREAT_TIME, HH_KICK, WEAPONS, HOG,
     rng32, genLand, carve, landAt, solidAt, testX, testY, overlaps, stepFalling,
     explosionDamage, fallDamage, aimVector, simulateShot,

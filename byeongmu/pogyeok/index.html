@@ -151,7 +151,11 @@
     label { margin:4px 0 2px; } input, select { padding:4px 8px; font-size:14px; } button { min-height:32px; }
     #lobby .box { padding:8px 10px; }
     #keysHelp { display:none; }
+    table.info td { padding:2px 6px; } .modal .box { padding:8px 12px; } .modal h1 { font-size:16px; margin:0 0 2px; }
+    table.res .rbadge img { width:22px; height:22px; }
   }
+#mapPrev{width:256px;height:128px;border:2px solid #ffcc00;border-radius:6px;background:#131252;image-rendering:auto;max-width:100%}
+@media (max-height:480px){#mapPrev{width:192px;height:96px}}
 </style>
 </head>
 <body>
@@ -216,8 +220,8 @@
     <h1><img src="assets/ui/new.png" alt="" style="height:22px;vertical-align:middle"> 방 만들기</h1>
     <label for="ctTitle">방 제목 (2~20자, 비우면 "닉네임의 방")</label><input id="ctTitle" maxlength="20" autocomplete="off">
     <div class="row">
-      <div><label for="newMode">방식</label><select id="newMode"><option value="solo">개인전</option><option value="team">팀전 (2대2)</option></select></div>
-      <div><label for="ctMax">인원</label><select id="ctMax"><option value="2">2명</option><option value="3">3명</option><option value="4" selected>4명</option></select></div>
+      <div><label for="newMode">방식</label><select id="newMode"><option value="solo">개인전</option><option value="team">팀전 (2대2~4대4)</option></select></div>
+      <div><label for="ctMax">최대 인원</label><select id="ctMax"><option value="2">2명</option><option value="3">3명</option><option value="4" selected>4명</option></select></div>
     </div>
     <div class="row"><button id="btnCreateOk"><img src="assets/ui/new.png" alt="">만들기</button><button id="btnCreateCancel">취소</button></div>
     <div class="err" id="createErr"></div>
@@ -231,10 +235,17 @@
     <ul class="players" id="plist"></ul>
     <div class="row" id="sideRow" style="display:none"><button id="btnSideA" style="border-color:#ff0204">A팀으로</button><button id="btnSideB" style="border-color:#4980c1">B팀으로</button></div>
     <div class="row">
-      <div><label for="lobbyMode">방식 (방장)</label><select id="lobbyMode"><option value="solo">개인전</option><option value="team">팀전 (2대2)</option></select></div>
+      <div><label for="lobbyMode">방식 (방장)</label><select id="lobbyMode"><option value="solo">개인전</option><option value="team">팀전 (2대2~4대4)</option></select></div>
       <div><label for="lobbyMax">인원 (방장)</label><select id="lobbyMax"><option value="2">2명</option><option value="3">3명</option><option value="4">4명</option></select></div>
       <div><label for="hogs">고슴도치 (방장)</label><select id="hogs"><option value="1">1마리</option><option value="2">2마리</option><option value="3">3마리</option><option value="4">4마리</option></select></div>
     </div>
+    <div class="row" id="mapRow">
+      <div><label for="mapKind">지형 (방장)</label><select id="mapKind"><option value="random">무작위 생성</option><option value="maze">미로</option><option value="image">이미지 맵</option></select></div>
+      <div><label for="mapSub">종류</label><select id="mapSub"></select></div>
+      <div><label for="mapTheme">테마</label><select id="mapTheme"></select></div>
+    </div>
+    <div class="row" id="mapPrevRow"><canvas id="mapPrev" width="256" height="128"></canvas>
+      <div style="flex:1;min-width:140px"><div class="small" id="mapDesc"></div><button id="btnReroll" style="margin-top:6px">다시 뽑기</button></div></div>
     <div class="row"><button id="btnStart"><img src="assets/ui/Start.png" alt="">경기 시작</button><button id="btnLeave"><img src="assets/ui/Exit.png" alt="" style="height:18px">나가기</button></div>
     <div class="row"><button id="btnCopy">방 링크 복사</button></div>
     <div class="err" id="lobbyErr"></div>
@@ -312,14 +323,17 @@
       <li>그림·소리·음악: Hedgewars 프로젝트 기여자들, GNU Free Documentation License 1.2</li>
       <li>음악 "Nature" — John Dum / "main_theme" — Hedgewars 프로젝트 / 서든데스 음악 "Hitman" — Kevin MacLeod (sheepluva 편집)</li>
       <li>글꼴: DejaVu Sans Bold (Bitstream Vera 라이선스), WenQuanYi Zen Hei (GPL2 + 글꼴 임베딩 예외)</li>
-      <li>원본 코드: GNU GPL v2 (이 게임 코드는 수치를 참고해 새로 작성)</li>
+      <li>원본 코드: GNU GPL v2 (이 게임 코드는 수치를 참고해 새로 작성. 단, 지형 생성기 landgen.js·지도 만들기 mapgen.js 는 원본 코드를 옮긴 것으로 GPL v2)</li>
+      <li>테마 29종·이미지 맵 44종: Hedgewars 각 테마·맵 제작자 (GFDL 1.2). 테마·맵·음악별 만든 사람은 아래 목록의 "6차 추가"에</li>
     </ul>
-    <p>사용한 파일 전체 목록과 원본 경로: <a href="assets/ASSET_LICENSES.txt" target="_blank">ASSET_LICENSES</a></p>
+    <p>사용한 파일 전체 목록과 원본 경로·만든 사람:<a href="assets/ASSET_LICENSES.txt" target="_blank">ASSET_LICENSES</a></p>
     <div class="row"><button id="btnCloseCredits">닫기</button></div>
   </div>
 </section>
 
 <script src="sim.js"></script>
+<script src="landgen.js"></script>
+<script src="mapgen.js"></script>
 <script src="client.js"></script>
 </body>
 </html>

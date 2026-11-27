@@ -9,7 +9,7 @@
 | Hedgewars 그림·소리·음악 | GNU Free Documentation License 1.2 (GFDL 1.2) | 아래 표의 파일 전부 |
 | 음악 Nature.ogg | GFDL 1.2, 작곡 John Dum (hedgewars-src/share/hedgewars/Data/Music/credits.txt) | |
 | 음악 main_theme.ogg | GFDL 1.2, Hedgewars 프로젝트 | |
-| Hedgewars 원본 코드 | GNU GPL v2 | 이 게임은 원본 코드를 옮겨 적지 않았다. 수치·규칙만 읽어 JS로 새로 작성 |
+| Hedgewars 원본 코드 | GNU GPL v2 | 5차까지는 수치·규칙만 읽어 새로 작성. 6차의 지형 생성기·장식 배치(game/public/landgen.js, mapgen.js)는 원본 코드를 번역해 옮겼으므로 GPL-2.0 대상 (아래 "6차 추가") |
 | 이 게임 코드 (game/server.js, game/public/*.js, game/test/*.js) | GPL-2.0 으로 배포 권장 | 원본 물리(doStepFallingGear, doMakeExplosion 피해 공식, hedgehog_step/점프)를 참고해 다시 쓴 부분이 game/public/sim.js 에 있으므로, 안전하게 GPL-2.0 대상으로 취급한다 |
 | 2차 코드 (game/accounts.js, results.js, config.js) | GPL-2.0 으로 배포 권장 | 원본과 무관하게 새로 작성. 외부 라이브러리 없음(Node 기본 crypto) |
 | 계급 표시 | 원본 모자(Graphics/Hats) | 3차에서 코드로 그린 방패 아이콘을 없애고 원본 모자로 교체. 배정표: game/public/rank_hats.json |
@@ -177,3 +177,119 @@ GFDL 1.2 전문: https://www.gnu.org/licenses/old-licenses/fdl-1.2.html · GPL v
 | game/assets/music/sdmusic.ogg | hedgewars-src/share/hedgewars/Data/Music/sdmusic.ogg (원본 기본 서든데스 음악, uSound.pas SDMusicFN) | Music/credits.txt 기재: Kevin MacLeod - "Hitman" [sheepluva edit]. 원곡자 표기 필요 |
 | game/assets/music/sdmusic.mp3 | 위 파일을 ffmpeg로 mp3 변환 | 위와 같음 |
 | game/assets/ui/Save.png | hedgewars-src/frontend-qt6/res/Save.png | GFDL 1.2 |
+
+## 6차 추가 (지도 다양화, 2026-11-27) — 파일 — 원본 경로 — 라이선스
+
+### 원본 코드를 옮긴 파일 (GNU GPL v2 or later)
+| 파일 | 옮긴 원본 | 라이선스 |
+|---|---|---|
+| game/public/landgen.js | hedgewars-src/rust/landgen (outline_template_based, maze), rust/land2d, rust/integral-geometry, rust/lib-hwengine-future/src/game_field.rs, hedgewars/uLand.pas(SelectTemplate) | GPL-2.0 (원본 코드를 번역해 옮김, 파일 머리에 표시) |
+| game/public/mapgen.js | hedgewars/uLandObjects.pas (장식 배치 TryPut/CheckLand/CheckCanPlace/AddThemeObjects), hedgewars/uLand.pas (GenMap 테두리, LoadMap/LoadMask/SetLand 색 규칙) | GPL-2.0 (파일 머리에 표시) |
+| game/build_maps.js | hedgewars/uLandObjects.pas (ReadThemeInfo 의 object/anchors 읽기 규칙), uLand.pas (LoadMapConfig: 최대 고슴도치 기본 18) | GPL-2.0 |
+| game/public/maps/map_templates.json, maze_templates.json | hedgewars-src/share/hedgewars/Data/map_templates.yaml, maze_templates.yaml (YAML → JSON 변환만) | GPL-2.0 (원본 데이터) |
+| game/public/maps/catalog.json | 테마·맵 목록 (build_maps.js 가 theme.cfg·map.cfg 에서 만듦) | GPL-2.0 |
+
+### 테마 (그림·음악) — game/assets/themes/<테마>/ — 원본 hedgewars-src/share/hedgewars/Data/Themes/<테마>/ — GFDL 1.2
+각 폴더: theme.json(theme.cfg 를 읽어 만든 설정·장식 충돌 정보), LandTex·Border·Sky·horizont·BlueWater·SDWater·icon 등 쓰는 그림, 장식(object) 그림, credits.txt(원본에 있을 때).
+| 테마 | 고르기 | 장식 수 | 음악 (game/assets/music/, mp3 사본 포함) | 만든 사람 (원본 credits.txt) |
+|---|---|---|---|---|
+| Art | 가능 | 4 | Art — Hedgewars 프로젝트 | Zippy |
+| Bamboo | 가능 | 4 | oriental — Jonatan Nilsson | Joshua Frese |
+| Bath | 가능 | 6 | bath — Hedgewars 프로젝트 | John Dum |
+| Beach | 가능 | 10 | Beach — Hedgewars 프로젝트 | CopherNeue, Miguelac |
+| Blox | 숨김(원본 hidden=true, 이미지 맵에서만 쓰임) | 0 | Nature — John Dum | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
+| Brick | 가능 | 9 | Brick — Hedgewars 프로젝트 | AlexYeCu |
+| Cake | 가능 | 6 | snow — Jonatan Nilsson | Randy |
+| Castle | 가능 | 4 | Castle — Hedgewars 프로젝트 | John Dum |
+| Cave | 가능 | 5 | snow — Jonatan Nilsson | Guillaume Englert |
+| Cheese | 가능 | 5 | EarthRise — Jonatan Nilsson | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
+| Christmas | 가능 | 6 | snow — Jonatan Nilsson | Palewolf and others |
+| City | 가능 | 4 | City — HSR <http://elhombresinremedio.com> | John Dum |
+| Compost | 가능 | 8 | Compost — HG | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
+| CrazyMission | 숨김(원본 hidden=true, 이미지 맵에서만 쓰임) | 0 | snow — Jonatan Nilsson | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
+| Deepspace | 숨김(원본 hidden=true, 이미지 맵에서만 쓰임) | 0 | hell — Hedgewars 프로젝트 | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
+| Desert | 가능 | 7 | Desert — Hedgewars 프로젝트 | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
+| Digital | 가능 | 13 | Freeway — Hedgewars 프로젝트 | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
+| EarthRise | 가능 | 2 | EarthRise — Jonatan Nilsson | Joshua Frese |
+| Eyes | 숨김(원본 hidden=true, 이미지 맵에서만 쓰임) | 0 | hell — Hedgewars 프로젝트 | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
+| Freeway | 가능 | 2 | Freeway — Hedgewars 프로젝트 | Joshua Frese |
+| Fruit | 가능 | 5 | Fruit — Valentin Kraevskiy | Randy |
+| Golf | 가능 | 13 | Golf — Hedgewars 프로젝트 | RoFra |
+| Halloween | 가능 | 2 | Halloween — Hedgewars 프로젝트 | John Dum |
+| Hell | 가능 | 4 | hell — Hedgewars 프로젝트 | Stanko Tadić |
+| Hoggywood | 가능 | 8 | Rock — HSR <http://elhombresinremedio.com> | RoFra, Wuzzy |
+| Island | 가능 | 5 | pirate — Jonatan Nilsson | John Dum |
+| Jungle | 가능 | 7 | Jungle — Valentin Kraevskiy | KoRn666 |
+| Nature | 가능 | 11 | Nature — John Dum | John Dum |
+| Olympics | 가능 | 4 | Olympics — Hedgewars 프로젝트 | Guillaume Englert |
+| Planes | 숨김(원본 hidden=true, 이미지 맵에서만 쓰임) | 0 | City — HSR <http://elhombresinremedio.com> | John Dum |
+| Sheep | 가능 | 7 | Sheep — Hedgewars 프로젝트 | Julien Koesten |
+| Snow | 가능 | 4 | snow — Jonatan Nilsson | John Dum |
+| Stage | 가능 | 6 | Rock — HSR <http://elhombresinremedio.com> | RoFra |
+| Underwater | 가능 | 5 | underwater — Hedgewars 프로젝트 | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
+
+### 이미지 맵 — game/assets/maps/<맵>/ (map.png, preview.png, land.json, credits.txt) — 원본 hedgewars-src/share/hedgewars/Data/Maps/<맵>/ — GFDL 1.2
+land.json 은 map.png + mask.png 를 원본 규칙(SetLand)으로 계산한 땅 판정(빨강 = 부서지지 않는 땅). mask.png 자체는 올리지 않음.
+| 맵 | 테마 | 최대 고슴도치 | 크기 | 만든 사람 (원본 credits.txt) |
+|---|---|---|---|---|
+| Bamboo | Bamboo | 18 | 2048x1024 | Joshua Frese |
+| BambooPlinko | Bamboo | 64 | 2048x1024 | Joshua Frese |
+| BasketballField | Nature | 12 | 2048x1024 | John Dum |
+| Bath | Bath | 8 | 2048x1024 | John Dum |
+| Battlefield | Nature | 18 | 2048x1024 | nickstu |
+| Blizzard | Snow | 18 | 4096x2048 | Palewolf |
+| Blox | Blox | 18 | 2048x1024 | Josh |
+| Bubbleflow | Underwater | 18 | 2048x1024 | John Dum |
+| Cake | Cake | 18 | 2048x1024 | Josh |
+| Castle | Nature | 18 | 2048x1024 | Stanko Tadić |
+| Cave | Island | 64 | 4096x2048 | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
+| Cheese | Cheese | 18 | 2048x1488 | CopherNeue |
+| Cogs | EarthRise | 18 | 2048x1024 | Josh |
+| CrazyMission | CrazyMission | 18 | 2048x1024 | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
+| EarthRise | EarthRise | 18 | 2048x1024 | Joshua Frese |
+| Eyes | Eyes | 18 | 2048x1024 | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
+| Hammock | Nature | 18 | 1984x1380 | John Dum |
+| HedgeFortress | Nature | 18 | 2048x1024 | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
+| Hedgelove | Nature | 18 | 2048x1024 | John Dum |
+| Hedgewars | Nature | 18 | 2048x1024 | John Dum |
+| Hogville | Nature | 64 | 4096x2048 | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
+| Hydrant | City | 18 | 2048x1024 | John Dum |
+| Islands | Deepspace | 64 | 4096x2048 | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
+| Lonely_Island | Island | 18 | 2048x1024 | Maciej Mroziński |
+| Mushrooms | Nature | 18 | 2048x1024 | John Dum |
+| Octorama | Underwater | 32 | 2292x1136 | jessor |
+| PirateFlag | Island | 18 | 2048x1024 | Stanko Tadić |
+| Plane | Planes | 18 | 2048x1024 | John Dum |
+| Ropes | Eyes | 64 | 4096x2048 | John Dum |
+| Ruler | Nature | 12 | 2048x1024 | Guillaume Englert |
+| SB_Bones | Desert | 64 | 4096x1280 | Chucklefish, Ltd |
+| SB_Crystal | Cave | 32 | 4096x1024 | Chucklefish, Ltd |
+| SB_Grassy | Castle | 40 | 4096x1024 | Chucklefish, Ltd |
+| SB_Grove | Nature | 64 | 3584x1280 | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
+| SB_Haunty | Halloween | 24 | 2048x1024 | Chucklefish, Ltd |
+| SB_Oaks | Nature | 64 | 4096x2048 | Chucklefish, Ltd |
+| SB_Shrooms | Nature | 64 | 3584x1280 | Chucklefish, Ltd |
+| SB_Tentacles | Hell | 40 | 3072x1280 | Chucklefish, Ltd |
+| Sheep | Sheep | 18 | 2048x1024 | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
+| ShoppaKing | Castle | 64 | 4096x2048 | wolfmarc & Dragonfly |
+| Sticks | Bamboo | 24 | 3072x1536 | dctPL |
+| Trash | Compost | 18 | 2048x1024 | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
+| Tree | Halloween | 18 | 2048x1024 | John Dum |
+| portal | Hell | 64 | 4096x2048 | sphrix |
+
+### 넣지 않은 원본 맵과 이유
+| 맵 | 이유 |
+|---|---|
+| Basketball | 그림(map.png) 없음 — 스크립트로만 만드는 맵 |
+| ClimbHome | 그림(map.png) 없음 — 스크립트로만 만드는 맵 |
+| Control | 미션 전용 (map.lua 필요) |
+| CTF_Blizzard | 그림(map.png) 없음 — 스크립트로만 만드는 맵 |
+| FlightJoust | 미션 전용 (map.lua 필요) |
+| Knockball | 미션 전용 (map.lua 필요) |
+| test | 시험용 맵 |
+| test2 | 시험용 맵 |
+| test3 | 시험용 맵 |
+| testmap | 시험용 맵 |
+| TrophyRace | 미션 전용 (map.lua 필요) |
+
+음악 sdmusic: Kevin MacLeod "Hitman" (sheepluva 편집) — 원본 Music/credits.txt. 음악은 홈페이지에 mp3 사본만 올린다(같은 곡).
