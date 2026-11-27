@@ -156,6 +156,16 @@
   }
 #mapPrev{width:256px;height:128px;border:2px solid #ffcc00;border-radius:6px;background:#131252;image-rendering:auto;max-width:100%}
 @media (max-height:480px){#mapPrev{width:192px;height:96px}}
+#aiStages{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;margin:10px 0}
+#aiStages button{min-width:0;padding:6px 0 4px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:15px;line-height:1.1}
+#aiStages button img{height:20px;margin:0}
+#aiStages button.clear{background:#0d3d12;border-color:#ffcc00}
+#aiStages button.open{border-color:#9dff9d}
+#aiStages button.locked{opacity:.45}
+#aiStages button .sm{font-size:10px;color:#ccc}
+.aiTag{font-size:11px;color:#9dff9d;margin-left:6px;white-space:nowrap}
+@media (max-width:700px){#aiStages{grid-template-columns:repeat(5,1fr)}}
+@media (max-height:480px){#aiStages{grid-template-columns:repeat(10,1fr);gap:4px;margin:6px 0}#aiStages button{padding:3px 0 2px;font-size:13px}#aiStages button img{height:16px}}
 </style>
 </head>
 <body>
@@ -203,6 +213,7 @@
       <span id="roomCount" class="grow"></span>
       <button id="btnCreate"><img src="assets/ui/new.png" alt="">방 만들기</button>
       <button id="btnJoin"><img src="assets/ui/Start.png" alt="">방 들어가기</button>
+      <button id="btnAI"><img src="assets/ui/teamicon.png" alt="" style="height:18px">AI 대전</button>
     </div>
     <div class="tablebox">
       <table class="rooms">
@@ -280,12 +291,22 @@
   </div></div>
 </section>
 
+<section id="aiDlg" class="screen modal">
+  <div class="box wide">
+    <h1><img src="assets/ui/teamicon.png" alt="" style="height:22px;vertical-align:middle"> AI 대전 — 단계 고르기</h1>
+    <div class="small" id="aiInfo">1단계부터 깨면 다음 단계가 열립니다. 처음 깬 단계만 경험치(단계 × 5). 져도 깎이지 않습니다.</div>
+    <div id="aiStages"></div>
+    <div class="small" id="aiStageDesc" style="min-height:1.4em"></div>
+    <div class="row"><button id="btnAiClose">닫기</button></div>
+    <div class="err" id="aiErr"></div>
+  </div>
+</section>
 <section id="result" class="screen modal">
   <div class="box wide">
     <h1 id="resHead">경기 결과</h1>
     <div id="resBody"></div>
     <div id="resNotes" class="notes"></div>
-    <div class="row"><button id="btnCloseResult">확인</button></div>
+    <div class="row"><button id="btnAiNext" style="display:none"><img src="assets/ui/Start.png" alt="">다음 단계</button><button id="btnAiRetry" style="display:none"><img src="assets/ui/Start.png" alt="">다시 도전</button><button id="btnCloseResult">확인</button></div>
   </div>
 </section>
 <section id="myinfo" class="screen modal">

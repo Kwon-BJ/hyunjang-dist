@@ -203,6 +203,7 @@
     l2.textContent = `경험치 ${u.exp.toLocaleString()}` + (u.next != null ? ` · ${u.nextName}까지 ${(u.next - u.exp).toLocaleString()}` : ' · 최고 계급');
     const bar = document.createElement('div'); bar.className = 'xpbar'; bar.innerHTML = '<div></div>';
     const lo = RANK_MIN[u.rank] || 0; bar.firstChild.style.width = (u.next != null ? Math.max(0, Math.min(100, (u.exp - lo) / (u.next - lo) * 100)) : 100) + '%';
+    if (u.aiBest) l1.append(aiTag(u.aiBest));
     t.append(l1, l2, bar); b.append(t);
     $('btnAdmin').style.display = u.admin ? '' : 'none';
   }
@@ -221,7 +222,7 @@
       ic.src = r.state === 'lobby' ? 'assets/ui/iconTime.png' : 'assets/ui/iconDamage.png'; ic.title = r.state === 'lobby' ? '대기 중' : '경기 중';
       st.append(ic, document.createTextNode(r.state === 'lobby' ? ' 대기' : ' 경기 중'));
       const ti = document.createElement('td'); ti.className = 'title'; ti.textContent = r.title;
-      const ho = document.createElement('td'); if (r.host) ho.append(rankBadge(r.host.rank, r.host.rankName, r.host.nick, 24, true));
+      const ho = document.createElement('td'); if (r.host) { ho.append(rankBadge(r.host.rank, r.host.rankName, r.host.nick, 24, true)); if (r.host.aiBest) ho.append(aiTag(r.host.aiBest)); }
       const mo = document.createElement('td'); mo.textContent = r.mode === 'team' ? '팀전' : '개인전';
       const cn = document.createElement('td'); cn.textContent = `${r.count}/${r.max}`;
       tr.append(st, ti, ho, mo, cn);
@@ -312,7 +313,8 @@
     const tb = document.createElement('table'); tb.className = 'info';
     for (const [k, v] of [['계급', u.rankName], ['누적 경험치', u.exp.toLocaleString()],
       ['다음 계급', u.next != null ? `${u.nextName} (${u.next.toLocaleString()}) — ${(u.next - u.exp).toLocaleString()} 남음` : '최고 계급'],
-      ['전적', `${u.games}판 · ${u.wins}승 ${u.losses}패 ${u.draws}무`]]) {
+      ['전적', `${u.games}판 · ${u.wins}승 ${u.losses}패 ${u.draws}무`],
+      ['AI 대전', u.aiBest ? `최고 ${u.aiBest}단계 (깬 단계 ${Object.keys(u.aiClears || {}).length}개)` : '아직 없음']]) {
       const tr = tb.insertRow(); tr.insertCell().textContent = k; const c = tr.insertCell(); c.textContent = v; c.style.color = '#fff';
     }
     b.append(tb);
@@ -320,6 +322,29 @@
     bar.firstChild.style.width = Math.max(0, Math.min(100, pct)) + '%'; b.append(bar);
     $('myinfo').classList.add('on');
   }
+  // ---- AI 대전 단계 목록 (깬 단계 = 메달, 열린 단계, 잠긴 단계 = 자물쇠) ----
+  const AI_BANDS = [[1, 5, '적 2마리 · 바람 무시 · 바주카만'], [6, 10, '적 3마리 · 바람 계산 · 수류탄'], [11, 15, '적 4마리 · 쏘고 숨음 · 미로·동굴'], [16, 20, '적 5마리(두 팀) · 약한 고슴도치부터 노림']];
+  function renderAI() {
+    const u = S.user || { aiBest: 0, aiClears: {} }, g = $('aiStages'); g.innerHTML = '';
+    for (let st = 1; st <= 20; st++) {
+      const b = document.createElement('button'), clear = !!(u.aiClears && u.aiClears[st]), open = st <= (u.aiBest || 0) + 1;
+      b.className = clear ? 'clear' : open ? 'open' : 'locked'; b.disabled = !open;
+      const im = document.createElement('img'); im.src = clear ? 'assets/ui/StatsMedal1.png' : open ? 'assets/ui/unlock.png' : 'assets/ui/lock.png'; im.alt = '';
+      const sm = document.createElement('span'); sm.className = 'sm'; sm.textContent = clear ? '깸' : open ? '+' + st * 5 : '잠김';
+      b.append(im, String(st), sm);
+      b.title = st + '단계';
+      const band = AI_BANDS.find(x => st >= x[0] && st <= x[1]);
+      b.onmouseenter = b.onfocus = () => { $('aiStageDesc').textContent = `${st}단계: ${band[2]}${clear ? ' — 이미 깸(경험치 없음)' : ' — 처음 깨면 +' + st * 5}`; };
+      b.onclick = () => { $('aiErr').textContent = ''; $('aiDlg').classList.remove('on'); send({ t: 'ai', stage: st }); };
+      g.append(b);
+    }
+    $('aiInfo').textContent = `1단계부터 깨면 다음 단계가 열립니다. 처음 깬 단계만 경험치(단계 × 5). 져도·나가도 깎이지 않습니다. 지금 최고 ${u.aiBest || 0}단계.`;
+  }
+  $('btnAI').onclick = () => { renderAI(); $('aiStageDesc').textContent = ''; $('aiDlg').classList.add('on'); };
+  $('btnAiClose').onclick = () => $('aiDlg').classList.remove('on');
+  $('btnAiNext').onclick = () => { $('result').classList.remove('on'); send({ t: 'ai', stage: S.aiResult.stage + 1 }); };
+  $('btnAiRetry').onclick = () => { $('result').classList.remove('on'); send({ t: 'ai', stage: S.aiResult.stage }); };
+  const aiTag = (n) => { const t = document.createElement('span'); t.className = 'aiTag'; t.textContent = 'AI 최고 ' + n + '단계'; return t; };
   // ---- 운영자 ----
   $('btnAdmin').onclick = () => { send({ t: 'admin', op: 'list' }); $('admin').classList.add('on'); };
   $('btnCloseAdmin').onclick = () => $('admin').classList.remove('on');
@@ -420,6 +445,7 @@
       const dot = document.createElement('span'); dot.className = 'dot'; dot.style.background = p.color;
       const who = rankBadge(p.rank, p.rankName, p.nick, 30); who.style.flex = '1';
       li.append(dot, who);
+      if (p.aiBest) who.append(aiTag(p.aiBest));
       if (team) { const s = document.createElement('span'); s.className = 'tag'; s.style.borderColor = p.color; s.style.color = '#fff'; s.textContent = 'AB'[p.side] + '팀'; li.append(s); }
       if (p.id === L.host) { const s = document.createElement('img'); s.src = 'assets/ui/roomadmin.png'; s.title = '방장'; s.width = 16; li.append(s); const t = document.createElement('span'); t.className = 'small'; t.textContent = '방장'; li.append(t); }
       if (p.id === S.me) { const s = document.createElement('span'); s.className = 'small'; s.textContent = '(나)'; li.append(s); }
@@ -509,6 +535,8 @@
   // 판 결과 (서버가 계산한 값만 보여줌) — 순위 아이콘은 원본 StatsMedal
   function showResult(m) {
     const b = $('resBody'); b.innerHTML = '';
+    $('btnAiNext').style.display = 'none'; $('btnAiRetry').style.display = 'none';
+    if (m.mode === 'ai') return showAIResult(m);
     const mine = m.rows.find(r => r.pid === S.me);
     $('resHead').textContent = m.draw ? '무승부 — 경험치 변동 없음' : mine ? (mine.outcome === 'win' ? '승리!' : mine.outcome === 'quit' ? '기권 처리' : '패배') : '경기 종료';
     $('resHead').style.color = mine && mine.outcome === 'win' ? '#ffcc00' : '#fff';
@@ -537,6 +565,35 @@
     if (mine) send({ t: 'me' });
   }
   $('btnCloseResult').onclick = () => $('result').classList.remove('on');
+  // AI 대전 결과: 이기면 "다음 단계", 지면 "다시 도전". 경험치는 처음 깬 단계만
+  function showAIResult(m) {
+    S.aiResult = m;
+    $('resHead').textContent = m.win ? `${m.stage}단계 클리어!` : `${m.stage}단계 패배`;
+    $('resHead').style.color = m.win ? '#ffcc00' : '#fff';
+    const tb = document.createElement('table'); tb.className = 'info res';
+    const hr = tb.insertRow(); hr.className = 'head'; ['', '편', '남은 고슴도치', '준 피해'].forEach(x => { hr.insertCell().textContent = x; });
+    for (const r of m.rows) {
+      const tr = tb.insertRow(); if (r.pid === S.me) tr.className = 'meRow';
+      const c0 = tr.insertCell(); const won = m.win ? !r.ai : r.ai;
+      if (won) { const im = document.createElement('img'); im.src = 'assets/ui/StatsMedal1.png'; im.width = 22; im.style.verticalAlign = 'middle'; c0.append(im); }
+      const c1 = tr.insertCell(); const dot = document.createElement('span'); dot.className = 'dot'; dot.style.background = r.color; dot.style.display = 'inline-block'; dot.style.marginRight = '6px';
+      c1.append(dot, r.nick + (r.ai ? '' : ' (나)'));
+      tr.insertCell().textContent = r.left + '마리';
+      tr.insertCell().textContent = r.dealt;
+    }
+    $('resBody').append(tb);
+    let note;
+    if (m.win && m.first) note = `처음 깼습니다! 경험치 +${m.delta} (${(m.before || 0).toLocaleString()} → ${(m.after || 0).toLocaleString()})` + (m.rankBefore && m.rankAfter && m.rankBefore.level !== m.rankAfter.level ? ` · ${m.rankBefore.name} → ${m.rankAfter.name} 진급!` : '');
+    else if (m.win) note = '이미 깬 단계라 경험치는 없습니다.';
+    else note = '경험치 변동 없음. 다시 도전해 보세요.';
+    if (m.win && m.stage < m.max) note += ` ${m.stage + 1}단계가 열렸습니다.`;
+    if (m.win && m.stage >= m.max) note += ' 마지막 단계까지 모두 깼습니다!';
+    $('resNotes').textContent = note;
+    $('btnAiNext').style.display = m.win && m.stage < m.max ? '' : 'none';
+    $('btnAiRetry').style.display = m.win ? 'none' : '';
+    $('result').classList.add('on');
+    send({ t: 'me' });
+  }
 
   // ---------------- 경기 ----------------
   const cv = $('cv'), ctx = cv.getContext('2d');
@@ -561,7 +618,8 @@
       deadIds: new Set(),
     };
     W = G.land.W; H = G.land.H; G.water0 = G.land.waterY; G.waterY = G.water0; G.cam.x = W / 2; G.cam.y = H / 2;
-    for (const t of m.teams) for (const h of t.hogs) G.hogs[h.id] = { id: h.id, name: h.name, team: t, hp: 100 };
+    for (const t of m.teams) for (const h of t.hogs) G.hogs[h.id] = { id: h.id, name: h.name, team: t, hp: h.hp || 100 };
+    G.ai = m.ai || null;
     buildLand(G);
     for (const b of m.booms) carveCanvas(G, b[0], b[1], b[2]);
     raiseWater(G, m.waterY == null ? G.water0 : m.waterY);
@@ -971,7 +1029,7 @@
     // 팀 줄 (아래 가운데, 원본처럼 작게): 이름표 · 깃발 · 체력바 · 체력
     const teams = G.teams.filter(t => !t.forfeit);
     const totals = teams.map(t => ({ t, hp: t.hogs.reduce((a2, h) => a2 + (G.deadIds.has(h.id) ? 0 : (G.hogs[h.id].hp || 0)), 0) }));
-    const maxHp = Math.max(100, ...G.teams.map(t => t.hogs.length * 100));
+    const maxHp = Math.max(100, ...G.teams.map(t => t.hogs.reduce((a, h) => a + (h.hp || 100), 0)));
     const cols = totals.length > 4 ? 2 : 1, rowsN = Math.ceil(totals.length / cols);
     const rowH = cols > 1 ? (small ? 12 : 14) : (small ? 15 : 17), barW = cols > 1 ? (small ? 56 : 90) : (small ? 90 : 120);
     const colW = cols > 1 ? (small ? 230 : 300) : 0;
