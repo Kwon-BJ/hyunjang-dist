@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="hw-version" content="5.7073c64739a2">
+<meta name="hw-version" content="7.9309d317da47">
 <meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -155,23 +155,53 @@
   .wbtn span { position:absolute; left:7px; top:7px; width:32px; height:32px; background-image:url(assets/ui/ammo/Ammos_base.png); background-size:128px 512px; }
   .wbtn b { position:absolute; right:2px; bottom:0; font-size:11px; color:#fff; text-shadow:0 0 3px #000,0 0 2px #000; }
   #wShots { font-size:12px; color:#ffe066; text-shadow:0 0 3px #000; min-height:14px; text-align:center; }
-  /* 무기 메뉴 (원본 AmmoMenu 그림: 줄 = 슬롯 F1~, 칸 = 무기 아이콘, 남은 수) */
-  #ammoMenu { display:none; position:absolute; z-index:30; left:max(62px, calc(env(safe-area-inset-left) + 62px)); top:max(6px, env(safe-area-inset-top)); max-width:calc(100% - 80px); max-height:calc(100% - 12px); overflow:auto;
-    background:rgba(10,14,40,.92); border:2px solid #c9a23a; border-radius:10px; padding:6px 8px; color:#fff; box-shadow:0 4px 14px rgba(0,0,0,.6); }
+  /* ===== 경기 화면 원본 방식 (10차 1-나 10번) =====
+     글상자 .hwr = 원본 WriteInRoundRect: 흰 테두리 2px·모서리 한 칸 깎임·거의 검정(#000010) 속·DejaVu 굵은 글씨, 그림자·그라데이션 없음
+     무기 창 = 원본 AmmoMenu: 검은 바탕, 회색(160,160,160) 칸줄·테두리 2px, 왼쪽 F 줄 글씨, 아래 줄 이름·남은 수, 올린 칸은 Slot.png */
+  #game .hwr, #game #topRight button, #game .tb .lbl, #game #wTimer, #game #wShots:not(:empty) {
+    background:#000010; color:#fff; border:2px solid #fff; border-radius:2px; box-shadow:none; text-shadow:none;
+    font:bold 13px HWLatin, HWKr, sans-serif; clip-path:polygon(1px 0, calc(100% - 1px) 0, 100% 1px, 100% calc(100% - 1px), calc(100% - 1px) 100%, 1px 100%, 0 calc(100% - 1px), 0 1px); }
+  #game #topRight button:active, #game #wTimer:active { background:#fff; color:#000010; border-color:#000010; }
+  #game #topRight button { min-height:30px; padding:2px 8px; }
+  #game #wShots { font-size:12px; padding:0 3px; margin-top:3px; }
+  #game #wShots:empty { display:none; }
+  #ammoMenu { --am:32px; }
+  body.touch #ammoMenu { --am:48px; }
+  #ammoMenu { display:none; position:absolute; z-index:30; right:32px; bottom:32px; padding:0; border:2px solid rgb(160,160,160); border-radius:0; background:rgb(160,160,160); box-shadow:none; }
+  body.touch #ammoMenu { right:auto; bottom:auto; left:50%; top:50%; transform:translate(-50%, -50%); }
   #ammoMenu.on { display:block; }
-  .amHead { font-size:13px; font-weight:bold; color:#ffe066; margin-bottom:4px; } .amHead span { font-weight:normal; color:#c8c8ff; font-size:11px; margin-left:6px; }
-  .amRow { display:flex; align-items:center; gap:4px; margin:3px 0; }
-  .amKey { width:32px; height:32px; flex:none; background-image:url(assets/ui/ammo/SlotKeys.png); background-size:32px 384px; image-rendering:pixelated; }
-  .amCell { width:44px; height:44px; min-height:0; padding:0; position:relative; border-radius:8px; flex:none; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.25); }
-  .amCell.sel { border:2px solid #ffe066; background:rgba(255,224,102,.18); }
-  .amCell i { position:absolute; left:5px; top:5px; width:32px; height:32px; background-size:128px 512px; }
-  .amCell b { position:absolute; right:3px; bottom:1px; font-size:11px; font-style:normal; text-shadow:0 0 3px #000,0 0 2px #000; }
-  .amCell:disabled { opacity:.55; }
-  #amDesc { font-size:12px; color:#dfe4ff; margin-top:4px; max-width:360px; line-height:1.35; }
-  #gtimers { display:flex; flex-direction:column; gap:3px; }
+  #amGrid { display:grid; gap:1px; }
+  .amKey, .amEmpty, .amFoot { background:#000; }
+  .amKey { width:var(--am); height:var(--am); color:#fff; font:bold 12px HWLatin, sans-serif; display:flex; align-items:center; justify-content:center; }
+  #game #ammoMenu .amCell { width:var(--am); height:var(--am); min-height:0; padding:0; position:relative; border:0; border-radius:0; background:#000; box-shadow:none; }
+  .amCell i { position:absolute; left:calc((var(--am) - 32px) / 2); top:calc((var(--am) - 32px) / 2); width:32px; height:32px; background-size:128px 512px; }
+  .amCell:hover:not(:disabled)::after, .amCell.sel::after { content:''; position:absolute; left:calc((var(--am) - 33px) / 2); top:calc((var(--am) - 33px) / 2 - 1px); width:33px; height:33px; background:url(assets/ui/ammo/Slot.png) 0 0; }
+  #game #ammoMenu .amCell:disabled { opacity:1; background:#000; }
+  .amFoot { height:var(--am); display:flex; align-items:center; justify-content:space-between; padding:0 calc(var(--am) / 2); color:#fff; font:bold 12px HWLatin, HWKr, sans-serif; }
+  #amDesc { display:none; position:absolute; z-index:31; right:32px; bottom:calc(32px + 4px); max-width:340px; padding:3px 6px; line-height:1.35; font-size:12px; transform:translateY(-100%); }
+  body.touch #amDesc { right:auto; left:50%; bottom:auto; top:8px; transform:translateX(-50%); }
+  #amDesc.on { display:block; }
+  #game #wCur { border:2px solid rgb(160,160,160); border-radius:0; background:#000; box-shadow:none; }
+  #game #wCur b { font:bold 11px HWLatin, sans-serif; text-shadow:none; }
+  /* 수류탄 타이머 선택 창: 무기 창과 같은 원본 칸 모양 */
+  #game #gtimers { background:rgb(160,160,160); border:2px solid rgb(160,160,160); border-radius:0; padding:0; gap:1px; }
+  #game .gt { background:#000; color:#fff; border:0; border-radius:0; font:bold 13px HWLatin, HWKr, sans-serif; box-shadow:none; }
+  #game .gt.sel { background:#000 url(assets/ui/ammo/Slot.png) center / 33px 33px no-repeat; }
+  /* 경기 화면에서는 HTML 띠·알림 대신 캔버스의 원본 안내 글 (점검 예고·연결 끊김·승리 안내) */
+  body.ingame #topBars, body.ingame #conn, #game #msg, #game #capMsg, #game #overlay, #game #power { display:none !important; }
+  /* (이전 무기 메뉴 모양은 없앰) */
+  /* 타이머 (1-나): 무기 아이콘 아래 "타이머 3초" 칩 → 누르면 1~5초 선택 창(고르면 바로 닫힘) */
+  #wTimer { display:none; width:auto; min-width:48px; white-space:nowrap; min-height:0; height:24px; padding:0 4px; font-size:12px; margin-top:3px; }
+  #gtimers { display:none; position:absolute; left:58px; top:0; z-index:31; flex-direction:column; gap:1px; padding:0; background:rgb(160,160,160); border:2px solid rgb(160,160,160); border-radius:0; }
+  #gtimers.on { display:flex; }
+  body.touch #gtimers.on { position:fixed; left:auto; top:auto; right:calc(max(4px, env(safe-area-inset-right)) + 80px); bottom:120px; flex-direction:row; }
+  body.touch .gt { width:52px; height:44px; font-size:15px; }
+  #capMsg { position:absolute; left:0; right:0; top:42%; text-align:center; font-size:28px; font-weight:bold; color:#ffe066; text-shadow:0 0 4px #000,0 0 3px #000,0 0 2px #000; pointer-events:none; display:none; }
+  #capMsg.on { display:block; }
+  body.touch #capMsg { font-size:22px; }
   .gt { width:48px; min-height:0; height:28px; padding:0; font-size:13px; }
   .gt.sel { border-color:#fff; background:var(--btnDown); color:#fff; }
-  body.touch #gtimers { display:none !important; }
+
   #topRight { position:absolute; top:max(6px, env(safe-area-inset-top)); right:max(6px, env(safe-area-inset-right)); display:flex; gap:6px; }
   #topRight button { min-height:44px; padding:3px 10px; font-size:16px; }
   /* 터치 버튼: 원본 Android판 그림. 평소에도 또렷하게(.75), 누르는 동안 완전히 진하게, 내 차례 아니면 흐리게 */
@@ -217,11 +247,10 @@
   #closed .row { margin-top:14px; }
   /* 9B: 점검 예고 띠 · 버전 안내 띠 (화면 맨 위, 경기 화면에서도 보임) */
   #topBars { position:fixed; top:0; left:0; right:0; z-index:61; display:flex; flex-direction:column; align-items:center; pointer-events:none; }
-  .tbar { display:none; pointer-events:auto; margin-top:6px; max-width:calc(100% - 24px); padding:6px 14px; border-radius:12px; font-size:15px; line-height:1.35; text-align:center;
-    color:#fff; background:rgba(150,20,24,.92); border:2px solid #ffcf3a; box-shadow:0 3px 10px rgba(0,0,0,.5); }
+  /* 메뉴 화면의 점검·버전 안내: 9차 스킨 패널(panel9.png 9조각) — 새 모양을 만들지 않음 */
+  .tbar { display:none; pointer-events:auto; margin-top:6px; max-width:calc(100% - 24px); padding:2px 10px; font-size:15px; line-height:1.4; text-align:center; color:#fff;
+    border:14px solid transparent; border-image:url(assets/skin/panel9.png) 140 fill / 26px / 0 stretch; background:none; }
   .tbar.on { display:block; }
-  .tbar b { color:#ffe066; }
-  #verBar { background:rgba(20,40,120,.94); }
   #verBar button { margin-left:10px; padding:3px 12px; font-size:14px; min-height:0; width:auto; display:inline-block; }
   body.ingame .tbar { font-size:13px; padding:3px 10px; margin-top:2px; }
   /* 가입 화면 (10차): 이용 규칙 동의 칸, 사람 눈에 안 보이는 함정 칸 */
@@ -281,6 +310,12 @@
     table.info td { padding:3px 8px; } .modal .box { padding:8px 12px; } .modal h1 { margin:0 0 4px; }
     table.res .rbadge img { width:22px; height:22px; }
   }
+/* 지도 고르기 (1-나 11번): 9차 스킨 버튼 안에 작은 지도 그림 */
+#mpGrid,.mpGridIn{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;max-height:236px;overflow-y:auto}
+.mpThumb{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 6px;min-height:0;width:auto;font-size:12px}
+.mpThumb canvas,.mpThumb img{width:120px;height:60px;display:block;background:#131252;object-fit:contain}
+.seg{display:flex;gap:4px;flex-wrap:wrap}.seg button{min-height:34px;padding:2px 10px;font-size:14px;width:auto}
+@media (max-height:480px){.mpThumb canvas,.mpThumb img{width:96px;height:48px}#mpGrid,.mpGridIn{max-height:170px}}
 #mapPrev{width:256px;height:128px;border:2px solid #ffcc00;border-radius:6px;background:#131252;image-rendering:auto;max-width:100%}
 @media (max-height:480px){#mapPrev{width:192px;height:96px}}
 #aiStages{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;margin:10px 0}
@@ -294,7 +329,7 @@
 @media (max-width:700px){#aiStages{grid-template-columns:repeat(5,1fr)}}
 @media (max-height:480px){#aiStages{grid-template-columns:repeat(10,1fr);gap:4px;margin:6px 0}#aiStages button{padding:3px 0 2px;font-size:14px}#aiStages button img{height:16px}}
 </style>
-<link rel="stylesheet" href="skin9.css?v=7073c64739a2">
+<link rel="stylesheet" href="skin9.css?v=9309d317da47">
 </head>
 <body class="s9">
 <div id="conn">서버와 연결이 끊겼습니다. 다시 연결하는 중…</div>
@@ -387,16 +422,24 @@
     <div class="row">
       <div><label for="lobbyMode">방식 (방장)</label><select id="lobbyMode"><option value="solo">개인전</option><option value="team">팀전 (2대2~4대4)</option></select></div>
       <div><label for="lobbyMax">인원 (방장)</label><select id="lobbyMax"><option value="2">2명</option><option value="3">3명</option><option value="4">4명</option></select></div>
+      <div><label for="turnSel">턴 시간 (방장)</label><select id="turnSel"><option value="0">기본</option><option value="30000">30초</option><option value="45000">45초</option><option value="60000">60초</option></select></div>
+      <div><label for="windMode">바람 (방장)</label><select id="windMode"><option value="gradual">서서히</option><option value="original">원본(매 턴)</option><option value="none">없음</option></select></div>
       <div><label for="hogs">고슴도치 (방장)</label><select id="hogs"><option value="1">1마리</option><option value="2">2마리</option><option value="3">3마리</option><option value="4">4마리</option></select></div>
     </div>
+    <div id="mapPick">
+      <div class="row mpBar"><div class="seg" id="mpDiff"><button data-d="easy">쉬움</button><button data-d="normal">보통</button><button data-d="hard">어려움</button></div>
+        <div class="seg" id="mpTab"><button data-t="random">무작위 지형</button><button data-t="maze">미로</button><button data-t="image">이미지 맵</button></div></div>
+      <div id="mpGrid"></div>
+      <div class="row" style="margin-top:4px"><button id="btnMoreCands" class="sec">다른 후보 보기</button></div>
+    </div>
     <div class="row" id="mapRow">
-      <div><label for="mapDiff">난이도 (방장)</label><select id="mapDiff"><option value="easy">쉬움</option><option value="normal">보통</option><option value="hard">어려움</option><option value="custom">직접 고르기</option></select></div>
-      <div class="mapCustom"><label for="mapKind">지형</label><select id="mapKind"><option value="random">무작위 생성</option><option value="maze">미로</option><option value="image">이미지 맵</option></select></div>
-      <div class="mapCustom"><label for="mapSub">종류</label><select id="mapSub"></select></div>
+      <div style="display:none"><label for="mapDiff">난이도 (방장)</label><select id="mapDiff"><option value="easy">쉬움</option><option value="normal">보통</option><option value="hard">어려움</option><option value="custom">직접 고르기</option></select></div>
+      <div class="mapCustom" style="display:none"><label for="mapKind">지형</label><select id="mapKind"><option value="random">무작위 생성</option><option value="maze">미로</option><option value="image">이미지 맵</option></select></div>
+      <div class="mapCustom" style="display:none"><label for="mapSub">종류</label><select id="mapSub"></select></div>
       <div><label for="mapTheme">테마</label><select id="mapTheme"></select></div>
     </div>
     <div class="row" id="mapPrevRow"><canvas id="mapPrev" width="256" height="128"></canvas>
-      <div style="flex:1;min-width:140px"><div class="small" id="mapDesc"></div><button id="btnReroll" style="margin-top:6px">다시 뽑기</button></div></div>
+      <div style="flex:1;min-width:140px"><div class="small" id="mapDesc"></div><button id="btnReroll" style="display:none">다시 뽑기</button></div></div>
     <div class="row"><button id="btnStart" class="primary"><img src="assets/ui/Start.png" alt="">경기 시작</button><button id="btnLeave"><img src="assets/ui/Exit.png" alt="" style="height:18px">나가기</button></div>
     <div class="row"><button id="btnCopy">방 링크 복사</button></div>
     <div class="err" id="lobbyErr"></div>
@@ -414,9 +457,11 @@
   <div class="hud" id="msg"></div>
   <canvas class="hud" id="wind" width="160" height="42" aria-label="바람"></canvas>
   <div id="power"><div></div></div>
-  <div id="ammoMenu" role="dialog" aria-label="무기 고르기"><div class="amHead">무기 고르기 <span>Tab · 오른쪽 클릭 · F1~F3</span></div><div id="amGrid"></div><div id="amDesc">무기에 올려 두거나 길게 누르면 설명이 나옵니다.</div></div>
+  <div id="ammoMenu" role="dialog" aria-label="무기 고르기"><div id="amGrid"></div></div><div id="amDesc" class="hwr"></div>
+  <div id="capMsg"></div>
   <div id="weapons">
     <button class="wbtn" id="wCur" title="무기 고르기 (Tab · 오른쪽 클릭 · F1~F3)"><span id="wCurIcon"></span><b id="wCurCnt"></b></button>
+    <button id="wTimer" title="타이머 고르기 (숫자 키 1~5)"></button>
     <div id="wShots"></div>
     <div id="gtimers"></div>
   </div>
@@ -442,6 +487,7 @@
     <h1><img src="assets/ui/teamicon.png" alt="" style="height:22px;vertical-align:middle"> AI 대전 — 단계 고르기</h1>
     <div class="small" id="aiInfo">1단계부터 깨면 다음 단계가 열립니다. 처음 깬 단계만 경험치(단계 × 5). 져도 깎이지 않습니다.</div>
     <div id="aiStages"></div>
+    <div id="aiMaps" style="display:none"><div class="small" id="aiMapsHead"></div><div class="row" style="margin:4px 0"><button id="btnAiAny" class="primary">아무거나로 시작</button><button id="btnAiBack" class="sec">단계 다시 고르기</button></div><div id="aiMapGrid" class="mpGridIn"></div></div>
     <div class="small" id="aiStageDesc" style="min-height:1.4em"></div>
     <div class="row"><button id="btnAiClose">닫기</button></div>
     <div class="err" id="aiErr"></div>
@@ -453,6 +499,7 @@
     <div id="resBody"></div>
     <div id="resNotes" class="notes"></div>
     <div class="row"><button id="btnAiNext" style="display:none"><img src="assets/ui/Start.png" alt="">다음 단계</button><button id="btnAiRetry" style="display:none"><img src="assets/ui/Start.png" alt="">다시 도전</button><button id="btnCloseResult">확인</button></div>
+    <div class="small" id="aiContNote" style="display:none;color:#ffb3b3;margin-top:4px"></div>
   </div>
 </section>
 <section id="myinfo" class="screen modal">
@@ -520,10 +567,10 @@
   </div>
 </section>
 
-<script src="sim.js?v=7073c64739a2"></script>
-<script src="landgen.js?v=7073c64739a2"></script>
-<script src="mapgen.js?v=7073c64739a2"></script>
-<script src="weapons.js?v=7073c64739a2"></script>
-<script src="client.js?v=7073c64739a2"></script>
+<script src="sim.js?v=9309d317da47"></script>
+<script src="landgen.js?v=9309d317da47"></script>
+<script src="mapgen.js?v=9309d317da47"></script>
+<script src="weapons.js?v=9309d317da47"></script>
+<script src="client.js?v=9309d317da47"></script>
 </body>
 </html>
