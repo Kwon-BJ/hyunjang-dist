@@ -8,7 +8,7 @@
   const IMG = {};
   const imgList = ['Hedgehog', 'BazookaShell', 'Bomb', 'Expl50', 'Crosshair', 'Finger', 'SmokeTrace', 'WindBar', 'WindL', 'WindR', 'Clouds', 'Power', 'slider', 'sliderInverted',
     'BlueWater', 'Statue', 'Nature_LandTex', 'Nature_Border', 'Nature_Sky', 'Nature_horizont',
-    'BigDigits', 'BigDigitsRed', 'BigDigitsGray', 'Frame', 'flag_hedgewars', 'SDWater'];
+    'BigDigits', 'BigDigitsRed', 'BigDigitsGray', 'Frame', 'flag_hedgewars', 'SDWater', 'RopeHook', 'RopeNode', 'Parachute'];
   const HUDFONT = 'HWLatin, HWKr, sans-serif';
   const imgReady = Promise.all(imgList.map(n => new Promise(res => {
     const im = new Image(); im.onload = () => res(); im.onerror = () => res(); im.src = 'assets/gfx/' + n + '.png'; IMG[n] = im;
@@ -23,7 +23,7 @@
   const sndFiles = { explosion: 'explosion', powerup: 'throwpowerup', release: 'throwrelease', grenadeimpact: 'grenadeimpact',
     splash: 'splash', bump: 'bump', switch: 'switchhog', fire: 'v_Fire', cover: 'v_Takecover', yessir: 'v_Yessir',
     gun: 'gun', minigun: 'minigun', shotgunfire: 'shotgunfire', shotgunreload: 'shotgunreload', sniperreload: 'sniperreload', ow1: 'v_Ow1', ow2: 'v_Ow2', ow3: 'v_Ow3', ooff1: 'v_Ooff1', ooff2: 'v_Ooff2', byebye: 'v_Byebye', victory: 'v_Victory',
-    sd: 'suddendeath', hurry: 'v_Hurry', countdown1: 'countdown1', countdown2: 'countdown2', countdown3: 'countdown3', countdown4: 'countdown4', jump1: 'v_Jump1', jump2: 'v_Jump2', jump3: 'v_Jump3', missed: 'v_Missed', enemydown: 'v_Enemydown' };
+    sd: 'suddendeath', hurry: 'v_Hurry', ropeshot: 'ropeshot', ropeattach: 'ropeattach', roperelease: 'roperelease', parachute: 'parachute', countdown1: 'countdown1', countdown2: 'countdown2', countdown3: 'countdown3', countdown4: 'countdown4', jump1: 'v_Jump1', jump2: 'v_Jump2', jump3: 'v_Jump3', missed: 'v_Missed', enemydown: 'v_Enemydown' };
   function unlockAudio() {
     if (actx) { if (actx.state === 'suspended') actx.resume(); return; }
     if (!AC) return;
@@ -174,11 +174,11 @@
   // ---------------- 점검 예고 띠 (9B) ----------------
   let maintTick = null;
   function maintText() {
-    if (S.restarting) return '점검 중 — 서버를 다시 켜는 중입니다. 잠시 뒤 자동으로 연결됩니다.';
+    if (S.restarting) return '점검 중: 서버를 다시 켜는 중입니다. 잠시 뒤 자동으로 연결됩니다.';
     const a = S.maintAt; if (!a) return '';
     const now = Date.now(), mmss = (ms) => { const t = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(t / 60) + '분 ' + String(t % 60).padStart(2, '0') + '초'; };
-    return now < a.endsAt ? `${mmss(a.endsAt - now)} 뒤 점검 — 진행 중인 판은 끝까지 할 수 있습니다. 새 경기는 시작할 수 없습니다.`
-      : `점검 시간 — 진행 중인 판이 끝나면 서버를 다시 켭니다 (늦어도 ${mmss(a.extraAt - now)} 뒤)`;
+    return now < a.endsAt ? `${mmss(a.endsAt - now)} 뒤 점검. 진행 중인 판은 끝까지 할 수 있습니다. 새 경기는 시작할 수 없습니다.`
+      : `점검 시간: 진행 중인 판이 끝나면 서버를 다시 켭니다 (늦어도 ${mmss(a.extraAt - now)} 뒤)`;
   }
   function onMaint(m) {
     clearInterval(maintTick);
@@ -401,7 +401,7 @@
     const lo = u.lo != null ? u.lo : 0, pct = u.next != null ? Math.round((u.exp - lo) / (u.next - lo) * 100) : 100;
     const tb = document.createElement('table'); tb.className = 'info';
     for (const [k, v] of [['계급', u.rankName], ['누적 경험치', u.exp.toLocaleString()],
-      ['다음 계급', u.next != null ? `${u.nextName} (${u.next.toLocaleString()}) — ${Math.max(0, u.next - u.exp).toLocaleString()} 남음` : '장성 (순위로 정함)'],
+      ['다음 계급', u.next != null ? `${u.nextName} (${u.next.toLocaleString()}), ${Math.max(0, u.next - u.exp).toLocaleString()} 남음` : '장성 (순위로 정함)'],
       ...(u.demoteIn != null ? [['강등 보호', `강등까지 ${u.demoteIn} (계급 기준보다 60 아래로 내려가면 한 단계 내려감)`]] : []),
       ...(u.general ? [['장성 순위', `${u.general.place}위 / 정원 ${u.general.seats}명` + (u.general.place > 1 ? ` · 앞사람과 ${u.general.gap.toLocaleString()} 차이` : ' · 맨 앞')]] : []),
       ['전적', `${u.games}판 · ${u.wins}승 ${u.losses}패 ${u.draws}무`],
@@ -430,7 +430,7 @@
       b.append(im, String(st), sm);
       b.title = st + '단계';
       const band = AI_BANDS.find(x => st >= x[0] && st <= x[1]);
-      b.onmouseenter = b.onfocus = () => { $('aiStageDesc').textContent = `${st}단계: ${band[2]}${clear ? ' — 이미 깸(경험치 없음)' : ' — 처음 깨면 +' + st * 5}`; };
+      b.onmouseenter = b.onfocus = () => { $('aiStageDesc').textContent = `${st}단계: ${band[2]}${clear ? ', 이미 깸(경험치 없음)' : ', 처음 깨면 +' + st * 5}`; };
       b.onclick = () => { $('aiErr').textContent = ''; S.aiPickStage = st; send({ t: 'aicands', stage: st }); };
       g.append(b);
     }
@@ -444,7 +444,7 @@
   function onAiCands(m) {
     if (m.stage !== S.aiPickStage) return;
     $('aiStages').style.display = 'none'; $('aiMaps').style.display = '';
-    $('aiMapsHead').textContent = `${m.stage}단계 — 맵을 고르거나 "아무거나"로 시작합니다.`;
+    $('aiMapsHead').textContent = `${m.stage}단계: 맵을 고르거나 "아무거나"로 시작합니다.`;
     const g = $('aiMapGrid'); g.innerHTML = '';
     m.cands.forEach((c, i) => {
       const b = thumbButton(MAPKO_SHORT(c), false, false, () => { $('aiDlg').classList.remove('on'); $('aiMaps').style.display = 'none'; $('aiStages').style.display = ''; send({ t: 'ai', stage: m.stage, pick: i }); });
@@ -468,7 +468,7 @@
     const t = (s) => s ? new Date(s).toLocaleString('ko-KR') : '-';
     el.style.color = b.ok === false ? '#ff8080' : '#9dff9d';
     el.textContent = b.ok === false ? `[경고] 외부 백업 실패: ${b.lastError} (위치 ${b.dir || '없음'}, 마지막 성공 ${t(b.lastOk)})`
-      : `외부 백업 정상 — 마지막 ${t(b.lastOk)} · 위치 ${b.dir}`;
+      : `외부 백업 정상: 마지막 ${t(b.lastOk)} · 위치 ${b.dir}`;
   }
   function renderAdmin(list) {
     const b = $('adminList'); b.innerHTML = '';
@@ -498,7 +498,7 @@
   function renderAdminSite() {
     const a = S.adminInfo, el = $('adminSite'); if (!el || !a) return;
     const site = a.site || {};
-    el.textContent = `가입: ${site.signupOpen ? '받는 중' : '닫음'} · 계정 ${a.count}/${a.max}${a.count >= a.max ? ' (상한 — 가입 닫힘)' : ''} · 30일 지난 빈 계정 ${(a.stale || []).length}개`;
+    el.textContent = `가입: ${site.signupOpen ? '받는 중' : '닫음'} · 계정 ${a.count}/${a.max}${a.count >= a.max ? ' (상한, 가입 닫힘)' : ''} · 30일 지난 빈 계정 ${(a.stale || []).length}개`;
     $('btnSignupToggle').textContent = site.signupOpen ? '가입 받기 끄기' : '가입 받기 켜기';
     $('btnStale').disabled = !(a.stale || []).length;
   }
@@ -760,7 +760,7 @@
     $('btnAiNext').style.display = 'none'; $('btnAiRetry').style.display = 'none'; $('aiContNote').style.display = 'none'; $('btnCloseResult').textContent = '확인';
     if (m.mode === 'ai') return showAIResult(m);
     const mine = m.rows.find(r => r.pid === S.me);
-    $('resHead').textContent = m.maint ? '점검으로 종료됨 — 무승부, 경험치 변동 없음' : m.draw ? '무승부 — 경험치 변동 없음' : mine ? (mine.outcome === 'win' ? '승리!' : mine.outcome === 'quit' ? '기권 처리' : '패배') : '경기 종료';
+    $('resHead').textContent = m.maint ? '점검으로 종료됨: 무승부, 경험치 변동 없음' : m.draw ? '무승부: 경험치 변동 없음' : mine ? (mine.outcome === 'win' ? '승리!' : mine.outcome === 'quit' ? '기권 처리' : '패배') : '경기 종료';
     $('resHead').style.color = mine && mine.outcome === 'win' ? '#ffcc00' : '#fff';
     const tb = document.createElement('table'); tb.className = 'info res';
     const hr = tb.insertRow(); hr.className = 'head'; ['순위', '참가자', '이번 판', '누적', '다음 계급까지'].forEach(h => { hr.insertCell().textContent = h; });
@@ -782,7 +782,7 @@
       if (!r.rankBefore || !r.rankAfter || r.rankBefore.level === r.rankAfter.level) continue;
       notes.push(`${r.nick}: ${r.rankBefore.name} → ${r.rankAfter.name} ${r.rankAfter.level > r.rankBefore.level ? '진급!' : '강등'}`);
     }
-    for (const sn of m.seat || []) notes.push('장성 순위 — ' + sn);
+    for (const sn of m.seat || []) notes.push('장성 순위: ' + sn);
     $('resNotes').textContent = notes.join('  ·  ');
     $('result').classList.add('on');
     if (mine) send({ t: 'me' });
@@ -798,7 +798,7 @@
   }
   function showAIResult(m) {
     S.aiResult = m;
-    $('resHead').textContent = m.maint ? `점검으로 종료됨 — ${m.stage}단계 기록 변동 없음` : m.win ? `${m.stage}단계 클리어!` : `${m.stage}단계 패배`;
+    $('resHead').textContent = m.maint ? `점검으로 종료됨: ${m.stage}단계 기록 변동 없음` : m.win ? `${m.stage}단계 클리어!` : `${m.stage}단계 패배`;
     $('resHead').style.color = m.win ? '#ffcc00' : '#fff';
     const tb = document.createElement('table'); tb.className = 'info res';
     const hr = tb.insertRow(); hr.className = 'head'; ['', '편', '남은 고슴도치', '준 피해'].forEach(x => { hr.insertCell().textContent = x; });
@@ -859,7 +859,7 @@
     for (const b of m.booms) carveCanvas(G, b[0], b[1], b[2]);
     raiseWater(G, m.waterY == null ? G.water0 : m.waterY);
     checkLand(G, m.land);
-    G.cam.z = defaultZoom();
+    G.cam.z = clampZ(savedZoom() || defaultZoom());
     S.game = G;
     $('overlay').classList.remove('on');
     $('msg').textContent = '';
@@ -938,6 +938,7 @@
     x2.globalCompositeOperation = 'destination-out';
     x2.beginPath(); x2.arc(x, y, r + 0.5, 0, Math.PI * 2); x2.fill();
     x2.restore();
+    G.mmDirty = true;
   }
 
   function onSnap(m) {
@@ -956,7 +957,7 @@
       G.land.fill(0, to * W, Math.min(H, from) * W);
       G.canvas.getContext('2d').clearRect(0, to, W, from - to);
     }
-    G.waterY = wy;
+    G.waterY = wy; G.mmDirty = true;
   }
   function onEvent(e) {
     const G = S.game, k = e[0];
@@ -1104,7 +1105,7 @@
       const pb = b.p[i], pa = a.p[i] && a.p[i][0] === pb[0] ? a.p[i] : pb;
       projs.push({ kind: pb[0], x: pa[1] + (pb[1] - pa[1]) * f, y: pa[2] + (pb[2] - pa[2]) * f, dx: pb[3], dy: pb[4], timer: pb[5] });
     }
-    return { hogs, projs, s: b };
+    return { hogs, projs, s: b, rp: b.rp || 0 };
   }
 
   // ---------------- 그리기 ----------------
@@ -1116,7 +1117,10 @@
     const vw = cv.width, vh = cv.height;
     // 카메라
     const z = G.cam.z * DPR;
-    if (view && G.cam.manual < now) {
+    if (view && G.cam.goto && G.cam.manual > now) {          // '내 고슴도치로' 단추: 그 고슴도치로 이동 (몇 초 뒤 다시 차례 따라가기)
+      const c = view.hogs.find(h => h.id === G.cam.goto); if (c) { G.cam.x += (c.x - G.cam.x) * 0.15; G.cam.y += (c.y - G.cam.y) * 0.15; }
+    } else if (view && G.cam.manual < now) {
+      G.cam.goto = 0;
       let tx = null, ty = null;
       if (view.projs.length) { tx = view.projs[0].x; ty = view.projs[0].y; }
       else { const c = view.hogs.find(h => h.id === view.s.cur); if (c) { tx = c.x; ty = c.y; } }
@@ -1157,6 +1161,7 @@
     // 무덤
     for (const g of G.graves) if (IMG.Statue.width) ctx.drawImage(IMG.Statue, g[0] - 16, g[1] - 23, 32, 32);
     if (view) {
+      drawRope(G, view);
       drawHogs(G, view, now);
       drawProjs(G, view, now);
     }
@@ -1170,8 +1175,9 @@
   requestAnimationFrame(frame);
 
   // 손에 든 무기 그림 (원본 Graphics/Hedgehog/am*.png, 크기는 원본 표 Width·Height 의 두 배 = 그림 1:1) — 1-나 13번
-  const HAND = {}; for (const n of ['amBazooka', 'amGrenade', 'amShotgun', 'amShotgun_w', 'amDEagle', 'amDEagle_w', 'amSniperRifle', 'amMinigun', 'amSkip', 'Idle']) { const im = new Image(); im.src = 'assets/gfx/hand/' + n + '.png'; HAND[n] = im; }
-  const HAND_OF = { bazooka: 'amBazooka', grenade: 'amGrenade', shotgun: 'amShotgun', deagle: 'amDEagle', skip: 'amSkip' };
+  const HAND = {}; for (const n of ['amBazooka', 'amGrenade', 'amShotgun', 'amShotgun_w', 'amDEagle', 'amDEagle_w', 'amSniperRifle', 'amMinigun', 'amSkip', 'amRope', 'Idle']) { const im = new Image(); im.src = 'assets/gfx/hand/' + n + '.png'; HAND[n] = im; }
+  const HAND_OF = { bazooka: 'amBazooka', grenade: 'amGrenade', shotgun: 'amShotgun', deagle: 'amDEagle', skip: 'amSkip', rope: 'amRope' };   // 낙하산은 원본에 손 그림이 없음 (대신 머리 위에 무기 그림, ShowSelIcon)
+  const AMMOS = new Image(); AMMOS.src = 'assets/ui/ammo/Ammos_base.png';
   // 원본 DrawSpriteRotated: (x,y) 가운데, 왼쪽을 보면 좌우 뒤집기, 조준 각도(도) 만큼 돌림
   function drawRot(im, x, y, sign, deg, sx, sy, sw, shh) {
     if (!im || !im.width) return;
@@ -1184,9 +1190,9 @@
     const labelBoxes = [];
     for (const h of view.hogs) {
       const info = G.hogs[h.id]; if (!info || G.deadIds.has(h.id)) continue;
-      const walking = h.flags & 2, moving = h.flags & 1, jumping = h.flags & 4;
+      const walking = h.flags & 2, moving = h.flags & 1, jumping = h.flags & 4, roping = h.flags & 8, chuting = h.flags & 16, ropeAir = h.flags & 32;
       const isCur = h.id === s.cur && (s.st === 'turn' || s.st === 'retreat');
-      const armed = isCur && s.st === 'turn' && !moving && !walking && !jumping;     // 무기를 든 자세 (쏘고 난 뒤 도망 시간에는 안 듦)
+      const armed = isCur && s.st === 'turn' && !moving && !walking && !jumping && !(view.rp && view.rp[0] === 0);     // 무기를 든 자세 (쏘고 난 뒤 도망 시간·로프를 쏘는 중에는 안 듦)
       const sign = h.facing < 0 ? -1 : 1, ox = Math.round(h.x), oy = Math.round(h.y), sx = ox + 1, sy = oy - 3;
       const aangle = s.a * 180 / Sim.MAX_ANGLE - 90, hx = ox + 8 * sign, hy = oy - 2;
       // 무기 (몸 뒤에 먼저): 원본 순서
@@ -1197,15 +1203,24 @@
         else if (s.wp === 'deagle') drawRot(s.sl ? HAND.amDEagle_w : HAND.amDEagle, hx, hy, sign, aangle);
         else if (HAND_OF[s.wp]) drawRot(HAND[HAND_OF[s.wp]], hx, hy, sign, aangle);
       }
-      let pos = 0, step = 0, idle = false;
-      if (jumping) { pos = 1; step = 1; }
+      let pos = 0, step = 0, idle = false, rot = null;
+      // 로프에 매달림: 원본 DrawHedgehog(ox, oy, 방향, 1, 0, 줄 각도) = Hedgehog.png 1줄 0칸을 줄 방향으로 돌림
+      if (roping && view.rp && view.rp[0] === 1) {
+        const ax = view.rp[1], ay = view.rp[2], dir = h.x < ax ? 1 : -1;
+        rot = { dir, deg: Math.atan2(h.y - ay, h.x - ax) * 180 / Math.PI + (dir > 0 ? 0 : 180) }; pos = 1; step = 0;
+      }
+      if (rot) {}
+      else if (chuting) idle = true;                      // 낙하산: 기본 자세 0번 칸 + 위에 낙하산
+      else if (jumping || ropeAir) { pos = 1; step = 1; }
       else if (walking) { pos = 0; step = Math.floor(now / 70) % 8 >> 1; }
       else if (moving) { pos = 2; step = 1; }
       else if (armed) { pos = 0; step = s.wp === 'minigun' && s.gb ? 5 : 4; }
       else idle = true;
-      const ifr = (Math.floor(now / 128) + h.id * 7) % 19;
+      const ifr = chuting ? 0 : (Math.floor(now / 128) + h.id * 7) % 19;
+      if (chuting && IMG.Parachute.width) ctx.drawImage(IMG.Parachute, Math.round(h.x) - 24, Math.round(h.y) - 48, 48, 48);   // 원본 DrawSprite(sprParachute, x - 24, y - 48)
       ctx.save(); ctx.translate(sx, sy);
-      if (sign < 0) ctx.scale(-1, 1);
+      if (rot) { ctx.rotate(rot.deg * Math.PI / 180); if (rot.dir < 0) ctx.scale(-1, 1); }
+      else if (sign < 0) ctx.scale(-1, 1);
       if (idle && HAND.Idle.width) ctx.drawImage(HAND.Idle, Math.floor(ifr / 16) * 32, (ifr % 16) * 32, 32, 32, -16, -16, 32, 32);
       else ctx.drawImage(IMG.Hedgehog, step * 32, pos * 32, 32, 32, -16, -16, 32, 32);
       const hat = HATS[info.team.rank || 0];
@@ -1220,7 +1235,13 @@
         ctx.drawImage(HAND.amMinigun, 0, fr * 32, 64, 32, -32, -16, 64, 32); ctx.restore();
       }
       // 조준 십자선 + 파워
-      if (isCur && !(h.flags & 1) && s.st === 'turn') {
+      // 낙하산을 고르면 머리 위에 그 무기 그림 (원본 DrawSelectedWeapon, ShowSelIcon)
+      if (armed && s.wp === 'parachute' && AMMOS.width) {
+        const A = Weapons.AMMO.parachute, f = A.icon - 1, bx = sx - 14, by = sy - 50;
+        roundRect(ctx, bx, by, 28, 28, '#ffffff', '#000010'); ctx.drawImage(AMMOS, Math.floor(f / 16) * 32, (f % 16) * 32, 32, 32, bx + 2, by + 2, 24, 24);
+      }
+      const aimOk = s.wp !== 'parachute' && (!(h.flags & 1) || (s.wp === 'rope' && !roping && !chuting && !(view.rp && view.rp[0] === 0)));
+      if (isCur && aimOk && s.st === 'turn') {
         const v = Sim.aimVector(s.a, h.facing);
         if (s.pw > 0 && IMG.Power.width) {
           for (let i = Math.floor(s.pw * 24 / Sim.MAX_POWER); i >= 0; i--)
@@ -1237,7 +1258,7 @@
       // 휴대폰 가로 화면에서는 이름표·체력 글씨를 1.6배로 (사용자 요청)
       const ts = tagScale();
       ctx.font = 'bold ' + Math.round(11 * ts) + 'px ' + HUDFONT; ctx.textAlign = 'center';
-      const hpText = String(h.hp), hpY = h.y - 16 - 12 * ts;
+      const hpText = String(h.hp), hpY = h.y - 16 - 12 * ts - (chuting ? 34 : 0);   // 낙하산 중에는 낙하산 위로
       // 이름표가 다른 고슴도치 이름표와 겹치면 글자를 줄이지 않고 위로 비켜 그림 (0-3)
       let nameY = hpY - 14 * ts; const nw = ctx.measureText(info.name).width + 8 * ts;
       for (let k = 0; k < 6 && labelBoxes.some(b => Math.abs(b.x - h.x) < (b.w + nw) / 2 && Math.abs(b.y - nameY) < 14 * ts); k++) nameY -= 14 * ts;
@@ -1247,6 +1268,24 @@
         const bob = Math.sin(now / 120) * 4;
         ctx.drawImage(IMG.Finger, 0, 0, 32, 48, h.x - 12, nameY - 9 * ts - 38 + bob, 24, 36);
       }
+    }
+  }
+  // 로프: 원본 DrawRope (cRopeNodeStep 4px 마다 RopeNode, 첫 고정점에 RopeHook 을 줄 방향으로)
+  function drawRope(G, view) {
+    const rp = view.rp; if (!rp) return;
+    const h = view.hogs.find(x => x.id === view.s.cur); if (!h) return;
+    const pts = [];
+    for (let i = 4; i + 1 < rp.length; i += 2) pts.push([rp[i], rp[i + 1]]);
+    pts.push([rp[1], rp[2]], [h.x, h.y]);
+    let done = 0, next = 4;
+    if (IMG.RopeNode.width) for (let i = 0; i + 1 < pts.length; i++) {
+      const [x1, y1] = pts[i], [x2, y2] = pts[i + 1], L = Math.hypot(x2 - x1, y2 - y1); if (!L) continue;
+      while (next - done <= L) { const f = (next - done) / L; ctx.drawImage(IMG.RopeNode, x1 + (x2 - x1) * f - 8, y1 + (y2 - y1) * f - 8, 16, 16); next += 4; }
+      done += L;
+    }
+    if (IMG.RopeHook.width) {                                    // 고리 그림은 끝이 왼쪽을 향함 → 줄이 날아간 방향으로 돌림
+      ctx.save(); ctx.translate(pts[0][0], pts[0][1]); ctx.rotate(rp[3] / 100 + Math.PI);
+      ctx.drawImage(IMG.RopeHook, -16, -16, 32, 32); ctx.restore();
     }
   }
   function tagScale() { return document.body.classList.contains('touch') && innerHeight < 500 ? 1.6 : 1; }
@@ -1412,10 +1451,12 @@
     // 탈락한 사람: 관전 안내
     const mineT = G.teams.find(t => t.pid === S.me);
     if (mineT && s.st !== 'over' && !mineT.forfeit && mineT.hogs.every(h => G.deadIds.has(h.id))) {
-      const t = boxTex('관전 중 — 지금 나가도 감점 없음', '#ffcc00', bpx); drawBox(t, cw / 2 - t.w / 2, ty); ty += t.h + 2;
+      const t = boxTex('관전 중: 지금 나가도 감점 없음', '#ffcc00', bpx); drawBox(t, cw / 2 - t.w / 2, ty); ty += t.h + 2;
     }
     // 안내 글 (원본 캡션) — 타이머·차례 줄 아래부터 쌓음 (타이머를 가리지 않음)
     drawCaptions(G, now, cw, ty + 2, small);
+    drawMinimap(G, view, now, cw, ch, small);
+    drawOffscreen(G, view, now, cw, ch, small);
     // 팀 줄 (원본 RenderTeamsHealth): 이름 글상자 · 깃발 · 체력 막대(makeHealthBarTexture: 흰 테두리 글상자 안에 팀 색), 마리마다 칸막이(slider)
     const teams = G.teams.filter(t => !t.forfeit);
     const totals = teams.map(t => ({ t, hp: t.hogs.reduce((a2, h) => a2 + (G.deadIds.has(h.id) ? 0 : (G.hogs[h.id].hp || 0)), 0), hogsHp: t.hogs.map(h => G.deadIds.has(h.id) ? 0 : (G.hogs[h.id].hp || 0)) }));
@@ -1441,16 +1482,93 @@
     });
     ctx.textBaseline = 'alphabetic';
   }
+  // ---- 미니맵 (2-가-1): 원본에 없는 요소라 경기 화면 규칙대로 원본 글상자(흰 2px 테두리, #000010 바탕)에 담음 ----
+  function mmOpen() { try { return localStorage.getItem('hw_mm') !== '0'; } catch (e) { return true; } }
+  function mmLayout(cw, ch, small) {
+    const w = Math.round(small ? Math.min(150, cw * 0.2) : Math.min(240, cw * 0.2)), h = Math.max(24, Math.round(w * H / W));
+    return small ? { x: 8, y: 62, w, h } : { x: cw - w - 10, y: 46, w, h };
+  }
+  function drawMinimap(G, view, now, cw, ch, small) {
+    const L = mmLayout(cw, ch, small), open = mmOpen();
+    placeMmButtons(G, L, open, small);
+    if (!open) { G.mmRect = null; return; }
+    G.mmRect = L;
+    if (!G.mm || G.mm.width !== L.w * DPR) { G.mm = document.createElement('canvas'); G.mm.width = L.w * DPR; G.mm.height = L.h * DPR; G.mmDirty = true; }
+    if (G.mmDirty && (!G.mmAt || now - G.mmAt > 150)) {
+      const c = G.mm.getContext('2d'); c.clearRect(0, 0, G.mm.width, G.mm.height); c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'medium';
+      c.drawImage(G.canvas, 0, 0, W, H, 0, 0, G.mm.width, G.mm.height);
+      G.mmDirty = false; G.mmAt = now;
+    }
+    const k = L.w / W;
+    roundRect(ctx, L.x - 3, L.y - 3, L.w + 6, L.h + 6, '#ffffff', '#000010');
+    ctx.save(); ctx.beginPath(); ctx.rect(L.x, L.y, L.w, L.h); ctx.clip();
+    ctx.imageSmoothingEnabled = true; ctx.drawImage(G.mm, L.x, L.y, L.w, L.h);
+    const wy = L.y + Math.min(H, G.waterY) * k;                               // 물 (서든데스로 오르는 것 포함)
+    ctx.fillStyle = 'rgba(70,110,210,0.85)'; ctx.fillRect(L.x, wy, L.w, L.y + L.h - wy);
+    if (G.xf) {                                                              // 지금 화면이 비추는 범위
+      const z = G.xf.z, vx0 = -G.xf.ox / z, vy0 = -G.xf.oy / z, vx1 = (cv.width - G.xf.ox) / z, vy1 = (cv.height - G.xf.oy) / z;
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1; ctx.strokeRect(Math.round(L.x + vx0 * k) + 0.5, Math.round(L.y + vy0 * k) + 0.5, Math.round((vx1 - vx0) * k), Math.round((vy1 - vy0) * k));
+    }
+    for (const p of view.projs) { ctx.fillStyle = '#ffffff'; ctx.fillRect(L.x + p.x * k - 1, L.y + p.y * k - 1, 2, 2); }
+    const r = small ? 2.2 : 2.8, blink = (now % 600) < 300;
+    for (const h of view.hogs) {
+      const info = G.hogs[h.id]; if (!info || G.deadIds.has(h.id)) continue;
+      const x = L.x + h.x * k, y = L.y + h.y * k, isCur = h.id === view.s.cur, mine = info.team.pid === S.me;
+      if (isCur && blink) { ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(x, y, r + 2, 0, Math.PI * 2); ctx.fill(); }
+      ctx.fillStyle = info.team.color; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+      ctx.lineWidth = mine ? 1.6 : 0.8; ctx.strokeStyle = mine ? '#ffffff' : '#000010'; ctx.stroke();
+    }
+    ctx.restore();
+  }
+  // 미니맵 접기·펴기, 내 고슴도치로 단추 (HTML 단추, 경기 화면 글상자 모양 .hwr)
+  function placeMmButtons(G, L, open, small) {
+    const key = [L.x, L.y, L.w, L.h, open, small].join(',');
+    if (G.mmBtnKey === key) return; G.mmBtnKey = key;
+    const t = $('mmToggle'), me = $('btnMyHog');
+    t.textContent = open ? '지도 접기' : '지도'; t.classList.add('on'); me.classList.add('on');
+    const y = open ? L.y + L.h + 8 : L.y;
+    if (small) { t.style.left = L.x + 'px'; t.style.right = ''; me.style.left = (L.x + (open ? 0 : 52)) + 'px'; me.style.right = ''; me.style.top = (open ? y + 30 : y) + 'px'; }
+    else { t.style.right = '10px'; t.style.left = ''; me.style.right = (open ? 96 : 62) + 'px'; me.style.left = ''; me.style.top = y + 'px'; }
+    t.style.top = y + 'px';
+  }
+  function myHogId(G) {
+    const s = G.last; if (!s) return 0;
+    const cur = G.hogs[s.cur]; if (cur && cur.team.pid === S.me) return s.cur;
+    const t = myTeam(G); if (!t) return 0;
+    const h = t.hogs.find(h => !G.deadIds.has(h.id) && s.h.some(x => x[0] === h.id)); return h ? h.id : 0;
+  }
+  // 화면 밖 고슴도치: 그쪽 가장자리에 팀 색 화살표 글상자 (원본 글상자 방식)
+  function drawOffscreen(G, view, now, cw, ch, small) {
+    if (!G.xf) return;
+    const touch = document.body.classList.contains('touch');
+    const boxes = [], px = small ? 11 : 12, top = small ? 56 : 64, bot = ch - (touch ? 140 : small ? 64 : 58);   // 휴대폰: 아래 양쪽 터치 단추를 피함
+    const list = view.hogs.slice().sort((a, b) => (b.id === view.s.cur) - (a.id === view.s.cur));
+    for (const h of list) {
+      const info = G.hogs[h.id]; if (!info || G.deadIds.has(h.id)) continue;
+      const x = (G.xf.ox + h.x * G.xf.z) / DPR, y = (G.xf.oy + h.y * G.xf.z) / DPR;
+      if (x >= 0 && x <= cw && y >= 0 && y <= ch) continue;
+      const arrow = x < 0 ? '◀' : x > cw ? '▶' : y < 0 ? '▲' : '▼';
+      const t = boxTex(arrow, info.team.color, px);
+      const side = touch ? 140 : 4;
+      const bx = y > ch || y < 0 ? Math.max(side, Math.min(cw - t.w - side, x - t.w / 2)) : Math.max(4, Math.min(cw - t.w - 4, x - t.w / 2)), by = Math.max(top, Math.min(bot - t.h, y - t.h / 2));
+      let byy = by; const m = G.mmRect, mb = m && { x: m.x - 6, y: m.y - 6, r: m.x + m.w + 6, b: m.y + m.h + (small ? 76 : 40) };
+      if (mb && bx + t.w > mb.x && bx < mb.r && byy + t.h > mb.y && byy < mb.b) byy = mb.b + 4;          // 미니맵·지도 단추와 겹치지 않게
+      if (boxes.some(b => Math.abs(b[0] - bx) < t.w && Math.abs(b[1] - byy) < t.h)) continue;
+      boxes.push([bx, byy]); drawBox(t, bx, byy);
+    }
+  }
   let lastHud = '';
   function updateHud(G, s, now) {
     const playing = s.st === 'turn' || s.st === 'retreat';
-    const hudKey = [s.cur, s.st, s.wp, s.gt, s.sl, s.gb].join('|');
+    const ch0 = s.h && s.h.find(x => x[0] === s.cur), fl = ch0 ? ch0[5] : 0;
+    const tmode = s.rp && s.rp[0] === 1 && (fl & 8) ? 'rope' : (fl & 32) ? 'air' : (fl & 16) ? 'chute' : '';
+    const hudKey = [s.cur, s.st, s.wp, s.gt, s.sl, s.gb, tmode].join('|');
     if (hudKey !== lastHud) {
       lastHud = hudKey;
       const mine = isMyTurn(G);
       const A = Weapons.AMMO[s.wp] || Weapons.AMMO.bazooka, n = ammoCount(G.teams.find(t => t.hogs.some(hh => hh.id === s.cur)), s.wp);
       $('wCurIcon').style.backgroundPosition = iconPos(A.icon, 32); $('wCurCnt').textContent = n < 0 ? '' : String(n);
-      $('wCur').disabled = !mine || s.st !== 'turn'; $('wCur').title = A.name + ' — 무기 고르기 (Tab · 오른쪽 클릭 · F1~F3)';
+      $('wCur').disabled = !mine || s.st !== 'turn'; $('wCur').title = A.name + ': 무기 고르기 (Tab · 오른쪽 클릭 · F1~F3)';
       $('wShots').textContent = '';   // 남은 발·도망 시간은 캔버스 글상자로 (14번)
       if (G.lastWp && G.lastWp !== s.wp && s.cur === G.lastWpCur) addCaption(A.name, '#ffffff', 'ammoinfo');       // 원본: 고른 무기 이름 (capgrpAmmoinfo)
       G.lastWp = s.wp; G.lastWpCur = s.cur;
@@ -1466,6 +1584,11 @@
       if (timed && G.lastGt != null && G.lastGt !== s.gt && G.lastGtCur === s.cur) caption(`${A.name} ${s.gt}초`, 1000);
       G.lastGt = s.gt; G.lastGtCur = s.cur;
       $('touch').classList.toggle('idle', !(mine && playing));
+      const AL = Weapons.AMMO[s.wp] || {};
+      touchLabel('tL', tmode === 'rope' ? '흔들기' : ''); touchLabel('tR', tmode === 'rope' ? '흔들기' : '');
+      touchLabel('tU', tmode === 'rope' ? '길이' : ''); touchLabel('tD', tmode === 'rope' ? '길이' : '');
+      touchLabel('tFire', tmode === 'rope' ? '놓기' : tmode === 'air' && s.wp === 'rope' ? '다시 쏘기' : tmode === 'chute' ? '접기' : s.wp === 'rope' ? '로프' : s.wp === 'parachute' ? '펼치기' : '발사');
+      touchLabel('tJump', (tmode === 'rope' || tmode === 'chute' || tmode === 'air') && AL.altUse ? '떨구기' : '점프');
     }
     $('power').style.display = s.pw > 0 ? 'block' : 'none';
     if (s.pw > 0) $('power').firstChild.style.width = (s.pw / Sim.MAX_POWER * 100) + '%';
@@ -1474,6 +1597,11 @@
     drawWind(Math.round(G.windShown * 1000) / 1000);
   }
   // 바람 (0-6): "바람" 글자 + 큰 방향 화살표 + 세기(1~10칸, 약함·보통·강함) + 원본 바람 막대
+  function touchLabel(id, text) {
+    const el = $(id); if (!el) return;
+    let l = el.querySelector('.lbl'); if (!l) { l = document.createElement('span'); l.className = 'lbl'; el.append(l); }
+    l.textContent = text; l.style.display = text ? '' : 'none';
+  }
   function windLevel(w) { return Math.round(Math.abs(w || 0) * 10); }
   function windText(w) { const n = windLevel(w); if (!n) return '바람 없음'; return '바람 ' + (w < 0 ? '←' : '→') + ' ' + (n <= 3 ? '약함' : n <= 6 ? '보통' : '강함'); }
   let lastWind = null;
@@ -1514,7 +1642,7 @@
     const foot = document.createElement('div'); foot.className = 'amFoot'; foot.style.gridColumn = `1 / span ${ncol}`;
     const fname = document.createElement('span'), fcnt = document.createElement('span'); foot.append(fname, fcnt);
     const showFoot = (w) => { const A = Weapons.AMMO[w], n = ammoCount(t, w); fname.textContent = A.name; fcnt.textContent = n < 0 ? '' : 'x' + n;
-      $('amDesc').textContent = A.name + ' — ' + A.desc; $('amDesc').classList.add('on'); };
+      $('amDesc').textContent = A.name + ': ' + A.desc; $('amDesc').classList.add('on'); };
     for (const sl of keys) {
       const key = document.createElement('div'); key.className = 'amKey'; key.textContent = 'F' + (+sl + 1); grid.append(key);
       for (let i = 0; i < ncol - 1; i++) {
@@ -1565,6 +1693,8 @@
     else if (e.key === 'Tab') { e.preventDefault(); toggleAmmo(); }
     else if (/^F([1-9]|10)$/.test(e.key)) { e.preventDefault(); slotKey(+e.key.slice(1) - 1); }
     else if (e.key === 'Escape') toggleAmmo(false);
+    else if (e.key === 'h' || e.key === 'H' || e.key === 'Home') goMyHog();
+    else if (e.key === 'm' || e.key === 'M') $('mmToggle').click();
     else if (e.key >= '1' && e.key <= '5') send({ t: 'gtimer', s: +e.key });
   });
   window.addEventListener('keyup', (e) => { if (KEYMAP[e.key]) { e.preventDefault(); setKey(KEYMAP[e.key], false); } });
@@ -1586,6 +1716,9 @@
     for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) el.addEventListener(ev, () => el.classList.remove('on'));
   }
   tapBtn('tSwitch', () => toggleAmmo());
+  $('mmToggle').onclick = () => { try { localStorage.setItem('hw_mm', mmOpen() ? '0' : '1'); } catch (e) {} if (S.game) S.game.mmBtnKey = ''; };
+  function goMyHog() { const G = S.game; if (!G) return; const id = myHogId(G); if (id) { G.cam.goto = id; G.cam.manual = performance.now() + 4000; } }
+  $('btnMyHog').onclick = goMyHog;
   cv.addEventListener('contextmenu', (e) => { if (S.game) { e.preventDefault(); toggleAmmo(); } });   // 오른쪽 클릭 = 무기 메뉴 (원본)
   tapBtn('tTimer', () => $('gtimers').classList.toggle('on'));          // 휴대폰: 누르면 1~5초 선택 창
   $('wTimer').onclick = () => $('gtimers').classList.toggle('on');
@@ -1596,20 +1729,30 @@
   }
   // 화면 끌기(이동) / 휠·두 손가락(확대)
   const pts = new Map(); let pinch0 = 0, z0 = 1;
-  cv.addEventListener('pointerdown', (e) => { pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); cv.setPointerCapture(e.pointerId);
+  let mmPtr = null;
+  function mmJump(G, cx, cy) { const r = G.mmRect; if (!r) return; G.cam.x = (cx - r.x) / r.w * W; G.cam.y = (cy - r.y) / r.h * H; G.cam.goto = 0; G.cam.manual = performance.now() + 4000; }
+  cv.addEventListener('pointerdown', (e) => {
+    const G = S.game, r = G && G.mmRect;
+    if (r && e.clientX >= r.x - 3 && e.clientX <= r.x + r.w + 3 && e.clientY >= r.y - 3 && e.clientY <= r.y + r.h + 3) { mmPtr = e.pointerId; cv.setPointerCapture(e.pointerId); mmJump(G, e.clientX, e.clientY); return; }
+    pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); cv.setPointerCapture(e.pointerId);
     if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch0 = Math.hypot(a.x - b.x, a.y - b.y); z0 = S.game ? S.game.cam.z : 1; } });
   cv.addEventListener('pointermove', (e) => {
+    if (mmPtr === e.pointerId && S.game) { mmJump(S.game, e.clientX, e.clientY); return; }
     const G = S.game, p = pts.get(e.pointerId); if (!G || !p) return;
     if (pts.size === 1) {
       G.cam.x -= (e.clientX - p.x) / G.cam.z; G.cam.y -= (e.clientY - p.y) / G.cam.z; G.cam.manual = performance.now() + 4000;
     }
     p.x = e.clientX; p.y = e.clientY;
-    if (pts.size === 2 && pinch0) { const [a, b] = [...pts.values()]; G.cam.z = clampZ(z0 * Math.hypot(a.x - b.x, a.y - b.y) / pinch0); }
+    if (pts.size === 2 && pinch0) { const [a, b] = [...pts.values()]; G.cam.z = clampZ(z0 * Math.hypot(a.x - b.x, a.y - b.y) / pinch0); rememberZoom(G.cam.z); G.cam.manual = performance.now() + 4000; }
   });
-  const up = (e) => { pts.delete(e.pointerId); if (pts.size < 2) pinch0 = 0; };
+  const up = (e) => { if (mmPtr === e.pointerId) mmPtr = null; pts.delete(e.pointerId); if (pts.size < 2) pinch0 = 0; };
   cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
-  cv.addEventListener('wheel', (e) => { e.preventDefault(); if (S.game) S.game.cam.z = clampZ(S.game.cam.z * (e.deltaY < 0 ? 1.1 : 0.9)); }, { passive: false });
-  function clampZ(z) { return Math.max(0.3, Math.min(2.5, z)); }
+  cv.addEventListener('wheel', (e) => { e.preventDefault(); if (S.game) { S.game.cam.z = clampZ(S.game.cam.z * (e.deltaY < 0 ? 1.1 : 0.9)); rememberZoom(S.game.cam.z); } }, { passive: false });
+  // 확대 범위: 맵 전체가 보이는 정도 ~ 고슴도치가 크게 보이는 정도(2.5배). 마지막 값을 기억
+  function clampZ(z) { const zmin = Math.min(0.6, Math.min(innerWidth / (W || 2560), innerHeight / (H || 1280))); return Math.max(zmin, Math.min(2.5, z)); }
+  function savedZoom() { try { return +localStorage.getItem('hw_zoom') || 0; } catch (e) { return 0; } }
+  let zoomSave = 0;
+  function rememberZoom(z) { clearTimeout(zoomSave); zoomSave = setTimeout(() => { try { localStorage.setItem('hw_zoom', String(Math.round(z * 1000) / 1000)); } catch (e) {} }, 400); }
 
   // 테스트용 접근점 (자동 점검 스크립트에서 사용)
   window.__hw = { S, send, setKey };

@@ -9,9 +9,9 @@
   const INF = -1;   // 무한
   // icon: 원본 TAmmoType 번호 (Ammos_base.png 칸 = 번호-1, 세로 16칸씩), slot: 원본 메뉴 줄(F1=0), aim: arc(각도+힘) | direct(각도만)
   const AMMO = {
-    bazooka: { icon: 3, slot: 0, name: '바주카', aim: 'arc', wind: true, count: INF, shots: 1, retreat: 3000,
+    bazooka: { icon: 3, slot: 0, name: '바주카', aim: 'arc', wind: true, count: INF, shots: 1, retreat: 3000, altUse: true,
       desc: '곡사: 각도와 누른 만큼의 힘으로 쏩니다. 바람을 탑니다. 닿는 곳에서 터집니다.' },
-    grenade: { icon: 1, slot: 1, name: '수류탄', aim: 'arc', wind: false, count: INF, shots: 1, retreat: 3000, timer: true,
+    grenade: { icon: 1, slot: 1, name: '수류탄', aim: 'arc', wind: false, count: INF, shots: 1, retreat: 3000, timer: true, altUse: true,
       desc: '곡사: 바람을 타지 않습니다. 튕기다가 1~5초 뒤 터집니다(타이머 1~5).' },
     shotgun: { icon: 5, slot: 2, name: '샷건', aim: 'direct', wind: false, count: INF, shots: 2, retreat: 3000, delay: 900,
       desc: '직사 2발: 조준한 방향으로 바로 쏩니다(힘 없음). 맞은 곳 근처 땅을 파고 최대 25 피해. 바람을 안 탑니다.' },
@@ -22,11 +22,16 @@
     minigun: { icon: 59, slot: 2, name: '미니건', aim: 'direct', wind: false, count: 1, shots: 1, retreat: 3000,
       minAngle: Math.floor(2048 / 6), maxAngle: Math.floor(5 * 2048 / 6), windup: 601, fireMs: 3451,
       desc: '연사: 누르면 0.6초 뒤 3.5초 동안 총알을 퍼붓습니다(한 발 2 피해). 쏘는 동안 위아래로 조준을 움직일 수 있습니다.' },
+    // 2-가-1 이동 도구 (원본 슬롯 7 = F8). 개수는 원본 기본 구성(hwconsts.cpp cDefaultAmmoStore) 그대로: 로프 4, 낙하산 2
+    rope: { icon: 8, slot: 7, name: '로프', aim: 'rope', wind: false, count: 4, shots: 1, retreat: 0, minAngle: 0, maxAngle: 1024, tool: true,
+      desc: '발사를 누르고 있으면 로프가 날아가 땅에 붙습니다. 좌우로 흔들고 위아래로 길이를 바꿉니다. 발사를 다시 누르면 놓고 날아가며, 공중에서 또 쏠 수 있습니다. 쓴 뒤에도 공격할 수 있습니다. 매달린 채 점프 단추를 누르면 고른 바주카나 수류탄을 떨어뜨립니다.' },
+    parachute: { icon: 15, slot: 7, name: '낙하산', aim: 'none', wind: false, count: 2, shots: 1, retreat: 0, tool: true,
+      desc: '떨어지는 중에 발사를 누르면 펼쳐져 천천히 내려옵니다. 바람을 타고, 좌우로 움직이며, 다시 누르면 접습니다. 쓴 뒤에도 공격할 수 있습니다.' },
     // 넘기기 (원본 amSkip, 슬롯 9 = F10): 고른 뒤 발사를 눌러야 차례가 끝남 (실수 방지). AI 는 쓰지 않음
     skip: { icon: 7, slot: 9, name: '넘기기', aim: 'instant', wind: false, count: INF, shots: 1, retreat: 0,
       desc: '아무것도 쏘지 않고 차례를 넘깁니다. 무기 창에서 고른 뒤 발사를 눌러야 넘어갑니다.' },
   };
-  const ORDER = ['bazooka', 'grenade', 'shotgun', 'deagle', 'sniper', 'minigun', 'skip'];
+  const ORDER = ['bazooka', 'grenade', 'shotgun', 'deagle', 'sniper', 'minigun', 'rope', 'parachute', 'skip'];
   function startAmmo() { const a = {}; for (const k of ORDER) a[k] = AMMO[k].count; return a; }
 
   // ---- 총알: 원본 doStepBulletWork — 한 틱에 (dx,dy) 를 100번 더함. 땅 칸을 지날 때마다 Damage+1, Health 를 넘으면 멈춤.

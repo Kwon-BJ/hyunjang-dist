@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="hw-version" content="8.92cc946f6f35">
+<meta name="hw-version" content="9.e9af22359537">
 <meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -205,6 +205,9 @@
   #topRight { position:absolute; top:max(6px, env(safe-area-inset-top)); right:max(6px, env(safe-area-inset-right)); display:flex; gap:6px; }
   #topRight button { min-height:44px; padding:3px 10px; font-size:16px; }
   /* 터치 버튼: 원본 Android판 그림. 평소에도 또렷하게(.75), 누르는 동안 완전히 진하게, 내 차례 아니면 흐리게 */
+  #game .mmb { position:absolute; display:none; z-index:6; font-size:12px; padding:2px 6px; min-height:0; line-height:16px; }
+  #game .mmb.on { display:block; }
+  body.touch #game .mmb { font-size:11px; padding:2px 5px; }
   #touch { position:absolute; inset:auto 0 0 0; height:0; display:none; }
   #touch.on { display:block; }
   .tb { position:absolute; width:58px; height:58px; touch-action:none; opacity:.75; background-size:contain; background-repeat:no-repeat; background-position:center; }
@@ -247,7 +250,7 @@
   #closed .row { margin-top:14px; }
   /* 9B: 점검 예고 띠 · 버전 안내 띠 (화면 맨 위, 경기 화면에서도 보임) */
   #topBars { position:fixed; top:0; left:0; right:0; z-index:61; display:flex; flex-direction:column; align-items:center; pointer-events:none; }
-  /* 메뉴 화면의 점검·버전 안내: 9차 스킨 패널(panel9.png 9조각) — 새 모양을 만들지 않음 */
+  /* 메뉴 화면의 점검·버전 안내: 9차 스킨 패널(panel9.png 9조각): 새 모양을 만들지 않음 */
   .tbar { display:none; pointer-events:auto; margin-top:6px; max-width:calc(100% - 24px); padding:2px 10px; font-size:15px; line-height:1.4; text-align:center; color:#fff;
     border:14px solid transparent; border-image:url(assets/skin/panel9.png) 140 fill / 26px / 0 stretch; background:none; }
   .tbar.on { display:block; }
@@ -329,7 +332,7 @@
 @media (max-width:700px){#aiStages{grid-template-columns:repeat(5,1fr)}}
 @media (max-height:480px){#aiStages{grid-template-columns:repeat(10,1fr);gap:4px;margin:6px 0}#aiStages button{padding:3px 0 2px;font-size:14px}#aiStages button img{height:16px}}
 </style>
-<link rel="stylesheet" href="skin9.css?v=92cc946f6f35">
+<link rel="stylesheet" href="skin9.css?v=e9af22359537">
 </head>
 <body class="s9">
 <div id="conn">서버와 연결이 끊겼습니다. 다시 연결하는 중…</div>
@@ -466,6 +469,8 @@
     <div id="gtimers"></div>
   </div>
   <div id="topRight"><button id="btnSound">소리 켬</button><button id="btnQuit">나가기</button></div>
+  <button id="mmToggle" class="hwr mmb" title="미니맵 접기·펴기 (M)">지도 접기</button>
+  <button id="btnMyHog" class="hwr mmb" title="화면을 내 고슴도치로 (H)">내 고슴도치</button>
   <div id="touch">
     <div class="tb" id="tL" style="left:max(4px, env(safe-area-inset-left));bottom:6px"></div>
     <div class="tb" id="tR" style="left:calc(max(4px, env(safe-area-inset-left)) + 62px);bottom:6px"></div>
@@ -484,7 +489,7 @@
 
 <section id="aiDlg" class="screen modal">
   <div class="box wide">
-    <h1><img src="assets/ui/teamicon.png" alt="" style="height:22px;vertical-align:middle"> AI 대전 — 단계 고르기</h1>
+    <h1><img src="assets/ui/teamicon.png" alt="" style="height:22px;vertical-align:middle"> AI 대전: 단계 고르기</h1>
     <div class="small" id="aiInfo">1단계부터 깨면 다음 단계가 열립니다. 처음 깬 단계만 경험치(단계 × 5). 져도 깎이지 않습니다.</div>
     <div id="aiStages"></div>
     <div id="aiMaps" style="display:none"><div class="small" id="aiMapsHead"></div><div class="row" style="margin:4px 0"><button id="btnAiAny" class="primary">아무거나로 시작</button><button id="btnAiBack" class="sec">단계 다시 고르기</button></div><div id="aiMapGrid" class="mpGridIn"></div></div>
@@ -508,7 +513,7 @@
     <div id="myBody"></div>
     <div id="pwBox">
       <div id="pwNotice" class="notes" style="color:var(--yellow)"></div>
-      <label for="pwCur">비밀번호 바꾸기 — 현재 비밀번호</label><input id="pwCur" type="password" autocomplete="current-password" maxlength="64">
+      <label for="pwCur">비밀번호 바꾸기: 현재 비밀번호</label><input id="pwCur" type="password" autocomplete="current-password" maxlength="64">
       <label for="pwNew">새 비밀번호 (6자 이상)</label><input id="pwNew" type="password" autocomplete="new-password" maxlength="64">
       <label for="pwNew2">새 비밀번호 확인</label><input id="pwNew2" type="password" autocomplete="new-password" maxlength="64">
       <div class="row"><button id="btnChPw"><img src="assets/ui/edit.png" alt="">비밀번호 바꾸기</button></div>
@@ -539,11 +544,13 @@
     <h1>게임 가이드</h1>
     <p class="sub">차례가 오면 정해진 시간 안에 움직이고 조준해서 한 번 쏩니다. 바람을 보고 각도와 힘을 맞추세요. 상대 고슴도치를 모두 쓰러뜨리면 이깁니다.</p>
     <p class="sub" id="guideKeys"></p>
-    <p class="sub">휴대폰: 화면 아래 터치 버튼 — 왼쪽·오른쪽 걷기, 위·아래 조준, 큰 버튼으로 발사, 점프·높이 점프, "무기" 버튼으로 무기 메뉴, 수류탄 타이머. 경기는 가로 화면에서만 됩니다.</p>
+    <p class="sub">휴대폰 터치 버튼: 왼쪽·오른쪽 걷기, 위·아래 조준, 큰 버튼으로 발사, 점프·높이 점프, "무기" 버튼으로 무기 메뉴, 수류탄 타이머. 경기는 가로 화면에서만 됩니다.</p>
     <p class="sub"><b>무기 메뉴</b>: 왼쪽 위 무기 그림(또는 Tab·오른쪽 클릭·"무기" 버튼)을 누르면 무기 칸이 뜹니다. 칸 오른쪽 아래 숫자가 남은 수(∞ = 무한)이고, 흑백 칸은 다 쓴 무기입니다. 칸에 올려 두거나 길게 누르면 설명이 나옵니다.
-      <b>조준 방식</b> — 곡사(바주카·수류탄): 각도를 맞추고 발사 버튼을 누르고 있는 만큼 세게 나갑니다. 바주카는 바람을 타고 수류탄은 안 탑니다.
-      직사(샷건 2발·데저트 이글 4발·저격총 2발·미니건): 각도만 맞추고 누르면 바로 나갑니다. 총은 바람을 타지 않고, 첫 발을 쏜 뒤에는 무기를 바꿀 수 없습니다.</p>
-    <p class="sub"><b>바람</b>: 오른쪽 위 "바람 ▶ 7" — 화살표가 부는 쪽, 숫자(1~10)가 세기입니다. 구름도 바람 쪽으로 흐릅니다.</p>
+      <b>조준 방식</b>: 곡사(바주카·수류탄)는 각도를 맞추고 발사 버튼을 누르고 있는 만큼 세게 나갑니다. 바주카는 바람을 타고 수류탄은 안 탑니다.
+      직사(샷건 2발·데저트 이글 4발·저격총 2발·미니건)는 각도만 맞추고 누르면 바로 나갑니다. 총은 바람을 타지 않고, 첫 발을 쏜 뒤에는 무기를 바꿀 수 없습니다.</p>
+    <p class="sub"><b>로프·낙하산</b> (F8): 로프는 발사를 누르고 있으면 날아가 땅에 붙습니다. 좌우로 흔들고 위아래로 길이를 바꾸며, 발사를 다시 누르면 놓고 날아갑니다(공중에서 또 쏠 수 있음). 낙하산은 떨어지는 중에 발사를 누르면 펼쳐집니다. 둘 다 쓴 뒤에도 공격할 수 있고, 매달린 채 점프 단추를 누르면 고른 바주카·수류탄을 떨어뜨립니다. 처음 개수는 원본대로 로프 4개, 낙하산 2개입니다.</p>
+    <p class="sub"><b>지도·화면</b>: 오른쪽 위(휴대폰은 왼쪽 위) 작은 지도에 모든 고슴도치가 팀 색 점으로 보입니다. 누르거나 끌면 그곳을 보고, 몇 초 뒤 지금 차례로 돌아옵니다. 화면은 끌어서 둘러보고 휠·두 손가락으로 확대합니다. "내 고슴도치" 단추(H)로 내 고슴도치를, M으로 지도를 접고 폅니다.</p>
+    <p class="sub"><b>바람</b>: 오른쪽 위 "바람 ▶ 7"에서 화살표가 부는 쪽, 숫자(1~10)가 세기입니다. 구름도 바람 쪽으로 흐릅니다.</p>
     <p class="sub"><b>체력이 줄어드는 경우</b>: 폭발에 직접 맞을 때뿐 아니라 폭발 가장자리(빨간 숫자), 높은 곳에서 떨어지거나 밀려나 떨어질 때("낙하 -12"), 서든데스가 시작된 뒤 매 턴("서든데스 -5", 1 밑으로는 안 줄어듦), 총에 맞을 때도 줄어듭니다. 물에 빠지면 바로 쓰러집니다. 턴이 끝나면 화면 위에 "이번 턴" 피해 요약이 나옵니다.</p>
     <div class="row"><button id="btnCloseGuide">닫기</button></div>
   </div>
@@ -555,22 +562,22 @@
     그림·소리·음악·글꼴을 사용하고, 무기·물리 수치를 원본 소스에서 읽어 새로 작성한 팬 게임입니다. Hedgewars 공식 게임이 아닙니다.</p>
     <ul>
       <li>그림·소리·음악: Hedgewars 프로젝트 기여자들, GNU Free Documentation License 1.2</li>
-      <li>음악 "Nature" — John Dum / "main_theme" — Hedgewars 프로젝트 / 서든데스 음악 "Hitman" — Kevin MacLeod (sheepluva 편집)</li>
+      <li>음악 "Nature": John Dum / "main_theme": Hedgewars 프로젝트 / 서든데스 음악 "Hitman": Kevin MacLeod (sheepluva 편집)</li>
       <li>글꼴: DejaVu Sans Bold (Bitstream Vera 라이선스), WenQuanYi Zen Hei (GPL2 + 글꼴 임베딩 예외)</li>
-      <li>제목·버튼 글꼴: 주아(Jua) — The Jua Project Authors, SIL Open Font License 1.1 (<a href="assets/fonts/Jua_OFL.txt" target="_blank">라이선스 전문</a>)</li>
+      <li>제목·버튼 글꼴: 주아(Jua), The Jua Project Authors, SIL Open Font License 1.1 (<a href="assets/fonts/Jua_OFL.txt" target="_blank">라이선스 전문</a>)</li>
       <li>원본 코드: GNU GPL v2 (이 게임 코드는 수치를 참고해 새로 작성. 단, 지형 생성기 landgen.js·지도 만들기 mapgen.js 는 원본 코드를 옮긴 것으로 GPL v2)</li>
       <li>메뉴 화면의 배경·로고·패널·버튼·아이콘 그림: 운영자가 ChatGPT(AI)로 만든 그림. 그림 속 분홍 고슴도치는 Hedgewars 캐릭터 디자인 기반</li>
       <li>테마 29종·이미지 맵 44종: Hedgewars 각 테마·맵 제작자 (GFDL 1.2). 테마·맵·음악별 만든 사람은 아래 목록의 "6차 추가"에</li>
     </ul>
-    <p>사용한 파일 전체 목록과 원본 경로·만든 사람:<a href="assets/ASSET_LICENSES.txt" target="_blank">ASSET_LICENSES</a></p>
+    <p>사용한 파일 전체 목록과 원본 경로·만든 사람: <a href="assets/ASSET_LICENSES.txt" target="_blank">ASSET_LICENSES</a></p>
     <div class="row"><button id="btnCloseCredits">닫기</button></div>
   </div>
 </section>
 
-<script src="sim.js?v=92cc946f6f35"></script>
-<script src="landgen.js?v=92cc946f6f35"></script>
-<script src="mapgen.js?v=92cc946f6f35"></script>
-<script src="weapons.js?v=92cc946f6f35"></script>
-<script src="client.js?v=92cc946f6f35"></script>
+<script src="sim.js?v=e9af22359537"></script>
+<script src="landgen.js?v=e9af22359537"></script>
+<script src="mapgen.js?v=e9af22359537"></script>
+<script src="weapons.js?v=e9af22359537"></script>
+<script src="client.js?v=e9af22359537"></script>
 </body>
 </html>

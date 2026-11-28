@@ -1,4 +1,4 @@
-# ASSET_LICENSES — 사용한 재료와 라이선스
+# ASSET_LICENSES: 사용한 재료와 라이선스
 
 이 게임(C:MSWgame)은 오픈소스 게임 **Hedgewars**(https://www.hedgewars.org, 소스 https://github.com/hedgewars/hw, 커밋 3f2a2b6)의
 그림·소리·음악을 그대로 가져다 쓴다. Hedgewars 공식 게임이 아니다.
@@ -34,7 +34,7 @@ GFDL 1.2 전문: https://www.gnu.org/licenses/old-licenses/fdl-1.2.html · GPL v
 | 턴 | 45초, 발사 후 후퇴 3초 | uVariables.pas cHedgehogTurnTime, Ammoz TimeAfterTurn |
 | 팀 색 | 빨강·파랑·청록·보라 | frontend-qt6/hwconsts.h (ClanColorArray) |
 
-## 파일 목록 — 파일 — 원본 경로 — 라이선스
+## 파일 목록 / 파일 / 원본 경로 / 라이선스
 | 파일 | 원본 경로 | 라이선스 |
 |---|---|---|
 | game/assets/gfx/amBazooka.png | hedgewars-src/share/hedgewars/Data/Graphics/Hedgehog/amBazooka.png | GFDL 1.2 |
@@ -109,7 +109,7 @@ GFDL 1.2 전문: https://www.gnu.org/licenses/old-licenses/fdl-1.2.html · GPL v
 | game/assets/music/Nature.ogg | hedgewars-src/share/hedgewars/Data/Music/Nature.ogg | GFDL 1.2 |
 
 
-## 3차 추가 (2026-11-27) — 파일 — 원본 경로 — 라이선스
+## 3차 추가 (2026-11-27) / 파일 / 원본 경로 / 라이선스
 | 파일 | 원본 경로 | 라이선스 |
 |---|---|---|
 | game/assets/fonts/hw-latin.woff2 | hedgewars-src/share/hedgewars/Data/Fonts/DejaVuSans-Bold.ttf (영문·숫자만 골라 woff2로 변환, 글자 모양 변경 없음) | Bitstream Vera 라이선스 + DejaVu 변경분 공개 (hedgewars-src/Fonts_LICENSE.txt) |
@@ -170,7 +170,7 @@ GFDL 1.2 전문: https://www.gnu.org/licenses/old-licenses/fdl-1.2.html · GPL v
 
 참고: 원본 메뉴의 창 테두리·버튼·표 머리줄은 그림이 아니라 frontend-qt6/res/css/qt.css 스타일로 그려진다. 3차 화면은 그 색·두께·둥글기 값을 그대로 옮겼다(코드 GPL-2.0 참고, 그림 아님).
 
-## 4차 추가 (서든데스) — 파일 — 원본 경로 — 라이선스
+## 4차 추가 (서든데스) / 파일 / 원본 경로 / 라이선스
 | 파일 | 원본 경로 | 라이선스 |
 |---|---|---|
 | game/assets/gfx/SDWater.png | hedgewars-src/share/hedgewars/Data/Graphics/SuddenDeath/SDWater.png | GFDL 1.2 |
@@ -180,7 +180,7 @@ GFDL 1.2 전문: https://www.gnu.org/licenses/old-licenses/fdl-1.2.html · GPL v
 | game/assets/music/sdmusic.mp3 | 위 파일을 ffmpeg로 mp3 변환 | 위와 같음 |
 | game/assets/ui/Save.png | hedgewars-src/frontend-qt6/res/Save.png | GFDL 1.2 |
 
-## 6차 추가 (지도 다양화, 2026-11-27) — 파일 — 원본 경로 — 라이선스
+## 6차 추가 (지도 다양화, 2026-11-27) / 파일 / 원본 경로 / 라이선스
 
 ### 원본 코드를 옮긴 파일 (GNU GPL v2 or later)
 | 파일 | 옮긴 원본 | 라이선스 |
@@ -191,46 +191,46 @@ GFDL 1.2 전문: https://www.gnu.org/licenses/old-licenses/fdl-1.2.html · GPL v
 | game/public/maps/map_templates.json, maze_templates.json | hedgewars-src/share/hedgewars/Data/map_templates.yaml, maze_templates.yaml (YAML → JSON 변환만) | GPL-2.0 (원본 데이터) |
 | game/public/maps/catalog.json | 테마·맵 목록 (build_maps.js 가 theme.cfg·map.cfg 에서 만듦) | GPL-2.0 |
 
-### 테마 (그림·음악) — game/assets/themes/<테마>/ — 원본 hedgewars-src/share/hedgewars/Data/Themes/<테마>/ — GFDL 1.2
+### 테마 (그림·음악) / game/assets/themes/<테마>/ / 원본 hedgewars-src/share/hedgewars/Data/Themes/<테마>/ / GFDL 1.2
 각 폴더: theme.json(theme.cfg 를 읽어 만든 설정·장식 충돌 정보), LandTex·Border·Sky·horizont·BlueWater·SDWater·icon 등 쓰는 그림, 장식(object) 그림, credits.txt(원본에 있을 때).
 | 테마 | 고르기 | 장식 수 | 음악 (game/assets/music/, mp3 사본 포함) | 만든 사람 (원본 credits.txt) |
 |---|---|---|---|---|
-| Art | 가능 | 4 | Art — Hedgewars 프로젝트 | Zippy |
-| Bamboo | 가능 | 4 | oriental — Jonatan Nilsson | Joshua Frese |
-| Bath | 가능 | 6 | bath — Hedgewars 프로젝트 | John Dum |
-| Beach | 가능 | 10 | Beach — Hedgewars 프로젝트 | CopherNeue, Miguelac |
-| Blox | 숨김(원본 hidden=true, 이미지 맵에서만 쓰임) | 0 | Nature — John Dum | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
-| Brick | 가능 | 9 | Brick — Hedgewars 프로젝트 | AlexYeCu |
-| Cake | 가능 | 6 | snow — Jonatan Nilsson | Randy |
-| Castle | 가능 | 4 | Castle — Hedgewars 프로젝트 | John Dum |
-| Cave | 가능 | 5 | snow — Jonatan Nilsson | Guillaume Englert |
-| Cheese | 가능 | 5 | EarthRise — Jonatan Nilsson | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
-| Christmas | 가능 | 6 | snow — Jonatan Nilsson | Palewolf and others |
-| City | 가능 | 4 | City — HSR <http://elhombresinremedio.com> | John Dum |
-| Compost | 가능 | 8 | Compost — HG | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
-| CrazyMission | 숨김(원본 hidden=true, 이미지 맵에서만 쓰임) | 0 | snow — Jonatan Nilsson | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
-| Deepspace | 숨김(원본 hidden=true, 이미지 맵에서만 쓰임) | 0 | hell — Hedgewars 프로젝트 | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
-| Desert | 가능 | 7 | Desert — Hedgewars 프로젝트 | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
-| Digital | 가능 | 13 | Freeway — Hedgewars 프로젝트 | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
-| EarthRise | 가능 | 2 | EarthRise — Jonatan Nilsson | Joshua Frese |
-| Eyes | 숨김(원본 hidden=true, 이미지 맵에서만 쓰임) | 0 | hell — Hedgewars 프로젝트 | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
-| Freeway | 가능 | 2 | Freeway — Hedgewars 프로젝트 | Joshua Frese |
-| Fruit | 가능 | 5 | Fruit — Valentin Kraevskiy | Randy |
-| Golf | 가능 | 13 | Golf — Hedgewars 프로젝트 | RoFra |
-| Halloween | 가능 | 2 | Halloween — Hedgewars 프로젝트 | John Dum |
-| Hell | 가능 | 4 | hell — Hedgewars 프로젝트 | Stanko Tadić |
-| Hoggywood | 가능 | 8 | Rock — HSR <http://elhombresinremedio.com> | RoFra, Wuzzy |
-| Island | 가능 | 5 | pirate — Jonatan Nilsson | John Dum |
-| Jungle | 가능 | 7 | Jungle — Valentin Kraevskiy | KoRn666 |
-| Nature | 가능 | 11 | Nature — John Dum | John Dum |
-| Olympics | 가능 | 4 | Olympics — Hedgewars 프로젝트 | Guillaume Englert |
-| Planes | 숨김(원본 hidden=true, 이미지 맵에서만 쓰임) | 0 | City — HSR <http://elhombresinremedio.com> | John Dum |
-| Sheep | 가능 | 7 | Sheep — Hedgewars 프로젝트 | Julien Koesten |
-| Snow | 가능 | 4 | snow — Jonatan Nilsson | John Dum |
-| Stage | 가능 | 6 | Rock — HSR <http://elhombresinremedio.com> | RoFra |
-| Underwater | 가능 | 5 | underwater — Hedgewars 프로젝트 | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
+| Art | 가능 | 4 | Art: Hedgewars 프로젝트 | Zippy |
+| Bamboo | 가능 | 4 | oriental: Jonatan Nilsson | Joshua Frese |
+| Bath | 가능 | 6 | bath: Hedgewars 프로젝트 | John Dum |
+| Beach | 가능 | 10 | Beach: Hedgewars 프로젝트 | CopherNeue, Miguelac |
+| Blox | 숨김(원본 hidden=true, 이미지 맵에서만 쓰임) | 0 | Nature / John Dum | (원본에 credits.txt 없음 / Hedgewars 프로젝트) |
+| Brick | 가능 | 9 | Brick: Hedgewars 프로젝트 | AlexYeCu |
+| Cake | 가능 | 6 | snow: Jonatan Nilsson | Randy |
+| Castle | 가능 | 4 | Castle: Hedgewars 프로젝트 | John Dum |
+| Cave | 가능 | 5 | snow: Jonatan Nilsson | Guillaume Englert |
+| Cheese | 가능 | 5 | EarthRise / Jonatan Nilsson | (원본에 credits.txt 없음 / Hedgewars 프로젝트) |
+| Christmas | 가능 | 6 | snow: Jonatan Nilsson | Palewolf and others |
+| City | 가능 | 4 | City: HSR <http://elhombresinremedio.com> | John Dum |
+| Compost | 가능 | 8 | Compost / HG | (원본에 credits.txt 없음 / Hedgewars 프로젝트) |
+| CrazyMission | 숨김(원본 hidden=true, 이미지 맵에서만 쓰임) | 0 | snow / Jonatan Nilsson | (원본에 credits.txt 없음 / Hedgewars 프로젝트) |
+| Deepspace | 숨김(원본 hidden=true, 이미지 맵에서만 쓰임) | 0 | hell / Hedgewars 프로젝트 | (원본에 credits.txt 없음 / Hedgewars 프로젝트) |
+| Desert | 가능 | 7 | Desert / Hedgewars 프로젝트 | (원본에 credits.txt 없음 / Hedgewars 프로젝트) |
+| Digital | 가능 | 13 | Freeway / Hedgewars 프로젝트 | (원본에 credits.txt 없음 / Hedgewars 프로젝트) |
+| EarthRise | 가능 | 2 | EarthRise: Jonatan Nilsson | Joshua Frese |
+| Eyes | 숨김(원본 hidden=true, 이미지 맵에서만 쓰임) | 0 | hell / Hedgewars 프로젝트 | (원본에 credits.txt 없음 / Hedgewars 프로젝트) |
+| Freeway | 가능 | 2 | Freeway: Hedgewars 프로젝트 | Joshua Frese |
+| Fruit | 가능 | 5 | Fruit: Valentin Kraevskiy | Randy |
+| Golf | 가능 | 13 | Golf: Hedgewars 프로젝트 | RoFra |
+| Halloween | 가능 | 2 | Halloween: Hedgewars 프로젝트 | John Dum |
+| Hell | 가능 | 4 | hell: Hedgewars 프로젝트 | Stanko Tadić |
+| Hoggywood | 가능 | 8 | Rock: HSR <http://elhombresinremedio.com> | RoFra, Wuzzy |
+| Island | 가능 | 5 | pirate: Jonatan Nilsson | John Dum |
+| Jungle | 가능 | 7 | Jungle: Valentin Kraevskiy | KoRn666 |
+| Nature | 가능 | 11 | Nature: John Dum | John Dum |
+| Olympics | 가능 | 4 | Olympics: Hedgewars 프로젝트 | Guillaume Englert |
+| Planes | 숨김(원본 hidden=true, 이미지 맵에서만 쓰임) | 0 | City: HSR <http://elhombresinremedio.com> | John Dum |
+| Sheep | 가능 | 7 | Sheep: Hedgewars 프로젝트 | Julien Koesten |
+| Snow | 가능 | 4 | snow: Jonatan Nilsson | John Dum |
+| Stage | 가능 | 6 | Rock: HSR <http://elhombresinremedio.com> | RoFra |
+| Underwater | 가능 | 5 | underwater / Hedgewars 프로젝트 | (원본에 credits.txt 없음 / Hedgewars 프로젝트) |
 
-### 이미지 맵 — game/assets/maps/<맵>/ (map.png, preview.png, land.json, credits.txt) — 원본 hedgewars-src/share/hedgewars/Data/Maps/<맵>/ — GFDL 1.2
+### 이미지 맵 / game/assets/maps/<맵>/ (map.png, preview.png, land.json, credits.txt) / 원본 hedgewars-src/share/hedgewars/Data/Maps/<맵>/ / GFDL 1.2
 land.json 은 map.png + mask.png 를 원본 규칙(SetLand)으로 계산한 땅 판정(빨강 = 부서지지 않는 땅). mask.png 자체는 올리지 않음.
 | 맵 | 테마 | 최대 고슴도치 | 크기 | 만든 사람 (원본 credits.txt) |
 |---|---|---|---|---|
@@ -244,19 +244,19 @@ land.json 은 map.png + mask.png 를 원본 규칙(SetLand)으로 계산한 땅 
 | Bubbleflow | Underwater | 18 | 2048x1024 | John Dum |
 | Cake | Cake | 18 | 2048x1024 | Josh |
 | Castle | Nature | 18 | 2048x1024 | Stanko Tadić |
-| Cave | Island | 64 | 4096x2048 | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
+| Cave | Island | 64 | 4096x2048 | (원본에 credits.txt 없음: Hedgewars 프로젝트) |
 | Cheese | Cheese | 18 | 2048x1488 | CopherNeue |
 | Cogs | EarthRise | 18 | 2048x1024 | Josh |
-| CrazyMission | CrazyMission | 18 | 2048x1024 | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
+| CrazyMission | CrazyMission | 18 | 2048x1024 | (원본에 credits.txt 없음: Hedgewars 프로젝트) |
 | EarthRise | EarthRise | 18 | 2048x1024 | Joshua Frese |
-| Eyes | Eyes | 18 | 2048x1024 | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
+| Eyes | Eyes | 18 | 2048x1024 | (원본에 credits.txt 없음: Hedgewars 프로젝트) |
 | Hammock | Nature | 18 | 1984x1380 | John Dum |
-| HedgeFortress | Nature | 18 | 2048x1024 | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
+| HedgeFortress | Nature | 18 | 2048x1024 | (원본에 credits.txt 없음: Hedgewars 프로젝트) |
 | Hedgelove | Nature | 18 | 2048x1024 | John Dum |
 | Hedgewars | Nature | 18 | 2048x1024 | John Dum |
-| Hogville | Nature | 64 | 4096x2048 | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
+| Hogville | Nature | 64 | 4096x2048 | (원본에 credits.txt 없음: Hedgewars 프로젝트) |
 | Hydrant | City | 18 | 2048x1024 | John Dum |
-| Islands | Deepspace | 64 | 4096x2048 | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
+| Islands | Deepspace | 64 | 4096x2048 | (원본에 credits.txt 없음: Hedgewars 프로젝트) |
 | Lonely_Island | Island | 18 | 2048x1024 | Maciej Mroziński |
 | Mushrooms | Nature | 18 | 2048x1024 | John Dum |
 | Octorama | Underwater | 32 | 2292x1136 | jessor |
@@ -267,25 +267,25 @@ land.json 은 map.png + mask.png 를 원본 규칙(SetLand)으로 계산한 땅 
 | SB_Bones | Desert | 64 | 4096x1280 | Chucklefish, Ltd |
 | SB_Crystal | Cave | 32 | 4096x1024 | Chucklefish, Ltd |
 | SB_Grassy | Castle | 40 | 4096x1024 | Chucklefish, Ltd |
-| SB_Grove | Nature | 64 | 3584x1280 | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
+| SB_Grove | Nature | 64 | 3584x1280 | (원본에 credits.txt 없음: Hedgewars 프로젝트) |
 | SB_Haunty | Halloween | 24 | 2048x1024 | Chucklefish, Ltd |
 | SB_Oaks | Nature | 64 | 4096x2048 | Chucklefish, Ltd |
 | SB_Shrooms | Nature | 64 | 3584x1280 | Chucklefish, Ltd |
 | SB_Tentacles | Hell | 40 | 3072x1280 | Chucklefish, Ltd |
-| Sheep | Sheep | 18 | 2048x1024 | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
+| Sheep | Sheep | 18 | 2048x1024 | (원본에 credits.txt 없음: Hedgewars 프로젝트) |
 | ShoppaKing | Castle | 64 | 4096x2048 | wolfmarc & Dragonfly |
 | Sticks | Bamboo | 24 | 3072x1536 | dctPL |
-| Trash | Compost | 18 | 2048x1024 | (원본에 credits.txt 없음 — Hedgewars 프로젝트) |
+| Trash | Compost | 18 | 2048x1024 | (원본에 credits.txt 없음: Hedgewars 프로젝트) |
 | Tree | Halloween | 18 | 2048x1024 | John Dum |
 | portal | Hell | 64 | 4096x2048 | sphrix |
 
 ### 넣지 않은 원본 맵과 이유
 | 맵 | 이유 |
 |---|---|
-| Basketball | 그림(map.png) 없음 — 스크립트로만 만드는 맵 |
-| ClimbHome | 그림(map.png) 없음 — 스크립트로만 만드는 맵 |
+| Basketball | 그림(map.png) 없음: 스크립트로만 만드는 맵 |
+| ClimbHome | 그림(map.png) 없음: 스크립트로만 만드는 맵 |
 | Control | 미션 전용 (map.lua 필요) |
-| CTF_Blizzard | 그림(map.png) 없음 — 스크립트로만 만드는 맵 |
+| CTF_Blizzard | 그림(map.png) 없음: 스크립트로만 만드는 맵 |
 | FlightJoust | 미션 전용 (map.lua 필요) |
 | Knockball | 미션 전용 (map.lua 필요) |
 | test | 시험용 맵 |
@@ -294,13 +294,13 @@ land.json 은 map.png + mask.png 를 원본 규칙(SetLand)으로 계산한 땅 
 | testmap | 시험용 맵 |
 | TrophyRace | 미션 전용 (map.lua 필요) |
 
-음악 sdmusic: Kevin MacLeod "Hitman" (sheepluva 편집) — 원본 Music/credits.txt. 음악은 홈페이지에 mp3 사본만 올린다(같은 곡).
+음악 sdmusic: Kevin MacLeod "Hitman" (sheepluva 편집): 원본 Music/credits.txt. 음악은 홈페이지에 mp3 사본만 올린다(같은 곡).
 
 ## 7차 추가 (AI 대전, 2026-11-27)
 | 파일 | 원본 | 라이선스 |
 |---|---|---|
 | game/ai.js | hedgewars/uAI.pas, uAIAmmoTests.pas (TestBazooka·TestGrenade: 비행시간 후보마다 목표 속도 계산 → 시험 발사 → 점수, 단계(Level)별 각도·파워 오차), uAIMisc.pas (RateExplosion) 를 읽고 방식을 따라 새로 작성 (줄 단위로 옮기지 않음) | GPL-2.0 대상으로 취급 (안전하게) |
-| 단계 목록·결과창 그림 | 기존에 넣은 원본 그림만 사용: game/assets/ui/StatsMedal1.png(깬 단계), unlock.png(열린 단계), lock.png(잠긴 단계), teamicon.png(AI 대전 버튼) — 위 "3차 추가" 표 | GFDL 1.2 |
+| 단계 목록·결과창 그림 | 기존에 넣은 원본 그림만 사용: game/assets/ui/StatsMedal1.png(깬 단계), unlock.png(열린 단계), lock.png(잠긴 단계), teamicon.png(AI 대전 버튼): 위 "3차 추가" 표 | GFDL 1.2 |
 새로 가져온 그림·소리 파일은 없다.
 
 
@@ -311,19 +311,19 @@ land.json 은 map.png + mask.png 를 원본 규칙(SetLand)으로 계산한 땅 
 | game/assets/ui/title_hog.png | hedgewars-src/share/hedgewars/Data/Graphics/Hedgehog.png 첫 칸 + Data/Graphics/Hats/war_americanww2helmet.png 겹침 (32x32, game/tools_v8_art.js) | GFDL 1.2 |
 | 게임 제목 글자 "고슴도치 포격전" | 원본 글꼴(이미 넣은 hw-kr.woff2 = WenQuanYi Zen Hei)로 화면에서 씀. 원본 "Hedgewars" 로고 그림은 쓰지 않음 | 글꼴 라이선스(위 표) |
 
-## 9차 추가 (ChatGPT 그림 스킨, 2026-11-28) — 메뉴 화면 전용
+## 9차 추가 (ChatGPT 그림 스킨, 2026-11-28): 메뉴 화면 전용
 - 아래 그림 3장은 사용자가 ChatGPT(AI)로 만들어 준 것. 그림 속 분홍 고슴도치는 Hedgewars 캐릭터 디자인 기반(원작: Hedgewars 프로젝트, GFDL 1.2).
-- design_gpt/bg_night_castle.png — 사용자 제공 AI 그림 — 게임용: assets/skin/bg.webp (가로 1600으로 줄임)
-- design_gpt/logo.png — 사용자 제공 AI 그림 — 게임용: assets/skin/logo.webp (가로 900으로 줄임)
-- design_gpt/ui_kit.png — 사용자 제공 AI 그림 — 부품별로 잘라 assets/skin/ 에 저장 (tools_v9_skin.js, tools_v9_pack.js):
+- design_gpt/bg_night_castle.png / 사용자 제공 AI 그림 / 게임용: assets/skin/bg.webp (가로 1600으로 줄임)
+- design_gpt/logo.png / 사용자 제공 AI 그림 / 게임용: assets/skin/logo.webp (가로 900으로 줄임)
+- design_gpt/ui_kit.png / 사용자 제공 AI 그림 / 부품별로 잘라 assets/skin/ 에 저장 (tools_v9_skin.js, tools_v9_pack.js):
   panel9.png·plate_top.png·plate_bottom.png(패널), btn_primary/btn_normal/btn_disabled/btn_dark.png(버튼), input.png(입력칸),
   icon_user/lock/play/adduser/megaphone/gear/help/exit.png(아이콘)
 - 경기 화면(지형·고슴도치·무기·HUD)은 계속 원본 Hedgewars 그림만 씀. 위 Hedgewars 출처 표기는 그대로 유지.
-- 글꼴 game/assets/fonts/jua.woff2 — 주아(Jua), Copyright 2018 The Jua Project Authors — google/fonts 저장소 ofl/jua/Jua-Regular.ttf (C:\MSW\downloads\jua 에 받아 둠) — SIL Open Font License 1.1.
+- 글꼴 game/assets/fonts/jua.woff2 / 주아(Jua), Copyright 2018 The Jua Project Authors / google/fonts 저장소 ofl/jua/Jua-Regular.ttf (C:\MSW\downloads\jua 에 받아 둠) / SIL Open Font License 1.1.
   메뉴 화면의 제목·버튼 글자에만 씀(작은 본문은 원본 글꼴). 자주 쓰는 한글 2,350자 + 영문 + 화면 글자만 남겨 woff2로 줄임(game/tools_v9_font.js, OFL이 허용하는 수정).
   라이선스 전문: game/assets/fonts/Jua_OFL.txt (게임과 함께 배포됨)
 
-## 10차 묶음 1 추가 (점프·쉬운 맵·무기 메뉴·총기, 2026-11-28) — 파일 — 원본 경로 — 라이선스
+## 10차 묶음 1 추가 (점프·쉬운 맵·무기 메뉴·총기, 2026-11-28) / 파일 / 원본 경로 / 라이선스
 | 파일 | 원본 경로 | 라이선스 |
 |---|---|---|
 | game/assets/ui/ammo/Ammos_base.png | hedgewars-src/share/hedgewars/Data/Graphics/AmmoMenu/Ammos_base.png (무기 메뉴 아이콘판) | GFDL 1.2 |
@@ -339,6 +339,31 @@ land.json 은 map.png + mask.png 를 원본 규칙(SetLand)으로 계산한 땅 
 (v_Jump2 는 위 소리 표에 적음)
 
 ### 원본 코드를 읽고 다시 쓴 부분 (GNU GPL v2 or later 대상)
-- game/public/sim.js 의 hogWalk·hogJumpStart·hogBackJump·hogJumpStep·hogStopJump — 원본 rust/lib-hwengine-future/src/gear.rs (step, start_high_jump, start_long_jump, start_back_jump, jump_step, stop_jump) 수치·규칙
-- game/public/weapons.js — 원본 hedgewars/uGearsHandlersMess.pas (doStepBulletWork·doStepShotgunShot·doStepMinigunWork), uGearsUtils.pas (ShotgunShot·AmmoShoveImpl), uGearsList.pas·uVariables.pas 수치
+- game/public/sim.js 의 hogWalk·hogJumpStart·hogBackJump·hogJumpStep·hogStopJump: 원본 rust/lib-hwengine-future/src/gear.rs (step, start_high_jump, start_long_jump, start_back_jump, jump_step, stop_jump) 수치·규칙
+- game/public/weapons.js: 원본 hedgewars/uGearsHandlersMess.pas (doStepBulletWork·doStepShotgunShot·doStepMinigunWork), uGearsUtils.pas (ShotgunShot·AmmoShoveImpl), uGearsList.pas·uVariables.pas 수치
 - game/server.js 의 총 처리(gunFire·fireBullet·fireShotgun·fireMinigunBullet·shove), game/ai.js 의 gunPlan(원본 uAIAmmoTests 방식)
+| game/assets/gfx/hand/Idle.png | hedgewars-src/share/hedgewars/Data/Graphics/Hedgehog/Idle.png | GFDL 1.2 |
+| game/assets/gfx/hand/amBazooka.png | hedgewars-src/share/hedgewars/Data/Graphics/Hedgehog/amBazooka.png | GFDL 1.2 |
+| game/assets/gfx/hand/amDEagle.png | hedgewars-src/share/hedgewars/Data/Graphics/Hedgehog/amDEagle.png | GFDL 1.2 |
+| game/assets/gfx/hand/amDEagle_w.png | hedgewars-src/share/hedgewars/Data/Graphics/Hedgehog/amDEagle_w.png | GFDL 1.2 |
+| game/assets/gfx/hand/amGrenade.png | hedgewars-src/share/hedgewars/Data/Graphics/Hedgehog/amGrenade.png | GFDL 1.2 |
+| game/assets/gfx/hand/amMinigun.png | hedgewars-src/share/hedgewars/Data/Graphics/Hedgehog/amMinigun.png | GFDL 1.2 |
+| game/assets/gfx/hand/amShotgun.png | hedgewars-src/share/hedgewars/Data/Graphics/Hedgehog/amShotgun.png | GFDL 1.2 |
+| game/assets/gfx/hand/amShotgun_w.png | hedgewars-src/share/hedgewars/Data/Graphics/Hedgehog/amShotgun_w.png | GFDL 1.2 |
+| game/assets/gfx/hand/amSkip.png | hedgewars-src/share/hedgewars/Data/Graphics/Hedgehog/amSkip.png | GFDL 1.2 |
+| game/assets/gfx/hand/amSniperRifle.png | hedgewars-src/share/hedgewars/Data/Graphics/Hedgehog/amSniperRifle.png | GFDL 1.2 |
+| game/assets/gfx/Power.png | hedgewars-src/share/hedgewars/Data/Graphics/Power.png | GFDL 1.2 |
+| game/assets/gfx/slider.png | hedgewars-src/share/hedgewars/Data/Graphics/slider.png | GFDL 1.2 |
+| game/assets/gfx/sliderInverted.png | hedgewars-src/share/hedgewars/Data/Graphics/sliderInverted.png | GFDL 1.2 |
+| game/assets/snd/countdown1.ogg, countdown1.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/countdown1.ogg (mp3는 ffmpeg 변환) | GFDL 1.2 |
+| game/assets/snd/countdown2.ogg, countdown2.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/countdown2.ogg (mp3는 ffmpeg 변환) | GFDL 1.2 |
+| game/assets/snd/countdown3.ogg, countdown3.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/countdown3.ogg (mp3는 ffmpeg 변환) | GFDL 1.2 |
+| game/assets/snd/countdown4.ogg, countdown4.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/countdown4.ogg (mp3는 ffmpeg 변환) | GFDL 1.2 |
+| game/assets/gfx/RopeHook.png | hedgewars-src/share/hedgewars/Data/Graphics/RopeHook.png | GFDL 1.2 |
+| game/assets/gfx/RopeNode.png | hedgewars-src/share/hedgewars/Data/Graphics/RopeNode.png | GFDL 1.2 |
+| game/assets/gfx/Parachute.png | hedgewars-src/share/hedgewars/Data/Graphics/Parachute.png | GFDL 1.2 |
+| game/assets/gfx/hand/amRope.png | hedgewars-src/share/hedgewars/Data/Graphics/Hedgehog/amRope.png | GFDL 1.2 |
+| game/assets/snd/ropeshot.ogg, ropeshot.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/ropeshot.ogg (mp3는 ffmpeg 변환) | GFDL 1.2 |
+| game/assets/snd/ropeattach.ogg, ropeattach.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/ropeattach.ogg (mp3는 ffmpeg 변환) | GFDL 1.2 |
+| game/assets/snd/roperelease.ogg, roperelease.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/roperelease.ogg (mp3는 ffmpeg 변환) | GFDL 1.2 |
+| game/assets/snd/parachute.ogg, parachute.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/parachute.ogg (mp3는 ffmpeg 변환) | GFDL 1.2 |
