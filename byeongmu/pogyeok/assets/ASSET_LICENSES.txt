@@ -367,3 +367,15 @@ land.json 은 map.png + mask.png 를 원본 규칙(SetLand)으로 계산한 땅 
 | game/assets/snd/ropeattach.ogg, ropeattach.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/ropeattach.ogg (mp3는 ffmpeg 변환) | GFDL 1.2 |
 | game/assets/snd/roperelease.ogg, roperelease.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/roperelease.ogg (mp3는 ffmpeg 변환) | GFDL 1.2 |
 | game/assets/snd/parachute.ogg, parachute.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/parachute.ogg (mp3는 ffmpeg 변환) | GFDL 1.2 |
+| game/assets/gfx/Hammer.png | hedgewars-src/share/hedgewars/Data/Graphics/Hammer.png | GFDL 1.2 |
+| game/assets/gfx/Teleport.png | hedgewars-src/share/hedgewars/Data/Graphics/Teleport.png | GFDL 1.2 |
+| game/assets/gfx/amTeleport.png | hedgewars-src/share/hedgewars/Data/Graphics/amTeleport.png | GFDL 1.2 |
+| game/assets/gfx/hand/amBTorch_i.png | hedgewars-src/share/hedgewars/Data/Graphics/Hedgehog/amBTorch_i.png | GFDL 1.2 |
+| game/assets/gfx/hand/amBTorch_w.png | hedgewars-src/share/hedgewars/Data/Graphics/Hedgehog/amBTorch_w.png | GFDL 1.2 |
+| game/assets/gfx/hand/amJetpack.png | hedgewars-src/share/hedgewars/Data/Graphics/Hedgehog/amJetpack.png | GFDL 1.2 |
+| game/assets/snd/pickhammer.ogg, pickhammer.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/pickhammer.ogg (mp3는 ffmpeg 변환) | GFDL 1.2 |
+| game/assets/snd/denied.ogg, denied.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/denied.ogg (mp3는 ffmpeg 변환) | GFDL 1.2 |
+| game/assets/snd/warp.ogg, warp.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/warp.ogg (mp3는 ffmpeg 변환) | GFDL 1.2 |
+| game/assets/snd/ufo.ogg, ufo.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/ufo.ogg (mp3는 ffmpeg 변환) | GFDL 1.2 |
+| game/assets/snd/jetpackboost.ogg, jetpackboost.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/jetpackboost.ogg (mp3는 ffmpeg 변환) | GFDL 1.2 |
+| game/assets/snd/blowtorch.ogg, blowtorch.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/blowtorch.ogg (mp3는 ffmpeg 변환) | GFDL 1.2 |

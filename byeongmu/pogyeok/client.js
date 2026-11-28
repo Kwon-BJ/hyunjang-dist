@@ -8,7 +8,7 @@
   const IMG = {};
   const imgList = ['Hedgehog', 'BazookaShell', 'Bomb', 'Expl50', 'Crosshair', 'Finger', 'SmokeTrace', 'WindBar', 'WindL', 'WindR', 'Clouds', 'Power', 'slider', 'sliderInverted',
     'BlueWater', 'Statue', 'Nature_LandTex', 'Nature_Border', 'Nature_Sky', 'Nature_horizont',
-    'BigDigits', 'BigDigitsRed', 'BigDigitsGray', 'Frame', 'flag_hedgewars', 'SDWater', 'RopeHook', 'RopeNode', 'Parachute'];
+    'BigDigits', 'BigDigitsRed', 'BigDigitsGray', 'Frame', 'flag_hedgewars', 'SDWater', 'RopeHook', 'RopeNode', 'Parachute', 'Hammer', 'Teleport', 'amTeleport'];
   const HUDFONT = 'HWLatin, HWKr, sans-serif';
   const imgReady = Promise.all(imgList.map(n => new Promise(res => {
     const im = new Image(); im.onload = () => res(); im.onerror = () => res(); im.src = 'assets/gfx/' + n + '.png'; IMG[n] = im;
@@ -23,7 +23,7 @@
   const sndFiles = { explosion: 'explosion', powerup: 'throwpowerup', release: 'throwrelease', grenadeimpact: 'grenadeimpact',
     splash: 'splash', bump: 'bump', switch: 'switchhog', fire: 'v_Fire', cover: 'v_Takecover', yessir: 'v_Yessir',
     gun: 'gun', minigun: 'minigun', shotgunfire: 'shotgunfire', shotgunreload: 'shotgunreload', sniperreload: 'sniperreload', ow1: 'v_Ow1', ow2: 'v_Ow2', ow3: 'v_Ow3', ooff1: 'v_Ooff1', ooff2: 'v_Ooff2', byebye: 'v_Byebye', victory: 'v_Victory',
-    sd: 'suddendeath', hurry: 'v_Hurry', ropeshot: 'ropeshot', ropeattach: 'ropeattach', roperelease: 'roperelease', parachute: 'parachute', countdown1: 'countdown1', countdown2: 'countdown2', countdown3: 'countdown3', countdown4: 'countdown4', jump1: 'v_Jump1', jump2: 'v_Jump2', jump3: 'v_Jump3', missed: 'v_Missed', enemydown: 'v_Enemydown' };
+    sd: 'suddendeath', hurry: 'v_Hurry', pickhammer: 'pickhammer', denied: 'denied', warp: 'warp', ufo: 'ufo', jetpackboost: 'jetpackboost', blowtorch: 'blowtorch', ropeshot: 'ropeshot', ropeattach: 'ropeattach', roperelease: 'roperelease', parachute: 'parachute', countdown1: 'countdown1', countdown2: 'countdown2', countdown3: 'countdown3', countdown4: 'countdown4', jump1: 'v_Jump1', jump2: 'v_Jump2', jump3: 'v_Jump3', missed: 'v_Missed', enemydown: 'v_Enemydown' };
   function unlockAudio() {
     if (actx) { if (actx.state === 'suspended') actx.resume(); return; }
     if (!AC) return;
@@ -89,7 +89,7 @@
 
   function send(o) { if (S.ws && S.ws.readyState === 1) S.ws.send(JSON.stringify(o)); }
   function sendAuthed(o) { if (S.authed) send(o); else S.queue.push(o); }
-  // 주소 쪽지 server.json: { "url": "https://….trycloudflare.com", "updatedAt": "…" } — 홈페이지에 올린 화면이 읽음
+  // 주소 쪽지 server.json: { "url": "https://….trycloudflare.com", "updatedAt": "…" }: 홈페이지에 올린 화면이 읽음
   async function serverUrl() {
     try {
       const r = await fetch('server.json?t=' + Date.now(), { cache: 'no-store' });
@@ -754,7 +754,7 @@
     const DIFFKO = { easy: '쉬움', normal: '보통', hard: '어려움' };
     $('mapDesc').textContent = (DIFFKO[mp.diff] ? `[${DIFFKO[mp.diff]}] ` : '') + `${kindKo}: ${desc} · 테마 ${mp.th}${mp.kind !== 'image' && !mp.theme ? ' (무작위)' : ''} · 고슴도치 ${mp.hogs}마리`;
   }
-  // 판 결과 (서버가 계산한 값만 보여줌) — 순위 아이콘은 원본 StatsMedal
+  // 판 결과 (서버가 계산한 값만 보여줌): 순위 아이콘은 원본 StatsMedal
   function showResult(m) {
     const b = $('resBody'); b.innerHTML = '';
     $('btnAiNext').style.display = 'none'; $('btnAiRetry').style.display = 'none'; $('aiContNote').style.display = 'none'; $('btnCloseResult').textContent = '확인';
@@ -941,6 +941,14 @@
     G.mmDirty = true;
   }
 
+  function carveRectCanvas(G, sh) {
+    const [, x, y, dx, dy, len, hw] = sh, l = Math.hypot(dx, dy) || 1, ux = dx / l, uy = dy / l, px = uy, py = -ux;
+    Sim.carveRect(G.land, x, y, dx, dy, len, hw);
+    const x2 = G.canvas.getContext('2d'), poly = (e) => { x2.beginPath(); x2.moveTo(x + px * (hw + e) - ux * e, y + py * (hw + e) - uy * e); x2.lineTo(x + px * (hw + e) + ux * (len + e), y + py * (hw + e) + uy * (len + e)); x2.lineTo(x - px * (hw + e) + ux * (len + e), y - py * (hw + e) + uy * (len + e)); x2.lineTo(x - px * (hw + e) - ux * e, y - py * (hw + e) - uy * e); x2.closePath(); x2.fill(); };
+    x2.save(); x2.globalCompositeOperation = 'source-atop'; x2.fillStyle = 'rgba(40,20,8,0.75)'; poly(2.5);
+    x2.globalCompositeOperation = 'destination-out'; poly(0.5); x2.restore();
+    G.mmDirty = true;
+  }
   function onSnap(m) {
     const G = S.game;
     m.at = performance.now();
@@ -1000,6 +1008,11 @@
       if (e[1] === 'sniper' && isMyTurn(G)) addCaption('쏜 뒤에는 못 움직입니다', '#ffffff', 'ammostate', 1600);   // 14번: 저격총 (원본 NoMoveAfter)
       for (const tu of e[6] || []) { let x = tu[0], y = tu[1]; for (let i = 0; i < tu[4]; i++) { x += tu[2]; y += tu[3]; carveCanvas(G, x, y, 1); } }
       if (e[7] != null) checkLand(G, e[7]);
+    } else if (k === 'dig') {                 // 곡괭이·토치 (서버와 같은 계산: Sim.carve / Sim.carveRect)
+      for (const sh of e[1]) { if (sh[0] === 'c') carveCanvas(G, sh[1], sh[2], sh[3]); else carveRectCanvas(G, sh); }
+      checkLand(G, e[2]);
+    } else if (k === 'deny') {
+      const t = G.teams.find(t => t.id === e[1]); if (t && t.pid === S.me) addCaption('그곳으로는 갈 수 없습니다', '#ffffff', 'ammostate', 1600);
     } else if (k === 'hole') {
       carveCanvas(G, e[1], e[2], e[3]); checkLand(G, e[4]);
       G.parts.push({ kind: 'puff', x: e[1], y: e[2], r: e[3], t: performance.now() });
@@ -1163,6 +1176,7 @@
     if (view) {
       drawRope(G, view);
       drawHogs(G, view, now);
+      drawTeleCursor(G, view, now);
       drawProjs(G, view, now);
     }
     drawParts(G, now);
@@ -1174,9 +1188,9 @@
   }
   requestAnimationFrame(frame);
 
-  // 손에 든 무기 그림 (원본 Graphics/Hedgehog/am*.png, 크기는 원본 표 Width·Height 의 두 배 = 그림 1:1) — 1-나 13번
-  const HAND = {}; for (const n of ['amBazooka', 'amGrenade', 'amShotgun', 'amShotgun_w', 'amDEagle', 'amDEagle_w', 'amSniperRifle', 'amMinigun', 'amSkip', 'amRope', 'Idle']) { const im = new Image(); im.src = 'assets/gfx/hand/' + n + '.png'; HAND[n] = im; }
-  const HAND_OF = { bazooka: 'amBazooka', grenade: 'amGrenade', shotgun: 'amShotgun', deagle: 'amDEagle', skip: 'amSkip', rope: 'amRope' };   // 낙하산은 원본에 손 그림이 없음 (대신 머리 위에 무기 그림, ShowSelIcon)
+  // 손에 든 무기 그림 (원본 Graphics/Hedgehog/am*.png, 크기는 원본 표 Width·Height 의 두 배 = 그림 1:1): 1-나 13번
+  const HAND = {}; for (const n of ['amBazooka', 'amGrenade', 'amShotgun', 'amShotgun_w', 'amDEagle', 'amDEagle_w', 'amSniperRifle', 'amMinigun', 'amSkip', 'amRope', 'amBTorch_i', 'amBTorch_w', 'amJetpack', 'Idle']) { const im = new Image(); im.src = 'assets/gfx/hand/' + n + '.png'; HAND[n] = im; }
+  const HAND_OF = { bazooka: 'amBazooka', grenade: 'amGrenade', shotgun: 'amShotgun', deagle: 'amDEagle', skip: 'amSkip', rope: 'amRope', blowtorch: 'amBTorch_i' };   // 곡괭이·순간이동은 손 그림 대신 원본처럼 몸 그림이 바뀜, 제트팩은 머리 위 무기 그림   // 낙하산은 원본에 손 그림이 없음 (대신 머리 위에 무기 그림, ShowSelIcon)
   const AMMOS = new Image(); AMMOS.src = 'assets/ui/ammo/Ammos_base.png';
   // 원본 DrawSpriteRotated: (x,y) 가운데, 왼쪽을 보면 좌우 뒤집기, 조준 각도(도) 만큼 돌림
   function drawRot(im, x, y, sign, deg, sx, sy, sw, shh) {
@@ -1203,13 +1217,37 @@
         else if (s.wp === 'deagle') drawRot(s.sl ? HAND.amDEagle_w : HAND.amDEagle, hx, hy, sign, aangle);
         else if (HAND_OF[s.wp]) drawRot(HAND[HAND_OF[s.wp]], hx, hy, sign, aangle);
       }
-      let pos = 0, step = 0, idle = false, rot = null;
+      let pos = 0, step = 0, idle = false, rot = null, hide = false;
+      const tk = isCur && s.tk ? s.tk : null;
+      // 곡괭이 쓰는 중: 원본은 고슴도치 대신 Hammer 그림(고슴도치가 올라탄 곡괭이)을 끝 위치 (x-16, y-50) 에 흔들며 그림
+      if (tk && tk[0] === 'pick') { hide = true; if (IMG.Hammer.width) ctx.drawImage(IMG.Hammer, tk[1] - 16, tk[2] - 50 + ((Math.floor(now / 32) & 1) * 2), IMG.Hammer.width, 64); }
+      // 순간이동: 고르고 있으면 몸 대신 Teleport 0번 칸, 옮겨 가는 중이면 떠난 자리 칸 Pos, 도착한 자리 칸 11-Pos
+      if (tk && tk[0] === 'tele' && IMG.Teleport.width) {
+        hide = true;
+        drawRot(IMG.Teleport, tk[1] + 1, tk[2] - 3, tk[4] || 1, 0, 0, Math.min(15, tk[3]) * 32, 64, 32);
+        drawRot(IMG.Teleport, Math.round(h.x) + 1, Math.round(h.y) - 3, sign, 0, 0, Math.max(0, 11 - tk[3]) * 32, 64, 32);
+      } else if (armed && s.wp === 'teleport' && IMG.Teleport.width) { hide = true; drawRot(IMG.Teleport, sx, sy, sign, 0, 0, 0, 64, 32); }
+      // 토치 쓰는 중: 손 그림 amBTorch_w 를 조준 방향으로, 몸은 4줄(3번) 걷기 칸
+      const torching = tk && tk[0] === 'torch';
+      if (torching && HAND.amBTorch_w.width) drawRot(HAND.amBTorch_w, hx, hy, sign, aangle);
+      // 제트팩: 몸 뒤에 Jetpack 0번 칸, 위·좌·우로 밀면 불꽃 칸
+      const jetting = tk && tk[0] === 'jet';
+      if (jetting && HAND.amJetpack.width) {
+        const J = HAND.amJetpack, jx = Math.round(h.x), jy = Math.round(h.y);
+        ctx.drawImage(J, 0, 0, 64, 64, jx - 32, jy - 32, 64, 64);
+        if (tk[2] & 1) ctx.drawImage(J, 0, 64, 64, 64, jx - 32, jy - 28, 64, 64);
+        if (tk[2] & 2) ctx.drawImage(J, 0, 128, 64, 64, jx - 28, jy - 28, 64, 64);
+        if (tk[2] & 4) ctx.drawImage(J, 0, 192, 64, 64, jx - 36, jy - 28, 64, 64);
+      }
       // 로프에 매달림: 원본 DrawHedgehog(ox, oy, 방향, 1, 0, 줄 각도) = Hedgehog.png 1줄 0칸을 줄 방향으로 돌림
       if (roping && view.rp && view.rp[0] === 1) {
         const ax = view.rp[1], ay = view.rp[2], dir = h.x < ax ? 1 : -1;
         rot = { dir, deg: Math.atan2(h.y - ay, h.x - ax) * 180 / Math.PI + (dir > 0 ? 0 : 180) }; pos = 1; step = 0;
       }
       if (rot) {}
+      else if (torching) { pos = 3; step = Math.floor(now / 70) % 8 >> 1; }
+      else if (jetting) { pos = 0; step = 0; }
+      else if (armed && s.wp === 'pickhammer') { pos = 1; step = 2; }      // 원본: 곡괭이를 고르면 DrawHedgehog(1, 2)
       else if (chuting) idle = true;                      // 낙하산: 기본 자세 0번 칸 + 위에 낙하산
       else if (jumping || ropeAir) { pos = 1; step = 1; }
       else if (walking) { pos = 0; step = Math.floor(now / 70) % 8 >> 1; }
@@ -1218,6 +1256,7 @@
       else idle = true;
       const ifr = chuting ? 0 : (Math.floor(now / 128) + h.id * 7) % 19;
       if (chuting && IMG.Parachute.width) ctx.drawImage(IMG.Parachute, Math.round(h.x) - 24, Math.round(h.y) - 48, 48, 48);   // 원본 DrawSprite(sprParachute, x - 24, y - 48)
+      if (!hide) {
       ctx.save(); ctx.translate(sx, sy);
       if (rot) { ctx.rotate(rot.deg * Math.PI / 180); if (rot.dir < 0) ctx.scale(-1, 1); }
       else if (sign < 0) ctx.scale(-1, 1);
@@ -1227,6 +1266,9 @@
       const hatDy = idle ? (ifr === 2 || ifr === 7 || ifr === 12 ? 1 : ifr === 16 ? -1 : 0) : 0;   // 원본: 기본 자세 칸에 따라 모자를 1px 올리고 내림
       if (hat && hat.width) ctx.drawImage(hat, 0, 0, 32, 32, -16, -16 - 5 + hatDy, 32, 32);
       ctx.restore();
+      }
+      // 제트팩 연료 (원본 sidFuel 글, 고슴도치 위 40px)
+      if (jetting) { const t = boxTex('연료 ' + tk[1] + '%', '#ffffff', 11); ctx.drawImage(t.c, Math.round(h.x - t.w / 2), Math.round(h.y - 40 - 28 * tagScale() - t.h), t.w, t.h); }
       // 미니건 (몸 앞): 원본 DrawSpritePivotedF(sprMinigun, sx + 20*sign, sy + 4, 칸, sign, -18, -2, 각도)
       if (armed && s.wp === 'minigun' && HAND.amMinigun.width) {
         const fr = s.gb ? (G.mgFire ? 2 + (Math.floor(now / 50) & 1) : Math.floor(now / 100) & 1) : 0;
@@ -1236,11 +1278,11 @@
       }
       // 조준 십자선 + 파워
       // 낙하산을 고르면 머리 위에 그 무기 그림 (원본 DrawSelectedWeapon, ShowSelIcon)
-      if (armed && s.wp === 'parachute' && AMMOS.width) {
-        const A = Weapons.AMMO.parachute, f = A.icon - 1, bx = sx - 14, by = sy - 50;
+      if (armed && (s.wp === 'parachute' || s.wp === 'jetpack') && AMMOS.width) {
+        const A = Weapons.AMMO[s.wp], f = A.icon - 1, bx = sx - 14, by = sy - 50;
         roundRect(ctx, bx, by, 28, 28, '#ffffff', '#000010'); ctx.drawImage(AMMOS, Math.floor(f / 16) * 32, (f % 16) * 32, 32, 32, bx + 2, by + 2, 24, 24);
       }
-      const aimOk = s.wp !== 'parachute' && (!(h.flags & 1) || (s.wp === 'rope' && !roping && !chuting && !(view.rp && view.rp[0] === 0)));
+      const aimOk = !['parachute', 'pickhammer', 'teleport', 'jetpack'].includes(s.wp) && !tk && (!(h.flags & 1) || (s.wp === 'rope' && !roping && !chuting && !(view.rp && view.rp[0] === 0)));
       if (isCur && aimOk && s.st === 'turn') {
         const v = Sim.aimVector(s.a, h.facing);
         if (s.pw > 0 && IMG.Power.width) {
@@ -1287,6 +1329,11 @@
       ctx.save(); ctx.translate(pts[0][0], pts[0][1]); ctx.rotate(rp[3] / 100 + Math.PI);
       ctx.drawImage(IMG.RopeHook, -16, -16, 32, 32); ctx.restore();
     }
+  }
+  function drawTeleCursor(G, view, now) {
+    const s = view.s; if (!(s.wp === 'teleport' && s.st === 'turn' && isMyTurn(G) && G.mouse && IMG.amTeleport.width && !(s.tk))) return;
+    const fr = Math.floor(now / 200) & 1;
+    ctx.drawImage(IMG.amTeleport, 0, fr * 32, 64, 32, G.mouse.x - 32, G.mouse.y - 16, 64, 32);
   }
   function tagScale() { return document.body.classList.contains('touch') && innerHeight < 500 ? 1.6 : 1; }
   function tag(text, x, y, col, s) {
@@ -1396,7 +1443,7 @@
     }
   }
 
-  // HUD — 원본 배치: 타이머(BigDigits+Frame), 팀 줄(이름표·깃발·체력바)은 화면 아래 가운데
+  // HUD: 원본 배치: 타이머(BigDigits+Frame), 팀 줄(이름표·깃발·체력바)은 화면 아래 가운데
   const faceImgs = {};
   function faceImage(level) {
     if (!faceImgs[level]) { const im = new Image(); faceImgs[level] = im; faceURL(level).then(u => { im.src = u; }); }
@@ -1453,7 +1500,7 @@
     if (mineT && s.st !== 'over' && !mineT.forfeit && mineT.hogs.every(h => G.deadIds.has(h.id))) {
       const t = boxTex('관전 중: 지금 나가도 감점 없음', '#ffcc00', bpx); drawBox(t, cw / 2 - t.w / 2, ty); ty += t.h + 2;
     }
-    // 안내 글 (원본 캡션) — 타이머·차례 줄 아래부터 쌓음 (타이머를 가리지 않음)
+    // 안내 글 (원본 캡션): 타이머·차례 줄 아래부터 쌓음 (타이머를 가리지 않음)
     drawCaptions(G, now, cw, ty + 2, small);
     drawMinimap(G, view, now, cw, ch, small);
     drawOffscreen(G, view, now, cw, ch, small);
@@ -1561,7 +1608,7 @@
   function updateHud(G, s, now) {
     const playing = s.st === 'turn' || s.st === 'retreat';
     const ch0 = s.h && s.h.find(x => x[0] === s.cur), fl = ch0 ? ch0[5] : 0;
-    const tmode = s.rp && s.rp[0] === 1 && (fl & 8) ? 'rope' : (fl & 32) ? 'air' : (fl & 16) ? 'chute' : '';
+    const tmode = s.rp && s.rp[0] === 1 && (fl & 8) ? 'rope' : (fl & 32) ? 'air' : (fl & 16) ? 'chute' : s.tk ? s.tk[0] : '';
     const hudKey = [s.cur, s.st, s.wp, s.gt, s.sl, s.gb, tmode].join('|');
     if (hudKey !== lastHud) {
       lastHud = hudKey;
@@ -1570,7 +1617,8 @@
       $('wCurIcon').style.backgroundPosition = iconPos(A.icon, 32); $('wCurCnt').textContent = n < 0 ? '' : String(n);
       $('wCur').disabled = !mine || s.st !== 'turn'; $('wCur').title = A.name + ': 무기 고르기 (Tab · 오른쪽 클릭 · F1~F3)';
       $('wShots').textContent = '';   // 남은 발·도망 시간은 캔버스 글상자로 (14번)
-      if (G.lastWp && G.lastWp !== s.wp && s.cur === G.lastWpCur) addCaption(A.name, '#ffffff', 'ammoinfo');       // 원본: 고른 무기 이름 (capgrpAmmoinfo)
+      if (G.lastWp && G.lastWp !== s.wp && s.cur === G.lastWpCur) addCaption(A.name, '#ffffff', 'ammoinfo');
+      if (s.wp === 'teleport' && mine && s.st === 'turn' && G.lastWp !== s.wp) addCaption('지도에서 갈 곳을 누르세요', '#ffffff', 'ammostate', 2500);       // 원본: 고른 무기 이름 (capgrpAmmoinfo)
       G.lastWp = s.wp; G.lastWpCur = s.cur;
       if ($('ammoMenu').classList.contains('on')) renderAmmo(G);
       if (!mine || s.st !== 'turn') { $('ammoMenu').classList.remove('on'); $('amDesc').classList.remove('on'); }
@@ -1585,10 +1633,13 @@
       G.lastGt = s.gt; G.lastGtCur = s.cur;
       $('touch').classList.toggle('idle', !(mine && playing));
       const AL = Weapons.AMMO[s.wp] || {};
-      touchLabel('tL', tmode === 'rope' ? '흔들기' : ''); touchLabel('tR', tmode === 'rope' ? '흔들기' : '');
-      touchLabel('tU', tmode === 'rope' ? '길이' : ''); touchLabel('tD', tmode === 'rope' ? '길이' : '');
-      touchLabel('tFire', tmode === 'rope' ? '놓기' : tmode === 'air' && s.wp === 'rope' ? '다시 쏘기' : tmode === 'chute' ? '접기' : s.wp === 'rope' ? '로프' : s.wp === 'parachute' ? '펼치기' : '발사');
-      touchLabel('tJump', (tmode === 'rope' || tmode === 'chute' || tmode === 'air') && AL.altUse ? '떨구기' : '점프');
+      const lrL = tmode === 'rope' ? '흔들기' : tmode === 'jet' || tmode === 'pick' ? '옆으로' : '';
+      const udL = tmode === 'rope' ? '길이' : tmode === 'torch' ? '방향' : '';
+      touchLabel('tL', lrL); touchLabel('tR', lrL);
+      touchLabel('tU', tmode === 'jet' ? '위로' : udL); touchLabel('tD', udL);
+      touchLabel('tFire', tmode === 'rope' ? '놓기' : tmode === 'air' && s.wp === 'rope' ? '다시 쏘기' : tmode === 'chute' ? '접기' : tmode === 'jet' ? '끄기' : tmode === 'pick' || tmode === 'torch' ? '멈춤' : tmode === 'tele' ? '' :
+        s.wp === 'rope' ? '로프' : s.wp === 'parachute' ? '펼치기' : s.wp === 'jetpack' ? '켜기' : s.wp === 'teleport' ? '' : '발사');
+      touchLabel('tJump', (tmode === 'rope' || tmode === 'chute' || tmode === 'air' || tmode === 'jet') && AL.altUse ? '떨구기' : '점프');
     }
     $('power').style.display = s.pw > 0 ? 'block' : 'none';
     if (s.pw > 0) $('power').firstChild.style.width = (s.pw / Sim.MAX_POWER * 100) + '%';
@@ -1729,11 +1780,22 @@
   }
   // 화면 끌기(이동) / 휠·두 손가락(확대)
   const pts = new Map(); let pinch0 = 0, z0 = 1;
-  let mmPtr = null;
+  let mmPtr = null, tapStart = null;
+  const toWorld = (G, cx, cy) => G.xf ? { x: (cx * DPR - G.xf.ox) / G.xf.z, y: (cy * DPR - G.xf.oy) / G.xf.z } : null;
+  cv.addEventListener('pointermove', (e) => { if (S.game && e.pointerType === 'mouse') S.game.mouse = toWorld(S.game, e.clientX, e.clientY); });
+  cv.addEventListener('pointerleave', () => { if (S.game) S.game.mouse = null; });
+  cv.addEventListener('pointerup', (e) => {
+    const G = S.game, t0 = tapStart; tapStart = null;
+    if (!G || !t0 || t0.id !== e.pointerId || e.button > 0) return;
+    if (Math.hypot(e.clientX - t0.x, e.clientY - t0.y) > 8 || performance.now() - t0.t > 600) return;
+    const s = G.last; if (!s || s.wp !== 'teleport' || s.st !== 'turn' || !isMyTurn(G)) return;
+    const p = toWorld(G, e.clientX, e.clientY); if (p) send({ t: 'target', x: Math.round(p.x), y: Math.round(p.y) });
+  });
   function mmJump(G, cx, cy) { const r = G.mmRect; if (!r) return; G.cam.x = (cx - r.x) / r.w * W; G.cam.y = (cy - r.y) / r.h * H; G.cam.goto = 0; G.cam.manual = performance.now() + 4000; }
   cv.addEventListener('pointerdown', (e) => {
     const G = S.game, r = G && G.mmRect;
     if (r && e.clientX >= r.x - 3 && e.clientX <= r.x + r.w + 3 && e.clientY >= r.y - 3 && e.clientY <= r.y + r.h + 3) { mmPtr = e.pointerId; cv.setPointerCapture(e.pointerId); mmJump(G, e.clientX, e.clientY); return; }
+    tapStart = { id: e.pointerId, x: e.clientX, y: e.clientY, t: performance.now() };
     pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); cv.setPointerCapture(e.pointerId);
     if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch0 = Math.hypot(a.x - b.x, a.y - b.y); z0 = S.game ? S.game.cam.z : 1; } });
   cv.addEventListener('pointermove', (e) => {

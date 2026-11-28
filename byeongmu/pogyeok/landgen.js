@@ -1,11 +1,11 @@
-// 지형 생성기 — 원본 Hedgewars 지형 생성 코드를 JS로 옮긴 것
+// 지형 생성기: 원본 Hedgewars 지형 생성 코드를 JS로 옮긴 것
 // 출처: hedgewars-src/rust/landgen (outline_template_based/outline.rs, template_based.rs, maze.rs),
 //       rust/land2d/src/lib.rs (Land2D::new, fill), rust/integral-geometry/src/lib.rs (Line·Polygon·Bezier),
 //       rust/lib-hwengine-future/src/game_field.rs (distance_divisor), hedgewars/uLand.pas (SelectTemplate)
 //       템플릿: share/hedgewars/Data/map_templates.yaml, maze_templates.yaml (→ maps/*.json)
 // Copyright (C) Hedgewars Project. 이 파일은 원본 코드를 옮겨 적었으므로 GNU GPL v2 (or later) 를 따른다.
 //
-// 바뀐 점(이 게임용): 난수는 원본 LaggedFibonacciPRNG 대신 Sim.rng32(씨앗) — 같은 씨앗이면 서버·모든 화면에서 같은 지형.
+// 바뀐 점(이 게임용): 난수는 원본 LaggedFibonacciPRNG 대신 Sim.rng32(씨앗): 같은 씨앗이면 서버·모든 화면에서 같은 지형.
 // 원본의 고정소수점(FPNum) 베지어 계산은 배정밀도 실수로 계산(IEEE 사칙연산·sqrt 만 써서 브라우저마다 같음).
 // 미로: 원본 버그 한 곳 수정(genMaze 안 "고친 점" 참고).
 (function (root) {

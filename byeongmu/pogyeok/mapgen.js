@@ -1,4 +1,4 @@
-// 경기 지형 만들기 (서버·화면 공용) — 같은 설정이면 서버와 모든 화면이 똑같은 땅을 만든다.
+// 경기 지형 만들기 (서버·화면 공용): 같은 설정이면 서버와 모든 화면이 똑같은 땅을 만든다.
 //   kind 'random' | 'maze' : 원본 생성기(landgen.js) → 놀이 상자만 잘라냄 → 테두리 → 테마 장식(원본 uLandObjects.pas 방식)
 //   kind 'image'           : 원본 이미지 맵(map.png + mask.png 를 미리 계산한 land.json)
 // 땅 값: 0 빈칸, 1 땅, 2 부서지지 않는 땅(테두리·빨강 마스크)
@@ -10,7 +10,7 @@
   const LandGen = root.LandGen || require('./landgen.js');
   const PAD = 65;                // 땅 아래 물 공간 (물 높이 = 원본 그림/템플릿 높이 = 원본 cWaterLine)
   const BORDER = 6;              // cBorderWidth
-  const OBJ = 3;                 // 배치 중 장식 표시(끝나면 1) — 원본 lfObject 는 lfBasic 과 다르게 취급됨
+  const OBJ = 3;                 // 배치 중 장식 표시(끝나면 1): 원본 lfObject 는 lfBasic 과 다르게 취급됨
 
   function unrle(runs, n) {
     const a = new Uint8Array(n); let p = 0;
@@ -20,7 +20,7 @@
   function blank(W, H0) { const m = new Uint8Array(W * (H0 + PAD)); m.W = W; m.H = H0 + PAD; m.waterY = H0; return m; }
 
   // ---- 장식 (uLandObjects.pas) ----
-  // CheckLand: 사각형 테두리 픽셀이 모두 color (원본과 같은 픽셀만 검사 — 짝수 폭이면 가운데 한 칸은 안 봄)
+  // CheckLand: 사각형 테두리 픽셀이 모두 color (원본과 같은 픽셀만 검사: 짝수 폭이면 가운데 한 칸은 안 봄)
   function checkLand(m, W, H0, r, dX, dY, color) {
     const x0 = r[0] + dX, y0 = r[1] + dY, bx = x0 + r[2], by = y0 + r[3];
     const kx = bx - (r[2] >> 1) - 1;
@@ -85,7 +85,7 @@
       for (let xx = 0; xx < o.w; xx++) { const v = mk[yy * o.w + xx]; if (v && !m[row + px + xx]) m[row + px + xx] = v === 2 ? 2 : OBJ; }
     }
   }
-  // 화면용: 서버가 보낸 배치 목록을 그대로 찍음 (자리 찾기 계산은 생략 — 결과가 같은지는 땅 수로 확인)
+  // 화면용: 서버가 보낸 배치 목록을 그대로 찍음 (자리 찾기 계산은 생략: 결과가 같은지는 땅 수로 확인)
   function applyPlaced(m, theme, placed) {
     for (const [i, x, y] of placed) { const o = theme && theme.objects[i]; if (o) stamp(m, o, x, y); }
     for (let i = 0; i < m.length; i++) if (m[i] === OBJ) m[i] = 1;
@@ -117,7 +117,7 @@
   }
 
   // spec: { kind, sub, seed, hogs }, data: { templates, theme(theme.json), image(land.json) }
-  // 쉬움 지도 고르기 (10차 묶음 1, 사용자 요청: 더 평평하게 — 처마처럼 튀어나온 곳·깊은 골·동굴·떠 있는 섬 없앰)
+  // 쉬움 지도 고르기 (10차 묶음 1, 사용자 요청: 더 평평하게: 처마처럼 튀어나온 곳·깊은 골·동굴·떠 있는 섬 없앰)
   // 원본 생성기가 만든 땅의 칸별 맨 위 높이를 재서 → 빈 칸(골·물 틈)은 양옆 높이를 이어 메우고 → 넓게 고르게(이동 평균 두 번)
   // → 높낮이를 amp 배로 줄이고 → 그 높이 아래를 모두 땅으로 채움. 서버·화면이 같은 코드로 같은 땅을 만든다.
   function flatten(m, H0, opt) {

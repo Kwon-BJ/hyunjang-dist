@@ -105,6 +105,17 @@
     }
   }
 
+  // 토치 굴 (원본 DrawTunnel): (x,y) 에서 방향 (ux,uy) 로 길이 len, 옆으로 반폭 hw 의 직사각형을 파냄
+  function carveRect(m, x, y, ux, uy, len, hw) {
+    const W = m.W, H = m.H, l = Math.hypot(ux, uy) || 1; ux /= l; uy /= l;
+    const xs = [x, x + ux * len], ys = [y, y + uy * len];
+    const x0 = Math.max(0, Math.floor(Math.min(...xs) - hw - 1)), x1 = Math.min(W - 1, Math.ceil(Math.max(...xs) + hw + 1));
+    const y0 = Math.max(0, Math.floor(Math.min(...ys) - hw - 1)), y1 = Math.min(H - 1, Math.ceil(Math.max(...ys) + hw + 1));
+    for (let yy = y0; yy <= y1; yy++) for (let xx = x0; xx <= x1; xx++) {
+      const px = xx - x, py = yy - y, t = px * ux + py * uy, q = px * uy - py * ux;
+      if (t >= 0 && t <= len && q >= -hw && q <= hw && m[yy * W + xx] !== 2) m[yy * W + xx] = 0;
+    }
+  }
   function landAt(m, x, y) {
     if (x < 0 || x >= m.W || y < 0 || y >= m.H) return false;
     return m[y * m.W + x] !== 0;
@@ -279,7 +290,7 @@
   const Sim = {
     W, H, WATER_Y, WATER_MARGIN, makeLand, GRAVITY, MAX_WIND, MAX_POWER, MAX_ANGLE, HH_RADIUS, HH_STEP_TICKS, HH_HEALTH,
     TURN_TIME, RETREAT_TIME, HH_KICK, WEAPONS, HOG, hogWalk, hogJumpStart, hogBackJump, hogJumpStep, hogStopJump, LITTLE,
-    rng32, genLand, carve, landAt, solidAt, testX, testY, overlaps, stepFalling,
+    rng32, genLand, carve, carveRect, landAt, solidAt, testX, testY, overlaps, stepFalling,
     explosionDamage, fallDamage, aimVector, simulateShot,
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = Sim; else root.Sim = Sim;

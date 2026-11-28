@@ -1,8 +1,8 @@
-/* 9차 스킨 (TASK_9_GPT_SKIN): 사용자가 ChatGPT로 만든 그림(design_gpt) — 밤 성곽 배경, 로고, 금속 테두리 패널·버튼·입력칸·아이콘.
+/* 9차 스킨 (TASK_9_GPT_SKIN): 사용자가 ChatGPT로 만든 그림(design_gpt): 밤 성곽 배경, 로고, 금속 테두리 패널·버튼·입력칸·아이콘.
    글자·입력칸·버튼 동작은 전부 HTML/CSS. 패널·버튼·입력칸은 9조각(border-image)으로 늘림.
    경기 화면(#game: 지형·고슴도치·HUD·경기 중 버튼)은 원본 그대로 → 스킨 규칙에는 :not(#game *) 를 붙임.
    8차에서 유지: 버튼 3상태, 글자 최소 크기(본문 16·보조 14~15·버튼 18px), 주 버튼 화면마다 하나, 세로 배치, 남은 초, 빈 로비 안내.
-   글꼴: 제목(h1)과 버튼만 주아(Jua, SIL OFL 1.1 — assets/fonts/Jua_OFL.txt), 작은 본문은 원본 글꼴 그대로. */
+   글꼴: 제목(h1)과 버튼만 주아(Jua, SIL OFL 1.1: assets/fonts/Jua_OFL.txt), 작은 본문은 원본 글꼴 그대로. */
 @font-face { font-family:Jua; src:url(assets/fonts/jua.woff2) format('woff2'); font-display:swap; }
 
 body.s9 { background:#0b1640 url(assets/skin/bg.webp) center / cover no-repeat; }
@@ -14,7 +14,7 @@ body.s9 h1:not(#game *), body.s9 button:not(#game *), body.s9 #rotate .rtext, bo
   font-family:Jua, HWLatin, HWKr, sans-serif; font-weight:normal; letter-spacing:.3px; }
 .vh { position:absolute !important; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; margin:0; }
 
-/* 로고 (그림에 글자 포함 — 로고만 예외) */
+/* 로고 (그림에 글자 포함: 로고만 예외) */
 .logo { display:block; width:min(380px, 86vw); height:auto; margin:0 auto 4px; filter:drop-shadow(0 6px 10px rgba(0,0,20,.55)); position:relative; z-index:1; }
 .logo.small { width:150px; margin:0; }
 
@@ -97,7 +97,7 @@ body.s9 .empty .emptyText { color:#fff; text-shadow:0 2px 0 #000; }
 
 /* 대기실 */
 body.s9 #lobby { align-items:center; }
-/* 대기실 패널: 화면 높이 안에 — 넘치면 패널 안에서 스크롤 (나사판은 잘리므로 숨김) */
+/* 대기실 패널: 화면 높이 안에: 넘치면 패널 안에서 스크롤 (나사판은 잘리므로 숨김) */
 body.s9 #lobby .box { width:min(600px, 100%); max-height:calc(100vh - 20px); max-height:calc(100dvh - 20px); overflow-y:auto; margin:0 auto; }
 body.s9 #lobby .box::before, body.s9 #lobby .box::after { display:none; }
 body.s9 #lobby .box, body.s9 .modal .box { scrollbar-width:thin; scrollbar-color:rgba(255,204,0,.75) transparent; }
