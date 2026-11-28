@@ -6,7 +6,7 @@
 
   // ---------------- 리소스 ----------------
   const IMG = {};
-  const imgList = ['Hedgehog', 'BazookaShell', 'Bomb', 'Expl50', 'Crosshair', 'Finger', 'SmokeTrace', 'WindBar', 'WindL', 'WindR',
+  const imgList = ['Hedgehog', 'BazookaShell', 'Bomb', 'Expl50', 'Crosshair', 'Finger', 'SmokeTrace', 'WindBar', 'WindL', 'WindR', 'Clouds',
     'BlueWater', 'Statue', 'Nature_LandTex', 'Nature_Border', 'Nature_Sky', 'Nature_horizont',
     'BigDigits', 'BigDigitsRed', 'BigDigitsGray', 'Frame', 'flag_hedgewars', 'SDWater'];
   const HUDFONT = 'HWLatin, HWKr, sans-serif';
@@ -22,8 +22,8 @@
   const SND = {};
   const sndFiles = { explosion: 'explosion', powerup: 'throwpowerup', release: 'throwrelease', grenadeimpact: 'grenadeimpact',
     splash: 'splash', bump: 'bump', switch: 'switchhog', fire: 'v_Fire', cover: 'v_Takecover', yessir: 'v_Yessir',
-    ow1: 'v_Ow1', ow2: 'v_Ow2', ow3: 'v_Ow3', ooff1: 'v_Ooff1', ooff2: 'v_Ooff2', byebye: 'v_Byebye', victory: 'v_Victory',
-    sd: 'suddendeath', hurry: 'v_Hurry', jump1: 'v_Jump1', jump3: 'v_Jump3', missed: 'v_Missed', enemydown: 'v_Enemydown' };
+    gun: 'gun', minigun: 'minigun', shotgunfire: 'shotgunfire', shotgunreload: 'shotgunreload', sniperreload: 'sniperreload', ow1: 'v_Ow1', ow2: 'v_Ow2', ow3: 'v_Ow3', ooff1: 'v_Ooff1', ooff2: 'v_Ooff2', byebye: 'v_Byebye', victory: 'v_Victory',
+    sd: 'suddendeath', hurry: 'v_Hurry', jump1: 'v_Jump1', jump2: 'v_Jump2', jump3: 'v_Jump3', missed: 'v_Missed', enemydown: 'v_Enemydown' };
   function unlockAudio() {
     if (actx) { if (actx.state === 'suspended') actx.resume(); return; }
     if (!AC) return;
@@ -245,8 +245,18 @@
     $('authHead').textContent = which === 'signup' ? '회원가입' : '로그인';
     $('homeMain').style.display = which === 'main' ? 'flex' : 'none';
     $('authErr').textContent = '';
+    if (which === 'signup') S.signupShownAt = Date.now();          // 화면을 연 뒤 3초 안의 가입은 서버가 거절 (자동 가입 막기)
   }
   authView(S.auth ? 'main' : 'login');
+  // 이용 규칙·가입 받기 상태 (서버가 접속하자마자 보냄, 운영자가 고치면 다시 보냄)
+  function onSite(m) {
+    S.site = m;
+    const ol = $('suTerms'); ol.innerHTML = '';
+    for (const t of m.terms || []) { const li = document.createElement('li'); li.textContent = t; ol.append(li); }
+    $('suClosed').style.display = m.signupOpen ? 'none' : 'block';
+    $('btnSignup').disabled = !m.signupOpen;
+    renderAdminSite();
+  }
   function authSend(o) {
     $('authErr').textContent = '확인 중…';
     if (S.ws && S.ws.readyState === 1) send(o); else { S.pendingLogin = o; connect(); }
@@ -255,7 +265,8 @@
   $('lgPw').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnLogin').click(); });
   $('btnSignup').onclick = () => {
     if ($('suPw').value !== $('suPw2').value) { $('authErr').textContent = '비밀번호 확인이 다릅니다.'; return; }
-    authSend({ t: 'signup', id: $('suId').value, pw: $('suPw').value, nick: $('suNick').value, code: $('suCode').value });
+    if (!$('suAgree').checked) { $('authErr').textContent = '이용 규칙에 동의해 주세요.'; return; }
+    authSend({ t: 'signup', id: $('suId').value, pw: $('suPw').value, nick: $('suNick').value, agree: true, hp: $('suWeb').value, elapsed: Date.now() - (S.signupShownAt || Date.now()) });
   };
   $('toSignup').onclick = (e) => { e.preventDefault(); authView('signup'); };
   $('toLogin').onclick = (e) => { e.preventDefault(); authView('login'); };
@@ -437,10 +448,11 @@
   function renderAdmin(list) {
     const b = $('adminList'); b.innerHTML = '';
     const tb = document.createElement('table'); tb.className = 'info';
-    const hr = tb.insertRow(); hr.className = 'head'; ['아이디', '닉네임', '계급', '경험치', '상태', ''].forEach(h => { hr.insertCell().textContent = h; });
+    const hr = tb.insertRow(); hr.className = 'head'; ['아이디', '닉네임', '계급', '경험치', '판', '가입', '마지막 접속', '상태', ''].forEach(h => { hr.insertCell().textContent = h; });
+    const day = (iso) => iso ? new Date(iso).toLocaleDateString('ko-KR', { year: '2-digit', month: 'numeric', day: 'numeric' }) : '-';
     for (const u of list) {
       const tr = tb.insertRow();
-      [u.id, u.nick, u.rankName, u.exp, u.suspended ? '정지' : (u.admin ? '운영자' : '정상')].forEach(v => { tr.insertCell().textContent = v; });
+      [u.id, u.nick, u.rankName, u.exp, u.games || 0, day(u.createdAt), day(u.lastSeen), u.suspended ? '정지' : (u.admin ? '운영자' : '정상')].forEach(v => { tr.insertCell().textContent = v; });
       const c = tr.insertCell();
       const r = document.createElement('button'); r.className = 'mini'; r.innerHTML = '<img src="assets/ui/edit.png" alt="" style="height:14px">비번 초기화';
       r.onclick = () => send({ t: 'admin', op: 'reset', id: u.id });
@@ -448,14 +460,38 @@
       s.innerHTML = `<img src="assets/ui/${u.suspended ? 'unlock' : 'lock'}.png" alt="" style="height:12px">${u.suspended ? '정지 해제' : '정지'}`;
       s.onclick = () => send({ t: 'admin', op: u.suspended ? 'unsuspend' : 'suspend', id: u.id });
       c.append(r, s);
+      if (!u.admin) {   // 계정 삭제: 두 번 눌러야 지워짐 (실수 방지)
+        const d = document.createElement('button'); d.className = 'mini'; d.textContent = '삭제';
+        d.onclick = () => { if (d.dataset.arm) send({ t: 'admin', op: 'delete', id: u.id }); else { d.dataset.arm = 1; d.textContent = '정말 삭제?'; d.style.color = '#ff9090'; setTimeout(() => { delete d.dataset.arm; d.textContent = '삭제'; d.style.color = ''; }, 4000); } };
+        c.append(d);
+      }
     }
     b.append(tb);
   }
+  // 가입 받기·이용 규칙·오래된 빈 계정 (0-8)
+  S.adminInfo = null;
+  function renderAdminSite() {
+    const a = S.adminInfo, el = $('adminSite'); if (!el || !a) return;
+    const site = a.site || {};
+    el.textContent = `가입: ${site.signupOpen ? '받는 중' : '닫음'} · 계정 ${a.count}/${a.max}${a.count >= a.max ? ' (상한 — 가입 닫힘)' : ''} · 30일 지난 빈 계정 ${(a.stale || []).length}개`;
+    $('btnSignupToggle').textContent = site.signupOpen ? '가입 받기 끄기' : '가입 받기 켜기';
+    $('btnStale').disabled = !(a.stale || []).length;
+  }
+  $('btnSignupToggle').onclick = () => { if (S.adminInfo) send({ t: 'admin', op: 'site', signupOpen: !S.adminInfo.site.signupOpen }); };
+  $('btnTermsEdit').onclick = () => { const t = (S.adminInfo && S.adminInfo.site.terms) || []; ['term1', 'term2', 'term3'].forEach((id, i) => { $(id).value = t[i] || ''; }); $('termsEdit').style.display = 'block'; };
+  $('btnTermsCancel').onclick = () => { $('termsEdit').style.display = 'none'; };
+  $('btnTermsSave').onclick = () => send({ t: 'admin', op: 'site', terms: ['term1', 'term2', 'term3'].map(id => $(id).value) });
+  $('btnStale').onclick = () => {
+    const b = $('btnStale'), ids = (S.adminInfo && S.adminInfo.stale) || [];
+    if (!b.dataset.arm) { b.dataset.arm = 1; b.textContent = `${ids.length}개 정말 지우기?`; setTimeout(() => { delete b.dataset.arm; b.textContent = '30일 지난 빈 계정 지우기'; }, 4000); return; }
+    send({ t: 'admin', op: 'purge', ids });
+  };
 
   // ---------------- 서버 메시지 ----------------
   function onMsg(m) {
     if (m.t === 'ver') return onVersion(m);
     if (m.t === 'maint') return onMaint(m);
+    if (m.t === 'site') return onSite(m);
     if (m.t === 'auth') {
       S.authed = true; S.user = m.user;
       if (m.token) { S.auth = m.token; store.set('hwauth', m.token); }
@@ -493,7 +529,9 @@
     if (m.t === 'me') { S.user = m.user; renderMe(); if (S.showMe) { S.showMe = false; renderMyInfo(m.user); } return; }
     if (m.t === 'admin') {
       if (m.error) { $('adminMsg').textContent = m.error; return; }
-      if (m.op === 'list' || m.op === 'backup') { renderAdmin(m.list); renderBackup(m.backup); if (m.maint) renderAdminMaint(m.maint); }
+      if (m.op === 'list' || m.op === 'backup') { renderAdmin(m.list); renderBackup(m.backup); if (m.maint) renderAdminMaint(m.maint); if (m.site) { S.adminInfo = { site: m.site, count: m.count, max: m.max, stale: m.stale }; renderAdminSite(); } }
+      else if (m.op === 'site') { $('adminMsg').textContent = m.terms ? '이용 규칙을 고쳤습니다.' : '저장했습니다.'; $('termsEdit').style.display = 'none'; send({ t: 'admin', op: 'list' }); }
+      else if (m.op === 'delete' || m.op === 'purge') { $('adminMsg').textContent = m.op === 'delete' ? `${m.id} 계정을 지웠습니다.` : `빈 계정 ${(m.deleted || []).length}개를 지웠습니다.`; send({ t: 'admin', op: 'list' }); }
       else if (m.op === 'maint' || m.op === 'maintoff') { renderAdminMaint(m.maint); $('adminMsg').textContent = m.op === 'maint' ? '점검 예고를 시작했습니다. 진행 중인 판이 모두 끝나면 서버가 스스로 다시 켜집니다.' : '점검 예고를 취소했습니다.'; }
       else {
         $('adminMsg').textContent = m.op === 'reset' ? `${m.id} 임시 비밀번호: ${m.temp}  (본인에게 전달 후 바꾸게 하세요)` : `${m.id}: ${m.op === 'suspend' ? '정지됨' : '정지 해제됨'}`;
@@ -568,21 +606,24 @@
     const cat = await loadCatalog();
     if (S.lobby !== L) return;
     const themes = Object.keys(cat.themes).filter(t => !cat.themes[t].hidden).sort();
+    const diff = mp.diff || 'custom';
+    $('mapDiff').value = diff;
+    for (const el of document.querySelectorAll('#mapRow .mapCustom')) el.style.display = diff === 'custom' ? '' : 'none';
     $('mapKind').value = mp.kind;
     if (mp.kind === 'image') opt($('mapSub'), [['', '무작위 맵']].concat(Object.keys(cat.maps).sort().map(n => [n, n + ' (' + cat.maps[n].maxHogs + ')', cat.maps[n].maxHogs < mp.hogs])));
     else opt($('mapSub'), [['', '무작위 종류']].concat((mp.kind === 'maze' ? LandGen.MAZE_TYPES : LandGen.OUTLINE_TYPES).map(t => [t, MAPKO[t] || t])));
     $('mapSub').value = mp.sub || '';
     opt($('mapTheme'), mp.kind === 'image' ? [['', '맵에 딸린 테마']] : [['', '무작위 테마']].concat(themes.map(t => [t, t])));
     $('mapTheme').value = mp.kind === 'image' ? '' : (mp.theme || '');
-    for (const id of ['mapKind', 'mapSub', 'mapTheme', 'btnReroll']) $(id).disabled = !isHost;
+    for (const id of ['mapDiff', 'mapKind', 'mapSub', 'mapTheme', 'btnReroll']) $(id).disabled = !isHost;
     $('mapTheme').disabled = !isHost || mp.kind === 'image';
     drawMapPreview(mp).catch(e => console.warn('[hw] 미리보기', e));
   }
-  ['mapKind', 'mapSub', 'mapTheme'].forEach(id => { $(id).onchange = () => send({ t: 'map', kind: $('mapKind').value, sub: id === 'mapKind' ? '' : $('mapSub').value, theme: $('mapTheme').value }); });
+  ['mapDiff', 'mapKind', 'mapSub', 'mapTheme'].forEach(id => { $(id).onchange = () => send({ t: 'map', diff: $('mapDiff').value, kind: $('mapKind').value, sub: id === 'mapKind' ? '' : $('mapSub').value, theme: $('mapTheme').value }); });
   $('btnReroll').onclick = () => send({ t: 'reroll' });
   const prevCache = new Map();
   async function drawMapPreview(mp) {
-    const key = [mp.kind, mp.sub, mp.seed, mp.hogs, mp.th, mp.name].join('|');
+    const key = [mp.kind, mp.sub, mp.seed, mp.hogs, mp.th, mp.name, mp.noObj ? 1 : 0, mp.flat ? 1 : 0].join('|');
     if (S.prevKey === key) return; S.prevKey = key;
     const c = $('mapPrev'), x = c.getContext('2d');
     const kindKo = mp.kind === 'image' ? '이미지 맵' : mp.kind === 'maze' ? '미로' : '무작위 생성';
@@ -601,7 +642,7 @@
       let L = prevCache.get(key);
       if (!L) {
         const tpl = await loadTemplates();
-        L = MapGen.build({ kind: mp.kind, sub: mp.sub, seed: mp.seed, hogs: mp.hogs }, { templates: tpl, theme: th.j });
+        L = MapGen.build({ kind: mp.kind, sub: mp.sub, seed: mp.seed, hogs: mp.hogs, flat: mp.flat }, { templates: tpl, theme: th.j, placed: mp.noObj ? [] : undefined });
         prevCache.clear(); prevCache.set(key, L);
       }
       if (S.prevKey !== key) return;
@@ -615,7 +656,8 @@
       x.putImageData(img, Math.floor((c.width - w) / 2), Math.floor((c.height - hh) / 2));
       desc = (MAPKO[L.typeName] || L.typeName) + (mp.sub ? '' : ' (무작위로 뽑힘)');
     }
-    $('mapDesc').textContent = `${kindKo}: ${desc} · 테마 ${mp.th}${mp.kind !== 'image' && !mp.theme ? ' (무작위)' : ''} · 고슴도치 ${mp.hogs}마리`;
+    const DIFFKO = { easy: '쉬움', normal: '보통', hard: '어려움' };
+    $('mapDesc').textContent = (DIFFKO[mp.diff] ? `[${DIFFKO[mp.diff]}] ` : '') + `${kindKo}: ${desc} · 테마 ${mp.th}${mp.kind !== 'image' && !mp.theme ? ' (무작위)' : ''} · 고슴도치 ${mp.hogs}마리`;
   }
   // 판 결과 (서버가 계산한 값만 보여줌) — 순위 아이콘은 원본 StatsMedal
   function showResult(m) {
@@ -694,7 +736,7 @@
     const mp = m.map || { kind: 'random', sub: '', theme: 'Nature', hogs: 8, placed: [] };
     $('msg').textContent = '지도를 불러오는 중…';
     const [th, tpl, im] = await Promise.all([loadTheme(mp.theme), mp.kind === 'image' ? null : loadTemplates(), mp.kind === 'image' ? loadImageMap(mp.name) : null]);
-    const land = MapGen.build({ kind: mp.kind, sub: mp.sub, seed: m.seed, hogs: mp.hogs },
+    const land = MapGen.build({ kind: mp.kind, sub: mp.sub, seed: m.seed, hogs: mp.hogs, flat: mp.flat },
       { templates: tpl, theme: th.j, image: im && im.land, placed: mp.placed, keepBase: true });
     const G = {
       seed: m.seed, teams: m.teams, mode: m.mode, waterY: 0, sd: !!m.sd, upcoming: [], hogs: {}, snaps: [], parts: [], floats: [], graves: m.graves.slice(),
@@ -818,12 +860,16 @@
       shake(G, e[3]);
     } else if (k === 'dmg') {
       const h = G.hogs[e[1]], p = hogPos(G, e[1]);
-      if (h && p) G.floats.push({ x: p.x, y: p.y - 30, text: '-' + e[2], color: h.team.color, t: performance.now() });
+      const cause = e[3] || 'boom';
+      const ft = cause === 'fall' ? '낙하 -' + e[2] : cause === 'sd' ? '서든데스 -' + e[2] : cause === 'poison' ? '중독 -' + e[2] : '-' + e[2];
+      const fc = cause === 'fall' ? '#ffb040' : cause === 'sd' ? '#d090ff' : cause === 'poison' ? '#70ff70' : '#ff4040';
+      if (h && p) G.floats.push({ x: p.x, y: p.y - 30, text: ft, color: fc, t: performance.now() });
+      if (h && p && h.team.pid === S.me) G.hurt = { t: performance.now(), x: p.x, y: p.y };
       if (Math.random() < 0.6) play(['ow1', 'ow2', 'ow3', 'ooff1', 'ooff2'][Math.floor(Math.random() * 5)], 0.8);
     } else if (k === 'turn') {
       const t = G.teams.find(t => t.id === e[1]);
       G.cur = e[2]; G.lastTurnAt = performance.now(); G.cam.manual = 0; G.upcoming = e[4] || [];
-      flash(t.pid === S.me ? '내 차례!' : t.name + ' 차례', t.color);
+      flash((t.pid === S.me ? '내 차례!' : t.name + ' 차례') + '  ·  ' + windText(e[3]), t.color);
       if (t.pid === S.me) play('yessir');
       releaseAllKeys();
     } else if (k === 'fire') {
@@ -836,10 +882,25 @@
       G.deadIds.add(e[1]);
       if (e[4]) { play('splash'); play('byebye'); }
       else { G.graves.push([e[2], e[3]]); play('byebye'); }
+    } else if (k === 'ammo') {
+      const t = G.teams.find(t => t.id === e[1]); if (t) { t.ammo = e[2]; renderAmmo(G); }
+    } else if (k === 'bullet') {
+      // 총알 자국(원본 SpawnBulletTrail 처럼 흰 선) + 지나간 땅은 굴 (서버와 같은 계산)
+      G.parts.push({ kind: 'trail', x0: e[2], y0: e[3], x1: e[4], y1: e[5], t: performance.now(), mg: e[1] === 'minigun' });
+      for (const tu of e[6] || []) { let x = tu[0], y = tu[1]; for (let i = 0; i < tu[4]; i++) { x += tu[2]; y += tu[3]; carveCanvas(G, x, y, 1); } }
+      if (e[7] != null) checkLand(G, e[7]);
+    } else if (k === 'hole') {
+      carveCanvas(G, e[1], e[2], e[3]); checkLand(G, e[4]);
+      G.parts.push({ kind: 'puff', x: e[1], y: e[2], r: e[3], t: performance.now() });
+      if (!e[5]) shake(G, 6);
+    } else if (k === 'turnsum') {
+      const nm = (id) => { const t = G.teams.find(t => t.id === id); return t ? t.name : ''; };
+      const parts = e[1].map(([f, to, n, cz]) => cz === 'fall' && f < 0 ? `${nm(to)} 낙하 ${n}` : f < 0 ? `${nm(to)} ${n} 피해` : f === to ? `${nm(to)} 자기 편 피해 ${n}` : `${nm(f)} → ${nm(to)} ${n}`);
+      if (parts.length) G.turnSum = { text: '이번 턴: ' + parts.join(' · '), t: performance.now() };
     } else if (k === 'sdwarn') {
       flash(e[1] === 1 ? '이번이 서든데스 전 마지막 라운드!' : e[1] + '라운드 뒤 서든데스!', '#ffcc00');
     } else if (k === 'sd') {
-      G.sd = true; G.sdFlash = performance.now();
+      G.sd = true; G.sdFlash = performance.now(); G.sdBig = performance.now();
       flash('서든데스!', '#ff6060');
       play('sd'); music('sdmusic');
     } else if (k === 'forfeit') {
@@ -932,7 +993,9 @@
       const off = ((ox * 0.6) % hzw + hzw) % hzw;
       for (let x = off - hzw; x < vw; x += hzw) ctx.drawImage(hz, x, base, hzw + 1, hzh);
     }
+    drawClouds(G, view, now, z, ox, oy);
     if (G.sd) { ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(0, 0, vw, vh); }
+    G.xf = { z, ox, oy };
     ctx.setTransform(z, 0, 0, z, ox, oy);
     ctx.imageSmoothingEnabled = z < 1;
     ctx.drawImage(G.canvas, 0, 0);
@@ -953,6 +1016,7 @@
 
   function drawHogs(G, view, now) {
     const s = view.s;
+    const labelBoxes = [];
     for (const h of view.hogs) {
       const info = G.hogs[h.id]; if (!info || G.deadIds.has(h.id)) continue;
       const walking = h.flags & 2;
@@ -975,23 +1039,34 @@
           }
         }
         ctx.drawImage(IMG.Crosshair, h.x + v.x * 50 - 10, h.y + v.y * 50 - 10, 20, 20);
+        const wn = windLevel(s.w);
+        if (wn) { ctx.font = 'bold 12px ' + HUDFONT; ctx.textAlign = 'center'; const t = (s.w < 0 ? '◀' : '▶').repeat(Math.max(1, Math.ceil(wn / 4)));
+          ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,.8)'; ctx.strokeText(t, h.x + v.x * 50, h.y + v.y * 50 - 16); ctx.fillStyle = '#bfe8ff'; ctx.fillText(t, h.x + v.x * 50, h.y + v.y * 50 - 16); }
       }
       // 이름표·체력 (팀 색)
       const col = info.team.color;
-      ctx.font = 'bold 11px ' + HUDFONT; ctx.textAlign = 'center';
-      const hpText = String(h.hp), nameY = h.y - 42, hpY = h.y - 28;
-      tag(info.name, h.x, nameY, col); tag(hpText, h.x, hpY, col);
+      // 휴대폰 가로 화면에서는 이름표·체력 글씨를 1.6배로 (사용자 요청)
+      const ts = tagScale();
+      ctx.font = 'bold ' + Math.round(11 * ts) + 'px ' + HUDFONT; ctx.textAlign = 'center';
+      const hpText = String(h.hp), hpY = h.y - 16 - 12 * ts;
+      // 이름표가 다른 고슴도치 이름표와 겹치면 글자를 줄이지 않고 위로 비켜 그림 (0-3)
+      let nameY = hpY - 14 * ts; const nw = ctx.measureText(info.name).width + 8 * ts;
+      for (let k = 0; k < 6 && labelBoxes.some(b => Math.abs(b.x - h.x) < (b.w + nw) / 2 && Math.abs(b.y - nameY) < 14 * ts); k++) nameY -= 14 * ts;
+      labelBoxes.push({ x: h.x, y: nameY, w: nw }, { x: h.x, y: hpY, w: ctx.measureText(hpText).width + 8 * ts });
+      tag(info.name, h.x, nameY, col, ts); tag(hpText, h.x, hpY, col, ts);
       if (isCur && now - G.lastTurnAt < 4000 && s.st === 'turn') {
         const bob = Math.sin(now / 120) * 4;
-        ctx.drawImage(IMG.Finger, 0, 0, 32, 48, h.x - 12, h.y - 86 + bob, 24, 36);
+        ctx.drawImage(IMG.Finger, 0, 0, 32, 48, h.x - 12, nameY - 9 * ts - 38 + bob, 24, 36);
       }
     }
   }
-  function tag(text, x, y, col) {
-    const w = ctx.measureText(text).width + 8;
-    ctx.fillStyle = 'rgba(0,0,0,0.65)'; ctx.fillRect(x - w / 2, y - 9, w, 13);
-    ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.strokeRect(x - w / 2 + 0.5, y - 8.5, w - 1, 12);
-    ctx.fillStyle = col; ctx.fillText(text, x, y + 1);
+  function tagScale() { return 1; }   // 휴대폰 가로 글씨 키우기는 묶음 1-나
+  function tag(text, x, y, col, s) {
+    s = s || 1;
+    const w = ctx.measureText(text).width + 8 * s;
+    ctx.fillStyle = 'rgba(0,0,0,0.65)'; ctx.fillRect(x - w / 2, y - 9 * s, w, 13 * s);
+    ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.strokeRect(x - w / 2 + 0.5, y - 9 * s + 0.5, w - 1, 13 * s - 1);
+    ctx.fillStyle = col; ctx.fillText(text, x, y + 1 * s);
   }
   function drawProjs(G, view, now) {
     for (const p of view.projs) {
@@ -1021,6 +1096,17 @@
         ctx.drawImage(IMG.Expl50, 0, f * 64, 64, 64, p.x - sz / 2, p.y - sz / 2, sz, sz);
         return true;
       }
+      if (p.kind === 'trail') {   // 총알 자국 (원본 vgtLineTrail: 흰 선이 빠르게 옅어짐)
+        const life = p.mg ? 150 : 350; if (age > life) return false;
+        ctx.globalAlpha = 1 - age / life; ctx.strokeStyle = p.mg ? '#ffe9a0' : '#ffffff'; ctx.lineWidth = p.mg ? 1 : 1.5;
+        ctx.beginPath(); ctx.moveTo(p.x0, p.y0); ctx.lineTo(p.x1, p.y1); ctx.stroke(); ctx.globalAlpha = 1;
+        return true;
+      }
+      if (p.kind === 'puff') {    // 샷건·미니건 구멍: 작은 연기
+        const f = Math.floor(age / 70); if (f >= 8) return false;
+        const sz = Math.max(14, p.r * 1.4); ctx.globalAlpha = 0.85; ctx.drawImage(IMG.SmokeTrace, 0, f * 32, 32, 32, p.x - sz / 2, p.y - sz / 2, sz, sz); ctx.globalAlpha = 1;
+        return true;
+      }
       if (p.kind === 'smoke') {
         const f = Math.floor(age / 80); if (f >= 8) return false;
         ctx.globalAlpha = 0.8; ctx.drawImage(IMG.SmokeTrace, 0, f * 32, 32, 32, p.x - 10, p.y - 10, 20, 20); ctx.globalAlpha = 1;
@@ -1036,6 +1122,45 @@
       ctx.strokeText(f.text, f.x, f.y - age / 40); ctx.fillText(f.text, f.x, f.y - age / 40);
       ctx.globalAlpha = 1; return true;
     });
+  }
+  function drawClouds(G, view, now, z, ox, oy) {
+    const im = IMG.Clouds; if (!im || !im.width || !view) return;
+    if (!G.clouds) { G.clouds = []; for (let i = 0; i < 9; i++) G.clouds.push({ x: Math.random() * (W + 800) - 400, f: i % 4, dX: 0.8 + Math.random() * 0.4, sc: 0.6 + Math.random() * 0.5, tm: Math.random() * 4096 }); G.cloudT = now; }
+    const dt = Math.min(100, now - G.cloudT); G.cloudT = now;
+    const wind = (view.s.w || 0) * Sim.MAX_WIND;
+    ctx.setTransform(z, 0, 0, z, ox * 0.9, oy);
+    ctx.globalAlpha = 0.85;
+    for (const cl of G.clouds) {
+      cl.x += wind * 750 * cl.dX * cl.sc * dt;
+      if (cl.x < -500) cl.x += W + 1000; else if (cl.x > W + 500) cl.x -= W + 1000;
+      const s = (now + cl.tm) % 4096, bob = (s < 2048 ? -1 : 1) * 8 * cl.sc * Math.sin((s % 2048) / 2048 * Math.PI);
+      const w = 256 * cl.sc, hh = 128 * cl.sc;
+      ctx.drawImage(im, 0, cl.f * 128, 256, 128, cl.x - w / 2, -60 - hh + (cl.f * 13) + bob, w, hh);
+    }
+    ctx.globalAlpha = 1;
+  }
+  // 0-5: 내 고슴도치가 다치면 화면 가장자리가 잠깐 붉어지고, 화면 밖이면 그쪽 방향 화살표. 턴 끝 요약. 서든데스 안내.
+  function drawAlerts(G, now, cw, ch, small) {
+    if (G.hurt && now - G.hurt.t < 1500 && G.xf) {
+      const a = 1 - (now - G.hurt.t) / 1500;
+      const gr = ctx.createRadialGradient(cw / 2, ch / 2, Math.min(cw, ch) * 0.35, cw / 2, ch / 2, Math.max(cw, ch) * 0.75);
+      gr.addColorStop(0, 'rgba(255,0,0,0)'); gr.addColorStop(1, 'rgba(255,20,20,' + (0.55 * a) + ')');
+      ctx.fillStyle = gr; ctx.fillRect(0, 0, cw, ch);
+      const px = (G.xf.ox + G.hurt.x * G.xf.z) / DPR, py = (G.xf.oy + G.hurt.y * G.xf.z) / DPR;
+      if (px < 0 || px > cw || py < 0 || py > ch) {
+        const ang = Math.atan2(py - ch / 2, px - cw / 2), r = Math.min(cw, ch) / 2 - 30;
+        const ax = cw / 2 + Math.cos(ang) * Math.min(cw / 2 - 30, Math.abs(r / Math.cos(ang)) || 1e9), ay = ch / 2 + Math.sin(ang) * Math.min(ch / 2 - 30, Math.abs(r / Math.sin(ang)) || 1e9);
+        ctx.save(); ctx.translate(Math.max(24, Math.min(cw - 24, ax)), Math.max(24, Math.min(ch - 24, ay))); ctx.rotate(ang);
+        ctx.globalAlpha = a; ctx.fillStyle = '#ff3030'; ctx.strokeStyle = '#000'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(18, 0); ctx.lineTo(-10, -13); ctx.lineTo(-10, 13); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+      }
+    }
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    if (G.sdBig && now - G.sdBig < 3000) {
+      ctx.font = 'bold ' + (small ? 26 : 38) + 'px ' + HUDFONT; outlined('서든데스!', cw / 2, ch * 0.38, '#ff6060');
+      ctx.font = 'bold ' + (small ? 14 : 18) + 'px ' + HUDFONT; outlined('매 턴 체력이 5씩 줄고 물이 차오릅니다', cw / 2, ch * 0.38 + (small ? 28 : 38), '#fff');
+    }
+    if (G.turnSum && now - G.turnSum.t < 4000) { ctx.font = 'bold ' + (small ? 12 : 14) + 'px ' + HUDFONT; outlined(G.turnSum.text, cw / 2, small ? 74 : 92, '#ffe9a8'); }
   }
   function drawWater(G, now, z, ox, oy, vw, vh) {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -1070,6 +1195,7 @@
     const small = ch < 480;
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     ctx.imageSmoothingEnabled = false;
+    drawAlerts(G, now, cw, ch, small);
     const playing = s.st === 'turn' || s.st === 'retreat';
     const cur = G.hogs[s.cur];
     // 타이머
@@ -1080,13 +1206,14 @@
       const sz = small ? 26 : 32, w = 4 + sec.length * sz + 4, x0 = Math.round(cw / 2 - w / 2);
       if (IMG.Frame.width) { ctx.drawImage(IMG.Frame, 0, 0, 4, 32, x0, ty, 4 * sz / 32, sz); ctx.drawImage(IMG.Frame, 0, 32, 4, 32, x0 + w - 4 * sz / 32, ty, 4 * sz / 32, sz); }
       for (let i = 0; i < sec.length; i++) if (dig.width) ctx.drawImage(dig, 0, (+sec[i]) * 32, 32, 32, x0 + 4 * sz / 32 + i * sz, ty, sz, sz);
+      if (G.sd) { ctx.font = 'bold 13px ' + HUDFONT; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; outlined('서든데스', x0 + w + 6, ty + sz / 2, '#ff7070'); }   // 0-5: 서든데스 중 계속 표시
       ty += sz + 2;
     }
     // 현재 차례: 모자 얼굴 + 닉네임 · 고슴도치 이름 (한 줄)
     ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
     ctx.font = 'bold 13px ' + HUDFONT;
     let line = null, col = '#fff', lvl = 0;
-    if (cur && playing) { line = cur.team.name + ' · ' + cur.name + (s.st === 'retreat' ? ' (후퇴!)' : ''); col = cur.team.color; lvl = cur.team.rank || 0; }
+    if (cur && playing) { line = cur.name + (s.st === 'retreat' ? ' (후퇴!)' : ''); col = cur.team.color; lvl = cur.team.rank || 0; }
     else if (s.st === 'wait') line = '연결 끊긴 플레이어를 기다리는 중…';
     if (line) {
       const tw = ctx.measureText(line).width, fw = cur && playing ? 20 : 0, x = Math.round(cw / 2 - (tw + fw) / 2);
@@ -1145,11 +1272,18 @@
   let lastHud = '';
   function updateHud(G, s, now) {
     const playing = s.st === 'turn' || s.st === 'retreat';
-    const hudKey = [s.cur, s.st, s.wp, s.gt].join('|');
+    const hudKey = [s.cur, s.st, s.wp, s.gt, s.sl, s.gb].join('|');
     if (hudKey !== lastHud) {
       lastHud = hudKey;
       const mine = isMyTurn(G);
-      for (const b of document.querySelectorAll('.wbtn')) { b.classList.toggle('sel', b.dataset.w === s.wp); b.disabled = !mine || s.st !== 'turn'; }
+      const A = Weapons.AMMO[s.wp] || Weapons.AMMO.bazooka, n = ammoCount(G.teams.find(t => t.hogs.some(hh => hh.id === s.cur)), s.wp);
+      $('wCurIcon').style.backgroundPosition = iconPos(A.icon, 32); $('wCurCnt').textContent = n < 0 ? '' : String(n);
+      $('wCur').disabled = !mine || s.st !== 'turn'; $('wCur').title = A.name + ' — 무기 고르기 (Tab · 오른쪽 클릭 · F1~F3)';
+      $('wShots').textContent = s.sl ? s.sl + '발 남음' : s.gb === 'minigun' ? '연사 중' : s.gb === 'shotgun' ? '장전 중' : '';
+      if (G.lastWp && G.lastWp !== s.wp && s.cur === G.lastWpCur) flash(A.name, '#ffe066');       // 원본처럼 고른 무기 이름을 잠깐 보여 줌
+      G.lastWp = s.wp; G.lastWpCur = s.cur;
+      if ($('ammoMenu').classList.contains('on')) renderAmmo(G);
+      if (!mine || s.st !== 'turn') $('ammoMenu').classList.remove('on');
       $('gtimers').style.display = s.wp === 'grenade' ? 'flex' : 'none';
       for (const b of document.querySelectorAll('.gt')) { b.classList.toggle('sel', +b.dataset.s === s.gt); b.disabled = !mine || s.st !== 'turn'; }
       $('tTimer').style.display = s.wp === 'grenade' ? 'block' : 'none';
@@ -1160,16 +1294,24 @@
     if (s.pw > 0) $('power').firstChild.style.width = (s.pw / Sim.MAX_POWER * 100) + '%';
     drawWind(s.w);
   }
+  // 바람 (0-6): "바람" 글자 + 큰 방향 화살표 + 세기(1~10칸, 약함·보통·강함) + 원본 바람 막대
+  function windLevel(w) { return Math.round(Math.abs(w || 0) * 10); }
+  function windText(w) { const n = windLevel(w); if (!n) return '바람 없음'; return '바람 ' + (w < 0 ? '←' : '→') + ' ' + (n <= 3 ? '약함' : n <= 6 ? '보통' : '강함'); }
   let lastWind = null;
   function drawWind(w) {
     if (w === lastWind) return; lastWind = w;
     const c = $('wind'), x = c.getContext('2d');
     x.clearRect(0, 0, c.width, c.height);
-    if (IMG.WindBar.width) x.drawImage(IMG.WindBar, 4, 2, 151, 17);
+    const n = windLevel(w);
+    x.font = 'bold 15px ' + HUDFONT; x.textBaseline = 'middle'; x.lineWidth = 3; x.strokeStyle = 'rgba(0,0,0,.85)';
+    const label = n ? `바람 ${w < 0 ? '◀' : '▶'} ${n}` : '바람 없음', sub = n ? (n <= 3 ? '약함' : n <= 6 ? '보통' : '강함') : '';
+    x.textAlign = 'left'; x.strokeText(label, 6, 11); x.fillStyle = n >= 7 ? '#ff8a6a' : n >= 4 ? '#ffe066' : '#bfe8ff'; x.fillText(label, 6, 11);
+    if (sub) { x.textAlign = 'right'; x.font = 'bold 13px ' + HUDFONT; x.strokeText(sub, 154, 11); x.fillStyle = '#fff'; x.fillText(sub, 154, 11); }
+    if (IMG.WindBar.width) x.drawImage(IMG.WindBar, 4, 22, 151, 17);
     const len = Math.round(Math.abs(w) * 73);
     if (len > 0) {
-      if (w > 0) x.drawImage(IMG.WindR, 0, 0, len, 13, 80, 4, len, 13);
-      else x.drawImage(IMG.WindL, 80 - len, 0, len, 13, 80 - len, 4, len, 13);
+      if (w > 0) x.drawImage(IMG.WindR, 0, 0, len, 13, 80, 24, len, 13);
+      else x.drawImage(IMG.WindL, 80 - len, 0, len, 13, 80 - len, 24, len, 13);
     }
   }
   function buildTimerButtons() {
@@ -1179,7 +1321,49 @@
       b.onclick = () => send({ t: 'gtimer', s: i }); box.appendChild(b);
     }
   }
-  for (const b of document.querySelectorAll('.wbtn')) b.onclick = () => send({ t: 'weapon', w: b.dataset.w });
+  // ---- 무기 메뉴 (원본 AmmoMenu: Ammos_base.png 아이콘판, 줄 = 슬롯 F1~F3, 남은 수) ----
+  const iconPos = (n, px) => { const f = n - 1; return `${-Math.floor(f / 16) * px}px ${-(f % 16) * px}px`; };
+  function myTeam(G) { return G && G.teams.find(t => t.pid === S.me); }
+  function ammoCount(t, w) { const v = t && t.ammo ? t.ammo[w] : Weapons.AMMO[w].count; return v == null ? Weapons.AMMO[w].count : v; }
+  function renderAmmo(G) {
+    const grid = $('amGrid'); if (!grid || !G) return;
+    const t = myTeam(G), s = G.last || {}, mine = isMyTurn(G) && s.st === 'turn' && !s.sl && !s.gb;
+    grid.innerHTML = '';
+    const slots = {};
+    for (const w of Weapons.ORDER) (slots[Weapons.AMMO[w].slot] = slots[Weapons.AMMO[w].slot] || []).push(w);
+    for (const sl of Object.keys(slots).sort((a, b) => a - b)) {
+      const row = document.createElement('div'); row.className = 'amRow';
+      const key = document.createElement('div'); key.className = 'amKey'; key.style.backgroundPosition = `0 ${-sl * 32}px`; key.title = 'F' + (+sl + 1); row.append(key);
+      for (const w of slots[sl]) {
+        const A = Weapons.AMMO[w], n = ammoCount(t, w), b = document.createElement('button');
+        b.className = 'amCell' + (s.wp === w ? ' sel' : ''); b.dataset.w = w; b.title = A.name;
+        const i = document.createElement('i'); i.style.backgroundImage = `url(assets/ui/ammo/${n === 0 ? 'Ammos_bw_base' : 'Ammos_base'}.png)`; i.style.backgroundPosition = iconPos(A.icon, 32);
+        const cnt = document.createElement('b'); cnt.textContent = n < 0 ? '∞' : String(n);
+        b.append(i, cnt);
+        b.disabled = !mine || n === 0;
+        const show = () => { $('amDesc').textContent = `${A.name} (${n < 0 ? '무한' : n + '개'}) — ${A.desc}`; };
+        b.onmouseenter = show; b.onfocus = show;
+        let lp = 0; b.onpointerdown = () => { lp = setTimeout(show, 350); }; b.onpointerup = b.onpointerleave = () => clearTimeout(lp);
+        b.onclick = () => { send({ t: 'weapon', w }); $('ammoMenu').classList.remove('on'); };
+        row.append(b);
+      }
+      grid.append(row);
+    }
+  }
+  function toggleAmmo(on) {
+    const G = S.game; if (!G) return;
+    const el = $('ammoMenu'), v = on == null ? !el.classList.contains('on') : on;
+    if (v) renderAmmo(G);
+    el.classList.toggle('on', v);
+  }
+  $('wCur').onclick = () => toggleAmmo();
+  // F1~F3: 그 줄의 무기를 고름, 같은 키를 다시 누르면 그 줄 안에서 다음 무기 (원본 슬롯 키)
+  function slotKey(sl) {
+    const G = S.game; if (!G || !G.last) return;
+    const list = Weapons.ORDER.filter(w => Weapons.AMMO[w].slot === sl && ammoCount(myTeam(G), w) !== 0); if (!list.length) return;
+    const i = list.indexOf(G.last.wp);
+    send({ t: 'weapon', w: list[(i + 1) % list.length] });
+  }
 
   // ---------------- 입력 ----------------
   function isMyTurn(G) { const s = G && G.last; if (!s || !s.cur) return false; const h = G.hogs[s.cur]; return h && h.team.pid === S.me; }
@@ -1194,7 +1378,9 @@
     if (e.repeat) return;
     if (e.key === 'Enter') { e.preventDefault(); send({ t: 'jump', k: 'long' }); }
     else if (e.key === 'Backspace') { e.preventDefault(); send({ t: 'jump', k: 'high' }); }
-    else if (e.key === 'Tab') { e.preventDefault(); const s = S.game.last; send({ t: 'weapon', w: s && s.wp === 'bazooka' ? 'grenade' : 'bazooka' }); }
+    else if (e.key === 'Tab') { e.preventDefault(); toggleAmmo(); }
+    else if (/^F[1-3]$/.test(e.key)) { e.preventDefault(); slotKey(+e.key.slice(1) - 1); }
+    else if (e.key === 'Escape') toggleAmmo(false);
     else if (e.key >= '1' && e.key <= '5') send({ t: 'gtimer', s: +e.key });
   });
   window.addEventListener('keyup', (e) => { if (KEYMAP[e.key]) { e.preventDefault(); setKey(KEYMAP[e.key], false); } });
@@ -1215,7 +1401,8 @@
     el.addEventListener('pointerdown', (e) => { e.preventDefault(); el.classList.add('on'); fn(); });
     for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) el.addEventListener(ev, () => el.classList.remove('on'));
   }
-  tapBtn('tSwitch', () => { const s = S.game && S.game.last; send({ t: 'weapon', w: s && s.wp === 'bazooka' ? 'grenade' : 'bazooka' }); });
+  tapBtn('tSwitch', () => toggleAmmo());
+  cv.addEventListener('contextmenu', (e) => { if (S.game) { e.preventDefault(); toggleAmmo(); } });   // 오른쪽 클릭 = 무기 메뉴 (원본)
   tapBtn('tTimer', () => { const s = S.game && S.game.last; send({ t: 'gtimer', s: s ? (s.gt % 5) + 1 : 3 }); });
   for (const id of ['tJump', 'tHJump']) {
     const el = $(id);

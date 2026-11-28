@@ -81,6 +81,8 @@ GFDL 1.2 전문: https://www.gnu.org/licenses/old-licenses/fdl-1.2.html · GPL v
 | game/assets/snd/v_Hurry.ogg | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Hurry.ogg | GFDL 1.2 |
 | game/assets/snd/v_Jump1.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Jump1.ogg (ffmpeg로 mp3 변환) | GFDL 1.2 |
 | game/assets/snd/v_Jump1.ogg | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Jump1.ogg | GFDL 1.2 |
+| game/assets/snd/v_Jump2.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Jump2.ogg (ffmpeg로 mp3 변환, 10차 뒤로 공중제비) | GFDL 1.2 |
+| game/assets/snd/v_Jump2.ogg | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Jump2.ogg | GFDL 1.2 |
 | game/assets/snd/v_Jump3.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Jump3.ogg (ffmpeg로 mp3 변환) | GFDL 1.2 |
 | game/assets/snd/v_Jump3.ogg | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Jump3.ogg | GFDL 1.2 |
 | game/assets/snd/v_Missed.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/voices/Default/Missed.ogg (ffmpeg로 mp3 변환) | GFDL 1.2 |
@@ -320,3 +322,23 @@ land.json 은 map.png + mask.png 를 원본 규칙(SetLand)으로 계산한 땅 
 - 글꼴 game/assets/fonts/jua.woff2 — 주아(Jua), Copyright 2018 The Jua Project Authors — google/fonts 저장소 ofl/jua/Jua-Regular.ttf (C:\MSW\downloads\jua 에 받아 둠) — SIL Open Font License 1.1.
   메뉴 화면의 제목·버튼 글자에만 씀(작은 본문은 원본 글꼴). 자주 쓰는 한글 2,350자 + 영문 + 화면 글자만 남겨 woff2로 줄임(game/tools_v9_font.js, OFL이 허용하는 수정).
   라이선스 전문: game/assets/fonts/Jua_OFL.txt (게임과 함께 배포됨)
+
+## 10차 묶음 1 추가 (점프·쉬운 맵·무기 메뉴·총기, 2026-11-28) — 파일 — 원본 경로 — 라이선스
+| 파일 | 원본 경로 | 라이선스 |
+|---|---|---|
+| game/assets/ui/ammo/Ammos_base.png | hedgewars-src/share/hedgewars/Data/Graphics/AmmoMenu/Ammos_base.png (무기 메뉴 아이콘판) | GFDL 1.2 |
+| game/assets/ui/ammo/Ammos_bw_base.png | hedgewars-src/share/hedgewars/Data/Graphics/AmmoMenu/Ammos_bw_base.png (다 쓴 무기 흑백) | GFDL 1.2 |
+| game/assets/ui/ammo/SlotKeys.png | hedgewars-src/share/hedgewars/Data/Graphics/AmmoMenu/SlotKeys.png (F1~ 줄 표시) | GFDL 1.2 |
+| game/assets/ui/ammo/Slot.png, Corners.png, TurnsLeft.png | hedgewars-src/share/hedgewars/Data/Graphics/AmmoMenu/ 같은 이름 | GFDL 1.2 |
+| game/assets/gfx/Clouds.png | hedgewars-src/share/hedgewars/Data/Graphics/Clouds.png (바람 방향으로 흐르는 구름) | GFDL 1.2 |
+| game/assets/snd/gun.ogg, gun.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/gun.ogg (mp3는 ffmpeg 변환) | GFDL 1.2 |
+| game/assets/snd/minigun.ogg, minigun.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/minigun.ogg (mp3는 ffmpeg 변환) | GFDL 1.2 |
+| game/assets/snd/shotgunfire.ogg, shotgunfire.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/shotgunfire.ogg (mp3는 ffmpeg 변환) | GFDL 1.2 |
+| game/assets/snd/shotgunreload.ogg, shotgunreload.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/shotgunreload.ogg (mp3는 ffmpeg 변환) | GFDL 1.2 |
+| game/assets/snd/sniperreload.ogg, sniperreload.mp3 | hedgewars-src/share/hedgewars/Data/Sounds/sniperreload.ogg (mp3는 ffmpeg 변환) | GFDL 1.2 |
+(v_Jump2 는 위 소리 표에 적음)
+
+### 원본 코드를 읽고 다시 쓴 부분 (GNU GPL v2 or later 대상)
+- game/public/sim.js 의 hogWalk·hogJumpStart·hogBackJump·hogJumpStep·hogStopJump — 원본 rust/lib-hwengine-future/src/gear.rs (step, start_high_jump, start_long_jump, start_back_jump, jump_step, stop_jump) 수치·규칙
+- game/public/weapons.js — 원본 hedgewars/uGearsHandlersMess.pas (doStepBulletWork·doStepShotgunShot·doStepMinigunWork), uGearsUtils.pas (ShotgunShot·AmmoShoveImpl), uGearsList.pas·uVariables.pas 수치
+- game/server.js 의 총 처리(gunFire·fireBullet·fireShotgun·fireMinigunBullet·shove), game/ai.js 의 gunPlan(원본 uAIAmmoTests 방식)

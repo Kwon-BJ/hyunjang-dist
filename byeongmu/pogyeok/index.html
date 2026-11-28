@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="hw-version" content="3.2128acfbdf98">
+<meta name="hw-version" content="5.7073c64739a2">
 <meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -152,7 +152,22 @@
   #weapons { position:absolute; top:max(6px, env(safe-area-inset-top)); left:max(6px, env(safe-area-inset-left)); display:flex; flex-direction:column; gap:5px; }
   .wbtn { width:48px; height:48px; min-height:0; padding:0; border-radius:var(--radBtn); position:relative; }
   .wbtn.sel { border-color:#fff; background:var(--btnDown); }
-  .wbtn span { position:absolute; inset:5px; background-image:url(assets/gfx/Ammos_base.png); background-size:128px 512px; }
+  .wbtn span { position:absolute; left:7px; top:7px; width:32px; height:32px; background-image:url(assets/ui/ammo/Ammos_base.png); background-size:128px 512px; }
+  .wbtn b { position:absolute; right:2px; bottom:0; font-size:11px; color:#fff; text-shadow:0 0 3px #000,0 0 2px #000; }
+  #wShots { font-size:12px; color:#ffe066; text-shadow:0 0 3px #000; min-height:14px; text-align:center; }
+  /* 무기 메뉴 (원본 AmmoMenu 그림: 줄 = 슬롯 F1~, 칸 = 무기 아이콘, 남은 수) */
+  #ammoMenu { display:none; position:absolute; z-index:30; left:max(62px, calc(env(safe-area-inset-left) + 62px)); top:max(6px, env(safe-area-inset-top)); max-width:calc(100% - 80px); max-height:calc(100% - 12px); overflow:auto;
+    background:rgba(10,14,40,.92); border:2px solid #c9a23a; border-radius:10px; padding:6px 8px; color:#fff; box-shadow:0 4px 14px rgba(0,0,0,.6); }
+  #ammoMenu.on { display:block; }
+  .amHead { font-size:13px; font-weight:bold; color:#ffe066; margin-bottom:4px; } .amHead span { font-weight:normal; color:#c8c8ff; font-size:11px; margin-left:6px; }
+  .amRow { display:flex; align-items:center; gap:4px; margin:3px 0; }
+  .amKey { width:32px; height:32px; flex:none; background-image:url(assets/ui/ammo/SlotKeys.png); background-size:32px 384px; image-rendering:pixelated; }
+  .amCell { width:44px; height:44px; min-height:0; padding:0; position:relative; border-radius:8px; flex:none; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.25); }
+  .amCell.sel { border:2px solid #ffe066; background:rgba(255,224,102,.18); }
+  .amCell i { position:absolute; left:5px; top:5px; width:32px; height:32px; background-size:128px 512px; }
+  .amCell b { position:absolute; right:3px; bottom:1px; font-size:11px; font-style:normal; text-shadow:0 0 3px #000,0 0 2px #000; }
+  .amCell:disabled { opacity:.55; }
+  #amDesc { font-size:12px; color:#dfe4ff; margin-top:4px; max-width:360px; line-height:1.35; }
   #gtimers { display:flex; flex-direction:column; gap:3px; }
   .gt { width:48px; min-height:0; height:28px; padding:0; font-size:13px; }
   .gt.sel { border-color:#fff; background:var(--btnDown); color:#fff; }
@@ -209,6 +224,12 @@
   #verBar { background:rgba(20,40,120,.94); }
   #verBar button { margin-left:10px; padding:3px 12px; font-size:14px; min-height:0; width:auto; display:inline-block; }
   body.ingame .tbar { font-size:13px; padding:3px 10px; margin-top:2px; }
+  /* 가입 화면 (10차): 이용 규칙 동의 칸, 사람 눈에 안 보이는 함정 칸 */
+  .terms { margin:8px 0 4px; padding:8px 10px; border-radius:10px; background:rgba(0,0,0,.28); font-size:14px; line-height:1.45; text-align:left; }
+  .terms ol { margin:4px 0 6px 18px; padding:0; }
+  .terms .agree { display:flex; align-items:center; gap:8px; font-size:15px; cursor:pointer; }
+  .terms .agree input { width:20px; height:20px; margin:0; flex:none; }
+  .hpf { position:absolute; left:-5000px; width:1px; height:1px; overflow:hidden; }
   #conn { position:fixed; top:0; left:0; right:0; background:#a01418; color:#fff; text-align:center; padding:8px; display:none; z-index:60; font-size:var(--fsSub); }
   #credits { z-index:50; }
   #credits .box { width:min(640px,100%); font-size:15px; line-height:1.55; color:var(--text); }
@@ -273,7 +294,7 @@
 @media (max-width:700px){#aiStages{grid-template-columns:repeat(5,1fr)}}
 @media (max-height:480px){#aiStages{grid-template-columns:repeat(10,1fr);gap:4px;margin:6px 0}#aiStages button{padding:3px 0 2px;font-size:14px}#aiStages button img{height:16px}}
 </style>
-<link rel="stylesheet" href="skin9.css?v=2128acfbdf98">
+<link rel="stylesheet" href="skin9.css?v=7073c64739a2">
 </head>
 <body class="s9">
 <div id="conn">서버와 연결이 끊겼습니다. 다시 연결하는 중…</div>
@@ -303,7 +324,10 @@
         <label for="suPw">비밀번호 (6자 이상)</label><div class="field"><img src="assets/skin/icon_lock.png" alt=""><input id="suPw" type="password" autocomplete="new-password" maxlength="64"></div>
         <label for="suPw2">비밀번호 확인</label><div class="field"><img src="assets/skin/icon_lock.png" alt=""><input id="suPw2" type="password" autocomplete="new-password" maxlength="64"></div>
         <label for="suNick">닉네임 (2~10자, 게임에 표시)</label><input id="suNick" maxlength="10" autocomplete="off">
-        <label for="suCode">가입 초대코드 (운영자에게 받은 값)</label><input id="suCode" autocomplete="off" autocapitalize="characters">
+        <div class="terms" id="suTermsBox"><b>이용 규칙</b><ol id="suTerms"><li>욕설·도배·다른 사람 사칭을 하지 않습니다.</li><li>어기면 운영자가 채팅 금지나 계정 정지를 할 수 있습니다.</li><li>문의·신고는 문파 운영자에게 합니다(홈페이지 문의).</li></ol>
+          <label class="agree"><input type="checkbox" id="suAgree"> 위 이용 규칙에 동의합니다</label></div>
+        <div class="hpf" aria-hidden="true"><label for="suWeb">홈페이지 주소(비워 두세요)</label><input id="suWeb" tabindex="-1" autocomplete="off"></div>
+        <div class="small" id="suClosed" style="display:none;color:#ffb3b3">지금은 가입을 받지 않습니다.</div>
         <div class="row"><button id="btnSignup" class="primary"><img src="assets/skin/icon_adduser.png" alt="">가입하기</button><button id="toLogin">로그인으로</button></div>
       </div>
       <div class="err" id="authErr"></div>
@@ -366,8 +390,9 @@
       <div><label for="hogs">고슴도치 (방장)</label><select id="hogs"><option value="1">1마리</option><option value="2">2마리</option><option value="3">3마리</option><option value="4">4마리</option></select></div>
     </div>
     <div class="row" id="mapRow">
-      <div><label for="mapKind">지형 (방장)</label><select id="mapKind"><option value="random">무작위 생성</option><option value="maze">미로</option><option value="image">이미지 맵</option></select></div>
-      <div><label for="mapSub">종류</label><select id="mapSub"></select></div>
+      <div><label for="mapDiff">난이도 (방장)</label><select id="mapDiff"><option value="easy">쉬움</option><option value="normal">보통</option><option value="hard">어려움</option><option value="custom">직접 고르기</option></select></div>
+      <div class="mapCustom"><label for="mapKind">지형</label><select id="mapKind"><option value="random">무작위 생성</option><option value="maze">미로</option><option value="image">이미지 맵</option></select></div>
+      <div class="mapCustom"><label for="mapSub">종류</label><select id="mapSub"></select></div>
       <div><label for="mapTheme">테마</label><select id="mapTheme"></select></div>
     </div>
     <div class="row" id="mapPrevRow"><canvas id="mapPrev" width="256" height="128"></canvas>
@@ -375,7 +400,7 @@
     <div class="row"><button id="btnStart" class="primary"><img src="assets/ui/Start.png" alt="">경기 시작</button><button id="btnLeave"><img src="assets/ui/Exit.png" alt="" style="height:18px">나가기</button></div>
     <div class="row"><button id="btnCopy">방 링크 복사</button></div>
     <div class="err" id="lobbyErr"></div>
-    <div class="small" id="keysHelp">PC: ←→ 걷기 · ↑↓ 조준 · 스페이스 누르고 있다 떼기 = 발사 · Enter 앞 점프 · Backspace 높이 점프 · Tab 무기 · 1~5 수류탄 타이머 · 끌기 화면 이동 · 휠 확대</div>
+    <div class="small" id="keysHelp">PC: ←→ 걷기 · ↑↓ 조준 · 스페이스 = 발사(곡사 무기는 누르고 있다 떼기) · Enter 앞 점프 · Backspace 높이 점프(점프 중 한 번 더 = 뒤로 공중제비) · Tab·오른쪽 클릭·F1~F3 무기 메뉴 · 1~5 수류탄 타이머 · 끌기 화면 이동 · 휠 확대</div>
   </div>
 </section>
 
@@ -387,11 +412,12 @@
 <section id="game" class="screen">
   <canvas id="cv"></canvas>
   <div class="hud" id="msg"></div>
-  <canvas class="hud" id="wind" width="160" height="22"></canvas>
+  <canvas class="hud" id="wind" width="160" height="42" aria-label="바람"></canvas>
   <div id="power"><div></div></div>
+  <div id="ammoMenu" role="dialog" aria-label="무기 고르기"><div class="amHead">무기 고르기 <span>Tab · 오른쪽 클릭 · F1~F3</span></div><div id="amGrid"></div><div id="amDesc">무기에 올려 두거나 길게 누르면 설명이 나옵니다.</div></div>
   <div id="weapons">
-    <button class="wbtn" data-w="bazooka" title="바주카"><span style="background-position:0 -64px"></span></button>
-    <button class="wbtn" data-w="grenade" title="수류탄"><span style="background-position:0 0"></span></button>
+    <button class="wbtn" id="wCur" title="무기 고르기 (Tab · 오른쪽 클릭 · F1~F3)"><span id="wCurIcon"></span><b id="wCurCnt"></b></button>
+    <div id="wShots"></div>
     <div id="gtimers"></div>
   </div>
   <div id="topRight"><button id="btnSound">소리 켬</button><button id="btnQuit">나가기</button></div>
@@ -450,6 +476,10 @@
     <div class="small">비밀번호 초기화: 임시 비밀번호가 아래에 표시됩니다. 본인에게 전달하세요. 정지: 즉시 접속이 끊기고 로그인할 수 없습니다.</div>
     <div id="adminBackup" class="small" style="margin:6px 0"></div>
     <div class="row" style="margin-top:0"><button id="btnBackupNow" class="mini" style="flex:none"><img src="assets/ui/Save.png" alt="" style="height:14px">지금 백업</button></div>
+    <div id="adminSite" class="small" style="margin:8px 0 2px"></div>
+    <div class="row" style="margin-top:0;flex-wrap:wrap"><button id="btnSignupToggle" class="mini" style="flex:none">가입 받기 끄기</button><button id="btnTermsEdit" class="mini" style="flex:none">이용 규칙 고치기</button><button id="btnStale" class="mini" style="flex:none">30일 지난 빈 계정 지우기</button></div>
+    <div id="termsEdit" style="display:none;margin:4px 0"><input id="term1" maxlength="80"><input id="term2" maxlength="80"><input id="term3" maxlength="80">
+      <div class="row" style="margin-top:4px"><button id="btnTermsSave" class="mini primary" style="flex:none">저장</button><button id="btnTermsCancel" class="mini" style="flex:none">취소</button></div></div>
     <div id="adminMaint" class="small" style="margin:8px 0 2px"></div>
     <div class="row" style="margin-top:0;flex-wrap:wrap"><button id="btnMaint5" class="mini" style="flex:none">점검 예고 5분</button><button id="btnMaint10" class="mini" style="flex:none">점검 예고 10분</button><button id="btnMaintOff" class="mini" style="flex:none">예고 취소</button></div>
     <div id="adminMsg" class="notes"></div>
@@ -462,7 +492,12 @@
     <h1>게임 가이드</h1>
     <p class="sub">차례가 오면 정해진 시간 안에 움직이고 조준해서 한 번 쏩니다. 바람을 보고 각도와 힘을 맞추세요. 상대 고슴도치를 모두 쓰러뜨리면 이깁니다.</p>
     <p class="sub" id="guideKeys"></p>
-    <p class="sub">휴대폰: 화면 아래 터치 버튼 — 왼쪽·오른쪽 걷기, 위·아래 조준, 큰 버튼을 누르고 있다 떼면 발사, 점프·높이 점프, 무기 바꾸기, 수류탄 타이머. 경기는 가로 화면에서만 됩니다.</p>
+    <p class="sub">휴대폰: 화면 아래 터치 버튼 — 왼쪽·오른쪽 걷기, 위·아래 조준, 큰 버튼으로 발사, 점프·높이 점프, "무기" 버튼으로 무기 메뉴, 수류탄 타이머. 경기는 가로 화면에서만 됩니다.</p>
+    <p class="sub"><b>무기 메뉴</b>: 왼쪽 위 무기 그림(또는 Tab·오른쪽 클릭·"무기" 버튼)을 누르면 무기 칸이 뜹니다. 칸 오른쪽 아래 숫자가 남은 수(∞ = 무한)이고, 흑백 칸은 다 쓴 무기입니다. 칸에 올려 두거나 길게 누르면 설명이 나옵니다.
+      <b>조준 방식</b> — 곡사(바주카·수류탄): 각도를 맞추고 발사 버튼을 누르고 있는 만큼 세게 나갑니다. 바주카는 바람을 타고 수류탄은 안 탑니다.
+      직사(샷건 2발·데저트 이글 4발·저격총 2발·미니건): 각도만 맞추고 누르면 바로 나갑니다. 총은 바람을 타지 않고, 첫 발을 쏜 뒤에는 무기를 바꿀 수 없습니다.</p>
+    <p class="sub"><b>바람</b>: 오른쪽 위 "바람 ▶ 7" — 화살표가 부는 쪽, 숫자(1~10)가 세기입니다. 구름도 바람 쪽으로 흐릅니다.</p>
+    <p class="sub"><b>체력이 줄어드는 경우</b>: 폭발에 직접 맞을 때뿐 아니라 폭발 가장자리(빨간 숫자), 높은 곳에서 떨어지거나 밀려나 떨어질 때("낙하 -12"), 서든데스가 시작된 뒤 매 턴("서든데스 -5", 1 밑으로는 안 줄어듦), 총에 맞을 때도 줄어듭니다. 물에 빠지면 바로 쓰러집니다. 턴이 끝나면 화면 위에 "이번 턴" 피해 요약이 나옵니다.</p>
     <div class="row"><button id="btnCloseGuide">닫기</button></div>
   </div>
 </section>
@@ -485,9 +520,10 @@
   </div>
 </section>
 
-<script src="sim.js?v=2128acfbdf98"></script>
-<script src="landgen.js?v=2128acfbdf98"></script>
-<script src="mapgen.js?v=2128acfbdf98"></script>
-<script src="client.js?v=2128acfbdf98"></script>
+<script src="sim.js?v=7073c64739a2"></script>
+<script src="landgen.js?v=7073c64739a2"></script>
+<script src="mapgen.js?v=7073c64739a2"></script>
+<script src="weapons.js?v=7073c64739a2"></script>
+<script src="client.js?v=7073c64739a2"></script>
 </body>
 </html>

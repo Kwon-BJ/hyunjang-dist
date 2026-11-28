@@ -117,6 +117,34 @@
   }
 
   // spec: { kind, sub, seed, hogs }, data: { templates, theme(theme.json), image(land.json) }
+  // 쉬움 지도 고르기 (10차 묶음 1, 사용자 요청: 더 평평하게 — 처마처럼 튀어나온 곳·깊은 골·동굴·떠 있는 섬 없앰)
+  // 원본 생성기가 만든 땅의 칸별 맨 위 높이를 재서 → 빈 칸(골·물 틈)은 양옆 높이를 이어 메우고 → 넓게 고르게(이동 평균 두 번)
+  // → 높낮이를 amp 배로 줄이고 → 그 높이 아래를 모두 땅으로 채움. 서버·화면이 같은 코드로 같은 땅을 만든다.
+  function flatten(m, H0, opt) {
+    const W = m.W, amp = opt.amp != null ? opt.amp : 0.4, rad = opt.rad || 90;
+    const top = new Float64Array(W), has = new Uint8Array(W);
+    for (let x = 0; x < W; x++) for (let y = 0; y < H0; y++) if (m[y * W + x]) { top[x] = y; has[x] = 1; break; }
+    let prev = -1;
+    for (let x = 0; x <= W; x++) {
+      if (x < W && !has[x]) continue;
+      if (prev < 0 && x < W) { for (let i = 0; i < x; i++) top[i] = top[x]; }
+      else if (x === W) { for (let i = prev + 1; i < W; i++) top[i] = prev >= 0 ? top[prev] : H0 * 0.6; }
+      else for (let i = prev + 1; i < x; i++) top[i] = top[prev] + (top[x] - top[prev]) * (i - prev) / (x - prev);
+      prev = x;
+    }
+    const avg = (src) => { const out = new Float64Array(W); let s = 0; const n = (i) => src[Math.max(0, Math.min(W - 1, i))];
+      for (let i = -rad; i <= rad; i++) s += n(i);
+      for (let x = 0; x < W; x++) { out[x] = s / (2 * rad + 1); s += n(x + rad + 1) - n(x - rad); }
+      return out; };
+    let h = avg(avg(top));
+    const sorted = Array.from(h).sort((a, b) => a - b), med = sorted[W >> 1];
+    const lo = Math.round(H0 * 0.3), hi = H0 - 60;
+    m.fill(0, 0, H0 * W);
+    for (let x = 0; x < W; x++) {
+      const y0 = Math.max(lo, Math.min(hi, Math.round(med + (h[x] - med) * amp)));
+      for (let y = y0; y < H0; y++) m[y * W + x] = 1;
+    }
+  }
   function build(spec, data) {
     let m, H0, maxHogs, typeName = spec.sub || '';
     if (spec.kind === 'image') {
@@ -131,6 +159,7 @@
       for (let y = 0; y < H0; y++) m.set(L.subarray((b.t + y) * L.W + b.l, (b.t + y) * L.W + b.l + W), y * W);
       maxHogs = L.maxHogs; typeName = L.typeName;
     }
+    if (spec.flat && spec.kind !== 'image') flatten(m, H0, spec.flat);
     m.border = addBorder(m, H0);
     if (data.keepBase) m.base = m.slice();      // 화면용: 장식 넣기 전 땅 (땅 무늬는 여기에만 칠함)
     m.objects = spec.kind === 'image' ? [] : data.placed ? applyPlaced(m, data.theme, data.placed) : addObjects(m, H0, data.theme, maxHogs, Sim.rng32((spec.seed ^ 0x2545f491) >>> 0));

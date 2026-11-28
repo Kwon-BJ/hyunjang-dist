@@ -173,6 +173,71 @@
     return { coll, landed, hit };
   }
 
+  // ---- 고슴도치 걷기·점프 (원본 rust/lib-hwengine-future/src/gear.rs 의 step / start_high_jump / start_long_jump /
+  //      can_back_jump / start_back_jump / jump_step / stop_jump 를 읽고 같은 규칙으로 다시 씀) ----
+  const LITTLE = 0.00001;                                   // cLittle (set_little_dx)
+  const sgn = (v) => (v < 0 ? -1 : 1);
+  // 옆 충돌을 y 를 dy 만큼 옮겨서 검사 (test_horizontal_collision_with_offset)
+  function testXAt(world, g, r, dir, dy) { const y = g.y; g.y = y + dy; const c = testX(world, g, r, dir); g.y = y; return c; }
+  // 한 걸음: 6픽셀까지 오르고 6픽셀까지 내려감. 발밑이 비면 떨어지기 시작(moving). 움직였으면 true
+  function hogWalk(world, h, dir) {
+    const R = HH_RADIUS, oy = h.y;
+    let gap = false, ceil = false;
+    for (let i = 0; i < 6; i++) {
+      if (testX(world, h, R, dir)) { if (!testY(world, h, R, -1)) h.y -= 1; else { ceil = true; break; } }
+      else { gap = true; break; }
+    }
+    if (!ceil) gap = !testX(world, h, R, dir);
+    if (gap) h.x += dir; else h.y = oy;
+    const ry = h.y;
+    let floor = false;
+    for (let i = 0; i < 6; i++) { if (!testY(world, h, R, 1)) h.y += 1; else { floor = true; break; } }
+    if (!floor) { h.y = ry; h.dy = 0; h.dx = 0; h.moving = true; }
+    return gap;
+  }
+  // 점프 시작. high: 높이 점프(dy -0.2, 제자리) / 아니면 긴 점프(dx ±0.15, dy -0.15, 경사면이면 1~2픽셀 먼저 들어 올림)
+  function hogJumpStart(world, h, high) {
+    const R = HH_RADIUS, dir = h.facing || 1;
+    if (high) {
+      if (testY(world, h, R, -1)) return false;
+      h.dy = -0.2; h.dx = dir * LITTLE;
+    } else {
+      const ry = h.y;
+      if (!testY(world, h, R, -1)) {
+        if (!testXAt(world, h, R, dir, -2)) h.y -= 2;
+        else if (!testXAt(world, h, R, dir, -1)) h.y -= 1;
+      }
+      if (testX(world, h, R, dir) || testY(world, h, R, -1)) { h.y = ry; return false; }
+      h.dy = -0.15; h.dx = dir * 0.15;
+    }
+    h.moving = true; h.jumping = true; h.hjump = false;
+    return true;
+  }
+  // 점프 중 다시 높이 점프 = 뒤로 공중제비 (높이 점프 중이거나 벽에 막혀 옆으로 안 갈 때, 아직 떨어지기 전에만)
+  function hogBackJump(h) {
+    if (!(h.jumping && !h.hjump && Math.abs(h.dx) <= LITTLE && h.dy < 0.05)) return false;
+    h.hjump = true; h.dy = -0.25; h.dx = -0.02 * sgn(h.dx);
+    return true;
+  }
+  // 점프 중 한 틱. 땅에 내려앉으면 false (그때 부르는 쪽이 낙하 피해 확인 + hogStopJump)
+  function hogJumpStep(world, h) {
+    const R = HH_RADIUS;
+    if (h.dy >= 0 && testY(world, h, R, 1)) return false;
+    if (testX(world, h, R, sgn(h.dx))) h.dx = sgn(h.dx) * LITTLE;            // 벽에 막히면 튕기지 않고 옆으로만 멈춤
+    if (h.dy < 0 && testY(world, h, R, -1)) h.dy = 0;                         // 천장
+    h.dy += GRAVITY;
+    h.x += h.dx; h.y += h.dy;
+    if (h.dy >= 0 && !testY(world, h, R, 1)) { const y = h.y; h.y = y + 1; const below = testY(world, h, R, 1); h.y = y; if (below) h.y += 1; }
+    return true;
+  }
+  function hogStopJump(world, h) {
+    if (h.hjump && Math.abs(h.dx) <= 0.02) h.dx = -h.dx;
+    h.jumping = false; h.hjump = false; h.moving = false;
+    h.dy = 0; h.dx = sgn(h.dx) * LITTLE;
+    for (let i = 0; i < 6; i++) { if (!testY(world, h, HH_RADIUS, 1)) h.y += 1; else break; }
+    if (!testY(world, h, HH_RADIUS, 1)) { h.moving = true; }                 // 6픽셀 아래에도 땅이 없으면 그냥 떨어짐
+  }
+
   // 원본 doMakeExplosion 의 피해 공식
   function explosionDamage(dist, R) {
     const dmgBase = R * 2 + (HH_RADIUS >> 1);
@@ -213,7 +278,7 @@
 
   const Sim = {
     W, H, WATER_Y, WATER_MARGIN, makeLand, GRAVITY, MAX_WIND, MAX_POWER, MAX_ANGLE, HH_RADIUS, HH_STEP_TICKS, HH_HEALTH,
-    TURN_TIME, RETREAT_TIME, HH_KICK, WEAPONS, HOG,
+    TURN_TIME, RETREAT_TIME, HH_KICK, WEAPONS, HOG, hogWalk, hogJumpStart, hogBackJump, hogJumpStep, hogStopJump, LITTLE,
     rng32, genLand, carve, landAt, solidAt, testX, testY, overlaps, stepFalling,
     explosionDamage, fallDamage, aimVector, simulateShot,
   };
