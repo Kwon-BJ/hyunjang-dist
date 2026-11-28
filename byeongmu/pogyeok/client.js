@@ -52,7 +52,7 @@
   }, { passive: true }));
 
   // ---------------- 화면 전환 ----------------
-  function show(id) { for (const s of document.querySelectorAll('.screen:not(.modal)')) s.classList.toggle('on', s.id === id); }
+  function show(id) { for (const s of document.querySelectorAll('.screen:not(.modal)')) s.classList.toggle('on', s.id === id); document.body.classList.toggle('ingame', id === 'game'); }
   // ---------------- 지도·테마 자료 (고른 것만 늦게 불러옴) ----------------
   const MAPKO = { small: '작은 섬', medium: '보통', large: '큰 땅', cavern: '동굴', wacky: '엉뚱한 섬들',
     small_tunnels: '좁은 굴 (작게)', medium_tunnels: '좁은 굴 (보통)', large_tunnels: '좁은 굴 (크게)',
@@ -99,10 +99,17 @@
     return null;
   }
   S.remote = !/^(127\.0\.0\.1|localhost)(:\d+)?$/.test(location.host) && !/trycloudflare\.com$/.test(location.hostname);
-  let closedTimer = null;
+  let closedTimer = null, closedTick = null, closedAt = 0;
   function showClosed(on) {
     $('closed').style.display = on ? 'flex' : 'none';
-    if (on) { $('conn').style.display = 'none'; clearTimeout(closedTimer); closedTimer = setTimeout(connect, 30000); }   // 30초마다 다시 확인
+    document.body.classList.toggle('closedOn', !!on);          // 닫힘 화면이 떠 있음 (새 스킨 배경에서 뒤 메뉴를 숨길 때 씀)
+    clearInterval(closedTick);
+    if (on) {
+      $('conn').style.display = 'none'; clearTimeout(closedTimer); closedTimer = setTimeout(connect, 30000);   // 30초마다 다시 확인
+      closedAt = Date.now() + 30000;
+      const tick = () => { $('closedLeft').textContent = Math.max(0, Math.ceil((closedAt - Date.now()) / 1000)); };
+      tick(); closedTick = setInterval(tick, 500);
+    }
   }
   async function connect() {
     if (S.ws && S.ws.readyState <= 1) return;
@@ -175,6 +182,8 @@
     $('authWrap').style.display = which === 'main' ? 'none' : 'flex';
     $('authLogin').style.display = which === 'login' ? 'block' : 'none';
     $('authSignup').style.display = which === 'signup' ? 'block' : 'none';
+    $('authWrap').classList.toggle('su', which === 'signup');   // 가입 화면: PC에서 로고를 작게
+    $('authHead').textContent = which === 'signup' ? '회원가입' : '로그인';
     $('homeMain').style.display = which === 'main' ? 'flex' : 'none';
     $('authErr').textContent = '';
   }
@@ -212,19 +221,21 @@
   function renderRooms() {
     const rows = $('roomRows'); rows.innerHTML = '';
     const list = S.rooms.slice().sort((a, b) => (a.state === 'lobby' ? 0 : 1) - (b.state === 'lobby' ? 0 : 1));
-    $('roomEmpty').style.display = list.length ? 'none' : 'block';
+    $('roomEmpty').style.display = list.length ? 'none' : 'flex';
+    $('homeMain').classList.toggle('noRooms', !list.length);
     $('roomCount').textContent = list.length ? `방 ${list.length}개` : '';
     if (S.sel && !list.some(r => r.code === S.sel)) S.sel = null;
     for (const r of list) {
       const tr = document.createElement('tr'); tr.className = 'r' + (r.code === S.sel ? ' sel' : '') + (r.state !== 'lobby' || r.count >= r.max ? ' dim' : '');
       tr.dataset.code = r.code;
-      const st = document.createElement('td'); const ic = document.createElement('img'); ic.className = 'st';
+      const st = document.createElement('td'); st.className = 'state'; const ic = document.createElement('img'); ic.className = 'st';
       ic.src = r.state === 'lobby' ? 'assets/ui/iconTime.png' : 'assets/ui/iconDamage.png'; ic.title = r.state === 'lobby' ? '대기 중' : '경기 중';
       st.append(ic, document.createTextNode(r.state === 'lobby' ? ' 대기' : ' 경기 중'));
+      const mt = document.createElement('span'); mt.className = 'modeTxt'; mt.textContent = ' · ' + (r.mode === 'team' ? '팀전' : '개인전'); st.append(mt);
       const ti = document.createElement('td'); ti.className = 'title'; ti.textContent = r.title;
-      const ho = document.createElement('td'); if (r.host) { ho.append(rankBadge(r.host.rank, r.host.rankName, r.host.nick, 24, true)); if (r.host.aiBest) ho.append(aiTag(r.host.aiBest)); }
-      const mo = document.createElement('td'); mo.textContent = r.mode === 'team' ? '팀전' : '개인전';
-      const cn = document.createElement('td'); cn.textContent = `${r.count}/${r.max}`;
+      const ho = document.createElement('td'); ho.className = 'host'; if (r.host) { ho.append(rankBadge(r.host.rank, r.host.rankName, r.host.nick, 24, true)); if (r.host.aiBest) ho.append(aiTag(r.host.aiBest)); }
+      const mo = document.createElement('td'); mo.className = 'mode'; mo.textContent = r.mode === 'team' ? '팀전' : '개인전';
+      const cn = document.createElement('td'); cn.className = 'cnt'; cn.textContent = `${r.count}/${r.max}`;
       tr.append(st, ti, ho, mo, cn);
       tr.onclick = () => { S.sel = r.code; tryJoin(r); };
       rows.append(tr);
@@ -239,6 +250,7 @@
   }
   $('btnJoin').onclick = () => tryJoin(S.rooms.find(r => r.code === S.sel));
   $('btnCreate').onclick = () => { $('createErr').textContent = ''; $('ctTitle').value = ''; $('ctTitle').placeholder = (S.user ? S.user.nick : '') + '의 방'; $('createDlg').classList.add('on'); };
+  $('btnCreate2').onclick = () => $('btnCreate').click();
   $('btnCreateCancel').onclick = () => $('createDlg').classList.remove('on');
   function fillMax(sel, team, cur) {
     sel.innerHTML = '';
@@ -276,6 +288,9 @@
     setTimeout(() => { $('btnCopy').textContent = '방 링크 복사'; }, 2500);
   };
   for (const a of document.querySelectorAll('.lnkCredits')) a.onclick = (e) => { e.preventDefault(); $('credits').classList.add('on'); };
+  // 게임 가이드: 대기실 조작 안내(keysHelp) 글을 그대로 씀
+  $('btnGuide').onclick = () => { $('guideKeys').textContent = $('keysHelp').textContent; $('guideDlg').classList.add('on'); };
+  $('btnCloseGuide').onclick = () => $('guideDlg').classList.remove('on');
   $('btnCloseCredits').onclick = () => $('credits').classList.remove('on');
   $('btnSound').onclick = () => {
     soundOn = !soundOn; $('btnSound').textContent = soundOn ? '소리 켬' : '소리 끔';
@@ -341,6 +356,7 @@
     $('aiInfo').textContent = `1단계부터 깨면 다음 단계가 열립니다. 처음 깬 단계만 경험치(단계 × 5). 져도·나가도 깎이지 않습니다. 지금 최고 ${u.aiBest || 0}단계.`;
   }
   $('btnAI').onclick = () => { renderAI(); $('aiStageDesc').textContent = ''; $('aiDlg').classList.add('on'); };
+  $('btnAI2').onclick = () => $('btnAI').click();
   $('btnAiClose').onclick = () => $('aiDlg').classList.remove('on');
   $('btnAiNext').onclick = () => { $('result').classList.remove('on'); send({ t: 'ai', stage: S.aiResult.stage + 1 }); };
   $('btnAiRetry').onclick = () => { $('result').classList.remove('on'); send({ t: 'ai', stage: S.aiResult.stage }); };

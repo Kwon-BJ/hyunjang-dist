@@ -1,0 +1,198 @@
+/* 9차 스킨 (TASK_9_GPT_SKIN): 사용자가 ChatGPT로 만든 그림(design_gpt) — 밤 성곽 배경, 로고, 금속 테두리 패널·버튼·입력칸·아이콘.
+   글자·입력칸·버튼 동작은 전부 HTML/CSS. 패널·버튼·입력칸은 9조각(border-image)으로 늘림.
+   경기 화면(#game: 지형·고슴도치·HUD·경기 중 버튼)은 원본 그대로 → 스킨 규칙에는 :not(#game *) 를 붙임.
+   8차에서 유지: 버튼 3상태, 글자 최소 크기(본문 16·보조 14~15·버튼 18px), 주 버튼 화면마다 하나, 세로 배치, 남은 초, 빈 로비 안내.
+   글꼴: 제목(h1)과 버튼만 주아(Jua, SIL OFL 1.1 — assets/fonts/Jua_OFL.txt), 작은 본문은 원본 글꼴 그대로. */
+@font-face { font-family:Jua; src:url(assets/fonts/jua.woff2) format('woff2'); font-display:swap; }
+
+body.s9 { background:#0b1640 url(assets/skin/bg.webp) center / cover no-repeat; }
+body.s9 #closed { background:#0b1640 url(assets/skin/bg.webp) center / cover no-repeat; }
+body.s9 #rotate { background:#0b1640 url(assets/skin/bg.webp) center / cover no-repeat; }
+
+/* 글꼴: 제목·버튼만 주아 */
+body.s9 h1:not(#game *), body.s9 button:not(#game *), body.s9 #rotate .rtext, body.s9 table.rooms th, body.s9 #closed .count b {
+  font-family:Jua, HWLatin, HWKr, sans-serif; font-weight:normal; letter-spacing:.3px; }
+.vh { position:absolute !important; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; margin:0; }
+
+/* 로고 (그림에 글자 포함 — 로고만 예외) */
+.logo { display:block; width:min(380px, 86vw); height:auto; margin:0 auto 4px; filter:drop-shadow(0 6px 10px rgba(0,0,20,.55)); position:relative; z-index:1; }
+.logo.small { width:150px; margin:0; }
+
+/* 패널: 금속 테두리 (panel9 모서리 140px, 화면에서는 46px) + 위·아래 가운데 나사판 */
+body.s9 .box:not(#game *) { position:relative; border:24px solid transparent; border-radius:0; background:none; padding:8px 12px;
+  border-image:url(assets/skin/panel9.png) 140 fill / 46px / 0 stretch; }
+body.s9 .box:not(#game *)::before, body.s9 .box:not(#game *)::after { content:''; position:absolute; left:50%; transform:translateX(-50%); width:99px; height:30px; pointer-events:none;
+  background:center / 100% 100% no-repeat; }
+body.s9 .box:not(#game *)::before { top:-24px; background-image:url(assets/skin/plate_top.png); }
+body.s9 .box:not(#game *)::after { bottom:-24px; background-image:url(assets/skin/plate_bottom.png); }
+body.s9 .modal .box::before, body.s9 .modal .box::after { display:none; }      /* 창(스크롤 됨)에는 나사판 없이 */
+body.s9 .box:not(#game *) h1 { color:var(--yellow); text-shadow:0 2px 0 #000, 0 0 3px #000; text-align:center; font-size:26px; margin:4px 0 8px; }
+body.s9 .box:not(#game *) .sub, body.s9 .box:not(#game *) p { color:#fff; }
+body.s9 label { color:#ffe680; }
+body.s9 .hint { color:#c8d2ff; text-align:center; margin-top:6px; }
+
+/* 창(모달): 뒤 화면을 어둡게 덮고, 뒤 로고·버튼이 비치지 않게 */
+body.s9 .modal { background:rgba(3,6,24,.82); -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px); z-index:45; }
+body.s9 #credits { z-index:50; }
+body.s9 .modal .box { background:none; max-height:calc(100vh - 20px); }
+body.s9 .modal .box.wide { width:min(760px, 100%); }
+
+/* 입력칸: 어두운 둥근 칸(input.png) + 왼쪽 아이콘 */
+body.s9 input, body.s9 select { border:0 solid transparent; background:none; color:#fff; min-height:50px; padding:8px 16px; border-radius:0;
+  border-image:url(assets/skin/input.png) 34 fill / 18px stretch; }
+body.s9 input:hover, body.s9 select:hover, body.s9 input:focus, body.s9 select:focus { background:none; filter:brightness(1.25); outline:none; }
+body.s9 input:focus { box-shadow:0 0 0 3px var(--yellow); border-radius:18px; }
+body.s9 select { background:url(assets/ui/dropdown.png) no-repeat right 14px center; padding-right:36px; }
+body.s9 select option { background:#0d1838; color:#fff; }
+body.s9 select:disabled, body.s9 input:disabled { color:#a9adc0; filter:grayscale(1) brightness(.85); background-color:transparent; }
+body.s9 input::placeholder { color:#8f9bc4; }
+.field { position:relative; }
+.field img { position:absolute; left:12px; top:50%; transform:translateY(-50%); height:28px; pointer-events:none; z-index:1; }
+body.s9 .field input { padding-left:50px; }
+
+/* 버튼 3상태: 그림 버튼 (가로 9조각, 둥근 끝 49px → 화면 24px)
+   누를 수 있음 = 초록(보통)·노랑(주)·어두운 판(보조) / 누르는 중 = 어둡게+아래로 / 못 누름 = 회색 그림 */
+body.s9 button:not(#game *) { border:0 solid transparent; border-radius:0; background:none; color:#fff; padding:8px 22px; white-space:nowrap; min-height:var(--touch);
+  border-image:url(assets/skin/btn_normal.png) 49 fill / 24px stretch; text-shadow:0 2px 0 #000, 0 0 2px #000; font-size:19px; }
+body.s9 button.primary:not(#game *) { border-image-source:url(assets/skin/btn_primary.png); color:#3b2200; text-shadow:0 1px 0 rgba(255,255,255,.45); }
+body.s9 button.sec:not(#game *) { border-image:url(assets/skin/btn_dark.png) 50 fill / 24px stretch; color:#fff; }
+body.s9 button:not(#game *):hover { background:none; border-color:transparent; filter:brightness(1.1); }
+body.s9 button:not(#game *):active, body.s9 button.on:not(#game *) { background:none; border-color:transparent; filter:brightness(.8); transform:translateY(2px); color:#fff; }
+body.s9 button.primary:not(#game *):active, body.s9 button.primary.on:not(#game *) { color:#3b2200; }
+body.s9 button:not(#game *):disabled { border-image:url(assets/skin/btn_disabled.png) 49 fill / 24px stretch; color:#e6e6ee;
+  background:none; border-color:transparent; filter:none; transform:none; text-shadow:0 1px 0 #222; cursor:default; }
+body.s9 button:not(#game *) img { height:26px; }
+body.s9 button.mini:not(#game *) { border-image-width:18px; padding:2px 12px; font-size:15px; min-height:40px; }
+/* 팀 고르기 버튼: 원본처럼 팀 색 테두리 대신 색 점 */
+body.s9 #btnSideA::before, body.s9 #btnSideB::before { content:''; width:14px; height:14px; border-radius:50%; border:2px solid #000; }
+body.s9 #btnSideA::before { background:#ff0204; } body.s9 #btnSideB::before { background:#4980c1; }
+
+/* 로그인: 위 로고, 가운데 패널, 아래 보조 버튼 */
+body.s9 #authWrap { flex-direction:column; gap:6px; }
+body.s9 #authBox { width:min(420px, 100%); }
+body.s9 #authLogin .field { margin-top:10px; }
+body.s9 .subbtns { display:flex; gap:10px; width:min(420px, 100%); margin-top:8px; }
+body.s9 .subbtns button { flex:1; font-size:17px; }
+
+/* 서버 닫힘 */
+body.s9 #closed .box { width:min(440px, 100%); }
+body.s9 #closed .count b { color:var(--yellow); font-size:24px; }
+
+/* 로비: 판은 가운데 폭 제한(양옆 배경 보임), 방 수만큼만 높아짐 */
+body.s9 .topbar .logo.small { width:150px; }
+body.s9 .mebox { border:0 solid transparent; border-radius:0; background:none; padding:10px 26px; border-image:url(assets/skin/btn_dark.png) 50 fill / 24px stretch; }
+body.s9 #homeMain > .toolbar, body.s9 #homeMain > .tablebox, body.s9 #homeMain > .row { width:min(940px, 100%); align-self:center; }
+body.s9 .toolbar .grow { text-shadow:0 2px 0 #000, 0 0 3px #000; color:#fff; }
+body.s9 .tablebox { flex:0 1 auto; border:24px solid transparent; border-radius:0; background:none; border-image:url(assets/skin/panel9.png) 140 fill / 46px / 0 stretch; padding:0 4px; }
+body.s9 .tablebox .empty { min-height:0; padding:14px 12px 10px; }
+body.s9 table.rooms th { background:rgba(0,0,0,.35); border:0; border-bottom:2px solid var(--yellow); color:var(--yellow); font-size:17px; }
+body.s9 table.rooms td { border-bottom:1px solid rgba(255,255,255,.12); }
+body.s9 table.rooms tr.r:hover td { background:rgba(255,255,255,.08); }
+body.s9 table.rooms tr.sel td { background:var(--yellow); color:#3b2200; }
+body.s9 table.rooms tr.sel td * { color:#3b2200; }
+body.s9 #homeMain .small a { text-shadow:0 1px 0 #000; }
+/* 계급 얼굴(원본 작은 그림): 둥근 어두운 바탕으로 정리 */
+body.s9 .rbadge img { background:rgba(10,20,60,.75); border:2px solid rgba(255,204,0,.7); border-radius:50%; }
+body.s9 .empty .emptyText { color:#fff; text-shadow:0 2px 0 #000; }
+
+/* 대기실 */
+body.s9 #lobby { align-items:center; }
+/* 대기실 패널: 화면 높이 안에 — 넘치면 패널 안에서 스크롤 (나사판은 잘리므로 숨김) */
+body.s9 #lobby .box { width:min(600px, 100%); max-height:calc(100vh - 20px); max-height:calc(100dvh - 20px); overflow-y:auto; margin:0 auto; }
+body.s9 #lobby .box::before, body.s9 #lobby .box::after { display:none; }
+body.s9 #lobby .box, body.s9 .modal .box { scrollbar-width:thin; scrollbar-color:rgba(255,204,0,.75) transparent; }
+/* 로비 출처 링크: 화면 오른쪽 아래 구석 */
+body.s9 #lobbyCredits { position:fixed; right:max(12px, env(safe-area-inset-right)); bottom:max(6px, env(safe-area-inset-bottom)); z-index:2;
+  background:rgba(3,6,24,.72); padding:3px 10px; border-radius:10px; }
+body.s9 #lobbyCredits a { color:#dfe4ff; }
+body.s9 .players li { border:0; border-radius:12px; background:rgba(0,0,0,.35); box-shadow:inset 0 0 0 1px rgba(255,204,0,.35); }
+body.s9 #mapPrev { border-color:rgba(255,204,0,.7); border-radius:10px; }
+body.s9 #mapPrevRow { flex-wrap:wrap; }
+body.s9 #keysHelp { text-align:center; margin-top:6px; }
+
+/* 표(결과·내 정보·운영자) */
+body.s9 table.info td { border-bottom:1px solid rgba(255,255,255,.14); color:#fff; }
+body.s9 table.info tr.head td { background:rgba(0,0,0,.4); border-bottom:2px solid var(--yellow); color:var(--yellow); }
+body.s9 table.info tr.meRow td { background:rgba(255,204,0,.18); }
+body.s9 #adminList td { white-space:nowrap; }   /* 좁으면 표를 옆으로 밀어 봄 */
+body.s9 #adminList { max-height:52vh; }
+
+/* AI 단계: 깬 단계 = 노랑, 열린 단계 = 초록, 잠김 = 회색 그림 */
+body.s9 #aiStages button { border-image-width:16px; padding:6px 0 4px; min-height:50px; font-size:17px; }
+body.s9 #aiStages button.clear { border-image-source:url(assets/skin/btn_primary.png); color:#3b2200; text-shadow:none; }
+body.s9 #aiStages button.clear .sm { color:#5a3a00; }
+body.s9 #aiStages button.locked { border-image-source:url(assets/skin/btn_disabled.png); opacity:.7; }
+
+/* 안내 띠 (연결 끊김) */
+body.s9 #conn { background:linear-gradient(#c0262b, #8a0f14); border-bottom:2px solid var(--yellow); box-shadow:0 3px 8px rgba(0,0,0,.5); font-size:16px; }
+
+/* ---- PC (넓고 높은 화면): 로그인을 참고 시안처럼 크게 ---- */
+@media (min-width:1000px) and (min-height:640px) {
+  body.s9 #authHero .logo { width:min(560px, 44vw, 70vh); margin-bottom:-48px; }
+  body.s9 #authBox { width:min(620px, 48vw); padding:14px 30px 10px; }
+  body.s9 #authWrap #authBox h1 { font-size:34px; margin:6px 0 4px; }
+  body.s9 #authBox input { font-size:22px; min-height:62px; border-image-width:22px; }
+  body.s9 #authBox .field img { height:34px; left:16px; }
+  body.s9 #authBox .field input { padding-left:62px; }
+  body.s9 #authBox label { font-size:18px; }
+  body.s9 #authBox .row button { font-size:25px; min-height:64px; border-image-width:30px; }
+  body.s9 #authBox button img { height:32px; }
+  body.s9 #authBox .hint { font-size:17px; }
+  body.s9 #authBox .err { margin-top:4px; }
+  body.s9 .subbtns { width:min(620px, 48vw); }
+  body.s9 .subbtns button { font-size:20px; min-height:56px; }
+  /* 가입은 칸이 많아 PC에서도 기본 크기 + 두 칸씩 */
+  body.s9 #authWrap.su #authHero .logo { width:300px; margin-bottom:-24px; }
+  body.s9 #authWrap.su #authBox input { font-size:18px; min-height:50px; border-image-width:18px; }
+  /* PC 대기실: 넓게 펴서 위아래 줄이기 */
+  body.s9 #lobby .box { width:min(760px, 100%); padding:4px 16px; }
+  body.s9 #lobby .box h1 { margin:0 0 2px; }
+  body.s9 #lobby label { margin:6px 0 3px; }
+  body.s9 #lobby .row { margin-top:8px; }
+  body.s9 #lobby .players { margin:4px 0; }
+  body.s9 #lobby .players li { min-height:40px; padding:3px 10px; margin-bottom:4px; }
+  body.s9 #lobby button { min-height:46px; }
+  body.s9 #authWrap.su #authBox .row button { font-size:21px; min-height:54px; border-image-width:26px; }
+}
+
+/* ---- 휴대폰 가로 (낮은 화면) ---- */
+@media (max-height:480px) {
+  .logo { width:min(300px, 40vw); }
+  body.s9 #authWrap { flex-direction:row; flex-wrap:wrap; justify-content:center; align-items:center; column-gap:18px; }
+  body.s9 #authHero { flex:0 0 auto; }
+  body.s9 #authBox { width:min(400px, 52vw); }
+  body.s9 .subbtns { position:absolute; left:max(12px, env(safe-area-inset-left)); bottom:10px; width:min(300px, 40vw); flex-direction:column; gap:6px; }
+  body.s9 .box:not(#game *) { border-width:18px; border-image-width:36px; padding:4px 10px; }
+  body.s9 .box:not(#game *)::before, body.s9 .box:not(#game *)::after { width:78px; height:24px; }
+  body.s9 .box:not(#game *)::before { top:-18px; } body.s9 .box:not(#game *)::after { bottom:-18px; }
+  body.s9 .box:not(#game *) h1 { font-size:21px; margin:0 0 4px; }
+  body.s9 input, body.s9 select { min-height:44px; padding-top:4px; padding-bottom:4px; }
+  body.s9 button:not(#game *) { font-size:18px; }
+  body.s9 #closed { flex-direction:row; gap:18px; }
+  body.s9 #closed .box { display:block; text-align:center; width:min(420px, 52vw); }
+  body.s9 .topbar .logo.small { width:110px; }
+  body.s9 .tablebox { border-width:18px; border-image-width:36px; }
+  body.s9 #homeMain > .toolbar, body.s9 #homeMain > .tablebox, body.s9 #homeMain > .row { width:min(720px, 100%); }
+  body.s9 .tablebox .empty { padding:6px 8px 4px; }
+  body.s9 .modal .box { max-height:calc(100vh - 12px); }
+  /* 가입: 칸이 많아 위에서부터, 보조 버튼은 숨김(로그인 화면에 있음) */
+  body.s9 #authWrap.su { align-items:flex-start; }
+  body.s9 #authWrap.su #authHero { align-self:flex-start; margin-top:40px; }
+  body.s9 #authWrap.su .subbtns { display:none; }
+}
+/* ---- 휴대폰 세로 (좁은 화면) ---- */
+@media (max-width:600px) {
+  .logo { width:min(330px, 84vw); }
+  body.s9 .topbar .logo.small { width:120px; }
+  body.s9 .topbar { justify-content:space-between; }
+  body.s9 .mebox { flex:1 1 100%; }
+  body.s9 .box:not(#game *) { border-width:20px; border-image-width:40px; padding:6px 8px; }
+  body.s9 .box:not(#game *)::before { top:-20px; } body.s9 .box:not(#game *)::after { bottom:-20px; }
+  body.s9 .tablebox { border-width:20px; border-image-width:40px; }
+  body.s9 button:not(#game *) { padding:8px 12px; font-size:18px; }
+  body.s9 .subbtns button { font-size:16px; padding:6px 10px; }
+  body.s9 #lobby select { font-size:15px; padding-left:10px; padding-right:26px; background-position:right 8px center; }
+  /* 방 카드: 칸마다 밑줄 대신 카드마다 한 줄 */
+  body.s9 table.rooms tr.r td { border:0; }
+  body.s9 table.rooms tr.r { border-bottom:1px solid rgba(255,255,255,.14); }
+}
