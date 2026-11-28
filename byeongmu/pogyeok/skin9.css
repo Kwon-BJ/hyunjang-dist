@@ -196,3 +196,5 @@ body.s9 #conn { background:linear-gradient(#c0262b, #8a0f14); border-bottom:2px 
   body.s9 table.rooms tr.r td { border:0; }
   body.s9 table.rooms tr.r { border-bottom:1px solid rgba(255,255,255,.14); }
 }
+/* 9B 버전 안내 띠의 새로고침 버튼 (기본 버튼 크기 규칙보다 우선) */
+body.s9 #verBar button:not(#game *) { width:auto; min-height:0; height:auto; padding:3px 14px; font-size:15px; margin-left:10px; display:inline-block; vertical-align:middle; }

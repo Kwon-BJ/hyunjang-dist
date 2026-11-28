@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
+<meta name="hw-version" content="3.2128acfbdf98">
 <meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -199,6 +200,15 @@
   #closed .count { font-size:var(--fsBody); color:var(--text); margin:4px 0 2px; }
   #closed .count b { color:var(--yellow); font-size:20px; }
   #closed .row { margin-top:14px; }
+  /* 9B: 점검 예고 띠 · 버전 안내 띠 (화면 맨 위, 경기 화면에서도 보임) */
+  #topBars { position:fixed; top:0; left:0; right:0; z-index:61; display:flex; flex-direction:column; align-items:center; pointer-events:none; }
+  .tbar { display:none; pointer-events:auto; margin-top:6px; max-width:calc(100% - 24px); padding:6px 14px; border-radius:12px; font-size:15px; line-height:1.35; text-align:center;
+    color:#fff; background:rgba(150,20,24,.92); border:2px solid #ffcf3a; box-shadow:0 3px 10px rgba(0,0,0,.5); }
+  .tbar.on { display:block; }
+  .tbar b { color:#ffe066; }
+  #verBar { background:rgba(20,40,120,.94); }
+  #verBar button { margin-left:10px; padding:3px 12px; font-size:14px; min-height:0; width:auto; display:inline-block; }
+  body.ingame .tbar { font-size:13px; padding:3px 10px; margin-top:2px; }
   #conn { position:fixed; top:0; left:0; right:0; background:#a01418; color:#fff; text-align:center; padding:8px; display:none; z-index:60; font-size:var(--fsSub); }
   #credits { z-index:50; }
   #credits .box { width:min(640px,100%); font-size:15px; line-height:1.55; color:var(--text); }
@@ -263,10 +273,11 @@
 @media (max-width:700px){#aiStages{grid-template-columns:repeat(5,1fr)}}
 @media (max-height:480px){#aiStages{grid-template-columns:repeat(10,1fr);gap:4px;margin:6px 0}#aiStages button{padding:3px 0 2px;font-size:14px}#aiStages button img{height:16px}}
 </style>
-<link rel="stylesheet" href="skin9.css">
+<link rel="stylesheet" href="skin9.css?v=2128acfbdf98">
 </head>
 <body class="s9">
 <div id="conn">서버와 연결이 끊겼습니다. 다시 연결하는 중…</div>
+<div id="topBars"><div id="maintBar" class="tbar" role="status" aria-live="polite"></div><div id="verBar" class="tbar" role="status" aria-live="polite"><span id="verText"></span><button id="btnVerReload" class="primary">새로고침</button></div></div>
 <div id="closed">
   <img class="logo" src="assets/skin/logo.webp" alt="고슴도치 포격전">
   <div class="box">
@@ -439,6 +450,8 @@
     <div class="small">비밀번호 초기화: 임시 비밀번호가 아래에 표시됩니다. 본인에게 전달하세요. 정지: 즉시 접속이 끊기고 로그인할 수 없습니다.</div>
     <div id="adminBackup" class="small" style="margin:6px 0"></div>
     <div class="row" style="margin-top:0"><button id="btnBackupNow" class="mini" style="flex:none"><img src="assets/ui/Save.png" alt="" style="height:14px">지금 백업</button></div>
+    <div id="adminMaint" class="small" style="margin:8px 0 2px"></div>
+    <div class="row" style="margin-top:0;flex-wrap:wrap"><button id="btnMaint5" class="mini" style="flex:none">점검 예고 5분</button><button id="btnMaint10" class="mini" style="flex:none">점검 예고 10분</button><button id="btnMaintOff" class="mini" style="flex:none">예고 취소</button></div>
     <div id="adminMsg" class="notes"></div>
     <div id="adminList" style="overflow:auto"></div>
     <div class="row"><button id="btnCloseAdmin">닫기</button></div>
@@ -472,9 +485,9 @@
   </div>
 </section>
 
-<script src="sim.js"></script>
-<script src="landgen.js"></script>
-<script src="mapgen.js"></script>
-<script src="client.js"></script>
+<script src="sim.js?v=2128acfbdf98"></script>
+<script src="landgen.js?v=2128acfbdf98"></script>
+<script src="mapgen.js?v=2128acfbdf98"></script>
+<script src="client.js?v=2128acfbdf98"></script>
 </body>
 </html>

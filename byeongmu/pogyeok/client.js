@@ -116,12 +116,18 @@
     if (S.connecting) return; S.connecting = true;
     const wsUrl = await serverUrl();
     S.connecting = false;
-    if (!wsUrl) { S.opened = false; return showClosed(true); }
+    if (!wsUrl) {
+      // 9B: 점검 재시작·서버 갱신을 기다리는 중이면 닫힘 화면으로 빠지지 않고 계속 다시 확인
+      if (S.verWait) { clearTimeout(S.verTimer); S.verTimer = setTimeout(connect, 5000); return; }
+      if (S.restarting && Date.now() - S.restarting < 180000) { setTimeout(connect, 2000); return; }
+      S.opened = false; return showClosed(true);
+    }
     const ws = new WebSocket(wsUrl);
     S.ws = ws; S.authed = false;
     ws.onopen = () => {
       S.opened = true; showClosed(false);
       $('conn').style.display = 'none'; S.retry = 0;
+      S.gotVer = false;
       if (S.auth) send({ t: 'resume', token: S.auth });
       else { S.pendingLogin && send(S.pendingLogin); S.pendingLogin = null; }
     };
@@ -129,11 +135,64 @@
     ws.onclose = () => {
       if (S.ws !== ws) return;
       S.ws = null; S.authed = false;
+      // 9B: 화면이 서버보다 새것(서버 갱신 중) → 5초마다 다시 확인 / 점검 재시작 중 → 2초마다 최대 3분
+      if (S.verWait) { clearTimeout(S.verTimer); S.verTimer = setTimeout(connect, 5000); return; }
+      if (S.restarting && Date.now() - S.restarting < 180000) { $('conn').textContent = '점검: 서버를 다시 켜는 중입니다. 잠시 뒤 자동으로 연결됩니다…'; $('conn').style.display = 'block'; setTimeout(connect, 2000); return; }
       // 한 번도 못 열었거나 여러 번 실패 → 서버가 닫힌 것으로 보고 30초마다 쪽지부터 다시 확인 (터널 주소가 바뀌었을 수 있음)
       if (!S.opened || S.retry >= 4) { S.opened = false; S.retry = 0; return showClosed(true); }
       if (S.auth) { $('conn').style.display = 'block'; setTimeout(connect, Math.min(5000, 800 + S.retry++ * 700)); }
       else setTimeout(connect, 1500);
     };
+  }
+  // ---------------- 버전 비교 (9B) ----------------
+  // 내 버전: 홈페이지에 올린 화면은 index.html 의 <meta name="hw-version">, 서버가 직접 준 화면은 version.json
+  const metaVer = document.querySelector('meta[name="hw-version"]');
+  S.myVer = null;
+  const myVerReady = (metaVer ? Promise.resolve(metaVer.content) : fetch('version.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(j => j ? j.n + '.' + j.h : null).catch(() => null))
+    .then(v => { if (v) { const [n, h] = String(v).split('.'); S.myVer = { n: +n || 0, h: h || '' }; } return S.myVer; });
+  async function onVersion(m) {
+    S.gotVer = true;
+    const mine = await myVerReady;
+    if (!mine || (mine.n === m.n && mine.h === m.h)) { if (S.verWait) { S.verWait = false; $('verBar').classList.remove('on'); } S.verOld = false; return; }
+    if (m.n < mine.n) {   // 화면이 서버보다 새것 → 서버가 아직 옛 코드(갱신 중). 연결을 끊고 5초마다 다시 확인
+      S.verWait = true; S.verOld = false;
+      $('verText').textContent = '서버를 갱신하는 중입니다. 잠시 뒤 자동으로 연결됩니다.';
+      $('btnVerReload').style.display = 'none'; $('verBar').classList.add('on');
+      if (S.ws) S.ws.close();
+      return;
+    }
+    // 화면이 옛것 → 새로고침 안내 (경기 중이면 판이 끝난 뒤)
+    S.verWait = false; S.verOld = true; showVerLater();
+  }
+  function showVerLater() {
+    if (!S.verOld || S.verWait) return;
+    if (S.game && document.body.classList.contains('ingame')) return;      // 경기 중에는 띄우지 않음
+    $('verText').textContent = '새 버전이 나왔습니다. 새로고침해 주세요.';
+    $('btnVerReload').style.display = ''; $('verBar').classList.add('on');
+  }
+  $('btnVerReload').onclick = () => location.reload();
+  // ---------------- 점검 예고 띠 (9B) ----------------
+  let maintTick = null;
+  function onMaint(m) {
+    clearInterval(maintTick);
+    const bar = $('maintBar');
+    S.maintOn = !m.off;
+    if (m.off) { bar.classList.remove('on'); return; }
+    if (m.restarting) { S.restarting = Date.now(); bar.innerHTML = '<b>점검 중</b> — 서버를 다시 켜는 중입니다. 잠시 뒤 자동으로 연결됩니다.'; bar.classList.add('on'); return; }
+    const endsAt = Date.now() + m.left, extraAt = Date.now() + m.extra;
+    const mmss = (ms) => { const t = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(t / 60) + '분 ' + String(t % 60).padStart(2, '0') + '초'; };
+    const draw = () => {
+      const now = Date.now();
+      bar.innerHTML = now < endsAt ? `<b>${mmss(endsAt - now)} 뒤 점검</b> — 진행 중인 판은 끝까지 할 수 있습니다. 새 경기는 시작할 수 없습니다.`
+        : `<b>점검 시간</b> — 진행 중인 판이 끝나면 서버를 다시 켭니다 (늦어도 ${mmss(extraAt - now)} 뒤, 그때까지 안 끝난 판은 무승부)`;
+    };
+    draw(); bar.classList.add('on'); maintTick = setInterval(draw, 500);
+  }
+  function renderAdminMaint(st) {
+    const el = $('adminMaint'); if (!el || !st) return;
+    const mm = (ms) => Math.ceil(ms / 60000);
+    el.textContent = !st.on ? `점검 예고: 없음 · 진행 중인 판 ${st.games}개 · 서버 버전 ${st.ver ? st.ver.n : '?'}`
+      : `점검 예고: ${st.phase === 'notice' ? (st.left > 0 ? mm(st.left) + '분 남음' : '예고 시간 지남, 판 끝나길 기다리는 중') : st.phase === 'ready' ? '판이 모두 끝남, 재시작 대기' : '재시작 중'} · 진행 중인 판 ${st.games}개`;
   }
   function setRoom(code) { S.room = code; try { if (code) sessionStorage.setItem('pogyeok:hwroom', code); else sessionStorage.removeItem('pogyeok:hwroom'); } catch (e) {} }
 
@@ -365,6 +424,9 @@
   $('btnAdmin').onclick = () => { send({ t: 'admin', op: 'list' }); $('admin').classList.add('on'); };
   $('btnCloseAdmin').onclick = () => $('admin').classList.remove('on');
   $('btnBackupNow').onclick = () => { $('adminBackup').textContent = '백업 중…'; send({ t: 'admin', op: 'backup' }); };
+  $('btnMaint5').onclick = () => send({ t: 'admin', op: 'maint', min: 5 });
+  $('btnMaint10').onclick = () => send({ t: 'admin', op: 'maint', min: 10 });
+  $('btnMaintOff').onclick = () => send({ t: 'admin', op: 'maintoff' });
   function renderBackup(b) {
     const el = $('adminBackup'); if (!el || !b) return;
     const t = (s) => s ? new Date(s).toLocaleString('ko-KR') : '-';
@@ -392,10 +454,16 @@
 
   // ---------------- 서버 메시지 ----------------
   function onMsg(m) {
+    if (m.t === 'ver') return onVersion(m);
+    if (m.t === 'maint') return onMaint(m);
     if (m.t === 'auth') {
       S.authed = true; S.user = m.user;
       if (m.token) { S.auth = m.token; store.set('hwauth', m.token); }
       authView('main'); renderMe();
+      if (S.restarting) {   // 점검 재시작 뒤 다시 붙음: 방·경기는 서버에서 없어졌으므로 로비로
+        S.restarting = 0; $('conn').textContent = '서버와 연결이 끊겼습니다. 다시 연결하는 중…';
+        setRoom(null); S.lobby = null; S.game = null; show('home'); flash('점검이 끝났습니다. 다시 연결되었습니다.', '#9dff9d');
+      }
       if (!S.lobby && !S.game) show('home');
       if (m.user.mustChange) openPwChange(true);
       const q = S.queue; S.queue = []; for (const o of q) send(o);
@@ -425,7 +493,8 @@
     if (m.t === 'me') { S.user = m.user; renderMe(); if (S.showMe) { S.showMe = false; renderMyInfo(m.user); } return; }
     if (m.t === 'admin') {
       if (m.error) { $('adminMsg').textContent = m.error; return; }
-      if (m.op === 'list' || m.op === 'backup') { renderAdmin(m.list); renderBackup(m.backup); }
+      if (m.op === 'list' || m.op === 'backup') { renderAdmin(m.list); renderBackup(m.backup); if (m.maint) renderAdminMaint(m.maint); }
+      else if (m.op === 'maint' || m.op === 'maintoff') { renderAdminMaint(m.maint); $('adminMsg').textContent = m.op === 'maint' ? '점검 예고를 시작했습니다. 진행 중인 판이 모두 끝나면 서버가 스스로 다시 켜집니다.' : '점검 예고를 취소했습니다.'; }
       else {
         $('adminMsg').textContent = m.op === 'reset' ? `${m.id} 임시 비밀번호: ${m.temp}  (본인에게 전달 후 바꾸게 하세요)` : `${m.id}: ${m.op === 'suspend' ? '정지됨' : '정지 해제됨'}`;
         send({ t: 'admin', op: 'list' });
@@ -439,8 +508,8 @@
       return;
     }
     if (m.t === 'joined') { S.me = m.you; setRoom(m.room); $('homeErr').textContent = ''; S.creating = false; $('createDlg').classList.remove('on'); return; }
-    if (m.t === 'left') { setRoom(null); S.lobby = null; if (S.game) { S.game = null; } show('home'); return; }
-    if (m.t === 'lobby') { S.lobby = m; renderLobby(); return; }
+    if (m.t === 'left') { setRoom(null); S.lobby = null; if (S.game) { S.game = null; } show('home'); showVerLater(); return; }
+    if (m.t === 'lobby') { S.lobby = m; renderLobby(); if (m.phase === 'lobby') showVerLater(); return; }
     if (m.t === 'game') { S.loadingGame = []; startGame(m).catch(e => { console.error(e); flash('지도를 불러오지 못했습니다: ' + e.message, '#ff8080'); }).finally(() => { const q = S.loadingGame || []; S.loadingGame = null; for (const x of q) onMsg(x); }); return; }
     if (S.loadingGame) { S.loadingGame.push(m); return; }
     if (m.t === 'result') { showResult(m); return; }
@@ -554,7 +623,7 @@
     $('btnAiNext').style.display = 'none'; $('btnAiRetry').style.display = 'none';
     if (m.mode === 'ai') return showAIResult(m);
     const mine = m.rows.find(r => r.pid === S.me);
-    $('resHead').textContent = m.draw ? '무승부 — 경험치 변동 없음' : mine ? (mine.outcome === 'win' ? '승리!' : mine.outcome === 'quit' ? '기권 처리' : '패배') : '경기 종료';
+    $('resHead').textContent = m.maint ? '점검으로 종료됨 — 무승부, 경험치 변동 없음' : m.draw ? '무승부 — 경험치 변동 없음' : mine ? (mine.outcome === 'win' ? '승리!' : mine.outcome === 'quit' ? '기권 처리' : '패배') : '경기 종료';
     $('resHead').style.color = mine && mine.outcome === 'win' ? '#ffcc00' : '#fff';
     const tb = document.createElement('table'); tb.className = 'info res';
     const hr = tb.insertRow(); hr.className = 'head'; ['순위', '참가자', '이번 판', '누적', '다음 계급까지'].forEach(h => { hr.insertCell().textContent = h; });
@@ -584,7 +653,7 @@
   // AI 대전 결과: 이기면 "다음 단계", 지면 "다시 도전". 경험치는 처음 깬 단계만
   function showAIResult(m) {
     S.aiResult = m;
-    $('resHead').textContent = m.win ? `${m.stage}단계 클리어!` : `${m.stage}단계 패배`;
+    $('resHead').textContent = m.maint ? `점검으로 종료됨 — ${m.stage}단계 기록 변동 없음` : m.win ? `${m.stage}단계 클리어!` : `${m.stage}단계 패배`;
     $('resHead').style.color = m.win ? '#ffcc00' : '#fff';
     const tb = document.createElement('table'); tb.className = 'info res';
     const hr = tb.insertRow(); hr.className = 'head'; ['', '편', '남은 고슴도치', '준 피해'].forEach(x => { hr.insertCell().textContent = x; });
