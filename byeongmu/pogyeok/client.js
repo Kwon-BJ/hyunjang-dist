@@ -281,9 +281,9 @@
     const l1 = document.createElement('span'); l1.innerHTML = '<span class="rnick"></span> <span class="rname"></span>';
     l1.children[0].textContent = u.nick; l1.children[1].textContent = u.rankName;
     const l2 = document.createElement('span'); l2.className = 'small';
-    l2.textContent = `경험치 ${u.exp.toLocaleString()}` + (u.next != null ? ` · ${u.nextName}까지 ${(u.next - u.exp).toLocaleString()}` : ' · 최고 계급');
+    l2.textContent = `경험치 ${u.exp.toLocaleString()}` + (u.general ? ` · 장성 순위 ${u.general.place}위` : u.next != null ? ` · ${u.nextName}까지 ${Math.max(0, u.next - u.exp).toLocaleString()}` : '') + (u.demoteIn != null ? ` · 강등까지 ${u.demoteIn}` : '');
     const bar = document.createElement('div'); bar.className = 'xpbar'; bar.innerHTML = '<div></div>';
-    const lo = RANK_MIN[u.rank] || 0; bar.firstChild.style.width = (u.next != null ? Math.max(0, Math.min(100, (u.exp - lo) / (u.next - lo) * 100)) : 100) + '%';
+    const lo = u.lo != null ? u.lo : 0; bar.firstChild.style.width = (u.next != null ? Math.max(0, Math.min(100, (u.exp - lo) / (u.next - lo) * 100)) : 100) + '%';
     if (u.aiBest) l1.append(aiTag(u.aiBest));
     t.append(l1, l2, bar); b.append(t);
     $('btnAdmin').style.display = u.admin ? '' : 'none';
@@ -398,10 +398,12 @@
     const nm = document.createElement('div'); nm.innerHTML = '<div class="rnick" style="font-size:18px"></div><div class="rname" style="font-size:14px"></div>';
     nm.children[0].textContent = u.nick; nm.children[1].textContent = u.rankName;
     head.append(nm); b.append(head);
-    const lo = RANK_MIN[u.rank] || 0, pct = u.next != null ? Math.round((u.exp - lo) / (u.next - lo) * 100) : 100;
+    const lo = u.lo != null ? u.lo : 0, pct = u.next != null ? Math.round((u.exp - lo) / (u.next - lo) * 100) : 100;
     const tb = document.createElement('table'); tb.className = 'info';
     for (const [k, v] of [['계급', u.rankName], ['누적 경험치', u.exp.toLocaleString()],
-      ['다음 계급', u.next != null ? `${u.nextName} (${u.next.toLocaleString()}) — ${(u.next - u.exp).toLocaleString()} 남음` : '최고 계급'],
+      ['다음 계급', u.next != null ? `${u.nextName} (${u.next.toLocaleString()}) — ${Math.max(0, u.next - u.exp).toLocaleString()} 남음` : '장성 (순위로 정함)'],
+      ...(u.demoteIn != null ? [['강등 보호', `강등까지 ${u.demoteIn} (계급 기준보다 60 아래로 내려가면 한 단계 내려감)`]] : []),
+      ...(u.general ? [['장성 순위', `${u.general.place}위 / 정원 ${u.general.seats}명` + (u.general.place > 1 ? ` · 앞사람과 ${u.general.gap.toLocaleString()} 차이` : ' · 맨 앞')]] : []),
       ['전적', `${u.games}판 · ${u.wins}승 ${u.losses}패 ${u.draws}무`],
       ['AI 대전', u.aiBest ? `최고 ${u.aiBest}단계 (깬 단계 ${Object.keys(u.aiClears || {}).length}개)` : '아직 없음']]) {
       const tr = tb.insertRow(); tr.insertCell().textContent = k; const c = tr.insertCell(); c.textContent = v; c.style.color = '#fff';
@@ -409,6 +411,11 @@
     b.append(tb);
     const bar = document.createElement('div'); bar.className = 'xpbar'; bar.style.width = '100%'; bar.innerHTML = '<div></div>';
     bar.firstChild.style.width = Math.max(0, Math.min(100, pct)) + '%'; b.append(bar);
+    // 장성 명단 (순위표 전체는 묶음 3)
+    const gb = document.createElement('button'); gb.className = 'sec'; gb.textContent = '장성 명단 보기'; gb.style.marginTop = '8px';
+    const gl = document.createElement('div'); gl.id = 'genList';
+    gb.onclick = () => send({ t: 'generals' });
+    b.append(gb, gl);
     $('myinfo').classList.add('on');
   }
   // ---- AI 대전 단계 목록 (깬 단계 = 메달, 열린 단계, 잠긴 단계 = 자물쇠) ----
@@ -511,10 +518,19 @@
     if (m.t === 'maint') return onMaint(m);
     if (m.t === 'site') return onSite(m);
     if (m.t === 'aicands') return onAiCands(m);
+    if (m.t === 'generals') {
+      const el = $('genList'); if (!el) return; el.innerHTML = '';
+      if (!m.list.length) { el.className = 'small'; el.textContent = '아직 장성 후보(누적 경험치 21,000 이상, 14일 안에 사람과 경기)가 없습니다.'; return; }
+      const tb = document.createElement('table'); tb.className = 'info';
+      const hr = tb.insertRow(); hr.className = 'head'; ['순위', '계급', '닉네임', '경험치'].forEach(h => { hr.insertCell().textContent = h; });
+      for (const g of m.list) { const tr = tb.insertRow(); [g.place + '위', g.name, g.nick, g.exp.toLocaleString()].forEach(v => { tr.insertCell().textContent = v; }); }
+      el.append(tb); return;
+    }
     if (m.t === 'auth') {
       S.authed = true; S.user = m.user;
       if (m.token) { S.auth = m.token; store.set('hwauth', m.token); }
       authView('main'); renderMe();
+      if (m.user.notices && m.user.notices.length) { $('homeErr').textContent = m.user.notices.map(n => n.msg).join('  ·  '); $('homeErr').style.color = '#ffe066'; send({ t: 'seennotices' }); }
       if (S.restarting) {   // 점검 재시작 뒤 다시 붙음: 방·경기는 서버에서 없어졌으므로 로비로
         S.restarting = 0; $('conn').textContent = '서버와 연결이 끊겼습니다. 다시 연결하는 중…';
         setRoom(null); S.lobby = null; S.game = null; show('home'); flash('점검이 끝났습니다. 다시 연결되었습니다.', '#9dff9d');
@@ -758,7 +774,7 @@
       c.append(rankBadge(rb.level, rb.name, r.nick, 28));
       const d = tr.insertCell(); d.textContent = (r.delta > 0 ? '+' : '') + r.delta; d.style.color = r.delta > 0 ? '#9dff9d' : r.delta < 0 ? '#ff8080' : '#fff';
       tr.insertCell().textContent = r.after.toLocaleString();
-      tr.insertCell().textContent = rb.next != null ? `${(rb.next - r.after).toLocaleString()} (${rb.nextName})` : '최고 계급';
+      tr.insertCell().textContent = (rb.next != null ? `${Math.max(0, rb.next - r.after).toLocaleString()} (${rb.nextName})` : '장성') + (rb.demoteIn != null ? ` · 강등까지 ${rb.demoteIn}` : '');
     }
     b.append(tb);
     const notes = [];
@@ -766,6 +782,7 @@
       if (!r.rankBefore || !r.rankAfter || r.rankBefore.level === r.rankAfter.level) continue;
       notes.push(`${r.nick}: ${r.rankBefore.name} → ${r.rankAfter.name} ${r.rankAfter.level > r.rankBefore.level ? '진급!' : '강등'}`);
     }
+    for (const sn of m.seat || []) notes.push('장성 순위 — ' + sn);
     $('resNotes').textContent = notes.join('  ·  ');
     $('result').classList.add('on');
     if (mine) send({ t: 'me' });
